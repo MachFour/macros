@@ -7,32 +7,56 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.machfour.macros.data.Columns.*;
+
 public class Tables {
     private Tables() {
     }
 
-    public static abstract class BaseTable<T extends MacrosPersistable<T>> implements Table<T> {
-        private final String tableName;
-        private final Map<String, Column<?>> columnsByName;
+    public static abstract class BaseTable<T extends MacrosPersistable> implements Table<T> {
+        private final String name;
+        private final Map<String, Column<T, ?>> columnsByName;
+        private final Column<T, Long> idColumn;
+        private final Column<T, Long> createTimeColumn;
+        private final Column<T, Long> modifyTimeColumn;
 
-        BaseTable(String tableName, Column... extraCols) {
-            this.tableName = tableName;
-            columnsByName = makeNameMap(Columns.Base.COLUMNS);
-            columnsByName.putAll(makeNameMap(extraCols));
+        BaseTable(String tblName, List<Column<T, ?>> cols, Column<T, Long> id, Column<T, Long> createTime, Column<T, Long> modTime) {
+            name = tblName;
+            columnsByName = makeNameMap(cols);
+            idColumn = id;
+            createTimeColumn = createTime;
+            modifyTimeColumn = modTime;
         }
+
+        @Override
+        public Column<T, Long> getIdColumn() {
+            return idColumn;
+        }
+
+        @Override
+        public Column<T, Long> getCreateTimeColumn() {
+            return createTimeColumn;
+        }
+
+        @Override
+        public Column<T, Long> getModifyTimeColumn() {
+            return modifyTimeColumn;
+        }
+
+
 
         @Override
         public String name() {
-            return tableName;
+            return name;
         }
 
         @Override
-        public List<Column<?>> columns() {
+        public List<Column<T, ?>> columns() {
             return new ArrayList<>(columnsByName.values());
         }
 
         @Override
-        public Map<String, Column<?>> columnsByName() {
+        public Map<String, Column<T, ?>> columnsByName() {
             return new HashMap<>(columnsByName);
         }
 
@@ -40,13 +64,13 @@ public class Tables {
         public abstract T construct(ColumnData<T> dataMap, boolean isFromDb);
 
         @Override
-        public Column columnForName(String name) {
+        public Column<T, ?> columnForName(String name) {
             return columnsByName.getOrDefault(name, null);
         }
 
-        private Map<String, Column<?>> makeNameMap(Column... cols) {
-            Map<String, Column<?>> colsByName = new HashMap<>(cols.length);
-            for (Column<?> c : cols) {
+        private Map<String, Column<T, ?>> makeNameMap(List<Column<T, ?>> cols) {
+            Map<String, Column<T, ?>> colsByName = new HashMap<>(cols.size());
+            for (Column<T, ?> c : cols) {
                 colsByName.put(c.toString(), c);
             }
             return colsByName;
@@ -58,7 +82,7 @@ public class Tables {
         private static final QuantityUnitTable INSTANCE = new QuantityUnitTable();
 
         QuantityUnitTable() {
-            super(TABLE_NAME, Columns.QuantityUnit.COLUMNS);
+            super(TABLE_NAME, QuantityUnitCol.COLUMNS, QuantityUnitCol.ID, QuantityUnitCol.CREATE_TIME, QuantityUnitCol.MODIFY_TIME);
         }
 
         public static QuantityUnitTable getInstance() {
@@ -75,7 +99,7 @@ public class Tables {
         private static final FoodTable INSTANCE = new FoodTable();
 
         FoodTable() {
-            super(TABLE_NAME, Columns.Food.COLUMNS);
+            super(TABLE_NAME, FoodCol.COLUMNS, FoodCol.ID, FoodCol.CREATE_TIME, FoodCol.MODIFY_TIME);
         }
 
         public static FoodTable getInstance() {
@@ -92,7 +116,7 @@ public class Tables {
         private static final ServingTable INSTANCE = new ServingTable();
 
         ServingTable() {
-            super(TABLE_NAME, Columns.Serving.COLUMNS);
+            super(TABLE_NAME, ServingCol.COLUMNS, ServingCol.ID, ServingCol.CREATE_TIME, ServingCol.MODIFY_TIME);
         }
 
         public static ServingTable getInstance() {
@@ -109,7 +133,7 @@ public class Tables {
         private static final FoodPortionTable INSTANCE = new FoodPortionTable();
 
         FoodPortionTable() {
-            super(TABLE_NAME, Columns.FoodPortion.COLUMNS);
+            super(TABLE_NAME, FoodPortionCol.COLUMNS, FoodPortionCol.ID, FoodPortionCol.CREATE_TIME, FoodPortionCol.MODIFY_TIME);
         }
 
         public static FoodPortionTable getInstance() {
@@ -126,7 +150,7 @@ public class Tables {
         private static final MealTable INSTANCE = new MealTable();
 
         MealTable() {
-            super(TABLE_NAME, Columns.Meal.COLUMNS);
+            super(TABLE_NAME, MealCol.COLUMNS, MealCol.ID, MealCol.CREATE_TIME, MealCol.MODIFY_TIME);
         }
 
         public static MealTable getInstance() {
@@ -143,7 +167,7 @@ public class Tables {
         private static final FoodCategoryTable INSTANCE = new FoodCategoryTable();
 
         FoodCategoryTable() {
-            super(TABLE_NAME, Columns.FoodCategory.COLUMNS);
+            super(TABLE_NAME, FoodCategoryCol.COLUMNS, FoodCategoryCol.ID, FoodCategoryCol.CREATE_TIME, FoodCategoryCol.MODIFY_TIME);
         }
 
         public static FoodCategoryTable getInstance() {
@@ -160,7 +184,7 @@ public class Tables {
         private static final MealDescriptionTable INSTANCE = new MealDescriptionTable();
 
         MealDescriptionTable() {
-            super(TABLE_NAME, Columns.MealDescription.COLUMNS);
+            super(TABLE_NAME, MealDescriptionCol.COLUMNS, MealDescriptionCol.ID, MealDescriptionCol.CREATE_TIME, MealDescriptionCol.MODIFY_TIME);
         }
 
         public static MealDescriptionTable getInstance() {
@@ -177,7 +201,7 @@ public class Tables {
         private static final IngredientTable INSTANCE = new IngredientTable();
 
         IngredientTable() {
-            super(TABLE_NAME, Columns.Ingredient.COLUMNS);
+            super(TABLE_NAME, IngredientCol.COLUMNS, IngredientCol.ID, IngredientCol.CREATE_TIME, IngredientCol.MODIFY_TIME);
         }
 
         public static IngredientTable getInstance() {
@@ -194,7 +218,7 @@ public class Tables {
         private static final RegularMealTable INSTANCE = new RegularMealTable();
 
         RegularMealTable() {
-            super(TABLE_NAME, Columns.RegularMeal.COLUMNS);
+            super(TABLE_NAME, RegularMealCol.COLUMNS, RegularMealCol.ID, RegularMealCol.CREATE_TIME, RegularMealCol.MODIFY_TIME);
         }
 
         public static RegularMealTable getInstance() {
@@ -211,7 +235,7 @@ public class Tables {
         private static final NutritionDataTable INSTANCE = new NutritionDataTable();
 
         NutritionDataTable() {
-            super(TABLE_NAME, Columns.NutritionData.COLUMNS);
+            super(TABLE_NAME, NutritionDataCol.COLUMNS, NutritionDataCol.ID, NutritionDataCol.CREATE_TIME, NutritionDataCol.MODIFY_TIME);
         }
 
         public static NutritionDataTable getInstance() {
@@ -228,7 +252,7 @@ public class Tables {
         private static final FoodAttributeTable INSTANCE = new FoodAttributeTable();
 
         FoodAttributeTable() {
-            super(TABLE_NAME, Columns.FoodAttribute.COLUMNS);
+            super(TABLE_NAME, FoodAttributeCol.COLUMNS, FoodAttributeCol.ID, FoodAttributeCol.CREATE_TIME, FoodAttributeCol.MODIFY_TIME);
         }
 
         public static FoodAttributeTable getInstance() {
@@ -245,7 +269,7 @@ public class Tables {
         private static final AttributeMapTable INSTANCE = new AttributeMapTable();
 
         AttributeMapTable() {
-            super(TABLE_NAME, Columns.AttributeMap.COLUMNS);
+            super(TABLE_NAME, AttributeMapCol.COLUMNS, AttributeMapCol.ID, AttributeMapCol.CREATE_TIME, AttributeMapCol.MODIFY_TIME);
         }
 
         public static AttributeMapTable getInstance() {

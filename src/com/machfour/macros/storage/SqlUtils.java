@@ -1,5 +1,6 @@
 package com.machfour.macros.storage;
 
+import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
 import com.machfour.macros.data.MacrosType;
@@ -65,30 +66,30 @@ class SqlUtils {
         return join(sep, questionIterator);
     }
 
-    private static void checkValidColumns(Table<?> t, List<Column<?>> orderedColumns) {
+    private static <M extends MacrosPersistable> void checkValidColumns(Table<M> t, List<Column<M, ?>> orderedColumns) {
         assert t.columns().containsAll(orderedColumns) : "Extraneous columns given";
     }
 
-    static String selectTemplate(Table<?> t, List<Column<?>> orderedColumns, Column<?> keyCol) {
+    static <M extends MacrosPersistable> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<? super M, ?> keyCol) {
         checkValidColumns(t, orderedColumns);
         return "SELECT " + join(",", orderedColumns) + " FROM " + t.name() + " WHERE " + keyCol.sqlName() + " = ?";
     }
 
     // columns must be a subset of table.columns()
-    static String insertTemplate(Table<?> t, List<Column<?>> orderedColumns) {
+    static <M extends MacrosPersistable> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
         checkValidColumns(t, orderedColumns);
         String placeholders = makeQuestionMarks(", ", orderedColumns.size());
         return "INSERT INTO " + t.name() + " (" + join(", ", orderedColumns) + ") VALUES ( " + placeholders + ")";
     }
 
-    static String updateTemplate(Table<?> t, List<Column<?>> orderedColumns, Column<?> keyCol) {
+    static <M extends MacrosPersistable> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<? super M, ?> keyCol) {
         checkValidColumns(t, orderedColumns);
         return "UPDATE " + t.name() + " SET " + join(",", orderedColumns, "= ?") + " WHERE " + keyCol.sqlName() + " = ?";
     }
 
-    static void bindData(PreparedStatement p, ColumnData values, List<Column<?>> orderedColumns, Object... extras) throws SQLException {
+    static <M extends MacrosPersistable> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
         int colIndex = 0;
-        for (Column<?> col : orderedColumns) {
+        for (Column<M, ?> col : orderedColumns) {
             // Internally, setObject() relies on a ladder of instanceof checks
             p.setObject(colIndex, values.unboxColumn(col));
             colIndex++;
@@ -108,7 +109,7 @@ class SqlUtils {
         bindObjects(p, 0, objects);
     }
 
-    static void addRawToColumnData(ColumnData<?> c, Column<?> col, Object data) {
+    static <M extends MacrosPersistable> void addRawToColumnData(ColumnData<M> c, Column<M, ?> col, Object data) {
         // TODO do any conversion if necessary (e.g. datestamp)
         MacrosType<?> type = col.type();
         if (type.equals(BOOLEAN)) {

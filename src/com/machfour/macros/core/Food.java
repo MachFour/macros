@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.machfour.macros.data.Columns.Food.*;
+import static com.machfour.macros.data.Columns.FoodCol.*;
 
 public class Food extends MacrosEntity<Food> {
 
-    public static final List<Column<String>> DESCRIPTION_COLUMNS = Arrays.asList(
+    public static final List<Column<Food, String>> DESCRIPTION_COLUMNS = Arrays.asList(
         BRAND
         , COMMERCIAL_NAME
         , VARIETY_PREFIX_1
@@ -81,7 +81,7 @@ public class Food extends MacrosEntity<Food> {
         return o instanceof Food && super.equals(o);
     }
 
-    private String getDescriptionData(Column<String> fieldName) {
+    private String getDescriptionData(Column<Food, String> fieldName) {
         assert (DESCRIPTION_COLUMNS.contains(fieldName));
         return getTypedDataForColumn(fieldName);
     }
@@ -173,7 +173,7 @@ public class Food extends MacrosEntity<Food> {
      *      <brand> <varPrefix1> <varPrefix2> <sqlName> <varSuffix> (<details>)
      */
 
-    private Boolean hasDescriptionData(Column<String> fieldName) {
+    private Boolean hasDescriptionData(Column<Food, String> fieldName) {
         return hasData(fieldName);
     }
 

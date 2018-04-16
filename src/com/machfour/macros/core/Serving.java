@@ -39,7 +39,7 @@ public class Serving extends MacrosEntity<Serving> {
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Columns.Serving.QUANTITY_UNIT);
+        return getTypedDataForColumn(Columns.ServingCol.QUANTITY_UNIT);
     }
 
     public QuantityUnit getQuantityUnit() {
@@ -54,21 +54,21 @@ public class Serving extends MacrosEntity<Serving> {
 
     @NotNull
     public Long getFoodId() {
-        return getTypedDataForColumn(Columns.Serving.FOOD_ID);
+        return getTypedDataForColumn(Columns.ServingCol.FOOD_ID);
     }
 
     @NotNull
     public String getName() {
-        return getTypedDataForColumn(Columns.Serving.NAME);
+        return getTypedDataForColumn(Columns.ServingCol.NAME);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Columns.Serving.QUANTITY);
+        return getTypedDataForColumn(Columns.ServingCol.QUANTITY);
     }
 
     @NotNull
     public Boolean isDefault() {
-        return getTypedDataForColumn(Columns.Serving.IS_DEFAULT);
+        return getTypedDataForColumn(Columns.ServingCol.IS_DEFAULT);
     }
 }

@@ -9,8 +9,8 @@ import java.util.Map;
 // Class which maps columns to their data values in instances of Macros objects
 public class ColumnData<M extends MacrosPersistable> {
 
-    private final Map<Column<?>, DataContainer<?>> map;
-    private final Map<Column<?>, Boolean> hasData;
+    private final Map<Column<M, ?>, DataContainer<?>> map;
+    private final Map<Column<M, ?>, Boolean> hasData;
     private final Table<M> table;
 
     public ColumnData(@NotNull Table<M> t) {
@@ -18,7 +18,7 @@ public class ColumnData<M extends MacrosPersistable> {
         map = new HashMap<>(t.columns().size(), 1);
         hasData = new HashMap<>(t.columns().size());
 
-        for (Column<?> c : t.columns()) {
+        for (Column<M, ?> c : t.columns()) {
             map.put(c, new DataContainer<>(c.type(), null));
             hasData.put(c, false);
         }
@@ -34,25 +34,25 @@ public class ColumnData<M extends MacrosPersistable> {
         return table;
     }
 
-    public <T> T unboxColumn(@NotNull Column<T> col) {
+    public <T> T unboxColumn(@NotNull Column<M, T> col) {
         assert map.containsKey(col) : "Invalid column for table";
         DataContainer dc = map.get(col);
         return col.type().javaClass().cast(dc.getData());
     }
 
     // will throw exception if the data doesn't match the type
-    public <T> void putData(Column<T> col, T data) {
+    public <T> void putData(Column<M, T> col, T data) {
         assert map.containsKey(col) : "Invalid column for table";
         map.put(col, new DataContainer<>(col.type(), data));
         hasData.put(col, data != null);
     }
 
-    public <T> void putDataUnchecked(Column<?> col, Object data, MacrosType<T> type) {
+    public <T> void putDataUnchecked(Column<M, ?> col, Object data, MacrosType<T> type) {
         assert col.type().equals(type);
-        putData((Column<T>) col, (T) data);
+        putData((Column<M, T>) col, (T) data);
     }
 
-    public boolean hasData(Column<?> col) {
+    public boolean hasData(Column<M, ?> col) {
         assert map.containsKey(col) : "Invalid column for table";
         return hasData.get(col);
     }

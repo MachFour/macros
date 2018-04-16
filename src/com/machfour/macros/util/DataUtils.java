@@ -13,19 +13,19 @@ import java.util.Map;
  */
 
 public final class DataUtils {
-    public static Map<Column<Double>, String> unitString;
+    public static Map<Column<NutritionData, Double>, String> unitString;
 
     static {
         unitString = new HashMap<>(NutritionData.NUTRIENT_COLUMNS.size());
-        for (Column<Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
-            if (nutrient.equals(Columns.NutritionData.SODIUM) ||
-                nutrient.equals(Columns.NutritionData.CALCIUM) ||
-                nutrient.equals(Columns.NutritionData.OMEGA_3_FAT) ||
-                nutrient.equals(Columns.NutritionData.OMEGA_6_FAT)) {
+        for (Column<NutritionData, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
+            if (nutrient.equals(Columns.NutritionDataCol.SODIUM) ||
+                nutrient.equals(Columns.NutritionDataCol.CALCIUM) ||
+                nutrient.equals(Columns.NutritionDataCol.OMEGA_3_FAT) ||
+                nutrient.equals(Columns.NutritionDataCol.OMEGA_6_FAT)) {
                 unitString.put(nutrient, "mg");
-            } else if (nutrient.equals(Columns.NutritionData.CALORIES)) {
+            } else if (nutrient.equals(Columns.NutritionDataCol.CALORIES)) {
                 unitString.put(nutrient, "cal");
-            } else if (nutrient.equals(Columns.NutritionData.KILOJOULES)) {
+            } else if (nutrient.equals(Columns.NutritionDataCol.KILOJOULES)) {
                 unitString.put(nutrient, "kj");
             } else {
                 unitString.put(nutrient, "g");
@@ -38,7 +38,7 @@ public final class DataUtils {
 
     // Formats the given data field (assumed to be a double) to a string.
     // Automatically adds an asterisk if the data is missing.
-    public static String formatNutrnData(NutritionData nd, Column<Double> field, int decimalPoints) {
+    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Double> field, int decimalPoints) {
         return formatDouble(nd.getNutrientData(field), decimalPoints, !nd.hasNutrient(field));
     }
 

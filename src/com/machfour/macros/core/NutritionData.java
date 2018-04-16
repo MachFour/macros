@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.data.Columns.NutritionData.*;
+import static com.machfour.macros.data.Columns.NutritionDataCol.*;
 
 // immutable class storing nutrition data for a food or meal
 public class NutritionData extends MacrosEntity<NutritionData> {
@@ -18,7 +18,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     // measured in the relevant FoodTable's QuantityUnits
     public static final double DEFAULT_QUANTITY = 100;
-    public static final List<Column<Double>> NUTRIENT_COLUMNS = Arrays.asList(
+    public static final List<Column<NutritionData, Double>> NUTRIENT_COLUMNS = Arrays.asList(
         QUANTITY
         , KILOJOULES
         , CALORIES
@@ -43,7 +43,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     );
     // keeps track of missing data for adding different instances of NutritionDataTable together
     // only NUTRIENT_COLUMNS are present in this map
-    private final Map<Column<Double>, Boolean> hasNutrient;
+    private final Map<Column<NutritionData, Double>, Boolean> hasNutrient;
     // measured in grams, per specified quantity
     private QuantityUnit quantityUnit;
     private Food food;
@@ -52,15 +52,15 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         super(dataMap, isFromDb);
         hasNutrient = new HashMap<>(NUTRIENT_COLUMNS.size());
         // have to use temporary due to type parameterisation
-        for (Column<Double> c : NUTRIENT_COLUMNS) {
+        for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             hasNutrient.put(c, dataMap.hasData(c));
         }
     }
 
     // allows keeping track of missing data when different nutritionData instances are added up
-    private NutritionData(ColumnData<NutritionData> dataMap, boolean isFromDb, Map<Column<Double>, Boolean> reliableData) {
+    private NutritionData(ColumnData<NutritionData> dataMap, boolean isFromDb, Map<Column<NutritionData, Double>, Boolean> reliableData) {
         this(dataMap, isFromDb);
-        for (Column<Double> c : NUTRIENT_COLUMNS) {
+        for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             if (!reliableData.get(c)) {
                 hasNutrient.put(c, false);
             } else {
@@ -74,9 +74,9 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     public static NutritionData sum(List<NutritionData> components) {
         double sumQuantity = 0;
 
-        Map<Column<Double>, Double> sumData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
-        Map<Column<Double>, Boolean> combinedHasData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
-        for (Column<Double> col : NUTRIENT_COLUMNS) {
+        Map<Column<NutritionData, Double>, Double> sumData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
+        Map<Column<NutritionData, Double>, Boolean> combinedHasData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
+        for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             sumData.put(col, 0.0);
             combinedHasData.put(col, true);
         }
@@ -87,7 +87,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
                 // means we guessed the density
                 combinedHasData.put(QUANTITY, false);
             }
-            for (Column<Double> col : NUTRIENT_COLUMNS) {
+            for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
                 // total has correct data for a field if and only if each component does
                 // if the current component has no data for a field, we add nothing to the total,
                 // implicitly treating it as zero
@@ -100,19 +100,19 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             }
         }
         ColumnData<NutritionData> combinedDataMap = new ColumnData<>(Tables.NutritionDataTable.getInstance());
-        for (Column<Double> col : NUTRIENT_COLUMNS) {
+        for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             combinedDataMap.putData(col, sumData.get(col));
         }
         combinedDataMap.putData(QUANTITY, sumQuantity);
         combinedDataMap.putData(QUANTITY_UNIT, QuantityUnit.GRAMS.getId());
         combinedDataMap.putData(FOOD_ID, null);
-        combinedDataMap.putData(Columns.NutritionData.DATA_SOURCE, "Sum");
+        combinedDataMap.putData(Columns.NutritionDataCol.DATA_SOURCE, "Sum");
         return new NutritionData(combinedDataMap, false, combinedHasData);
     }
 
     @Nullable
     public Long getFoodId() {
-        return getTypedDataForColumn(Columns.NutritionData.FOOD_ID);
+        return getTypedDataForColumn(Columns.NutritionDataCol.FOOD_ID);
     }
 
     public Food getFood() {
@@ -137,7 +137,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Columns.NutritionData.QUANTITY_UNIT);
+        return getTypedDataForColumn(Columns.NutritionDataCol.QUANTITY_UNIT);
     }
 
     @Override
@@ -148,7 +148,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     @NotNull
     // converts the energy quantity in units of the 'From' column to that of the 'to' column.
     // If the 'from' column has a null value, returns 0.
-    private Double convertEnergy(Column<Double> from, Column<Double> to) {
+    private Double convertEnergy(Column<NutritionData, Double> from, Column<NutritionData, Double> to) {
         assert (from == CALORIES || from == KILOJOULES);
         assert (to == CALORIES || to == KILOJOULES);
         if (!hasNutrient(from)) {
@@ -206,7 +206,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
      *
      */
 
-    public boolean hasNutrient(Column<Double> col) {
+    public boolean hasNutrient(Column<NutritionData, Double> col) {
         return hasNutrient.get(col);
     }
 
@@ -231,7 +231,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         ColumnData<NutritionData> newData = getAllData(); // all other data remains the same
         newData.putData(QUANTITY, newQuantity);
         newData.putData(QUANTITY_UNIT, targetUnit.getId());
-        Map<Column<Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
+        Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
         if (isDensityGuessed) {
             newHasData.put(QUANTITY, false);
         }
@@ -271,7 +271,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     public NutritionData rescale(double quantity) {
         double conversionRatio = quantity / getQuantity();
         ColumnData<NutritionData> newData = getAllData();
-        for (Column<Double> c : NUTRIENT_COLUMNS) {
+        for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             if (hasNutrient(c)) {
                 newData.putData(c, getNutrientData(c) * conversionRatio);
             }
@@ -281,7 +281,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Columns.NutritionData.QUANTITY);
+        return getTypedDataForColumn(Columns.NutritionDataCol.QUANTITY);
     }
 
     @Override
@@ -290,11 +290,11 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     @Nullable
-    public Double getNutrientData(Column<Double> col) {
+    public Double getNutrientData(Column<NutritionData, Double> col) {
         return getNutrientData(col, null);
     }
 
-    public Double getNutrientData(Column<Double> col, Double defaultValue) {
+    public Double getNutrientData(Column<NutritionData, Double> col, Double defaultValue) {
         assert (NUTRIENT_COLUMNS.contains(col));
         return hasNutrient(col) ? getTypedDataForColumn(col) : defaultValue;
     }

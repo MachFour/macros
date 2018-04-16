@@ -1,12 +1,13 @@
 package com.machfour.macros.data;
 
+import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.validation.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ColumnImpl<T> implements Column<T> {
+public class ColumnImpl<M extends MacrosPersistable, T> implements Column<M, T> {
     private final String name;
     private final MacrosType<T> type;
     private final boolean editable;

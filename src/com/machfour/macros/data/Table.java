@@ -5,14 +5,20 @@ import com.machfour.macros.core.MacrosPersistable;
 import java.util.List;
 import java.util.Map;
 
-public interface Table<T extends MacrosPersistable> {
+public interface Table<M extends MacrosPersistable> {
     String name();
 
-    List<Column<?>> columns();
+    List<Column<M, ?>> columns();
 
-    Map<String, Column<?>> columnsByName();
+    Map<String, Column<M, ?>> columnsByName();
 
-    Column<?> columnForName(String name);
+    Column<M, ?> columnForName(String name);
 
-    T construct(ColumnData<T> dataMap, boolean isFromDb);
+    Column<M, Long> getIdColumn();
+
+    Column<M, Long> getCreateTimeColumn();
+
+    Column<M, Long> getModifyTimeColumn();
+
+    M construct(ColumnData<M> dataMap, boolean isFromDb);
 }

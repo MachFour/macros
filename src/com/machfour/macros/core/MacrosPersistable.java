@@ -28,14 +28,14 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     Long getModifyTime();
 
     // Used to access the columns defined in the corresponding table schema
-    List<Column<?>> getColumns();
+    List<Column<M, ?>> getColumns();
 
-    Map<String, Column<?>> getColumnsByName();
+    Map<String, Column<M, ?>> getColumnsByName();
 
     // Used to get data by column objects
-    <T> T getTypedDataForColumn(Column<T> c);
+    <T> T getTypedDataForColumn(Column<M, T> c);
 
-    boolean hasData(Column<?> c);
+    boolean hasData(Column<M, ?> c);
 
     // Creates a mapping of column objects to their values for this instance
     ColumnData<M> getAllData();

@@ -6,7 +6,7 @@ import com.machfour.macros.data.Tables;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
-import static com.machfour.macros.data.Columns.Ingredient.*;
+import static com.machfour.macros.data.Columns.IngredientCol.*;
 
 public class Ingredient extends MacrosEntity<Ingredient> {
 

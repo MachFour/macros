@@ -6,7 +6,7 @@ import com.machfour.macros.data.Table;
 import com.machfour.macros.data.Tables;
 import com.sun.istack.internal.NotNull;
 
-import static com.machfour.macros.data.Columns.QuantityUnit.*;
+import static com.machfour.macros.data.Columns.QuantityUnitCol.*;
 
 public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
@@ -16,7 +16,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
     static {
         ColumnData<QuantityUnit> gramsData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
-        gramsData.putData(Columns.Base.ID, 1L);
+        gramsData.putData(Columns.QuantityUnitCol.ID, 1L);
         gramsData.putData(NAME, "grams");
         gramsData.putData(ABBREVIATION, "g");
         gramsData.putData(METRIC_EQUIVALENT, 1.0);
@@ -24,7 +24,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         GRAMS = new QuantityUnit(gramsData, true);
 
         ColumnData<QuantityUnit> milsData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
-        milsData.putData(Columns.Base.ID, 2L);
+        milsData.putData(Columns.QuantityUnitCol.ID, 2L);
         gramsData.putData(NAME, "millilitres");
         gramsData.putData(ABBREVIATION, "ml");
         gramsData.putData(METRIC_EQUIVALENT, 1.0);
@@ -32,7 +32,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         MILLILITRES = new QuantityUnit(milsData, true);
 
         ColumnData<QuantityUnit> mgData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
-        mgData.putData(Columns.Base.ID, 3L);
+        mgData.putData(Columns.QuantityUnitCol.ID, 3L);
         mgData.putData(NAME, "milligrams");
         mgData.putData(ABBREVIATION, "mg");
         mgData.putData(METRIC_EQUIVALENT, 0.001);
@@ -52,21 +52,21 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
     @NotNull
     public String getName() {
-        return getTypedDataForColumn(Columns.QuantityUnit.NAME);
+        return getTypedDataForColumn(Columns.QuantityUnitCol.NAME);
     }
 
     @NotNull
     public String getAbbreviation() {
-        return getTypedDataForColumn(Columns.QuantityUnit.ABBREVIATION);
+        return getTypedDataForColumn(Columns.QuantityUnitCol.ABBREVIATION);
     }
 
     @NotNull
     public Double metricEquivalent() {
-        return getTypedDataForColumn(Columns.QuantityUnit.METRIC_EQUIVALENT);
+        return getTypedDataForColumn(Columns.QuantityUnitCol.METRIC_EQUIVALENT);
     }
 
     @NotNull
     public Boolean isVolumeUnit() {
-        return getTypedDataForColumn(Columns.QuantityUnit.IS_VOLUME_UNIT);
+        return getTypedDataForColumn(Columns.QuantityUnitCol.IS_VOLUME_UNIT);
     }
 }

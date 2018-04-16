@@ -49,11 +49,11 @@ public class Meal extends MacrosEntity<Meal> {
 
     @Nullable
     public String getDescription() {
-        return getTypedDataForColumn(Columns.Meal.DESCRIPTION);
+        return getTypedDataForColumn(Columns.MealCol.DESCRIPTION);
     }
 
     public DateStamp getDay() {
-        return getTypedDataForColumn(Columns.Meal.DAY);
+        return getTypedDataForColumn(Columns.MealCol.DAY);
     }
 
     public List<FoodPortion> getFoodPortions() {

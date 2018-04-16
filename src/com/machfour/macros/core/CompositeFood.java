@@ -8,7 +8,7 @@ import java.util.List;
 public class CompositeFood extends Food {
     private List<Ingredient> ingredients;
 
-    protected CompositeFood(ColumnData<CompositeFood> data, boolean isFromDb) {
+    protected CompositeFood(ColumnData<Food> data, boolean isFromDb) {
         super(data, isFromDb);
         this.ingredients = new ArrayList<>();
         setFoodType(FoodType.COMPOSITE);

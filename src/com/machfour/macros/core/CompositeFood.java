@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompositeFood extends Food {
-    private List<Ingredient> ingredients;
+    private final List<Ingredient> ingredients;
 
     protected CompositeFood(ColumnData<Food> data, boolean isFromDb) {
         super(data, isFromDb);

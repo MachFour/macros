@@ -59,7 +59,9 @@ class SqlUtils {
 
             @Override
             public Character next() {
-                return hasNext() ? '?' : null;
+                Character c = hasNext() ? '?' : null;
+                current++;
+                return c;
             }
         };
         return join(sep, questionIterator);
@@ -238,6 +240,8 @@ class SqlUtils {
         return converted;
     }
 
+    // if the assert passes then the cast will be fine
+    @SuppressWarnings("unchecked")
     static <M extends MacrosPersistable, T> Column<M, T> typedColumn(Column<M, ?> col, MacrosType<T> type) {
         assert col.type().equals(type) : "Invalid type for column";
         return (Column<M, T>) col;

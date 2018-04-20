@@ -16,15 +16,16 @@ public class MacrosDataCache implements MacrosDataSource {
     /*
      * Object caches
      */
-    private List<Food> allFoodsCache;
-    private Map<Long, Meal> mealCache;
-    private Map<Long, Food> foodCache;
+    private final List<Food> allFoodsCache;
+    private final Map<Long, Meal> mealCache;
+    private final Map<Long, Food> foodCache;
     private boolean allFoodsNeedsRefresh;
 
     private MacrosDataCache() {
         upstream = MacrosLinuxDatabase.getInstance();
         mealCache = new HashMap<>(100);
         foodCache = new LinkedHashMap<>(100);
+        allFoodsCache = new ArrayList<>(100);
         allFoodsNeedsRefresh = true;
 
     }

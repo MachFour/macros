@@ -45,20 +45,6 @@ public class ColumnData<M extends MacrosPersistable> {
         hasData.put(col, data != null);
     }
 
-    @SuppressWarnings("unchecked")
-    // if the assert passes then the cast will be fine.
-    public <T> void putDataUnchecked(Column<M, ?> col, Object data, MacrosType<T> type) {
-        assert col.type().equals(type);
-        putData((Column<M, T>) col, (T) data);
-    }
-
-    @SuppressWarnings("unchecked")
-    // if the assert passes then the cast will be fine.
-    public <T> T getDataUnchecked(Column<M, ?> col, MacrosType<T> type) {
-        assert col.type().equals(type);
-        return unboxColumn((Column<M, T>) col);
-    }
-
     public boolean hasData(Column<M, ?> col) {
         return hasData.get(col);
     }

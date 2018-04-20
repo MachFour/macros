@@ -13,7 +13,7 @@ import java.util.Map;
  */
 
 public final class DataUtils {
-    public static Map<Column<NutritionData, Double>, String> unitString;
+    public static final Map<Column<NutritionData, Double>, String> unitString;
 
     static {
         unitString = new HashMap<>(NutritionData.NUTRIENT_COLUMNS.size());

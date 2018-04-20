@@ -12,7 +12,7 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
 
     @Override
     public Table<FoodCategory> getTable() {
-        return Tables.FoodCategoryTable.getInstance();
+        return Tables.FoodCategoryTable.instance();
     }
 
 }

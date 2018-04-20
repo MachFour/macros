@@ -19,7 +19,7 @@ public class Serving extends MacrosEntity<Serving> {
 
     @Override
     public Table<Serving> getTable() {
-        return Tables.ServingTable.getInstance();
+        return Tables.ServingTable.instance();
     }
 
     @Override

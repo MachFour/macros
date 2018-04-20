@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MacrosBuilder<T extends MacrosPersistable<T>> {
-    private final List<Column<?>> settableColumns;
+    private final List<Column<T, ?>> settableColumns;
     private final Table<T> table;
 
     private final T editInstance;
@@ -25,7 +25,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * If creating a new object, editInstance is null.
      */
     private final ColumnData draftData;
-    private final Map<Column<?>, Boolean> isValidValue;
+    private final Map<Column<T, ?>, Boolean> isValidValue;
 
     public MacrosBuilder(@NotNull Table<T> table) {
         this(table, null);
@@ -52,11 +52,11 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
     private void resetFields() {
         if (editInstance != null) {
             ColumnData instanceValues = editInstance.getAllData();
-            for (Column<?> field : settableColumns) {
+            for (Column<T, ?> field : settableColumns) {
                 setFieldUnchecked(field, instanceValues.unboxColumn(field));
             }
         } else {
-            for (Column<?> field : settableColumns) {
+            for (Column<T, ?> field : settableColumns) {
                 setFieldUnchecked(field, null);
             }
         }
@@ -66,7 +66,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * Sets the given column value to (a String representation of) the given value.
      * value cannot be null; an exception will be thrown if so
      */
-    public <C> void setField(Column<C> col, C value) {
+    public <C> void setField(Column<T, C> col, C value) {
         assert (settableColumns.contains(col)) : "Invalid field set";
         draftData.putData(col, value);
         isValidValue.put(col, checkErrors(col).isEmpty());
@@ -76,9 +76,9 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * Sets the given field to (a String representation of) the given value.
      * value cannot be null; an exception will be thrown if so
      */
-    private <C> void setFieldUnchecked(Column<?> col, C value) {
+    private <C> void setFieldUnchecked(Column<T, ?> col, C value) {
         assert (settableColumns.contains(col)) : "Invalid field set";
-        Column<C> typedColumn = (Column<C>) col;
+        Column<T, C> typedColumn = (Column<T, C>) col;
         draftData.putData(typedColumn, value);
         isValidValue.put(typedColumn, checkErrors(col).isEmpty());
     }
@@ -88,7 +88,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * Returns a list containing identifiers of each failing com.machfour.macros.validation test for the given field,
      * or otherwise an empty list.
      */
-    public List<Validation> checkErrors(Column<?> field) {
+    public List<Validation> checkErrors(Column<T, ?> field) {
         assert (settableColumns.contains(field)) : "Invalid field to validate";
         List<Validation> validationsToPerform = field.getValidations();
         List<Validation> failedValidations = new ArrayList<>(validationsToPerform.size());
@@ -104,7 +104,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
         return failedValidations;
     }
 
-    public void clearField(Column<?> field) {
+    public void clearField(Column<T, ?> field) {
         setField(field, null);
     }
 

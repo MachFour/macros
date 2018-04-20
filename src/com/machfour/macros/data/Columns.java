@@ -39,7 +39,7 @@ public class Columns {
         public static final Column<QuantityUnit, Boolean> IS_VOLUME_UNIT = column("is_volume_unit", MacrosType.BOOLEAN, true, false);
         public static final Column<QuantityUnit, Double> METRIC_EQUIVALENT = column("metric_equivalent", MacrosType.REAL, true, false);
         public static final List<Column<QuantityUnit, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -70,7 +70,7 @@ public class Columns {
         public static final Column<Food, Long> USDA_INDEX = column("usda_index", MacrosType.INTEGER, false, true);
         public static final Column<Food, String> NUTTAB_INDEX = column("nuttab_index", MacrosType.TEXT, false, true);
         public static final List<Column<Food, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , INDEX_NAME
@@ -102,7 +102,7 @@ public class Columns {
         public static final Column<Serving, Boolean> IS_DEFAULT = column("is_default", MacrosType.BOOLEAN, true, false);
         public static final Column<Serving, Long> FOOD_ID = column("food_id", MacrosType.ID, false, false);
         public static final List<Column<Serving, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -127,7 +127,7 @@ public class Columns {
         public static final Column<FoodPortion, Long> SERVING_ID = column("serving_id", MacrosType.ID, false, true);
         public static final Column<FoodPortion, String> NOTES = column("notes", MacrosType.TEXT, true, false);
         public static final List<Column<FoodPortion, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , QUANTITY
@@ -149,7 +149,7 @@ public class Columns {
         public static final Column<Meal, String> DESCRIPTION = column("name", MacrosType.TEXT, true, false);
         public static final Column<Meal, DateStamp> DAY = column("name", MacrosType.DATESTAMP, true, false);
         public static final List<Column<Meal, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , DESCRIPTION
@@ -166,7 +166,7 @@ public class Columns {
         public static final Column<FoodCategory, Long> MODIFY_TIME = modifyTimeColumn(FoodCategory.class);
         public static final Column<FoodCategory, String> NAME = column("name", MacrosType.TEXT, true, false);
         public static final List<Column<FoodCategory, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -182,7 +182,7 @@ public class Columns {
         public static final Column<MealDescription, Long> MODIFY_TIME = modifyTimeColumn(MealDescription.class);
         public static final Column<MealDescription, String> NAME = column("name", MacrosType.TEXT, true, false);
         public static final List<Column<MealDescription, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -204,7 +204,7 @@ public class Columns {
         public static final Column<Ingredient, Long> SERVING_ID = column("serving_id", MacrosType.ID, false, true);
         public static final Column<Ingredient, String> NOTES = column("notes", MacrosType.TEXT, true, false);
         public static final List<Column<Ingredient, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , COMPOSITE_FOOD_ID
@@ -227,7 +227,7 @@ public class Columns {
         public static final Column<RegularMeal, String> NAME = column("name", MacrosType.TEXT, true, false);
         public static final Column<RegularMeal, Long> MEAL_ID = column("meal_id", MacrosType.ID, false, false);
         public static final List<Column<RegularMeal, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -267,7 +267,7 @@ public class Columns {
         public static final Column<NutritionData, Double> WATER = column("water", MacrosType.REAL, true, true);
         public static final Column<NutritionData, Double> ALCOHOL = column("alcohol", MacrosType.REAL, true, true);
         public static final List<Column<NutritionData, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , DATA_SOURCE
@@ -306,7 +306,7 @@ public class Columns {
         public static final Column<FoodAttribute, Long> MODIFY_TIME = modifyTimeColumn(FoodAttribute.class);
         public static final Column<FoodAttribute, String> NAME = column("name", MacrosType.TEXT, true, false);
         public static final List<Column<FoodAttribute, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , NAME
@@ -323,7 +323,7 @@ public class Columns {
         public static final Column<AttributeMap, Long> FOOD_ID = column("food_id", MacrosType.ID, false, false);
         public static final Column<AttributeMap, Long> ATTRIBUTE_ID = column("attribute_id", MacrosType.ID, false, false);
         public static final List<Column<AttributeMap, ?>> COLUMNS = Arrays.asList(
-            ID
+                ID
             , CREATE_TIME
             , MODIFY_TIME
             , FOOD_ID

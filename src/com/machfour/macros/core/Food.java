@@ -51,7 +51,7 @@ public class Food extends MacrosEntity<Food> {
 
     @Override
     public Table<Food> getTable() {
-        return Tables.FoodTable.getInstance();
+        return Tables.FoodTable.instance();
     }
 
     public void addServing(@NotNull Serving s) {

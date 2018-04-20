@@ -35,25 +35,31 @@ public class ColumnData<M extends MacrosPersistable> {
     }
 
     public <T> T unboxColumn(@NotNull Column<M, T> col) {
-        assert map.containsKey(col) : "Invalid column for table";
-        DataContainer dc = map.get(col);
+        DataContainer<?> dc = map.get(col);
         return col.type().javaClass().cast(dc.getData());
     }
 
     // will throw exception if the data doesn't match the type
     public <T> void putData(Column<M, T> col, T data) {
-        assert map.containsKey(col) : "Invalid column for table";
         map.put(col, new DataContainer<>(col.type(), data));
         hasData.put(col, data != null);
     }
 
+    @SuppressWarnings("unchecked")
+    // if the assert passes then the cast will be fine.
     public <T> void putDataUnchecked(Column<M, ?> col, Object data, MacrosType<T> type) {
         assert col.type().equals(type);
         putData((Column<M, T>) col, (T) data);
     }
 
+    @SuppressWarnings("unchecked")
+    // if the assert passes then the cast will be fine.
+    public <T> T getDataUnchecked(Column<M, ?> col, MacrosType<T> type) {
+        assert col.type().equals(type);
+        return unboxColumn((Column<M, T>) col);
+    }
+
     public boolean hasData(Column<M, ?> col) {
-        assert map.containsKey(col) : "Invalid column for table";
         return hasData.get(col);
     }
 }

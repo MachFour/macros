@@ -13,7 +13,6 @@ import java.util.List;
 
 public class Meal extends MacrosEntity<Meal> {
 
-    //public static final MacrosPersistable.Converter<MealTable> CONVERTER = Converter.getInstance();
     private final List<FoodPortion> foodPortions;
 
     public Meal(ColumnData<Meal> data, boolean isFromDb) {
@@ -31,7 +30,7 @@ public class Meal extends MacrosEntity<Meal> {
 
     @Override
     public Table<Meal> getTable() {
-        return Tables.MealTable.getInstance();
+        return Tables.MealTable.instance();
     }
 
     public NutritionData getNutritionTotal() {

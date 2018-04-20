@@ -85,7 +85,7 @@ public class Tables {
             super(TABLE_NAME, QuantityUnitCol.COLUMNS, QuantityUnitCol.ID, QuantityUnitCol.CREATE_TIME, QuantityUnitCol.MODIFY_TIME);
         }
 
-        public static QuantityUnitTable getInstance() {
+        public static QuantityUnitTable instance() {
             return INSTANCE;
         }
 
@@ -102,7 +102,7 @@ public class Tables {
             super(TABLE_NAME, FoodCol.COLUMNS, FoodCol.ID, FoodCol.CREATE_TIME, FoodCol.MODIFY_TIME);
         }
 
-        public static FoodTable getInstance() {
+        public static FoodTable instance() {
             return INSTANCE;
         }
 
@@ -119,7 +119,7 @@ public class Tables {
             super(TABLE_NAME, ServingCol.COLUMNS, ServingCol.ID, ServingCol.CREATE_TIME, ServingCol.MODIFY_TIME);
         }
 
-        public static ServingTable getInstance() {
+        public static ServingTable instance() {
             return INSTANCE;
         }
 
@@ -136,7 +136,7 @@ public class Tables {
             super(TABLE_NAME, FoodPortionCol.COLUMNS, FoodPortionCol.ID, FoodPortionCol.CREATE_TIME, FoodPortionCol.MODIFY_TIME);
         }
 
-        public static FoodPortionTable getInstance() {
+        public static FoodPortionTable instance() {
             return INSTANCE;
         }
 
@@ -153,7 +153,7 @@ public class Tables {
             super(TABLE_NAME, MealCol.COLUMNS, MealCol.ID, MealCol.CREATE_TIME, MealCol.MODIFY_TIME);
         }
 
-        public static MealTable getInstance() {
+        public static MealTable instance() {
             return INSTANCE;
         }
 
@@ -170,7 +170,7 @@ public class Tables {
             super(TABLE_NAME, FoodCategoryCol.COLUMNS, FoodCategoryCol.ID, FoodCategoryCol.CREATE_TIME, FoodCategoryCol.MODIFY_TIME);
         }
 
-        public static FoodCategoryTable getInstance() {
+        public static FoodCategoryTable instance() {
             return INSTANCE;
         }
 
@@ -187,7 +187,7 @@ public class Tables {
             super(TABLE_NAME, MealDescriptionCol.COLUMNS, MealDescriptionCol.ID, MealDescriptionCol.CREATE_TIME, MealDescriptionCol.MODIFY_TIME);
         }
 
-        public static MealDescriptionTable getInstance() {
+        public static MealDescriptionTable instance() {
             return INSTANCE;
         }
 
@@ -204,7 +204,7 @@ public class Tables {
             super(TABLE_NAME, IngredientCol.COLUMNS, IngredientCol.ID, IngredientCol.CREATE_TIME, IngredientCol.MODIFY_TIME);
         }
 
-        public static IngredientTable getInstance() {
+        public static IngredientTable instance() {
             return INSTANCE;
         }
 
@@ -221,7 +221,7 @@ public class Tables {
             super(TABLE_NAME, RegularMealCol.COLUMNS, RegularMealCol.ID, RegularMealCol.CREATE_TIME, RegularMealCol.MODIFY_TIME);
         }
 
-        public static RegularMealTable getInstance() {
+        public static RegularMealTable instance() {
             return INSTANCE;
         }
 
@@ -238,7 +238,7 @@ public class Tables {
             super(TABLE_NAME, NutritionDataCol.COLUMNS, NutritionDataCol.ID, NutritionDataCol.CREATE_TIME, NutritionDataCol.MODIFY_TIME);
         }
 
-        public static NutritionDataTable getInstance() {
+        public static NutritionDataTable instance() {
             return INSTANCE;
         }
 
@@ -255,7 +255,7 @@ public class Tables {
             super(TABLE_NAME, FoodAttributeCol.COLUMNS, FoodAttributeCol.ID, FoodAttributeCol.CREATE_TIME, FoodAttributeCol.MODIFY_TIME);
         }
 
-        public static FoodAttributeTable getInstance() {
+        public static FoodAttributeTable instance() {
             return INSTANCE;
         }
 
@@ -272,7 +272,7 @@ public class Tables {
             super(TABLE_NAME, AttributeMapCol.COLUMNS, AttributeMapCol.ID, AttributeMapCol.CREATE_TIME, AttributeMapCol.MODIFY_TIME);
         }
 
-        public static AttributeMapTable getInstance() {
+        public static AttributeMapTable instance() {
             return INSTANCE;
         }
 

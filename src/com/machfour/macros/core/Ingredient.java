@@ -32,7 +32,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @Override
     public Table<Ingredient> getTable() {
-        return Tables.IngredientTable.getInstance();
+        return Tables.IngredientTable.instance();
     }
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;

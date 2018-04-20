@@ -15,7 +15,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
     public static final QuantityUnit MILLIGRAMS;
 
     static {
-        ColumnData<QuantityUnit> gramsData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
+        ColumnData<QuantityUnit> gramsData = new ColumnData<>(Tables.QuantityUnitTable.instance());
         gramsData.putData(Columns.QuantityUnitCol.ID, 1L);
         gramsData.putData(NAME, "grams");
         gramsData.putData(ABBREVIATION, "g");
@@ -23,7 +23,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         gramsData.putData(IS_VOLUME_UNIT, false);
         GRAMS = new QuantityUnit(gramsData, true);
 
-        ColumnData<QuantityUnit> milsData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
+        ColumnData<QuantityUnit> milsData = new ColumnData<>(Tables.QuantityUnitTable.instance());
         milsData.putData(Columns.QuantityUnitCol.ID, 2L);
         gramsData.putData(NAME, "millilitres");
         gramsData.putData(ABBREVIATION, "ml");
@@ -31,7 +31,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         gramsData.putData(IS_VOLUME_UNIT, true);
         MILLILITRES = new QuantityUnit(milsData, true);
 
-        ColumnData<QuantityUnit> mgData = new ColumnData<>(Tables.QuantityUnitTable.getInstance());
+        ColumnData<QuantityUnit> mgData = new ColumnData<>(Tables.QuantityUnitTable.instance());
         mgData.putData(Columns.QuantityUnitCol.ID, 3L);
         mgData.putData(NAME, "milligrams");
         mgData.putData(ABBREVIATION, "mg");
@@ -47,7 +47,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
     @Override
     public Table<QuantityUnit> getTable() {
-        return Tables.QuantityUnitTable.getInstance();
+        return Tables.QuantityUnitTable.instance();
     }
 
     @NotNull

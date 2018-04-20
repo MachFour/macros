@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 /**
  * Created by max on 4/11/17.
  */
+// TODO do we need 'extends MacrosPersistable' on M?
 public interface Column<M extends MacrosPersistable, T> {
     static <M extends MacrosPersistable, T> Column<M, T> column(String str, MacrosType<T> t, boolean userEditable, boolean nullable) {
         return column(str, t, userEditable, nullable, (Supplier<T>) () -> null);

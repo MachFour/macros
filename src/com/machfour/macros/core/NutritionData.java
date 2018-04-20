@@ -99,7 +99,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
                 }
             }
         }
-        ColumnData<NutritionData> combinedDataMap = new ColumnData<>(Tables.NutritionDataTable.getInstance());
+        ColumnData<NutritionData> combinedDataMap = new ColumnData<>(Tables.NutritionDataTable.instance());
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             combinedDataMap.putData(col, sumData.get(col));
         }
@@ -142,7 +142,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @Override
     public Table<NutritionData> getTable() {
-        return Tables.NutritionDataTable.getInstance();
+        return Tables.NutritionDataTable.instance();
     }
 
     @NotNull

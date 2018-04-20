@@ -2,8 +2,11 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.data.*;
+import com.machfour.macros.data.Columns.*;
+import com.machfour.macros.data.Tables.*;
 import com.machfour.macros.util.DateStamp;
 import com.sun.istack.internal.NotNull;
+import org.sqlite.SQLiteDataSource;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -13,8 +16,9 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 
+// data source provided by Xerial library
+
 public class MacrosLinuxDatabase implements MacrosDataSource {
-    private static final String TAG = "MacrosDatabase";
     private static final Path INIT_SQL = Paths.get("/home/max/devel/macros/macros-db-create.sql");
     private static final Path TRIG_SQL = Paths.get("/home/max/devel/macros/macros-db-triggers.sql");
     private static final Path DATA_SQL = Paths.get("/home/max/devel/macros/macros-initial-data.sql");
@@ -22,10 +26,15 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     private static final PrintStream err = System.err;
     private static final String DB_LOCATION = "/home/max/devel/macros-java/sample.db";
     private static final Path DB_PATH = Paths.get(DB_LOCATION);
+
+    private final SQLiteDataSource dataSource;
+
     // singleton
     private static MacrosLinuxDatabase INSTANCE;
 
     private MacrosLinuxDatabase() {
+        dataSource = new SQLiteDataSource();
+        dataSource.setUrl("jdbc:sqlite:" + DB_PATH.toAbsolutePath());
     }
 
     public static MacrosLinuxDatabase getInstance() {
@@ -80,11 +89,11 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
     }
 
-    private static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:" + DB_PATH.toAbsolutePath());
+    private Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
-    private static boolean initDb() {
+    private boolean initDb() {
         try (Connection c = getConnection()) {
             List<String> initStatements = new ArrayList<>(3);
             initStatements.add(createStatements(Files.readAllLines(INIT_SQL)));
@@ -117,255 +126,165 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> boolean deleteObject(@NotNull M o) {
+    public <M extends MacrosPersistable<M>> int deleteObject(@NotNull M o) throws SQLException {
         return deleteById(o.getId(), o.getTable());
     }
 
-    private boolean deleteById(Long id, Table t) {
-        try (Connection c = getConnection()) {
-            try (Statement s = c.createStatement()) {
-                s.executeUpdate("DELETE FROM " + t.name() + " WHERE " + t.getIdColumn().sqlName() + " = " + id.toString());
-                return true;
-            }
-        } catch (SQLException e) {
-            err.println(e);
-            return false;
+    private int deleteById(Long id, Table t) throws SQLException {
+        try (Connection c = getConnection();
+             Statement s = c.createStatement()) {
+            s.executeUpdate("DELETE FROM " + t.name() + " WHERE " + t.getIdColumn().sqlName() + " = " + id.toString());
+            return 1;
         }
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> void deleteObjects(@NotNull List<M> objects) {
+    // TODO make this the general one
+    public <M extends MacrosPersistable<M>> int deleteObjects(@NotNull List<M> objects) throws SQLException {
+        int deleted = 0;
         if (!objects.isEmpty()) {
             Table t = objects.get(0).getTable();
             for (M object : objects) {
                 if (object != null) {
-                    deleteById(object.getId(), t);
+                    deleted += deleteById(object.getId(), t);
                 }
             }
         }
+        return deleted;
     }
 
     @Override
-    public List<Long> foodSearch(String keyword) {
-        List<Column<Food, ?>> columns = Arrays.asList(
-            Columns.FoodCol.INDEX_NAME
+    public List<Long> foodSearch(String keyword) throws SQLException {
+        List<Column<Food, String>> columns = Arrays.asList(
+                Columns.FoodCol.INDEX_NAME
             , Columns.FoodCol.NAME
             , Columns.FoodCol.COMMERCIAL_NAME
             , Columns.FoodCol.BRAND
         );
-        return prefixSearch(Tables.FoodTable.getInstance(), columns, keyword);
+        return prefixSearch(Tables.FoodTable.instance(), columns, keyword);
     }
 
-    public List<Long> prefixSearch(Table conv, List<Column<Food, ?>> cols, String keyword) {
-        int numCols = cols.size();
-        if (numCols == 0) {
-            return Collections.emptyList();
-        }
-
-        SQLiteDatabase db = helper.getReadableDatabase();
-        String[] projection = new String[]{conv.getIdColumnName()};
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(conv.getTableName());
-
-        StringBuilder selection = new StringBuilder();
-        for (int i = 0; i < numCols - 1; ++i) {
-            selection.append(cols.get(i));
-            selection.append(" LIKE ?");
-            selection.append(" OR ");
-        }
-        selection.append(cols.get(numCols - 1));
-        selection.append(" LIKE ?");
-
-        // have to append the percent sign for LIKE globbing to the actual argument string
-        String keywordGlob = keyword + "%";
-        String[] selectionArgs = Collections.nCopies(numCols, keywordGlob).toArray(new String[numCols]);
-
-        Cursor c = queryBuilder.query(db, projection, selection.toString(), selectionArgs,
-            null, null, null);
-
-        List<Long> ids;
-        if (c != null) {
-            ids = new ArrayList<>(c.getCount());
-            if (c.getCount() > 0) {
-                for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-                    // column at index zero is the ID, since no other results are returned
-                    ids.add(c.getLong(0));
+    public <M extends MacrosPersistable> List<Long> prefixSearch(
+            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
+        List<Long> resultList = new ArrayList<>(0);
+        if (!cols.isEmpty()) {
+            // TODO copy-pasted from SelectColumn... probably needs refactoring
+            try (Connection c = getConnection();
+                 PreparedStatement p = c.prepareStatement(SqlUtils.selectLikeTemplate(t, t.getIdColumn(), cols))) {
+                // have to append the percent sign for LIKE globbing to the actual argument string
+                String keywordGlob = keyword + "%";
+                List<String> bindString = Collections.nCopies(cols.size(), keywordGlob);
+                SqlUtils.bindObjects(p, bindString);
+                try (ResultSet rs = p.executeQuery()) {
+                    for (rs.first(); rs.next(); rs.afterLast()) {
+                        resultList.add(rs.getLong(0));
+                    }
                 }
             }
-            c.close();
-        } else {
-            ids = Collections.emptyList();
         }
-
-        db.close();
-        return ids;
-
-
+        return resultList;
     }
 
     @Override
-    public List<Food> getAllFoods() {
-        List<Serving> allServings = getRawServingsById(new ArrayList<Long>());
-        return getFoodsById(new ArrayList<Long>(0));
+    public List<Food> getAllFoods() throws SQLException {
+        List<Serving> allServings = getRawObjectsByIds(ServingTable.instance(), new ArrayList<>());
+        // TODO
+        return getFoodsById(new ArrayList<>(0));
     }
 
-    public List<Food> getFoodsById(@NotNull List<Long> foodIds) {
-        List<Food> foods = getRawFoodsById(foodIds);
-        Map<Long, Food> foodMap = new HashMap<>(foods.size(), 1);
-
-        for (Food f : foods) {
-            foodMap.put(f.getId(), f);
-        }
-
-        applyServingsToRawFoods(foodMap);
-
+    public List<Food> getFoodsById(@NotNull List<Long> foodIds) throws SQLException {
+        List<Food> foods = getRawObjectsByIds(FoodTable.instance(), foodIds);
+        Map<Long, Food> idMap = SqlUtils.makeIdMap(foods);
+        applyServingsToRawFoods(idMap);
+        applyNutritionDataToRawFoods(idMap);
+        // TODO FoodType, FoodCategory
         return foods;
     }
 
-    private void applyServingsToRawFoods(Map<Long, Food> foodsByIds) {
-        List<Serving> servings = getRawServingsForFoods(foodsByIds.keySet());
-
+    private void applyServingsToRawFoods(Map<Long, Food> foodMap) throws SQLException {
+        List<Long> foodIds = new ArrayList<>(foodMap.keySet());
+        List<Long> servingIds = selectColumn(ServingTable.instance(), ServingCol.ID, ServingCol.FOOD_ID, foodIds);
+        List<Serving> servings = getRawObjectsByKeys(ServingTable.instance(), ServingCol.ID, servingIds);
         for (Serving s : servings) {
             // this query should never fail, due to database constraints
-            Food f = foodsByIds.get(s.getFoodId());
+            Food f = foodMap.get(s.getFoodId());
             s.setFood(f);
             f.addServing(s);
         }
     }
 
-    private List<Serving> getRawServingsForFoods(Collection<Long> foodIds) {
-        List<Long> servingIds = getServingIdsForFoods(foodIds);
-        if (!servingIds.isEmpty()) {
-            return getRawServingsById(servingIds);
-        } else {
-            return Collections.emptyList();
+    private void applyNutritionDataToRawFoods(Map<Long, Food> foodMap) throws SQLException {
+        List<Long> foodIds = new ArrayList<>(foodMap.keySet());
+        List<Long> nutritionDataIds = selectColumn(NutritionDataTable.instance(), NutritionDataCol.ID, NutritionDataCol.FOOD_ID, foodIds);
+        List<NutritionData> servings = getRawObjectsByKeys(NutritionDataTable.instance(), NutritionDataCol.ID, nutritionDataIds);
+        for (NutritionData nd : servings) {
+            // this query should never fail, due to database constraints
+            Food f = foodMap.get(nd.getFoodId());
+            nd.setFood(f);
+            f.setNutritionData(nd);
         }
     }
 
-    private List<Long> getServingIdsForFoods(Collection<Long> foodIds) {
-        Log.d(TAG, "getServingIdsForFoods((" + foodIds + ")");
-        SQLiteDatabase db = helper.getReadableDatabase();
-        String[] projection = new String[]{Serving.Column.ID.str};
-        String selection = buildWhereString(Serving.Column.FOOD_ID.str, foodIds);
-        String table = Serving.CONVERTER.getTableName();
+    @Override
+    public Food getFoodById(Long id) throws SQLException {
+        List<Food> resultFood = getFoodsById(SqlUtils.toList(id));
+        return resultFood.isEmpty() ? null : resultFood.get(0);
+    }
 
-        List<Long> servingIds = new ArrayList<>(0);
+    private <M extends MacrosPersistable, S, T> List<T> selectColumn(
+            Table<M> t, Column<M, T> selectColumn, Column<M, S> whereColumn, S whereValue) throws SQLException {
+        return selectColumn(t, selectColumn, whereColumn, whereValue, false);
+    }
 
-        if (foodIds.size() > 0) {
-            Cursor c = db.query(table, projection, selection, null, null, null, null);
-            if (c != null) {
-                servingIds = new ArrayList<>(c.getCount());
-                if (c.getCount() > 0) {
-                    for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-                        // column at index zero is the ID, since no other results are returned
-                        servingIds.add(c.getLong(0));
-                    }
+    private <M extends MacrosPersistable, S, T> List<T> selectColumn(
+            Table<M> t, Column<M, T> selectColumn, Column<M, S> whereColumn, S whereValue, boolean distinct) throws SQLException {
+        return selectColumn(t, selectColumn, whereColumn, SqlUtils.toList(whereValue), distinct);
+    }
+
+    private <M extends MacrosPersistable, S, T> List<T> selectColumn(
+            Table<M> t, Column<M, T> selectColumn, Column<M, S> whereColumn, List<S> whereValues) throws SQLException {
+        return selectColumn(t, selectColumn, whereColumn, whereValues, false);
+    }
+
+    // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
+    // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
+    private <M extends MacrosPersistable, S, T> List<T> selectColumn(
+            Table<M> t, Column<M, T> selectColumn, Column<M, S> whereColumn, List<S> whereValues, boolean distinct) throws SQLException {
+        List<T> resultList = new ArrayList<>(0);
+        try (Connection c = getConnection();
+             PreparedStatement p = c.prepareStatement(SqlUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
+            SqlUtils.bindObjects(p, whereValues);
+            try (ResultSet rs = p.executeQuery()) {
+                for (rs.first(); rs.next(); rs.afterLast()) {
+                    resultList.add(SqlUtils.rawToTyped(rs.getObject(0), selectColumn.type()));
                 }
-                c.close();
             }
-        }
 
-        db.close();
-        return servingIds;
-    }
-
-    // Makes food objects, filtering by the list of IDs. If foodIds is empty,
-    // all foods will be returned.
-    private List<Food> getRawFoodsById(@NotNull List<Long> foodIds) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        String[] projection = Food.CONVERTER.getColumns();
-        queryBuilder.setTables(Food.CONVERTER.getTableName());
-        if (foodIds.size() > 0) {
-            queryBuilder.appendWhere(buildWhereString(Food.CONVERTER.getIdColumnName(), foodIds));
         }
-        String orderBy = "lower(" + Food.Column.NAME + ") ASC";
-        Cursor c = queryBuilder.query(db, projection, null, null, null, null, orderBy);
-
-        List<Food> foods;
-        if (c != null) {
-            foods = cursorToRawFoods(c, projection.length);
-            c.close();
-        } else {
-            foods = new ArrayList<>();
-        }
-
-        return foods;
-    }
-
-    // if servingIds is empty, returns all servings
-    // Don't need to return servings explicitly; they are discoverable via food.getServings()
-    // They can also be cached by adding them this way
-    private List<Serving> getRawServingsById(List<Long> servingIds) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        MacrosPersistable.Converter conv = Serving.CONVERTER;
-        String[] projection = conv.getColumns();
-        String table = conv.getTableName();
-        String selection = servingIds.isEmpty() ? null : buildWhereString(conv.getIdColumnName(), servingIds);
-        Cursor c = db.query(table, projection, selection, null, null, null, null);
-        List<Serving> resultServings;
-        if (c != null) {
-            resultServings = cursorToRawServings(c, projection.length);
-            c.close();
-        } else {
-            resultServings = Collections.emptyList();
-        }
-        db.close();
-        return resultServings;
-    }
-
-    // ids must not be null
-    private String buildWhereString(String idColumnName, Collection<Long> ids) {
-        StringBuilder whereString = new StringBuilder();
-        List<String> idStrings = new ArrayList<>(ids.size());
-        for (Long id : ids) {
-            idStrings.add(id.toString());
-        }
-        if (ids.size() > 1) {
-            whereString.append(idColumnName)
-                .append(" IN (")
-                .append(String.join(",", idStrings))
-                .append(")");
-        } else if (ids.size() == 1) {
-            whereString.append(idColumnName).append(" = ").append(ids.iterator().next());
-        }
-        return whereString.toString();
+        return resultList;
     }
 
     @Override
-    public Food getFoodById(Long id) {
-        Food f = getRawFoodById(id);
-        if (f != null) {
-            Map<Long, Food> foodMap = new HashMap<>(1, 1);
-            foodMap.put(f.getId(), f);
-            applyServingsToRawFoods(foodMap);
-        }
-
-        return f;
+    public Food getFoodByIndexName(String indexName) throws SQLException {
+        Long id = getFoodIdForIndexName(indexName);
+        return id == null ? null : getFoodById(id);
     }
 
-    @Override
-    public Food getFoodByIndexName(String indexName) {
-        long id = getFoodIdForIndexName(indexName);
-        return (id == MacrosPersistable.NO_ID) ? null : getFoodById(id);
-    }
-
-    private long getFoodIdForIndexName(String indexName) {
-        String selection = Columns.FoodCol.INDEX_NAME.sqlName();
-        String[] selectionArgs = new String[]{indexName};
-        Food f = getRawFoodByKey(selection, selectionArgs);
+    private Long getFoodIdForIndexName(String indexName) throws SQLException {
+        Table<Food> table = Tables.FoodTable.instance();
+        List<Long> idList = selectColumn(FoodTable.instance(), FoodCol.ID, FoodCol.INDEX_NAME, indexName);
         // a bit redundant since we only need the ID but whatever
-        return f == null ? MacrosPersistable.NO_ID : f.getId();
+        return idList.isEmpty() ? null : idList.get(0);
     }
 
     @Override
-    public Meal getMealById(Long id) {
+    public Meal getMealById(Long id) throws SQLException {
         List<Meal> resultMeals = getMealsById(Collections.singletonList(id));
         return (!resultMeals.isEmpty()) ? resultMeals.get(0) : null;
     }
 
     @Override
-    public List<Meal> getMealsById(@NotNull List<Long> mealIds) {
+    public List<Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
         if (mealIds.isEmpty()) {
             return new ArrayList<>(0);
         }
@@ -389,178 +308,108 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return meals;
     }
 
-    private List<Long> getFoodIdsForMeals(List<Long> mealIds) {
-        Log.d(TAG, "getFoodIdsForMeals(" + mealIds + ")");
-        SQLiteDatabase db = helper.getReadableDatabase();
-        String[] projection = new String[]{FoodPortion.Column.FOOD_ID.str};
-        String selection = buildWhereString(FoodPortion.Column.MEAL_ID.str, mealIds);
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables(FoodPortion.CONVERTER.getTableName());
-        qb.setDistinct(true);
-
-        List<Long> foodIds = new ArrayList<>(0);
-
-        if (mealIds.size() > 0) {
-            Cursor c = qb.query(db, projection, selection, null, null, null, null);
-            if (c != null) {
-                foodIds = new ArrayList<>(c.getCount());
-                if (c.getCount() > 0) {
-                    for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-                        // column at index zero is the ID, since no other results are returned
-                        foodIds.add(c.getLong(0));
-                    }
-                }
-                c.close();
-            }
-        }
-
-        db.close();
-        return foodIds;
+    private List<Long> getFoodIdsForMeals(List<Long> mealIds) throws SQLException {
+        return selectColumn(FoodPortionTable.instance(), FoodPortionCol.FOOD_ID, FoodPortionCol.MEAL_ID, mealIds, true);
     }
 
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
-    private List<Meal> getRawMealsById(@NotNull List<Long> mealIds) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-
-        String[] projection = Meal.CONVERTER.getColumns();
-        queryBuilder.setTables(Meal.CONVERTER.getTableName());
-        if (mealIds.size() > 0) {
-            queryBuilder.appendWhere(buildWhereString(Meal.CONVERTER.getIdColumnName(), mealIds));
-        }
-        Cursor c = queryBuilder.query(db, projection, null, null, null, null, null);
-
-        List<Meal> meals;
-        if (c != null) {
-            meals = cursorToRawMeals(c, projection.length);
-            c.close();
-        } else {
-            meals = new ArrayList<>();
-        }
-
-        return meals;
+    private List<Meal> getRawMealsById(@NotNull List<Long> mealIds) throws SQLException {
+        return getRawObjectsByKeys(MealTable.instance(), MealCol.ID, mealIds);
     }
 
     /*
      * The map must map the meal ID to the (already created) FoodTable objects needed by FoodPortions
      * in that meal.
      */
-    private void applyFoodPortionsToRawMeal(Meal meal, Map<Long, Food> foodMap) {
-        if (meal == null) {
-            return;
-        }
-
-        SQLiteDatabase db = helper.getReadableDatabase();
-
-        String table = FoodPortion.CONVERTER.getTableName();
-        String[] projection = FoodPortion.CONVERTER.getColumns();
-        String selection = FoodPortion.Column.MEAL_ID + " = " + meal.getId();
-        Cursor c = db.query(table, projection, selection, null, null, null, null);
-
-        if (c != null) {
-            List<FoodPortion> resultPortions = cursorToRawFoodPortions(c, projection.length);
-            for (FoodPortion portion : resultPortions) {
-                Food foodForPortion = foodMap.get(portion.getFoodId());
-                portion.setFood(foodForPortion);
-                long servingId = portion.getServingId();
-                if (servingId != MacrosPersistable.NO_ID) {
-                    Serving serving = foodForPortion.getServingById(servingId);
-                    if (serving != null) {
-                        portion.setServing(serving);
-                    } else {
-                        // oh no!
-                        throw new IllegalStateException("FoodPortionTable's serving not found in food!");
-                    }
+    private void applyFoodPortionsToRawMeal(Meal meal, Map<Long, Food> foodMap) throws SQLException {
+        List<Long> foodPortionIds = selectColumn(FoodPortionTable.instance(), FoodPortionCol.ID, FoodPortionCol.MEAL_ID, meal.getId());
+        if (!foodPortionIds.isEmpty()) {
+            List<FoodPortion> foodPortions = getRawObjectsByIds(FoodPortionTable.instance(), foodPortionIds);
+            for (FoodPortion fp : foodPortions) {
+                Food portionFood = foodMap.get(fp.getFoodId());
+                fp.setFood(portionFood);
+                Long servingId = fp.getServingId();
+                if (servingId != null) {
+                    Serving serving = portionFood.getServingById(servingId);
+                    assert serving != null : "Serving specified by FoodPortion not found in its food!";
+                    fp.setServing(serving);
                 }
-                portion.setMeal(meal);
-                meal.addFoodPortion(portion);
+                fp.setMeal(meal);
+                meal.addFoodPortion(fp);
             }
-            c.close();
         }
-
-        db.close();
     }
 
     @Override
-    public List<Meal> getMealsForDay(DateStamp day) {
+    public List<Meal> getMealsForDay(DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(day);
         return getMealsById(mealIds);
     }
 
     @Override
-    public List<Long> getMealIdsForDay(@NotNull DateStamp day) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        String table = Meal.CONVERTER.getTableName();
-        String[] projection = new String[]{Meal.CONVERTER.getIdColumnName()};
-
-        String selection =
-            "DATE(" + Meal.Column.DAY + ") = DATE ( ? )";
-        String[] selectionArgs = {day.toString()};
-        Cursor c = db.query(table, projection, selection, selectionArgs, null, null, null);
-
-        List<Long> mealIds;
-        if (c != null) {
-            mealIds = new ArrayList<>(c.getCount());
-            if (c.getCount() > 0) {
-                for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-                    // column at index zero is the ID, since no other results are returned
-                    mealIds.add(c.getLong(0));
-                }
-            }
-            c.close();
-        } else {
-            mealIds = new ArrayList<>();
-        }
-
-        db.close();
-        return mealIds;
+    public List<Long> getMealIdsForDay(@NotNull DateStamp day) throws SQLException {
+        return selectColumn(MealTable.instance(), MealCol.ID, MealCol.DAY, Collections.singletonList(day));
+        // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
     }
 
-    private Food getRawFoodById(@NotNull Long id) throws SQLException {
-        return getRawObjectByKey(Tables.FoodTable.getInstance(), Columns.FoodCol.ID, id);
+    private <M extends MacrosPersistable> M getRawObjectById(Table<M> t, Long id) throws SQLException {
+        return getRawObjectByKey(t, t.getIdColumn(), id);
+    }
+
+    private <M extends MacrosPersistable> List<M> getRawObjectsByIds(Table<M> t, List<Long> ids) throws SQLException {
+        return getRawObjectsByKeys(t, t.getIdColumn(), ids);
+    }
+
+    // Retrives an object by a key column, and constructs it without any FK object instances.
+    // Returns null if no row in the corresponding table had a key with the given value
+    private <M extends MacrosPersistable, T> List<M> getRawObjectsByKeys(Table<M> t, Column<M, T> keyCol, List<T> keys) throws SQLException {
+        List<M> objects = new ArrayList<>(keys.size());
+        try (Connection c = getConnection();
+             PreparedStatement p = c.prepareStatement(SqlUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
+            SqlUtils.bindObjects(p, keys);
+            try (ResultSet rs = p.executeQuery()) {
+                for (rs.first(); !rs.isAfterLast(); rs.next()) {
+                    ColumnData<M> container = new ColumnData<>(t);
+                    for (Column<M, ?> col : t.columns()) {
+                        SqlUtils.rawToColumnData(container, col, rs.getObject(col.sqlName()));
+                    }
+                    objects.add(t.construct(container, true));
+                }
+            }
+        }
+        return objects;
     }
 
     private <M extends MacrosPersistable, T> M getRawObjectByKey(Table<M> t, Column<M, T> keyCol, T key) throws SQLException {
-        ColumnData<M> container = new ColumnData<>(t);
-        try (Connection c = getConnection();
-             PreparedStatement p = c.prepareStatement(SqlUtils.selectTemplate(t, t.columns(), keyCol))) {
-            SqlUtils.bindObjects(p, key);
-            try (ResultSet rs = p.executeQuery()) {
-                for (Column<M, ?> col : t.columns()) {
-                    SqlUtils.addRawToColumnData(container, col, rs.getObject(col.sqlName()));
+        List<M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
+        assert returned.size() <= 1;
+        return returned.isEmpty() ? null : returned.get(0);
+    }
+
+    @Override
+    // objects list must not contain nulls
+    public <M extends MacrosPersistable<M>> int saveObjects(@NotNull List<M> objects) throws SQLException {
+        if (objects.isEmpty()) {
+            return 0;
+        }
+        int saved = 0;
+        Table<M> table = objects.get(0).getTable();
+        try (Connection c = getConnection()) {
+            for (M object : objects) {
+                if (object.getId().equals(MacrosPersistable.NO_ID)) {
+                    saved += insert(c, table, object.getAllData(), false);
+                } else {
+                    saved += update(c, table, object.getAllData(), table.getIdColumn());
                 }
             }
         }
-        return t.construct(container, true);
-    }
-
-    private List<Long> getServingIdsForFoods(@NotNull Long foodId) {
-        return getServingIdsForFoods(Collections.singletonList(foodId));
+        return saved;
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> void saveObjects(@NotNull List<M> objects) {
-        for (M object : objects) {
-            if (object != null) {
-                saveObject(object);
-            }
-        }
+    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
+        return saveObjects(SqlUtils.toList(o));
     }
 
-    @Override
-    public <M extends MacrosPersistable<M>> boolean saveObject(@NotNull M o) {
-        Table<M> t = o.getTable();
-        Long id = o.getId();
-        try (Connection c = getConnection()) {
-            if (id == MacrosPersistable.NO_ID) {
-                return insert(c, t, o.getAllData(), false) == 1;
-            } else {
-                return update(c, t, o.getAllData(), t.getIdColumn()) == 1;
-            }
-        } catch (SQLException e) {
-            err.println(e);
-            return false;
-        }
-    }
 }

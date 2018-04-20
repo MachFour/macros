@@ -12,7 +12,7 @@ public class AttributeMap extends MacrosEntity<AttributeMap> {
 
     @Override
     public Table<AttributeMap> getTable() {
-        return Tables.AttributeMapTable.getInstance();
+        return Tables.AttributeMapTable.instance();
     }
 
 }

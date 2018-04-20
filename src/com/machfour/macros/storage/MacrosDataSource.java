@@ -5,23 +5,24 @@ import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.core.Meal;
 import com.machfour.macros.util.DateStamp;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface MacrosDataSource {
 
-    List<Long> foodSearch(String keyword);
+    List<Long> foodSearch(String keyword) throws SQLException;
 
-    List<Food> getAllFoods();
+    List<Food> getAllFoods() throws SQLException;
 
-    Food getFoodById(Long id);
+    Food getFoodById(Long id) throws SQLException;
 
-    Food getFoodByIndexName(String indexName);
+    Food getFoodByIndexName(String indexName) throws SQLException;
 
-    List<Food> getFoodsById(List<Long> foodIds);
+    List<Food> getFoodsById(List<Long> foodIds) throws SQLException;
 
-    Meal getMealById(Long id);
+    Meal getMealById(Long id) throws SQLException;
 
-    List<Long> getMealIdsForDay(DateStamp day);
+    List<Long> getMealIdsForDay(DateStamp day) throws SQLException;
 
     /* These functions construct objects for all necessary entities that match the query,
      * as well as all other entities referenced by them.
@@ -29,11 +30,11 @@ public interface MacrosDataSource {
      * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
      * It's probably worth caching the results of these!
      */
-    List<Meal> getMealsById(List<Long> mealIds);
+    List<Meal> getMealsById(List<Long> mealIds) throws SQLException;
 
-    List<Meal> getMealsForDay(DateStamp day);
+    List<Meal> getMealsForDay(DateStamp day) throws SQLException;
 
-    <M extends MacrosPersistable<M>> boolean saveObject(M object);
+    <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
 
     /* These functions save the objects given to them into the database, via INSERT or UPDATE.
      * The caller should ensure that objects with an id of null correspond to new entries
@@ -42,13 +43,13 @@ public interface MacrosDataSource {
      *
      * Any data that originated from the user should already have been validated
      */
-    // Do we really need the list methods? The user will probably only edit one object at a time;
+    // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    <M extends MacrosPersistable<M>> void saveObjects(List<M> objects);
+    <M extends MacrosPersistable<M>> int saveObjects(List<M> objects) throws SQLException;
 
-    <M extends MacrosPersistable<M>> boolean deleteObject(M object);
+    <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException;
 
-    <M extends MacrosPersistable<M>> void deleteObjects(List<M> objects);
+    <M extends MacrosPersistable<M>> int deleteObjects(List<M> objects) throws SQLException;
 
     /*
      * FoodTable search done by substring matching the searchString against any of the given columns

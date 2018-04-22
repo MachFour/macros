@@ -132,12 +132,20 @@ public class MacrosDataCache implements MacrosDataSource {
         return upstream.saveObject(object);
     }
 
+
     @Override
-    public <M extends MacrosPersistable<M>> int saveObjects(List<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int updateObjects(List<M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
-        return upstream.saveObjects(objects);
+        return upstream.updateObjects(objects);
+    }
+    @Override
+    public <M extends MacrosPersistable<M>> int insertObjects(List<M> objects, boolean withId) throws SQLException {
+        for (M object : objects) {
+            onDbWrite(object);
+        }
+        return upstream.updateObjects(objects);
     }
 
     private <M extends MacrosPersistable<M>> void onDbWrite(M object) {

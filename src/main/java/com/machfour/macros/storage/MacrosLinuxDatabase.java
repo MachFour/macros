@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 
+import static com.machfour.macros.storage.SqlUtils.toList;
+
 // data source provided by Xerial library
 
 public class MacrosLinuxDatabase implements MacrosDataSource {
@@ -61,67 +63,37 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return String.join(" ", trimmedAndDecommented);
     }
 
-    private static boolean runStatements(Connection c, List<String> sqlStatements) {
+    private static void runStatements(Connection c, List<String> sqlStatements) throws SQLException {
         try (Statement s = c.createStatement()) {
             for (String sql : sqlStatements) {
-                out.println("Executing statement: '" + sql + "'");
                 s.executeUpdate(sql);
             }
-        } catch (SQLException e) {
-            // if the error message is "out of memory",
-            // it probably means no database file is found
-            System.err.println(e.getMessage());
-            return false;
         }
-        return true;
     }
 
 
-    private static boolean removeDb() {
-        try {
-            if (Files.exists(DB_PATH)) {
-                Files.delete(DB_PATH);
-            }
-            return true;
-        } catch (IOException e) {
-            err.println("Could not delete database: " + e.getMessage());
-            return false;
+    public boolean dbExists() {
+        return Files.exists(DB_PATH);
+    }
+
+    public boolean removeDb() throws IOException {
+        if (Files.exists(DB_PATH)) {
+            Files.delete(DB_PATH);
         }
+        return true;
     }
 
     private Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
-    private boolean initDb() {
+    public void initDb() throws SQLException, IOException {
         try (Connection c = getConnection()) {
             List<String> initStatements = new ArrayList<>(3);
             initStatements.add(createStatements(Files.readAllLines(INIT_SQL)));
             initStatements.add(createStatements(Files.readAllLines(TRIG_SQL)));
             initStatements.add(createStatements(Files.readAllLines(DATA_SQL)));
-            return runStatements(c, initStatements);
-        } catch (IOException | SQLException e) {
-            err.println(e);
-            return false;
-        }
-    }
-
-    private static <M extends MacrosPersistable> int insert(Connection c, Table<M> t, ColumnData<M> values, boolean withId) throws SQLException {
-        List<Column<M, ?>> columnsToInsert = t.columns();
-        if (!withId) {
-            columnsToInsert.remove(t.getIdColumn());
-        }
-        try (PreparedStatement p = c.prepareStatement(SqlUtils.insertTemplate(t, columnsToInsert))) {
-            SqlUtils.bindData(p, values, columnsToInsert);
-            return p.executeUpdate();
-        }
-    }
-
-    private static <M extends MacrosPersistable, T> int update(Connection c, Table<M> t, ColumnData<M> values, Column<M, T> keyCol) throws SQLException {
-        T key = values.unboxColumn(keyCol);
-        try (PreparedStatement p = c.prepareStatement(SqlUtils.updateTemplate(t, t.columns(), keyCol))) {
-            SqlUtils.bindData(p, values, t.columns(), key);
-            return p.executeUpdate();
+            runStatements(c, initStatements);
         }
     }
 
@@ -130,10 +102,11 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return deleteById(o.getId(), o.getTable());
     }
 
-    private int deleteById(Long id, Table t) throws SQLException {
+    private <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException {
         try (Connection c = getConnection();
-             Statement s = c.createStatement()) {
-            s.executeUpdate("DELETE FROM " + t.name() + " WHERE " + t.getIdColumn().sqlName() + " = " + id.toString());
+                PreparedStatement s = c.prepareStatement(SqlUtils.deleteTemplate(t, t.getIdColumn()))) {
+            SqlUtils.bindObjects(s, toList(id));
+            s.executeUpdate();
             return 1;
         }
     }
@@ -227,7 +200,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     @Override
     public Food getFoodById(Long id) throws SQLException {
-        List<Food> resultFood = getFoodsById(SqlUtils.toList(id));
+        List<Food> resultFood = getFoodsById(toList(id));
         return resultFood.isEmpty() ? null : resultFood.get(0);
     }
 
@@ -238,7 +211,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     private <M extends MacrosPersistable, S, T> List<T> selectColumn(
             Table<M> t, Column<M, T> selectColumn, Column<M, S> whereColumn, S whereValue, boolean distinct) throws SQLException {
-        return selectColumn(t, selectColumn, whereColumn, SqlUtils.toList(whereValue), distinct);
+        return selectColumn(t, selectColumn, whereColumn, toList(whereValue), distinct);
     }
 
     private <M extends MacrosPersistable, S, T> List<T> selectColumn(
@@ -271,7 +244,6 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
     private Long getFoodIdForIndexName(String indexName) throws SQLException {
-        Table<Food> table = Tables.FoodTable.instance();
         List<Long> idList = selectColumn(FoodTable.instance(), FoodCol.ID, FoodCol.INDEX_NAME, indexName);
         // a bit redundant since we only need the ID but whatever
         return idList.isEmpty() ? null : idList.get(0);
@@ -388,28 +360,67 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
     @Override
-    // objects list must not contain nulls
-    public <M extends MacrosPersistable<M>> int saveObjects(@NotNull List<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int insertObjects(@NotNull List<M> objects, boolean withId) throws SQLException {
+        if (objects.isEmpty()) {
+            return 0;
+        }
+        int saved = 0;
+        Table<M> table = objects.get(0).getTable();
+        List<Column<M, ?>> columnsToInsert = table.columns();
+        if (!withId) {
+            columnsToInsert.remove(table.getIdColumn());
+        } // else inserting for the first time, but it has an ID that we want to keep intact
+        try (Connection c = getConnection()) {
+            c.setAutoCommit(false);
+            try (PreparedStatement p = c.prepareStatement(SqlUtils.insertTemplate(table, columnsToInsert))) {
+                for (M object : objects) {
+                    SqlUtils.bindData(p, object.getAllData(), columnsToInsert);
+                    saved += p.executeUpdate();
+                    p.clearParameters();
+                }
+            }
+            c.commit();
+            c.setAutoCommit(true);
+        }
+        return saved;
+    }
+
+    // Note that if the id is not found in the database, nothing will be inserted
+    @Override
+    public <M extends MacrosPersistable<M>> int updateObjects(@NotNull List<M> objects) throws SQLException {
         if (objects.isEmpty()) {
             return 0;
         }
         int saved = 0;
         Table<M> table = objects.get(0).getTable();
         try (Connection c = getConnection()) {
-            for (M object : objects) {
-                if (object.getId().equals(MacrosPersistable.NO_ID)) {
-                    saved += insert(c, table, object.getAllData(), false);
-                } else {
-                    saved += update(c, table, object.getAllData(), table.getIdColumn());
+            c.setAutoCommit(false);
+            try (PreparedStatement p = c.prepareStatement(SqlUtils.updateTemplate(table, table.columns(), table.getIdColumn()))) {
+                for (M object : objects) {
+                    SqlUtils.bindData(p, object.getAllData(), table.columns(), object.getId());
+                    saved += p.executeUpdate();
+                    p.clearParameters();
                 }
             }
+            c.commit();
+            c.setAutoCommit(true);
         }
         return saved;
     }
 
-    @Override
-    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
-        return saveObjects(SqlUtils.toList(o));
+    public <M extends MacrosPersistable> int removeAll(Table<M> t) throws SQLException {
+        try (Connection c = getConnection();
+                PreparedStatement p = c.prepareStatement(SqlUtils.deleteTemplate(t))) {
+            return p.executeUpdate();
+        }
     }
 
+    @Override
+    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
+        if (o.isFromDb()) {
+            return updateObjects(toList(o));
+        } else {
+            return insertObjects(toList(o), !o.getId().equals(MacrosPersistable.NO_ID));
+        }
+    }
 }

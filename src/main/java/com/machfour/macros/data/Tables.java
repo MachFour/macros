@@ -78,7 +78,7 @@ public class Tables {
     }
 
     public final static class QuantityUnitTable extends BaseTable<QuantityUnit> {
-        private static final String TABLE_NAME = "QuantityUnitTable";
+        private static final String TABLE_NAME = "QuantityUnit";
         private static final QuantityUnitTable INSTANCE = new QuantityUnitTable();
 
         QuantityUnitTable() {
@@ -95,7 +95,7 @@ public class Tables {
     }
 
     public final static class FoodTable extends BaseTable<Food> {
-        private static final String TABLE_NAME = "FoodTable";
+        private static final String TABLE_NAME = "Food";
         private static final FoodTable INSTANCE = new FoodTable();
 
         FoodTable() {
@@ -112,7 +112,7 @@ public class Tables {
     }
 
     public final static class ServingTable extends BaseTable<Serving> {
-        private static final String TABLE_NAME = "ServingTable";
+        private static final String TABLE_NAME = "Serving";
         private static final ServingTable INSTANCE = new ServingTable();
 
         ServingTable() {
@@ -129,7 +129,7 @@ public class Tables {
     }
 
     public final static class FoodPortionTable extends BaseTable<FoodPortion> {
-        private static final String TABLE_NAME = "FoodPortionTable";
+        private static final String TABLE_NAME = "FoodPortion";
         private static final FoodPortionTable INSTANCE = new FoodPortionTable();
 
         FoodPortionTable() {
@@ -146,7 +146,7 @@ public class Tables {
     }
 
     public final static class MealTable extends BaseTable<Meal> {
-        private static final String TABLE_NAME = "MealTable";
+        private static final String TABLE_NAME = "Meal";
         private static final MealTable INSTANCE = new MealTable();
 
         MealTable() {
@@ -163,7 +163,7 @@ public class Tables {
     }
 
     public final static class FoodCategoryTable extends BaseTable<FoodCategory> {
-        private static final String TABLE_NAME = "FoodCategoryTable";
+        private static final String TABLE_NAME = "FoodCategory";
         private static final FoodCategoryTable INSTANCE = new FoodCategoryTable();
 
         FoodCategoryTable() {
@@ -180,7 +180,7 @@ public class Tables {
     }
 
     public final static class MealDescriptionTable extends BaseTable<MealDescription> {
-        private static final String TABLE_NAME = "MealDescriptionTable";
+        private static final String TABLE_NAME = "MealDescription";
         private static final MealDescriptionTable INSTANCE = new MealDescriptionTable();
 
         MealDescriptionTable() {
@@ -197,7 +197,7 @@ public class Tables {
     }
 
     public final static class IngredientTable extends BaseTable<Ingredient> {
-        private static final String TABLE_NAME = "IngredientTable";
+        private static final String TABLE_NAME = "Ingredient";
         private static final IngredientTable INSTANCE = new IngredientTable();
 
         IngredientTable() {
@@ -214,7 +214,7 @@ public class Tables {
     }
 
     public final static class RegularMealTable extends BaseTable<RegularMeal> {
-        private static final String TABLE_NAME = "RegularMealTable";
+        private static final String TABLE_NAME = "RegularMeal";
         private static final RegularMealTable INSTANCE = new RegularMealTable();
 
         RegularMealTable() {
@@ -231,7 +231,7 @@ public class Tables {
     }
 
     public final static class NutritionDataTable extends BaseTable<NutritionData> {
-        private static final String TABLE_NAME = "NutritionDataTable";
+        private static final String TABLE_NAME = "NutritionData";
         private static final NutritionDataTable INSTANCE = new NutritionDataTable();
 
         NutritionDataTable() {
@@ -248,7 +248,7 @@ public class Tables {
     }
 
     public final static class FoodAttributeTable extends BaseTable<FoodAttribute> {
-        private static final String TABLE_NAME = "FoodAttributeTable";
+        private static final String TABLE_NAME = "FoodAttribute";
         private static final FoodAttributeTable INSTANCE = new FoodAttributeTable();
 
         FoodAttributeTable() {
@@ -265,7 +265,7 @@ public class Tables {
     }
 
     public final static class AttributeMapTable extends BaseTable<AttributeMap> {
-        private static final String TABLE_NAME = "AttributeMapTable";
+        private static final String TABLE_NAME = "AttributeMap";
         private static final AttributeMapTable INSTANCE = new AttributeMapTable();
 
         AttributeMapTable() {

@@ -67,6 +67,8 @@ class SqlUtils {
         return join(sep, questionIterator);
     }
 
+    // " WHERE column1 = ?"
+    // " WHERE column1 IN (?, ?, ?, ...?)"
     // if nkeys is <= 0, no where string will be formed, so all objects will be returned.
     private static String makeWhereString(Column<?, ?> whereColumn, int nValues) {
         assert nValues >= 0;
@@ -86,7 +88,16 @@ class SqlUtils {
         }
     }
 
-    // "WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
+    static <M extends MacrosPersistable> String deleteTemplate(Table<M> table, Column<M, ?> whereColumn) {
+        return deleteTemplate(table) + makeWhereString(whereColumn, 1);
+
+    }
+    // delete all!
+    static <M extends MacrosPersistable> String deleteTemplate(Table<M> table) {
+        return "DELETE FROM " + table.name();
+    }
+
+    // " WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
     private static <M extends MacrosPersistable> String makeWhereLikeString(List<Column<M, String>> likeColumns) {
         switch (likeColumns.size()) {
             case 0:
@@ -142,7 +153,7 @@ class SqlUtils {
     }
 
     static <M extends MacrosPersistable> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
-        int colIndex = 0;
+        int colIndex = 1; // parameters are 1 indexed!
         for (Column<M, ?> col : orderedColumns) {
             // Internally, setObject() relies on a ladder of instanceof checks
             p.setObject(colIndex, columnDataToRaw(values, col));
@@ -160,7 +171,7 @@ class SqlUtils {
     }
 
     static <E> void bindObjects(PreparedStatement p, List<E> objects) throws SQLException {
-        bindObjects(p, 0, objects);
+        bindObjects(p, 1, objects);
     }
 
     private static void bindObjects(PreparedStatement p, int startIndex, List<?> objects) throws SQLException {
@@ -173,7 +184,6 @@ class SqlUtils {
 
     static <M extends MacrosPersistable> Object columnDataToRaw(ColumnData<M> c, Column<M, ?> col) {
         MacrosType<?> type = col.type();
-        Object data = c.unboxColumn(col);
         if (type.equals(BOOLEAN)) {
             return columnDataToRawHelper(c, typedColumn(col, BOOLEAN));
         } else if (type.equals(ID)) {

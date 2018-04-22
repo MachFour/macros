@@ -75,6 +75,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         return getTypedDataForColumn(getTable().getModifyTimeColumn());
     }
 
+    @Override
     public boolean isFromDb() {
         return isFromDb;
     }

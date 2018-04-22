@@ -45,7 +45,8 @@ public interface MacrosDataSource {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    <M extends MacrosPersistable<M>> int saveObjects(List<M> objects) throws SQLException;
+    <M extends MacrosPersistable<M>> int insertObjects(List<M> objects, boolean withId) throws SQLException;
+    <M extends MacrosPersistable<M>> int updateObjects(List<M> objects) throws SQLException;
 
     <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException;
 

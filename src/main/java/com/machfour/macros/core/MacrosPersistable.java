@@ -27,6 +27,8 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
 
     Long getModifyTime();
 
+    boolean isFromDb();
+
     // Used to access the columns defined in the corresponding table schema
     List<Column<M, ?>> getColumns();
 

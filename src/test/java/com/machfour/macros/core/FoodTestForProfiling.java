@@ -23,10 +23,8 @@ public class FoodTestForProfiling {
                 db.removeDb();
             }
             db.initDb();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        } catch (SQLException e2) {
-            e2.printStackTrace();
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
         }
     }
 

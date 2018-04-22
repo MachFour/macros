@@ -1,18 +1,12 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.MacrosPersistable;
-import com.machfour.macros.data.Column;
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.MacrosType;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.data.*;
 import com.sun.istack.internal.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-
-import static com.machfour.macros.data.MacrosType.*;
 
 class SqlUtils {
     private SqlUtils() {
@@ -70,7 +64,7 @@ class SqlUtils {
     // " WHERE column1 = ?"
     // " WHERE column1 IN (?, ?, ?, ...?)"
     // if nkeys is <= 0, no where string will be formed, so all objects will be returned.
-    private static String makeWhereString(Column<?, ?> whereColumn, int nValues) {
+    private static String makeWhereString(Column<?, ?, ?> whereColumn, int nValues) {
         assert nValues >= 0;
         switch (nValues) {
             case 0:
@@ -88,17 +82,17 @@ class SqlUtils {
         }
     }
 
-    static <M extends MacrosPersistable> String deleteTemplate(Table<M> table, Column<M, ?> whereColumn) {
+    static <M> String deleteTemplate(Table<M> table, Column<M, ?, ?> whereColumn) {
         return deleteTemplate(table) + makeWhereString(whereColumn, 1);
 
     }
     // delete all!
-    static <M extends MacrosPersistable> String deleteTemplate(Table<M> table) {
+    static <M> String deleteTemplate(Table<M> table) {
         return "DELETE FROM " + table.name();
     }
 
     // " WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
-    private static <M extends MacrosPersistable> String makeWhereLikeString(List<Column<M, String>> likeColumns) {
+    private static <M> String makeWhereLikeString(List<Column<M, Types.Text, String>> likeColumns) {
         switch (likeColumns.size()) {
             case 0:
                 return "";
@@ -106,25 +100,25 @@ class SqlUtils {
                 return " WHERE " + likeColumns.get(0).sqlName() + " LIKE ?";
             default:
                 List<String> bracketedWhereClauses = new ArrayList<>(likeColumns.size());
-                for (Column<?, String> c : likeColumns) {
+                for (Column<?, Types.Text, String> c : likeColumns) {
                     bracketedWhereClauses.add("(" + c.sqlName() + " LIKE ? )");
                 }
                 return join(" OR ", bracketedWhereClauses);
         }
     }
 
-    static <M extends MacrosPersistable> String selectLikeTemplate(
-            Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
+    static <M, T extends MacrosType<J>, J> String selectLikeTemplate(
+            Table<M> t, Column<M, ?, ?> selectColumn, List<Column<M, Types.Text, String>> likeColumns) {
         return selectTemplate(t, toList(selectColumn), makeWhereLikeString(likeColumns), false);
     }
 
-    static <M extends MacrosPersistable> String selectTemplate(
-            Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+    static <M, T extends MacrosType<J>, J> String selectTemplate(
+            Table<M> t, Column<M, ?, ?> selectColumn, Column<M, ?, ?> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, toList(selectColumn), whereColumn, nValues, distinct);
     }
 
-    private static <M extends MacrosPersistable> String selectTemplate(
-            Table<M> t, List<Column<M, ?>> orderedColumns, String whereString, boolean distinct) {
+    private static <M, T extends MacrosType<J>, J> String selectTemplate(
+            Table<M> t, List<Column<M, ?, ?>> orderedColumns, String whereString, boolean distinct) {
         List<String> words = new ArrayList<>(6);
         words.add("SELECT");
         if (distinct) {
@@ -137,24 +131,24 @@ class SqlUtils {
         return join(" ", words);
     }
 
-    static <M extends MacrosPersistable> String selectTemplate(
-            Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+    static <M, T extends MacrosType<J>, J> String selectTemplate(
+            Table<M> t, List<Column<M, ?, ?>> orderedColumns, Column<M, T, J> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct);
     }
 
     // columns must be a subset of table.columns()
-    static <M extends MacrosPersistable> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
+    static <M> String insertTemplate(Table<M> t, List<Column<M, ?, ?>> orderedColumns) {
         String placeholders = makeQuestionMarks(", ", orderedColumns.size());
         return "INSERT INTO " + t.name() + " (" + join(", ", orderedColumns) + ") VALUES ( " + placeholders + ")";
     }
 
-    static <M extends MacrosPersistable> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> keyCol) {
+    static <M, T extends MacrosType<J>, J> String updateTemplate(Table<M> t, List<Column<M, ?, ?>> orderedColumns, Column<M, T, J> keyCol) {
         return "UPDATE " + t.name() + " SET " + join(",", orderedColumns, "= ?") + makeWhereString(keyCol, 1);
     }
 
-    static <M extends MacrosPersistable> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
+    static <M> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?, ?>> orderedColumns, Object... extras) throws SQLException {
         int colIndex = 1; // parameters are 1 indexed!
-        for (Column<M, ?> col : orderedColumns) {
+        for (Column<M, ?, ?> col : orderedColumns) {
             // Internally, setObject() relies on a ladder of instanceof checks
             p.setObject(colIndex, columnDataToRaw(values, col));
             colIndex++;
@@ -182,110 +176,14 @@ class SqlUtils {
         }
     }
 
-    static <M extends MacrosPersistable> Object columnDataToRaw(ColumnData<M> c, Column<M, ?> col) {
-        MacrosType<?> type = col.type();
-        if (type.equals(BOOLEAN)) {
-            return columnDataToRawHelper(c, typedColumn(col, BOOLEAN));
-        } else if (type.equals(ID)) {
-            return columnDataToRawHelper(c, typedColumn(col, ID));
-        } else if (type.equals(INTEGER)) {
-            return columnDataToRawHelper(c, typedColumn(col, INTEGER));
-        } else if (type.equals(REAL)) {
-            return columnDataToRawHelper(c, typedColumn(col, REAL));
-        } else if (type.equals(TEXT)) {
-            return columnDataToRawHelper(c, typedColumn(col, TEXT));
-        } else if (type.equals(TIMESTAMP)) {
-            return columnDataToRawHelper(c, typedColumn(col, TIMESTAMP));
-        } else if (type.equals(DATESTAMP)) {
-            return columnDataToRawHelper(c, typedColumn(col, DATESTAMP));
-        } else {
-            assert false : "Invalid type";
-            return null;
-        }
+    static <M, T extends MacrosType<J>, J> Object columnDataToRaw(ColumnData<M> c, Column<M, T, J> col) {
+        MacrosType<J> type = col.type();
+        return type.toRaw(c.unboxColumn(col));
     }
 
-    static <T> T rawToTyped(Object data, MacrosType<T> type) {
-        Object converted;
-        if (type.equals(BOOLEAN)) {
-            converted = data;
-        } else if (type.equals(ID)) {
-            converted = data;
-        } else if (type.equals(INTEGER)) {
-            converted = data;
-        } else if (type.equals(REAL)) {
-            converted = data;
-        } else if (type.equals(TEXT)) {
-            converted = data;
-        } else if (type.equals(TIMESTAMP)) {
-            converted = data;
-        } else if (type.equals(DATESTAMP)) {
-            converted = DateStamp.fromIso8601String(data.toString());
-        } else {
-            assert false : "Invalid type";
-            converted = null;
-        }
-        return (T) converted;
-    }
-
-    static <T> Object typedToRaw(T data, MacrosType<T> type) {
-        Object converted;
-        if (type.equals(BOOLEAN)) {
-            converted = data;
-        } else if (type.equals(ID)) {
-            converted = data;
-        } else if (type.equals(INTEGER)) {
-            converted = data;
-        } else if (type.equals(REAL)) {
-            converted = data;
-        } else if (type.equals(TEXT)) {
-            converted = data;
-        } else if (type.equals(TIMESTAMP)) {
-            converted = data;
-        } else if (type.equals(DATESTAMP)) {
-            converted = data.toString();
-        } else {
-            assert false : "Invalid type";
-            converted = null;
-        }
-        return converted;
-    }
-
-    // if the assert passes then the cast will be fine
-    @SuppressWarnings("unchecked")
-    static <M extends MacrosPersistable, T> Column<M, T> typedColumn(Column<M, ?> col, MacrosType<T> type) {
-        assert col.type().equals(type) : "Invalid type for column";
-        return (Column<M, T>) col;
-    }
-
-    // wildcard capture
-    private static <M extends MacrosPersistable, T> void rawToColumnDataHelper(ColumnData<M> c, Column<M, T> column, Object data) {
-        c.putData(column, rawToTyped(data, column.type()));
-    }
-
-    // wildcard capture
-    private static <M extends MacrosPersistable, T> Object columnDataToRawHelper(ColumnData<M> c, Column<M, T> column) {
-        return typedToRaw(c.unboxColumn(column), column.type());
-    }
-
-    static <M extends MacrosPersistable> void rawToColumnData(ColumnData<M> c, Column<M, ?> col, Object data) {
-        MacrosType<?> type = col.type();
-        if (type.equals(BOOLEAN)) {
-            rawToColumnDataHelper(c, typedColumn(col, BOOLEAN), data);
-        } else if (type.equals(ID)) {
-            rawToColumnDataHelper(c, typedColumn(col, ID), data);
-        } else if (type.equals(INTEGER)) {
-            rawToColumnDataHelper(c, typedColumn(col, INTEGER), data);
-        } else if (type.equals(REAL)) {
-            rawToColumnDataHelper(c, typedColumn(col, REAL), data);
-        } else if (type.equals(TEXT)) {
-            rawToColumnDataHelper(c, typedColumn(col, TEXT), data);
-        } else if (type.equals(TIMESTAMP)) {
-            rawToColumnDataHelper(c, typedColumn(col, TIMESTAMP), data);
-        } else if (type.equals(DATESTAMP)) {
-            rawToColumnDataHelper(c, typedColumn(col, DATESTAMP), data);
-        } else {
-            assert false : "Invalid type";
-        }
+    static <M, T extends MacrosType<J>, J> void rawToColumnData(ColumnData<M> c, Column<M, T, J> col, Object data) {
+        MacrosType<J> type = col.type();
+        c.putData(col, type.fromRaw(data));
     }
 
     static <M extends MacrosPersistable> Map<Long, M> makeIdMap(List<M> objects) {

@@ -71,6 +71,29 @@ class FoodTest {
     }
 
     @Test
+    void getFoodFromDb() {
+        ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+        modifiedData.putData(ID, 50L);
+        Food f = new Food(modifiedData, false);
+        try {
+            // first save with known ID
+            assertEquals(1, db.saveObject(f));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            fail("DB save threw exception");
+        }
+        Food f2 = null;
+        try {
+            f2 = db.getFoodById(50L);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            fail("DB get threw exception");
+        }
+        assertEquals(f, f2, "Foods did not match in equals sense");
+
+    }
+
+    @Test
     void saveFoodNotFromDb() {
         try {
             assertEquals(1, db.saveObject(testFood));

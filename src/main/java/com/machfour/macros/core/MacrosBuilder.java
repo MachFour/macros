@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
+import com.machfour.macros.data.MacrosType;
 import com.machfour.macros.data.Table;
 import com.machfour.macros.validation.Validation;
 import com.sun.istack.internal.NotNull;
@@ -12,11 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MacrosBuilder<T extends MacrosPersistable<T>> {
-    private final List<Column<T, ?>> settableColumns;
-    private final Table<T> table;
+public class MacrosBuilder<M extends MacrosPersistable<M>> {
+    private final List<Column<M, ?, ?>> settableColumns;
+    private final Table<M> table;
 
-    private final T editInstance;
+    private final M editInstance;
 
     /*
      * If editing, fields are initialised to the field values of editInstance.
@@ -24,18 +25,18 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private final ColumnData draftData;
-    private final Map<Column<T, ?>, Boolean> isValidValue;
+    private final ColumnData<M> draftData;
+    private final Map<Column<M, ?, ?>, Boolean> isValidValue;
 
-    public MacrosBuilder(@NotNull Table<T> table) {
+    public MacrosBuilder(@NotNull Table<M> table) {
         this(table, null);
     }
 
-    public MacrosBuilder(@NotNull T editInstance) {
+    public MacrosBuilder(@NotNull M editInstance) {
         this(editInstance.getTable(), editInstance);
     }
 
-    private MacrosBuilder(@NotNull Table<T> t, @Nullable T editInstance) {
+    private MacrosBuilder(@NotNull Table<M> t, @Nullable M editInstance) {
         table = t;
         this.editInstance = editInstance;
         settableColumns = table.columns();
@@ -51,14 +52,10 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      */
     private void resetFields() {
         if (editInstance != null) {
-            ColumnData instanceValues = editInstance.getAllData();
-            for (Column<T, ?> field : settableColumns) {
-                setFieldUnchecked(field, instanceValues.unboxColumn(field));
-            }
-        } else {
-            for (Column<T, ?> field : settableColumns) {
-                setFieldUnchecked(field, null);
-            }
+            ColumnData.copy(editInstance.getAllData(), draftData);
+        }
+        for (Column<M, ?, ?> field : settableColumns) {
+            isValidValue.put(field, checkErrors(field).isEmpty());
         }
     }
 
@@ -66,21 +63,9 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * Sets the given column value to (a String representation of) the given value.
      * value cannot be null; an exception will be thrown if so
      */
-    public <C> void setField(Column<T, C> col, C value) {
-        assert (settableColumns.contains(col)) : "Invalid field set";
+    public <T extends MacrosType<J>, J> void setField(Column<M, T, J> col, J value) {
         draftData.putData(col, value);
         isValidValue.put(col, checkErrors(col).isEmpty());
-    }
-
-    /*
-     * Sets the given field to (a String representation of) the given value.
-     * value cannot be null; an exception will be thrown if so
-     */
-    private <C> void setFieldUnchecked(Column<T, ?> col, C value) {
-        assert (settableColumns.contains(col)) : "Invalid field set";
-        Column<T, C> typedColumn = (Column<T, C>) col;
-        draftData.putData(typedColumn, value);
-        isValidValue.put(typedColumn, checkErrors(col).isEmpty());
     }
 
     /*
@@ -88,8 +73,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
      * Returns a list containing identifiers of each failing com.machfour.macros.validation test for the given field,
      * or otherwise an empty list.
      */
-    public List<Validation> checkErrors(Column<T, ?> field) {
-        assert (settableColumns.contains(field)) : "Invalid field to validate";
+    public <T extends MacrosType<J>, J> List<Validation> checkErrors(Column<M, T, J> field) {
         List<Validation> validationsToPerform = field.getValidations();
         List<Validation> failedValidations = new ArrayList<>(validationsToPerform.size());
 
@@ -104,7 +88,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
         return failedValidations;
     }
 
-    public void clearField(Column<T, ?> field) {
+    public void clearField(Column<M, ?, ?> field) {
         setField(field, null);
     }
 
@@ -115,7 +99,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
     public Map<Column, List<Validation>> findAllErrors() {
         Map<Column, List<Validation>> allValidationErrors = new HashMap<>(settableColumns.size(), 1);
 
-        for (Column field : settableColumns) {
+        for (Column<M, ?, ?> field : settableColumns) {
             List<Validation> fieldErrors = checkErrors(field);
             if (!fieldErrors.isEmpty()) {
                 allValidationErrors.put(field, fieldErrors);
@@ -125,7 +109,7 @@ public class MacrosBuilder<T extends MacrosPersistable<T>> {
         return allValidationErrors;
     }
 
-    public T build() {
+    public M build() {
         if (!canConstruct()) {
             throw new IllegalStateException("Field values are not all valid");
         }

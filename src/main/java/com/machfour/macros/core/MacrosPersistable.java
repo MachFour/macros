@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
+import com.machfour.macros.data.MacrosType;
 import com.machfour.macros.data.Table;
 
 import java.util.List;
@@ -30,14 +31,14 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     boolean isFromDb();
 
     // Used to access the columns defined in the corresponding table schema
-    List<Column<M, ?>> getColumns();
+    List<Column<M, ?, ?>> getColumns();
 
-    Map<String, Column<M, ?>> getColumnsByName();
+    Map<String, Column<M, ?, ?>> getColumnsByName();
 
     // Used to get data by column objects
-    <T> T getTypedDataForColumn(Column<M, T> c);
+    <T extends MacrosType<J>, J> J getTypedDataForColumn(Column<M, T, J> c);
 
-    boolean hasData(Column<M, ?> c);
+    boolean hasData(Column<M, ?, ?> c);
 
     // Creates a mapping of column objects to their values for this instance
     ColumnData<M> getAllData();

@@ -1,20 +1,19 @@
 package com.machfour.macros.data;
 
-import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.validation.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ColumnImpl<M extends MacrosPersistable, T> implements Column<M, T> {
+public class ColumnImpl<M, T extends MacrosType<J>, J> implements Column<M, T, J> {
     private final String name;
-    private final MacrosType<T> type;
+    private final T type;
     private final boolean editable;
     private final boolean nullable;
-    private final Supplier<T> defaultValue;
+    private final Supplier<J> defaultValue;
 
-    public ColumnImpl(String str, MacrosType<T> t, boolean editable, boolean nullable, Supplier<T> defaultValue) {
+    public ColumnImpl(String str, T t, boolean editable, boolean nullable, Supplier<J> defaultValue) {
         this.name = str;
         this.type = t;
         this.editable = editable;
@@ -38,7 +37,7 @@ public class ColumnImpl<M extends MacrosPersistable, T> implements Column<M, T> 
     }
 
     @Override
-    public MacrosType<T> type() {
+    public T type() {
         return type;
     }
 
@@ -48,7 +47,7 @@ public class ColumnImpl<M extends MacrosPersistable, T> implements Column<M, T> 
     }
 
     @Override
-    public DataContainer<T> defaultData() {
+    public DataContainer<T, J> defaultData() {
         return new DataContainer<>(type(), defaultValue.get());
     }
 

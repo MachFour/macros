@@ -3,6 +3,7 @@ package com.machfour.macros.util;
 import com.machfour.macros.core.NutritionData;
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.Columns;
+import com.machfour.macros.data.Types;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -13,11 +14,11 @@ import java.util.Map;
  */
 
 public final class DataUtils {
-    public static final Map<Column<NutritionData, Double>, String> unitString;
+    public static final Map<Column<NutritionData, Types.Real, Double>, String> unitString;
 
     static {
         unitString = new HashMap<>(NutritionData.NUTRIENT_COLUMNS.size());
-        for (Column<NutritionData, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
+        for (Column<NutritionData, Types.Real, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
             if (nutrient.equals(Columns.NutritionDataCol.SODIUM) ||
                 nutrient.equals(Columns.NutritionDataCol.CALCIUM) ||
                 nutrient.equals(Columns.NutritionDataCol.OMEGA_3_FAT) ||
@@ -38,7 +39,7 @@ public final class DataUtils {
 
     // Formats the given data field (assumed to be a double) to a string.
     // Automatically adds an asterisk if the data is missing.
-    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Double> field, int decimalPoints) {
+    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Types.Real, Double> field, int decimalPoints) {
         return formatDouble(nd.getNutrientData(field), decimalPoints, !nd.hasNutrient(field));
     }
 

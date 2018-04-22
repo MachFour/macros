@@ -11,31 +11,45 @@ import java.util.Objects;
  * containing everything. It also allows querying data by the column object, rather
  * than having to know the instance variable sqlName
  */
-public class DataContainer<T> {
+public class DataContainer<T extends MacrosType<J>, J> implements Cloneable {
 
     @NotNull
-    public final MacrosType type;
+    public final T type;
     @Nullable
-    public final T data;
+    public final J data;
 
-    public DataContainer(@NotNull MacrosType<T> t, @Nullable T o) {
+    public DataContainer(@NotNull T t, @Nullable J o) {
         type = t;
         data = o;
     }
 
-    @Nullable
-    public T getData() {
-        return data;
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof DataContainer
+            && type.equals(((DataContainer) o).type)
+            && Objects.equals(data, ((DataContainer) o).data);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o instanceof DataContainer) {
-            DataContainer d = (DataContainer) o;
-            return Objects.equals(type, d.type) && Objects.equals(data, d.data);
-        } else {
-            return false;
+    public String toString() {
+        return String.valueOf(type) + "/" + String.valueOf(data);
+    }
+    // shallow clone
+    @Override
+    @SuppressWarnings("unchecked")
+    public DataContainer<T, J> clone() {
+        DataContainer<T, J> clone;
+        try {
+            clone = (DataContainer<T, J>) super.clone();
+        } catch (CloneNotSupportedException e) {
+            clone = new DataContainer<>(type, data);
         }
+        return clone;
+    }
+
+    @Nullable
+    public J getData() {
+        return data;
     }
 
     @Override

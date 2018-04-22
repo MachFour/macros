@@ -15,12 +15,13 @@ public class Tables {
 
     public static abstract class BaseTable<T extends MacrosPersistable> implements Table<T> {
         private final String name;
-        private final Map<String, Column<T, ?>> columnsByName;
-        private final Column<T, Long> idColumn;
-        private final Column<T, Long> createTimeColumn;
-        private final Column<T, Long> modifyTimeColumn;
+        private final Map<String, Column<T, ?, ?>> columnsByName;
+        private final Column<T, Types.Id, Long> idColumn;
+        private final Column<T, Types.Time, Long> createTimeColumn;
+        private final Column<T, Types.Time, Long> modifyTimeColumn;
 
-        BaseTable(String tblName, List<Column<T, ?>> cols, Column<T, Long> id, Column<T, Long> createTime, Column<T, Long> modTime) {
+        BaseTable(String tblName, List<Column<T, ?, ?>> cols, Column<T, Types.Id, Long> id,
+                Column<T, Types.Time, Long> createTime, Column<T, Types.Time, Long> modTime) {
             name = tblName;
             columnsByName = makeNameMap(cols);
             idColumn = id;
@@ -29,17 +30,17 @@ public class Tables {
         }
 
         @Override
-        public Column<T, Long> getIdColumn() {
+        public Column<T, Types.Id, Long> getIdColumn() {
             return idColumn;
         }
 
         @Override
-        public Column<T, Long> getCreateTimeColumn() {
+        public Column<T, Types.Time, Long> getCreateTimeColumn() {
             return createTimeColumn;
         }
 
         @Override
-        public Column<T, Long> getModifyTimeColumn() {
+        public Column<T, Types.Time, Long> getModifyTimeColumn() {
             return modifyTimeColumn;
         }
 
@@ -51,12 +52,12 @@ public class Tables {
         }
 
         @Override
-        public List<Column<T, ?>> columns() {
+        public List<Column<T, ?, ?>> columns() {
             return new ArrayList<>(columnsByName.values());
         }
 
         @Override
-        public Map<String, Column<T, ?>> columnsByName() {
+        public Map<String, Column<T, ?, ?>> columnsByName() {
             return new HashMap<>(columnsByName);
         }
 
@@ -64,13 +65,13 @@ public class Tables {
         public abstract T construct(ColumnData<T> dataMap, boolean isFromDb);
 
         @Override
-        public Column<T, ?> columnForName(String name) {
+        public Column<T, ?, ?> columnForName(String name) {
             return columnsByName.getOrDefault(name, null);
         }
 
-        private Map<String, Column<T, ?>> makeNameMap(List<Column<T, ?>> cols) {
-            Map<String, Column<T, ?>> colsByName = new HashMap<>(cols.size());
-            for (Column<T, ?> c : cols) {
+        private Map<String, Column<T, ?, ?>> makeNameMap(List<Column<T, ?, ?>> cols) {
+            Map<String, Column<T, ?, ?>> colsByName = new HashMap<>(cols.size());
+            for (Column<T, ?, ?> c : cols) {
                 colsByName.put(c.toString(), c);
             }
             return colsByName;

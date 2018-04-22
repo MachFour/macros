@@ -1,9 +1,6 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.data.Column;
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.*;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
@@ -15,7 +12,7 @@ import static com.machfour.macros.data.Columns.FoodCol.*;
 
 public class Food extends MacrosEntity<Food> {
 
-    public static final List<Column<Food, String>> DESCRIPTION_COLUMNS = Arrays.asList(
+    public static final List<Column<Food, Types.Text, String>> DESCRIPTION_COLUMNS = Arrays.asList(
         BRAND
         , COMMERCIAL_NAME
         , VARIETY_PREFIX_1
@@ -81,7 +78,7 @@ public class Food extends MacrosEntity<Food> {
         return o instanceof Food && super.equals(o);
     }
 
-    private String getDescriptionData(Column<Food, String> fieldName) {
+    private String getDescriptionData(Column<Food, Types.Text, String> fieldName) {
         assert (DESCRIPTION_COLUMNS.contains(fieldName));
         return getTypedDataForColumn(fieldName);
     }
@@ -173,7 +170,7 @@ public class Food extends MacrosEntity<Food> {
      *      <brand> <varPrefix1> <varPrefix2> <sqlName> <varSuffix> (<details>)
      */
 
-    private Boolean hasDescriptionData(Column<Food, String> fieldName) {
+    private Boolean hasDescriptionData(Column<Food, Types.Text, String> fieldName) {
         return hasData(fieldName);
     }
 

@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
+import com.machfour.macros.data.MacrosType;
 import com.machfour.macros.data.Table;
 import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
@@ -22,7 +23,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     private final boolean isFromDb;
 
     MacrosEntity(ColumnData<M> data, boolean isFromDb) {
-        Map<Column<M, ?>, ValidationError> errors = checkMappings(data);
+        Map<Column<M, ?, ?>, ValidationError> errors = checkMappings(data);
         if (!errors.isEmpty()) {
             throw new SchemaViolation(errors);
         }
@@ -44,11 +45,11 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
        Returns a list of columns whose non-null constraints have been violated, or an empty list otherwise
        Note that if the assertion passes, then dataMap has the correct columns as keys
      */
-    private Map<Column<M, ?>, ValidationError> checkMappings(ColumnData<M> dataMap) {
+    private Map<Column<M, ?, ?>, ValidationError> checkMappings(ColumnData<M> dataMap) {
         assert getTable().equals(dataMap.getTable()) : "ColumnData is for a different table";
-        List<Column<M, ?>> required = getColumns();
-        Map<Column<M, ?>, ValidationError> badMappings = new HashMap<>(required.size());
-        for (Column<M, ?> col : required) {
+        List<Column<M, ?, ?>> required = getColumns();
+        Map<Column<M, ?, ?>, ValidationError> badMappings = new HashMap<>(required.size());
+        for (Column<M, ?, ?> col : required) {
             if (dataMap.unboxColumn(col) == null && !col.isNullable()) {
                 badMappings.put(col, ValidationError.NON_NULL);
             }
@@ -82,23 +83,24 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     @Override
     public int hashCode() {
-        return getAllData().hashCode() + (isFromDb ? 1 : 0);
+        //return getAllData().hashCode() + (isFromDb ? 1 : 0);
+        return getAllData().hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
         return o instanceof MacrosEntity
-            && isFromDb == ((MacrosEntity) o).isFromDb
+            //&& isFromDb == ((MacrosEntity) o).isFromDb
             && dataMap.equals(((MacrosEntity) o).dataMap);
     }
 
     @Override
-    public <T> T getTypedDataForColumn(Column<M, T> c) {
+    public <T extends MacrosType<J>, J> J getTypedDataForColumn(Column<M, T, J> c) {
         return dataMap.unboxColumn(c);
     }
 
     @Override
-    public boolean hasData(Column<M, ?> c) {
+    public boolean hasData(Column<M, ?, ?> c) {
         return dataMap.hasData(c);
     }
 
@@ -107,11 +109,11 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         return new ColumnData<>(dataMap);
     }
 
-    public List<Column<M, ?>> getColumns() {
+    public List<Column<M, ?, ?>> getColumns() {
         return getTable().columns();
     }
 
-    public Map<String, Column<M, ?>> getColumnsByName() {
+    public Map<String, Column<M, ?, ?>> getColumnsByName() {
         return getTable().columnsByName();
     }
 
@@ -119,6 +121,6 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     @Override
     public String toString() {
-        return dataMap.toString() + "(" + (isFromDb ? "not " : "") + "from db)";
+        return dataMap.toString() + " (" + (isFromDb ? "not " : "") + "from db)";
     }
 }

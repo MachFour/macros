@@ -2,6 +2,7 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.data.*;
+import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
 import java.sql.PreparedStatement;
@@ -185,6 +186,18 @@ class SqlUtils {
         MacrosType<J> type = col.type();
         c.putData(col, type.fromRaw(data));
     }
+    static <M, T extends MacrosType<J>, J> void stringToColumnData(ColumnData<M> c, Column<M, T, J> col, @NotNull String data) {
+        MacrosType<J> type = col.type();
+        c.putData(col, type.fromString(data));
+    }
+    static <M, T extends MacrosType<J>, J> void nullableStringToColumnData(ColumnData<M> c, Column<M, T, J> col, @Nullable String data) {
+        if (data == null || data.equals("")) {
+            SqlUtils.rawToColumnData(c, col, null);
+        } else {
+            SqlUtils.stringToColumnData(c, col, data);
+        }
+    }
+
 
     static <M extends MacrosPersistable> Map<Long, M> makeIdMap(List<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);

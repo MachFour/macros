@@ -2,9 +2,7 @@ package com.machfour.macros.data;
 
 import com.sun.istack.internal.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
 public class ColumnData<M> {
@@ -21,6 +19,19 @@ public class ColumnData<M> {
                 //&& hasData.equals(((ColumnData) o).hasData)
                 && map.equals(((ColumnData) o).map);
 
+    }
+
+    public static <M> boolean columnsAreEqual(ColumnData<M> c1, ColumnData<M> c2, List<Column<M, ?, ?>> columnsToCheck) {
+        if (c1 == null || c2 == null) {
+            return false;
+        }
+        boolean equal = true;
+        for (Column<M, ?, ?> col: columnsToCheck) {
+            if (!Objects.equals(c1.unboxColumn(col), c2.unboxColumn(col))) {
+                equal = false;
+            }
+        }
+        return equal;
     }
 
     @Override
@@ -45,13 +56,24 @@ public class ColumnData<M> {
     }
 
     public ColumnData(@NotNull ColumnData<M> existing) {
-        this(existing.table);
-        map.putAll(existing.map);
-        hasData.putAll(existing.hasData);
+        this(existing, false);
+    }
+
+    public ColumnData(@NotNull ColumnData<M> existing, boolean isImmutableCopy) {
+        table = existing.table;
+        if (isImmutableCopy) {
+            map = Collections.unmodifiableMap(existing.map);
+            hasData = Collections.unmodifiableMap(existing.hasData);
+        } else {
+            map = new HashMap<>(table.columns().size(), 1);
+            hasData = new HashMap<>(table.columns().size());
+            map.putAll(existing.map);
+            hasData.putAll(existing.hasData);
+        }
     }
 
     // columns are the same so there will be no type issues
-    public static <M> void copy(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to) {
+    public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to) {
         for (Column<M, ?, ?> col : from.table.columns()) {
             DataContainer<?, ?> dc = from.map.get(col);
             to.map.put(col, dc.clone());

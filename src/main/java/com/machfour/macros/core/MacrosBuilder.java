@@ -52,7 +52,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
      */
     private void resetFields() {
         if (editInstance != null) {
-            ColumnData.copy(editInstance.getAllData(), draftData);
+            ColumnData.copyData(editInstance.getAllData(), draftData);
         }
         for (Column<M, ?, ?> field : settableColumns) {
             isValidValue.put(field, checkErrors(field).isEmpty());

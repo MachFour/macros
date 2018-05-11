@@ -89,7 +89,7 @@ class FoodTest {
             e.printStackTrace();
             fail("DB get threw exception");
         }
-        assertEquals(f, f2, "Foods did not match in equals sense");
+        assertTrue(f.equalsWithoutMetadata(f2), "Foods did not match in equals sense (ignoring metadata)");
 
     }
 

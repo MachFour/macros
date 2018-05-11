@@ -94,6 +94,18 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
             && dataMap.equals(((MacrosEntity) o).dataMap);
     }
 
+    public boolean equalsWithoutMetadata(MacrosPersistable<M> o) {
+        if (o == null) {
+            return false;
+        }
+        List<Column<M, ?, ?>> columnsToCheck = getColumns();
+        columnsToCheck.remove(getTable().getIdColumn());
+        columnsToCheck.remove(getTable().getCreateTimeColumn());
+        columnsToCheck.remove(getTable().getModifyTimeColumn());
+        return ColumnData.columnsAreEqual(dataMap, o.getAllData(), columnsToCheck);
+
+    }
+
     @Override
     public <T extends MacrosType<J>, J> J getTypedDataForColumn(Column<M, T, J> c) {
         return dataMap.unboxColumn(c);
@@ -104,9 +116,10 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         return dataMap.hasData(c);
     }
 
+    // returns immutable copy of data map
     @Override
     public ColumnData<M> getAllData() {
-        return new ColumnData<>(dataMap);
+        return new ColumnData<>(dataMap, true);
     }
 
     public List<Column<M, ?, ?>> getColumns() {

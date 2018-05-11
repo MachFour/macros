@@ -1,7 +1,7 @@
 package com.machfour.macros.data;
 
-import com.machfour.macros.core.Ingredient;
 import com.machfour.macros.util.DateStamp;
+import com.sun.istack.internal.NotNull;
 
 // basic types corresponding roughly to database types
 public class Types {
@@ -18,9 +18,32 @@ public class Types {
         public String toString() {
             return "boolean";
         }
+        @Override
+        public Boolean fromRaw(Object raw) {
+            if (raw == null) {
+                return null;
+            }
+            else if (raw instanceof Boolean) {
+                return (Boolean) raw;
+            } else {
+                return fromString(raw.toString());
+            }
+        }
+        @Override
+        public Boolean fromString(@NotNull String boolString) {
+            return Boolean.parseBoolean(boolString);
+        }
     }
 
-    private static Long ObjectToLong(Object data) {
+    private static Long stringToLong(@NotNull String longString) {
+        try {
+            return Long.parseLong(longString);
+        } catch (NumberFormatException e) {
+            throw new ClassCastException("Cannot convert string '" + longString + "' to Long");
+        }
+    }
+
+    private static Long objectToLong(Object data) {
         Long converted;
         if (data == null) {
             converted = null;
@@ -29,11 +52,7 @@ public class Types {
         } else if (data instanceof Integer) {
             converted = Integer.toUnsignedLong((Integer)data);
         } else {
-            try {
-                converted = Long.parseLong(data.toString());
-            } catch (NumberFormatException e) {
-                throw new ClassCastException("Cannot convert raw Object to Long");
-            }
+            return stringToLong(String.valueOf(data));
         }
         return converted;
     }
@@ -44,8 +63,12 @@ public class Types {
             return "id";
         }
         @Override
+        public Long fromString(@NotNull String stringData) {
+            return stringToLong(stringData);
+        }
+        @Override
         public Long fromRaw(Object data) {
-            return ObjectToLong(data);
+            return objectToLong(data);
         }
     }
 
@@ -56,7 +79,11 @@ public class Types {
         }
         @Override
         public Long fromRaw(Object data) {
-            return ObjectToLong(data);
+            return objectToLong(data);
+        }
+        @Override
+        public Long fromString(@NotNull String stringData) {
+            return stringToLong(stringData);
         }
     }
 
@@ -65,12 +92,38 @@ public class Types {
         public String toString() {
             return "real";
         }
+        @Override
+        public Double fromString(@NotNull String doubleString) {
+            try {
+                return Double.parseDouble(doubleString);
+            } catch (NumberFormatException e) {
+                throw new ClassCastException("Cannot convert string '" + doubleString + "' to Long");
+            }
+        }
+        @Override
+        public Double fromRaw(Object raw) {
+            if (raw == null) {
+                return null;
+            } else if (raw instanceof Double) {
+                return (Double) raw;
+            } else {
+                return fromString(raw.toString());
+            }
+        }
     }
 
     public static final class Text implements MacrosType<String> {
         @Override
         public String toString() {
             return "text";
+        }
+        @Override
+        public String fromString(@NotNull String stringData) {
+            return stringData;
+        }
+        @Override
+        public String fromRaw(Object raw) {
+            return raw == null ? null : raw.toString();
         }
     }
 
@@ -81,7 +134,11 @@ public class Types {
         }
         @Override
         public Long fromRaw(Object data) {
-            return ObjectToLong(data);
+            return objectToLong(data);
+        }
+        @Override
+        public Long fromString(@NotNull String stringData) {
+            return stringToLong(stringData);
         }
     }
 
@@ -90,13 +147,15 @@ public class Types {
         public String toString() {
             return "date";
         }
-
         // convert from string
         @Override
         public DateStamp fromRaw(Object raw) {
-            return DateStamp.fromIso8601String(raw.toString());
+            return raw == null ? null : fromString(raw.toString());
         }
         @Override
+        public DateStamp fromString(@NotNull String stringData) {
+            return DateStamp.fromIso8601String(stringData);
+        }
         public Object toRaw(DateStamp data) {
             return data.toString();
         }

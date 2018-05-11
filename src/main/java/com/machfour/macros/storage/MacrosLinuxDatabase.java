@@ -364,6 +364,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         Table<M> table = objects.get(0).getTable();
         List<Column<M, ?, ?>> columnsToInsert = table.columns();
         if (!withId) {
+            columnsToInsert = new ArrayList<>(table.columns());
             columnsToInsert.remove(table.getIdColumn());
         } // else inserting for the first time, but it has an ID that we want to keep intact
         try (Connection c = getConnection()) {

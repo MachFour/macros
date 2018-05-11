@@ -8,6 +8,7 @@ import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
 import com.sun.istack.internal.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         if (o == null) {
             return false;
         }
-        List<Column<M, ?, ?>> columnsToCheck = getColumns();
+        List<Column<M, ?, ?>> columnsToCheck = new ArrayList<>(getColumns());
         columnsToCheck.remove(getTable().getIdColumn());
         columnsToCheck.remove(getTable().getCreateTimeColumn());
         columnsToCheck.remove(getTable().getModifyTimeColumn());

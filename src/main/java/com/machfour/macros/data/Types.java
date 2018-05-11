@@ -33,30 +33,11 @@ public class Types {
         public Boolean fromString(@NotNull String boolString) {
             return Boolean.parseBoolean(boolString);
         }
-    }
-
-    private static Long stringToLong(@NotNull String longString) {
-        try {
-            return Long.parseLong(longString);
-        } catch (NumberFormatException e) {
-            throw new ClassCastException("Cannot convert string '" + longString + "' to Long");
+        @Override
+        public Class<Boolean> javaClass() {
+            return Boolean.class;
         }
     }
-
-    private static Long objectToLong(Object data) {
-        Long converted;
-        if (data == null) {
-            converted = null;
-        } else if (data instanceof Long) {
-            converted = (Long) data;
-        } else if (data instanceof Integer) {
-            converted = Integer.toUnsignedLong((Integer)data);
-        } else {
-            return stringToLong(String.valueOf(data));
-        }
-        return converted;
-    }
-
     public static final class Id implements MacrosType<Long> {
         @Override
         public String toString() {
@@ -69,6 +50,10 @@ public class Types {
         @Override
         public Long fromRaw(Object data) {
             return objectToLong(data);
+        }
+        @Override
+        public Class<Long> javaClass() {
+            return Long.class;
         }
     }
 
@@ -84,6 +69,10 @@ public class Types {
         @Override
         public Long fromString(@NotNull String stringData) {
             return stringToLong(stringData);
+        }
+        @Override
+        public Class<Long> javaClass() {
+            return Long.class;
         }
     }
 
@@ -110,6 +99,10 @@ public class Types {
                 return fromString(raw.toString());
             }
         }
+        @Override
+        public Class<Double> javaClass() {
+            return Double.class;
+        }
     }
 
     public static final class Text implements MacrosType<String> {
@@ -125,6 +118,10 @@ public class Types {
         public String fromRaw(Object raw) {
             return raw == null ? null : raw.toString();
         }
+        @Override
+        public Class<String> javaClass() {
+            return String.class;
+        }
     }
 
     public static final class Time implements MacrosType<Long> {
@@ -139,6 +136,10 @@ public class Types {
         @Override
         public Long fromString(@NotNull String stringData) {
             return stringToLong(stringData);
+        }
+        @Override
+        public Class<Long> javaClass() {
+            return Long.class;
         }
     }
 
@@ -159,5 +160,32 @@ public class Types {
         public Object toRaw(DateStamp data) {
             return data.toString();
         }
+        @Override
+        public Class<DateStamp> javaClass() {
+            return DateStamp.class;
+        }
     }
+
+    private static Long stringToLong(@NotNull String longString) {
+        try {
+            return Long.parseLong(longString);
+        } catch (NumberFormatException e) {
+            throw new ClassCastException("Cannot convert string '" + longString + "' to Long");
+        }
+    }
+
+    private static Long objectToLong(Object data) {
+        Long converted;
+        if (data == null) {
+            converted = null;
+        } else if (data instanceof Long) {
+            converted = (Long) data;
+        } else if (data instanceof Integer) {
+            converted = Integer.toUnsignedLong((Integer)data);
+        } else {
+            return stringToLong(String.valueOf(data));
+        }
+        return converted;
+    }
+
 }

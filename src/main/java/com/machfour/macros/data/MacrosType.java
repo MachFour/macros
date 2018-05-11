@@ -14,6 +14,8 @@ public interface MacrosType<J> {
         return data;
     }
 
+    Class<J> javaClass();
+
     @Override
     String toString();
 }

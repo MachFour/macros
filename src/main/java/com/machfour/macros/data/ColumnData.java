@@ -7,8 +7,10 @@ import java.util.*;
 // Class which maps columns to their data values in instances of Macros objects
 public class ColumnData<M> {
 
-    private final Map<Column<M, ?, ?>, DataContainer<?, ?>> map;
-    private final Map<Column<M, ?, ?>, Boolean> hasData;
+    // internally, since all of the columns are known at compile time, we can just assign an index to each one
+    // and store the values in a list according to that index.
+    private final List<Object> data;
+    private final List<Boolean> hasData;
     private final Table<M> table;
 
     @Override
@@ -17,7 +19,7 @@ public class ColumnData<M> {
                 && table.equals(((ColumnData) o).table)
                 // this should be implied by the equality below
                 //&& hasData.equals(((ColumnData) o).hasData)
-                && map.equals(((ColumnData) o).map);
+                && data.equals(((ColumnData) o).data);
 
     }
 
@@ -36,22 +38,27 @@ public class ColumnData<M> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(table, map);
+        return Objects.hash(table, data);
     }
 
     @Override
     public String toString() {
-        return table.name() + " data: " + map.toString();
+        return table.name() + " data: " + data.toString();
     }
 
     public ColumnData(@NotNull Table<M> t) {
         table = t;
-        map = new HashMap<>(t.columns().size(), 1);
-        hasData = new HashMap<>(t.columns().size());
+        int newSize = t.columns().size();
+        data = new ArrayList<>(newSize);
+        hasData = new ArrayList<>(newSize);
 
-        for (Column<M, ?, ?> c : t.columns()) {
-            map.put(c, new DataContainer<>(c.type(), null));
-            hasData.put(c, false);
+        // it's important to preserve the order of the columns as they were passed to the Table object
+        // otherwise we'll get an OutOfBoundsException because we're adding beyond the end of the list.
+
+        // alternatively - we could fill both lists with null first.
+        for (int i = 0; i < newSize; i++) {
+            data.add(null);
+            hasData.add(false);
         }
     }
 
@@ -62,21 +69,25 @@ public class ColumnData<M> {
     public ColumnData(@NotNull ColumnData<M> existing, boolean isImmutableCopy) {
         table = existing.table;
         if (isImmutableCopy) {
-            map = Collections.unmodifiableMap(existing.map);
-            hasData = Collections.unmodifiableMap(existing.hasData);
+            data = Collections.unmodifiableList(existing.data);
+            hasData = Collections.unmodifiableList(existing.hasData);
         } else {
-            map = new HashMap<>(table.columns().size(), 1);
-            hasData = new HashMap<>(table.columns().size());
-            map.putAll(existing.map);
-            hasData.putAll(existing.hasData);
+            int newSize = table.columns().size();
+            data = new ArrayList<>(newSize);
+            hasData = new ArrayList<>(newSize);
+            for (int i = 0; i < newSize; i++) {
+                data.add(i, existing.data.get(i));
+                hasData.add(i, existing.hasData.get(i));
+            }
         }
     }
 
     // columns are the same so there will be no type issues
     public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to) {
         for (Column<M, ?, ?> col : from.table.columns()) {
-            DataContainer<?, ?> dc = from.map.get(col);
-            to.map.put(col, dc.clone());
+            Object o = from.data.get(col.index());
+            to.data.set(col.index(), o);
+            to.hasData.set(col.index(), o != null);
         }
     }
 
@@ -84,20 +95,19 @@ public class ColumnData<M> {
         return table;
     }
 
-    // the type of the data is ensured at time of DataContainer creation.
-    @SuppressWarnings("unchecked")
+    // the type of the data is ensured at time of adding it to this columnData object.
     public <T extends MacrosType<J>, J> J unboxColumn(@NotNull Column<M, T, J> col) {
-        DataContainer<?, ?> dc = map.get(col);
-        return (J) dc.getData();
+        Class<J> typeClass = col.type().javaClass();
+        return typeClass.cast(data.get(col.index()));
     }
 
     // will throw exception if the data doesn't match the type
     public <T extends MacrosType<J>, J> void putData(Column<M, T, J> col, J data) {
-        map.put(col, new DataContainer<>(col.type(), data));
-        hasData.put(col, data != null);
+        this.data.set(col.index(), data);
+        hasData.set(col.index(), data != null);
     }
 
     public boolean hasData(Column<M, ?, ?> col) {
-        return hasData.get(col);
+        return hasData.get(col.index());
     }
 }

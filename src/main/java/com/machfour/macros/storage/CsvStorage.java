@@ -15,6 +15,13 @@ public class CsvStorage {
     public static final String FOOD_CSV_FILENAME = "/home/max/devel/macros/macros-data/foods.csv";
     public static final String SERVING_CSV_FILENAME = "/home/max/devel/macros/macros-data/foods.csv";
 
+    /*
+     * General method for reading tables which were written programmatically.
+     * This method can't handle implicit foreign keys in the data (i.e. referring to a non-ID key column)
+     * if that is not what is specified in the SQL
+     * See methods below for specialised importing of user-generated tables where foreign key columns are more friendly
+     */
+
     public static <M> List<M> readObjects(Table<M> table, String fileName) throws IOException {
         Map<String, Column<M, ?, ?>> columnsByName = table.columnsByName();
         List<M> objectList = new ArrayList<>();
@@ -45,4 +52,8 @@ public class CsvStorage {
         }
         return objectList;
     }
+
+    /*
+     * TODO Include specialised methods for importing foods, servings and ingredients from user-generated CSV
+     */
 }

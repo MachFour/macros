@@ -1,11 +1,11 @@
 package com.machfour.macros.data;
 
+import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Created by max on 4/11/17.

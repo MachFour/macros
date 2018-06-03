@@ -5,6 +5,10 @@ import com.machfour.macros.data.Columns;
 import com.machfour.macros.data.Table;
 import com.machfour.macros.data.Tables;
 import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.machfour.macros.data.Columns.QuantityUnitCol.*;
 
@@ -13,6 +17,7 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
     public static final QuantityUnit GRAMS;
     public static final QuantityUnit MILLILITRES;
     public static final QuantityUnit MILLIGRAMS;
+    public static final List<QuantityUnit> INBUILT;
 
     static {
         ColumnData<QuantityUnit> gramsData = new ColumnData<>(Tables.QuantityUnitTable.instance());
@@ -38,8 +43,21 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         mgData.putData(METRIC_EQUIVALENT, 0.001);
         mgData.putData(IS_VOLUME_UNIT, false);
         MILLIGRAMS = new QuantityUnit(gramsData, true);
+
+        INBUILT = Arrays.asList(GRAMS, MILLIGRAMS, MILLILITRES);
     }
 
+    @Nullable
+    public static QuantityUnit getInbuiltByAbbreviation(String abbeviation) {
+        QuantityUnit found = null;
+        for (QuantityUnit q : INBUILT) {
+            if (q.getAbbreviation().equals(abbeviation)) {
+                found = q;
+                break;
+            }
+        }
+        return found;
+    }
 
     public QuantityUnit(ColumnData<QuantityUnit> data, boolean isFromDb) {
         super(data, isFromDb);

@@ -2,10 +2,10 @@ package com.machfour.macros.data;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.Supplier;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static com.machfour.macros.data.Column.column;
 import static com.machfour.macros.data.Types.*;

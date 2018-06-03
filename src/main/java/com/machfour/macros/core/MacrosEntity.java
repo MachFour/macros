@@ -46,7 +46,6 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
        Note that if the assertion passes, then dataMap has the correct columns as keys
      */
     private Map<Column<M, ?, ?>, ValidationError> checkMappings(ColumnData<M> dataMap) {
-        assert getTable().equals(dataMap.getTable()) : "ColumnData is for a different table";
         List<Column<M, ?, ?>> required = getColumns();
         Map<Column<M, ?, ?>, ValidationError> badMappings = new HashMap<>(required.size());
         for (Column<M, ?, ?> col : required) {

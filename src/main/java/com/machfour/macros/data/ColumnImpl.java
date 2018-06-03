@@ -1,10 +1,10 @@
 package com.machfour.macros.data;
 
+import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ColumnImpl<M, T extends MacrosType<J>, J> implements Column<M, T, J> {
     private final String name;

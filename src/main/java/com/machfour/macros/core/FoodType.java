@@ -3,7 +3,7 @@ package com.machfour.macros.core;
 import java.util.NoSuchElementException;
 
 public enum FoodType {
-    PRIMARY("primary"), COMPOSITE("composite"), USDA("usda"), NUTTAB("nuttab");
+    PRIMARY("primary"), COMPOSITE("composite"), USDA("usda"), NUTTAB("nuttab"), SPECIAL("special");
 
     final String name;
 
@@ -21,6 +21,8 @@ public enum FoodType {
                 return USDA;
             case "nuttab":
                 return NUTTAB;
+            case "special":
+                return SPECIAL;
             default:
                 throw new NoSuchElementException("No FoodType with name '" + name + "'.");
         }
@@ -32,7 +34,7 @@ public enum FoodType {
 
     @Override
     public String toString() {
-        return name;
+        return getName();
     }
 
 }

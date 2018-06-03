@@ -2,10 +2,7 @@ package com.machfour.macros.data;
 
 import com.machfour.macros.core.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.machfour.macros.data.Columns.*;
 
@@ -13,17 +10,30 @@ public class Tables {
     private Tables() {
     }
 
-    public static abstract class BaseTable<T extends MacrosPersistable> implements Table<T> {
+    public static abstract class BaseTable<T> implements Table<T> {
         private final String name;
+        private final List<Column<T, ?, ?>> columns;
         private final Map<String, Column<T, ?, ?>> columnsByName;
         private final Column<T, Types.Id, Long> idColumn;
         private final Column<T, Types.Time, Long> createTimeColumn;
         private final Column<T, Types.Time, Long> modifyTimeColumn;
 
+        // checks that the indexing of the tables was done right
+        private static <T> void checkIndices(List<Column<T, ?, ?>> cols) {
+            int index = 0;
+            for (Column c : cols) {
+               assert (c.index() == index);
+               index++;
+            }
+        }
+
         BaseTable(String tblName, List<Column<T, ?, ?>> cols, Column<T, Types.Id, Long> id,
                 Column<T, Types.Time, Long> createTime, Column<T, Types.Time, Long> modTime) {
             name = tblName;
+            // preserving the order of the columns is important
+            columns = Collections.unmodifiableList(cols);
             columnsByName = makeNameMap(cols);
+            checkIndices(cols);
             idColumn = id;
             createTimeColumn = createTime;
             modifyTimeColumn = modTime;
@@ -53,12 +63,12 @@ public class Tables {
 
         @Override
         public List<Column<T, ?, ?>> columns() {
-            return new ArrayList<>(columnsByName.values());
+            return columns;
         }
 
         @Override
         public Map<String, Column<T, ?, ?>> columnsByName() {
-            return new HashMap<>(columnsByName);
+            return columnsByName;
         }
 
         @Override
@@ -74,7 +84,7 @@ public class Tables {
             for (Column<T, ?, ?> c : cols) {
                 colsByName.put(c.toString(), c);
             }
-            return colsByName;
+            return Collections.unmodifiableMap(colsByName);
         }
     }
 

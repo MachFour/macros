@@ -9,13 +9,15 @@ import java.util.List;
 public class ColumnImpl<M, T extends MacrosType<J>, J> implements Column<M, T, J> {
     private final String name;
     private final T type;
+    private final int index;
     private final boolean editable;
     private final boolean nullable;
     private final Supplier<J> defaultValue;
 
-    public ColumnImpl(String str, T t, boolean editable, boolean nullable, Supplier<J> defaultValue) {
+    public ColumnImpl(String str, T t, int index, boolean editable, boolean nullable, Supplier<J> defaultValue) {
         this.name = str;
         this.type = t;
+        this.index = index;
         this.editable = editable;
         this.nullable = nullable;
         this.defaultValue = defaultValue;
@@ -29,6 +31,11 @@ public class ColumnImpl<M, T extends MacrosType<J>, J> implements Column<M, T, J
     @Override
     public String sqlName() {
         return name;
+    }
+
+    @Override
+    public int index() {
+        return index;
     }
 
     @Override
@@ -47,8 +54,8 @@ public class ColumnImpl<M, T extends MacrosType<J>, J> implements Column<M, T, J
     }
 
     @Override
-    public DataContainer<T, J> defaultData() {
-        return new DataContainer<>(type(), defaultValue.get());
+    public J defaultData() {
+        return defaultValue.get();
     }
 
     @Override

@@ -10,33 +10,35 @@ import java.util.List;
 /**
  * Created by max on 4/11/17.
  */
-// TODO do we need 'extends MacrosPersistable' on M?
 public interface Column<M, T extends MacrosType<J>, J> {
     static <M, T extends MacrosType<J>, J> Column<M, T, J> column(
-            String str, T t, boolean userEditable, boolean nullable) {
-        return column(str, t, userEditable, nullable, (Supplier<J>) () -> null);
+            int index, String str, T t, boolean userEditable, boolean nullable) {
+        return column(index, str, t, userEditable, nullable, (Supplier<J>) () -> null);
     }
 
     static <M, T extends MacrosType<J>, J> Column<M, T, J> column(
-            String str, T t, boolean userEditable, boolean nullable, @Nullable J defaultValue) {
-        return new ColumnImpl<>(str, t, userEditable, nullable, () -> defaultValue);
+            int index, String str, T t, boolean userEditable, boolean nullable, @Nullable J defaultValue) {
+        return new ColumnImpl<>(str, t, index, userEditable, nullable, () -> defaultValue);
     }
 
     // dynamic default value
     static <M, T extends MacrosType<J>, J> Column<M, T, J> column(
-            String str, T t, boolean userEditable, boolean nullable, @NotNull Supplier<J> defaultValue) {
-        return new ColumnImpl<>(str, t, userEditable, nullable, defaultValue);
+            int index, String str, T t, boolean userEditable, boolean nullable, @NotNull Supplier<J> defaultValue) {
+        return new ColumnImpl<>(str, t, index, userEditable, nullable, defaultValue);
     }
 
     String sqlName();
 
     T type();
 
+    // index used to store and look up data in the ColumnMap. Not necessarily the order in the DB
+    int index();
+
     boolean isUserEditable();
 
     boolean isNullable();
 
-    DataContainer defaultData();
+    J defaultData();
 
     List<Validation> getValidations();
 

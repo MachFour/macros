@@ -2,7 +2,7 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.machfour.macros.util.DateStamp;
 import com.sun.istack.internal.NotNull;
 
@@ -151,20 +151,20 @@ public class MacrosDataCache implements MacrosDataSource {
     private <M extends MacrosPersistable<M>> void onDbWrite(M object) {
         if (object instanceof Food) {
             allFoodsNeedsRefresh = true;
-            unCache(object.getId(), Tables.FoodTable.instance());
+            unCache(object.getId(), Schema.FoodTable.instance());
         } else if (object instanceof Meal) {
-            unCache(object.getId(), Tables.MealTable.instance());
+            unCache(object.getId(), Schema.MealTable.instance());
         } else if (object instanceof FoodPortion) {
-            unCache(((FoodPortion) object).getMealId(), Tables.MealTable.instance());
+            unCache(((FoodPortion) object).getMealId(), Schema.MealTable.instance());
         } else if (object instanceof Serving) {
-            unCache(((Serving) object).getFoodId(), Tables.FoodTable.instance());
+            unCache(((Serving) object).getFoodId(), Schema.FoodTable.instance());
         }
     }
 
     private <M extends MacrosPersistable<M>> void unCache(Long id, Table<M> type) {
-        if (type instanceof Tables.FoodTable) {
+        if (type instanceof Schema.FoodTable) {
             foodCache.remove(id);
-        } else if (type instanceof Tables.MealTable) {
+        } else if (type instanceof Schema.MealTable) {
             mealCache.remove(id);
         }
     }

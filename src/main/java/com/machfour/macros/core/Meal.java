@@ -1,9 +1,8 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Columns;
 import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.machfour.macros.util.DateStamp;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
@@ -14,9 +13,10 @@ import java.util.List;
 public class Meal extends MacrosEntity<Meal> {
 
     private final List<FoodPortion> foodPortions;
+    private MealDescription mealDescription;
 
-    public Meal(ColumnData<Meal> data, boolean isFromDb) {
-        super(data, isFromDb);
+    public Meal(ColumnData<Meal> data, ObjectSource objectSource) {
+        super(data, objectSource);
         foodPortions = new ArrayList<>();
     }
 
@@ -30,7 +30,7 @@ public class Meal extends MacrosEntity<Meal> {
 
     @Override
     public Table<Meal> getTable() {
-        return Tables.MealTable.instance();
+        return Schema.MealTable.instance();
     }
 
     public NutritionData getNutritionTotal() {
@@ -47,12 +47,12 @@ public class Meal extends MacrosEntity<Meal> {
     }
 
     @Nullable
-    public String getDescription() {
-        return getTypedDataForColumn(Columns.MealCol.DESCRIPTION);
+    public MealDescription getDescription() {
+        return mealDescription;
     }
 
     public DateStamp getDay() {
-        return getTypedDataForColumn(Columns.MealCol.DAY);
+        return getTypedDataForColumn(Schema.MealTable.DAY);
     }
 
     public List<FoodPortion> getFoodPortions() {
@@ -60,9 +60,13 @@ public class Meal extends MacrosEntity<Meal> {
     }
 
     public void addFoodPortion(@NotNull FoodPortion fp) {
-        assert (getId().equals(fp.getMealId()));
-        assert (equals(fp.getMeal()));
-        assert (!foodPortions.contains(fp));
+        assert !foodPortions.contains(fp) && foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this);
         foodPortions.add(fp);
     }
+
+    public void setMealDescription(@NotNull MealDescription md) {
+        assert mealDescription == null && foreignKeyMatches(this, Schema.MealTable.DESCRIPTION, md);
+        mealDescription = md;
+    }
+
 }

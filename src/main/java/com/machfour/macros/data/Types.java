@@ -86,7 +86,7 @@ public class Types {
             try {
                 return Double.parseDouble(doubleString);
             } catch (NumberFormatException e) {
-                throw new ClassCastException("Cannot convert string '" + doubleString + "' to Long");
+                throw new ClassCastException("Cannot convert string '" + doubleString + "' to Double");
             }
         }
         @Override

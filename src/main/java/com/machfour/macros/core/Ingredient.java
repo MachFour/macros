@@ -2,11 +2,9 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
 import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-
-import static com.machfour.macros.data.Columns.IngredientCol.*;
 
 public class Ingredient extends MacrosEntity<Ingredient> {
 
@@ -21,8 +19,8 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     @Nullable
     private Serving serving;
 
-    public Ingredient(ColumnData<Ingredient> data, boolean isFromDb) {
-        super(data, isFromDb);
+    public Ingredient(ColumnData<Ingredient> data, ObjectSource objectSource) {
+        super(data, objectSource);
         serving = null;
         quantityUnit = null;
         compositeFood = null;
@@ -32,7 +30,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @Override
     public Table<Ingredient> getTable() {
-        return Tables.IngredientTable.instance();
+        return Schema.IngredientTable.instance();
     }
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
@@ -55,7 +53,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(QUANTITY_UNIT);
+        return getTypedDataForColumn(Schema.IngredientTable.QUANTITY_UNIT);
     }
 
     public Food getCompositeFood() {
@@ -74,7 +72,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getCompositeFoodId() {
-        return getTypedDataForColumn(COMPOSITE_FOOD_ID);
+        return getTypedDataForColumn(Schema.IngredientTable.COMPOSITE_FOOD_ID);
     }
 
     public Food getIngredientFood() {
@@ -90,7 +88,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getIngredientFoodId() {
-        return getTypedDataForColumn(INGREDIENT_FOOD_ID);
+        return getTypedDataForColumn(Schema.IngredientTable.INGREDIENT_FOOD_ID);
     }
 
     @Nullable
@@ -108,22 +106,17 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @Nullable
     public Long getServingId() {
-        return getTypedDataForColumn(SERVING_ID);
+        return getTypedDataForColumn(Schema.IngredientTable.SERVING_ID);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(QUANTITY);
-    }
-
-    @NotNull
-    public Double getPreparedQuantity() {
-        return getTypedDataForColumn(PREPARED_QUANTITY);
+        return getTypedDataForColumn(Schema.IngredientTable.QUANTITY);
     }
 
     @Nullable
     public String getNotes() {
-        return getTypedDataForColumn(NOTES);
+        return getTypedDataForColumn(Schema.IngredientTable.NOTES);
     }
 
     // returns a string containing the serving count. If the serving count is close to an integer,

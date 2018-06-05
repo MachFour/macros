@@ -1,17 +1,17 @@
 package com.machfour.macros.data;
 
 import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
 public class ColumnData<M> {
-
     // internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
+    private final Table<M> table;
     private final List<Object> data;
     private final List<Boolean> hasData;
-    private final Table<M> table;
 
     @Override
     public boolean equals(Object o) {
@@ -20,20 +20,18 @@ public class ColumnData<M> {
                 // this should be implied by the equality below
                 //&& hasData.equals(((ColumnData) o).hasData)
                 && data.equals(((ColumnData) o).data);
-
     }
 
-    public static <M> boolean columnsAreEqual(ColumnData<M> c1, ColumnData<M> c2, List<Column<M, ?, ?>> columnsToCheck) {
+    public static <M> boolean columnsAreEqual(ColumnData<M> c1, ColumnData<M> c2, List<Column<M, ?>> columnsToCheck) {
         if (c1 == null || c2 == null) {
             return false;
         }
-        boolean equal = true;
-        for (Column<M, ?, ?> col: columnsToCheck) {
+        for (Column<M, ?> col: columnsToCheck) {
             if (!Objects.equals(c1.unboxColumn(col), c2.unboxColumn(col))) {
-                equal = false;
+                return false;
             }
         }
-        return equal;
+        return true;
     }
 
     @Override
@@ -43,48 +41,45 @@ public class ColumnData<M> {
 
     @Override
     public String toString() {
-        return table.name() + " data: " + data.toString();
+        return "ColumnData<" + table.name() + "> : " + data.toString();
     }
 
-    public ColumnData(@NotNull Table<M> t) {
-        table = t;
-        int newSize = t.columns().size();
-        data = new ArrayList<>(newSize);
-        hasData = new ArrayList<>(newSize);
-
-        // it's important to preserve the order of the columns as they were passed to the Table object
-        // otherwise we'll get an OutOfBoundsException because we're adding beyond the end of the list.
-
-        // alternatively - we could fill both lists with null first.
-        for (int i = 0; i < newSize; i++) {
+    protected ColumnData(Table<M> table, List<Column<M, ?>> columns, @Nullable ColumnData<M> existing, boolean immutable) {
+        List<Object> data = new ArrayList<>(columns.size());
+        List<Boolean> hasData = new ArrayList<>(columns.size());
+        // prefill lists with null so that we can set any index
+        for (int i = 0; i < columns.size(); i++) {
             data.add(null);
             hasData.add(false);
         }
+        // initialise to defaults
+        for (Column<M, ?> col : columns) {
+            // can't use the putData() method due to type erasure
+            Object initialData = (existing == null) ? col.defaultData() : existing.unboxColumn(col);
+            data.set(col.index(), initialData);
+            hasData.set(col.index(), initialData != null);
+        }
+        this.table = table;
+        this.data = immutable ? Collections.unmodifiableList(data) : data;
+        this.hasData = immutable ? Collections.unmodifiableList(hasData) : hasData;
+    }
+
+    public ColumnData(@NotNull Table<M> t) {
+        this(t, t.columns(), null, false);
     }
 
     public ColumnData(@NotNull ColumnData<M> existing) {
-        this(existing, false);
+        this(existing.table, existing.table.columns(), existing, false);
     }
 
     public ColumnData(@NotNull ColumnData<M> existing, boolean isImmutableCopy) {
-        table = existing.table;
-        if (isImmutableCopy) {
-            data = Collections.unmodifiableList(existing.data);
-            hasData = Collections.unmodifiableList(existing.hasData);
-        } else {
-            int newSize = table.columns().size();
-            data = new ArrayList<>(newSize);
-            hasData = new ArrayList<>(newSize);
-            for (int i = 0; i < newSize; i++) {
-                data.add(i, existing.data.get(i));
-                hasData.add(i, existing.hasData.get(i));
-            }
-        }
+        this(existing.table, existing.table.columns(), existing, isImmutableCopy);
     }
 
     // columns are the same so there will be no type issues
-    public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to) {
-        for (Column<M, ?, ?> col : from.table.columns()) {
+    public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to, List<Column<M, ?>> whichCols) {
+        for (Column<M, ?> col : whichCols) {
+            // can't use the putData() method due to type erasure
             Object o = from.data.get(col.index());
             to.data.set(col.index(), o);
             to.hasData.set(col.index(), o != null);
@@ -96,18 +91,17 @@ public class ColumnData<M> {
     }
 
     // the type of the data is ensured at time of adding it to this columnData object.
-    public <T extends MacrosType<J>, J> J unboxColumn(@NotNull Column<M, T, J> col) {
-        Class<J> typeClass = col.type().javaClass();
-        return typeClass.cast(data.get(col.index()));
+    public <J> J unboxColumn(@NotNull Column<M, J> col) {
+        return col.javaClass().cast(data.get(col.index()));
     }
 
     // will throw exception if the data doesn't match the type
-    public <T extends MacrosType<J>, J> void putData(Column<M, T, J> col, J data) {
+    public <J> void putData(@NotNull Column<M, J> col, J data) {
         this.data.set(col.index(), data);
         hasData.set(col.index(), data != null);
     }
 
-    public boolean hasData(Column<M, ?, ?> col) {
+    public boolean hasData(Column<M, ?> col) {
         return hasData.get(col.index());
     }
 }

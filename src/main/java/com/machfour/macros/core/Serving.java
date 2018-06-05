@@ -1,9 +1,8 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Columns;
 import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.sun.istack.internal.NotNull;
 
 public class Serving extends MacrosEntity<Serving> {
@@ -11,15 +10,15 @@ public class Serving extends MacrosEntity<Serving> {
     private Food food;
     private QuantityUnit quantityUnit;
 
-    public Serving(ColumnData<Serving> data, boolean isFromDb) {
-        super(data, isFromDb);
+    public Serving(ColumnData<Serving> data, ObjectSource objectSource) {
+        super(data, objectSource);
         food = null;
         quantityUnit = null;
     }
 
     @Override
     public Table<Serving> getTable() {
-        return Tables.ServingTable.instance();
+        return Schema.ServingTable.instance();
     }
 
     @Override
@@ -32,14 +31,13 @@ public class Serving extends MacrosEntity<Serving> {
     }
 
     public void setFood(@NotNull Food f) {
-        assert (food == null);
-        assert (getFoodId().equals(f.getId()));
+        assert food == null && foreignKeyMatches(this, Schema.ServingTable.FOOD_ID, f);
         food = f;
     }
 
     @NotNull
-    public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Columns.ServingCol.QUANTITY_UNIT);
+    public String getQuantityUnitAbbr() {
+        return getTypedDataForColumn(Schema.ServingTable.QUANTITY_UNIT);
     }
 
     public QuantityUnit getQuantityUnit() {
@@ -47,28 +45,27 @@ public class Serving extends MacrosEntity<Serving> {
     }
 
     public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert (getQuantityUnit() == null);
-        assert (getQuantityUnitId().equals(q.getId()));
+        assert getQuantityUnit() == null && foreignKeyMatches(this, Schema.ServingTable.QUANTITY_UNIT, q);
         quantityUnit = q;
     }
 
     @NotNull
     public Long getFoodId() {
-        return getTypedDataForColumn(Columns.ServingCol.FOOD_ID);
+        return getTypedDataForColumn(Schema.ServingTable.FOOD_ID);
     }
 
     @NotNull
     public String getName() {
-        return getTypedDataForColumn(Columns.ServingCol.NAME);
+        return getTypedDataForColumn(Schema.ServingTable.NAME);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Columns.ServingCol.QUANTITY);
+        return getTypedDataForColumn(Schema.ServingTable.QUANTITY);
     }
 
     @NotNull
     public Boolean isDefault() {
-        return getTypedDataForColumn(Columns.ServingCol.IS_DEFAULT);
+        return getTypedDataForColumn(Schema.ServingTable.IS_DEFAULT);
     }
 }

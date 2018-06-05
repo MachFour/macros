@@ -1,6 +1,8 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
+import com.machfour.macros.data.Schema;
+import com.sun.istack.internal.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +10,8 @@ import java.util.List;
 public class CompositeFood extends Food {
     private final List<Ingredient> ingredients;
 
-    protected CompositeFood(ColumnData<Food> data, boolean isFromDb) {
-        super(data, isFromDb);
+    protected CompositeFood(ColumnData<Food> data, ObjectSource objectSource) {
+        super(data, objectSource);
         this.ingredients = new ArrayList<>();
         setFoodType(FoodType.COMPOSITE);
     }
@@ -18,10 +20,8 @@ public class CompositeFood extends Food {
         return new ArrayList<>(ingredients);
     }
 
-    public void addIngredient(Ingredient i) {
-        assert (getId().equals(i.getCompositeFoodId()));
-        assert (equals(i.getCompositeFood()));
-        assert (!ingredients.contains(i));
+    public void addIngredient(@NotNull Ingredient i) {
+        assert !ingredients.contains(i) && foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
         ingredients.add(i);
     }
 

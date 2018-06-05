@@ -1,9 +1,8 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Columns;
 import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
@@ -20,8 +19,8 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     @Nullable
     private Serving serving;
 
-    public FoodPortion(ColumnData<FoodPortion> data, boolean isFromDb) {
-        super(data, isFromDb);
+    public FoodPortion(ColumnData<FoodPortion> data, ObjectSource objectSource) {
+        super(data, objectSource);
         serving = null;
         quantityUnit = null;
         food = null;
@@ -31,7 +30,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @Override
     public Table<FoodPortion> getTable() {
-        return Tables.FoodPortionTable.instance();
+        return Schema.FoodPortionTable.instance();
     }
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
@@ -46,15 +45,14 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     }
 
     public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert (quantityUnit == null);
-        assert (getQuantityUnitId().equals(q.getId()));
+        assert quantityUnit == null && foreignKeyMatches(this, Schema.FoodPortionTable.QUANTITY_UNIT, q);
         quantityUnit = q;
 
     }
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.QUANTITY_UNIT);
+        return getTypedDataForColumn(Schema.FoodPortionTable.QUANTITY_UNIT);
     }
 
     public Meal getMeal() {
@@ -62,14 +60,13 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     }
 
     public void setMeal(@NotNull Meal m) {
-        assert (meal == null);
-        assert (getMealId().equals(m.getId()));
+        assert meal == null && foreignKeyMatches(this, Schema.FoodPortionTable.MEAL_ID, m);
         meal = m;
     }
 
     @NotNull
     public Long getMealId() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.MEAL_ID);
+        return getTypedDataForColumn(Schema.FoodPortionTable.MEAL_ID);
     }
 
     public Food getFood() {
@@ -77,15 +74,14 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     }
 
     public void setFood(@NotNull Food f) {
-        assert (food == null);
-        assert (getFoodId().equals(f.getId()));
+        assert food == null && foreignKeyMatches(this, Schema.FoodPortionTable.FOOD_ID, f);
         food = f;
         nutritionData = f.getNutritionData(getQuantity());
     }
 
     @NotNull
     public Long getFoodId() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.FOOD_ID);
+        return getTypedDataForColumn(Schema.FoodPortionTable.FOOD_ID);
     }
 
     @Nullable
@@ -95,20 +91,19 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     // for use during construction
     public void setServing(@NotNull Serving s) {
-        assert (serving == null);
-        assert (getServingId().equals(s.getId()));
+        assert serving == null && foreignKeyMatches(this, Schema.FoodPortionTable.SERVING_ID, s);
         assert (getFoodId().equals(s.getFoodId()));
         serving = s;
     }
 
     @Nullable
     public Long getServingId() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.SERVING_ID);
+        return getTypedDataForColumn(Schema.FoodPortionTable.SERVING_ID);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.QUANTITY);
+        return getTypedDataForColumn(Schema.FoodPortionTable.QUANTITY);
     }
 
     public NutritionData getNutritionData() {
@@ -117,7 +112,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @Nullable
     public String getNotes() {
-        return getTypedDataForColumn(Columns.FoodPortionCol.NOTES);
+        return getTypedDataForColumn(Schema.FoodPortionTable.NOTES);
     }
 
     // returns a string containing the serving count. If the serving count is close to an integer,

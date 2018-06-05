@@ -1,14 +1,12 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Tables;
+import com.machfour.macros.data.Schema;
 import com.machfour.macros.storage.MacrosLinuxDatabase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static com.machfour.macros.data.Columns.FoodCol.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -41,7 +39,7 @@ class FoodTest {
 
     void clearFoodTable() {
         try {
-            db.removeAll(Tables.FoodTable.instance());
+            db.removeAll(Schema.FoodTable.instance());
         } catch (SQLException e) {
             e.printStackTrace();
             fail("Deleting all foods threw SQL exception");
@@ -50,31 +48,28 @@ class FoodTest {
 
     @BeforeAll
     static void doFood() {
-        foodDc = new ColumnData<>(Tables.FoodTable.instance());
-        foodDc.putData(ID, MacrosPersistable.NO_ID);
-        foodDc.putData(CREATE_TIME, 0L);
-        foodDc.putData(MODIFY_TIME, 0L);
-        foodDc.putData(INDEX_NAME, "food1");
-        foodDc.putData(BRAND, "Max's");
-        foodDc.putData(COMMERCIAL_NAME, "Commercial");
-        foodDc.putData(VARIETY_PREFIX_1, "really");
-        foodDc.putData(VARIETY_PREFIX_2, "good");
-        foodDc.putData(NAME, "food");
-        foodDc.putData(VARIETY_SUFFIX, null);
-        foodDc.putData(NOTES, "notes");
-        foodDc.putData(CATEGORY, 1L);
-        foodDc.putData(FOOD_TYPE, FoodType.PRIMARY.name);
-        foodDc.putData(DENSITY, 1.0);
-        foodDc.putData(USDA_INDEX, null);
-        foodDc.putData(NUTTAB_INDEX, null);
-        testFood = new Food(foodDc, false);
+        foodDc = new ColumnData<>(Schema.FoodTable.instance());
+        foodDc.putData(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
+        foodDc.putData(Schema.FoodTable.CREATE_TIME, 0L);
+        foodDc.putData(Schema.FoodTable.MODIFY_TIME, 0L);
+        foodDc.putData(Schema.FoodTable.INDEX_NAME, "food1");
+        foodDc.putData(Schema.FoodTable.BRAND, "Max's");
+        foodDc.putData(Schema.FoodTable.VARIETY, "really good");
+        foodDc.putData(Schema.FoodTable.NAME, "food");
+        foodDc.putData(Schema.FoodTable.VARIETY_AFTER_NAME, false);
+        foodDc.putData(Schema.FoodTable.NOTES, "notes");
+        foodDc.putData(Schema.FoodTable.CATEGORY, "Dairy");
+        foodDc.putData(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.name);
+        foodDc.putData(Schema.FoodTable.USDA_INDEX, null);
+        foodDc.putData(Schema.FoodTable.NUTTAB_INDEX, null);
+        testFood = new Food(foodDc, ObjectSource.IMPORT);
     }
 
     @Test
     void getFoodFromDb() {
         ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
-        modifiedData.putData(ID, 50L);
-        Food f = new Food(modifiedData, false);
+        modifiedData.putData(Schema.FoodTable.ID, 50L);
+        Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {
             // first save with known ID
             assertEquals(1, db.saveObject(f));
@@ -108,9 +103,9 @@ class FoodTest {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
             ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
-            modifiedData.putData(ID, i);
-            modifiedData.putData(INDEX_NAME, "food" + i);
-            Food modifiedIndexName = new Food(modifiedData, false);
+            modifiedData.putData(Schema.FoodTable.ID, i);
+            modifiedData.putData(Schema.FoodTable.INDEX_NAME, "food" + i);
+            Food modifiedIndexName = new Food(modifiedData, ObjectSource.RESTORE);
             lotsOfFoods.add(modifiedIndexName);
         }
         try {
@@ -124,8 +119,8 @@ class FoodTest {
     @Test
     void saveFoodFromDb() {
         ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
-        modifiedData.putData(ID, 50L);
-        Food f = new Food(modifiedData, false);
+        modifiedData.putData(Schema.FoodTable.ID, 50L);
+        Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {
             // first save with known ID
             assertEquals(1, db.saveObject(f));
@@ -134,8 +129,8 @@ class FoodTest {
             fail("DB save threw exception");
         }
         // now change the data and save with same ID
-        modifiedData.putData(NAME, "newName");
-        Food f1 = new Food(modifiedData, true);
+        modifiedData.putData(Schema.FoodTable.NAME, "newName");
+        Food f1 = new Food(modifiedData, ObjectSource.USER_EDIT);
         try {
             assertEquals(1, db.saveObject(f1));
         } catch (SQLException e) {
@@ -147,8 +142,8 @@ class FoodTest {
     @Test
     void testSaveWithId() {
         ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
-        modifiedData.putData(ID, 500L);
-        Food f = new Food(modifiedData, false);
+        modifiedData.putData(Schema.FoodTable.ID, 500L);
+        Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {
             assertEquals(1, db.saveObject(f));
         } catch (SQLException e) {

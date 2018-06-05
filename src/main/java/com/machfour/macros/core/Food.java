@@ -8,28 +8,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.machfour.macros.data.Columns.FoodCol.*;
-
 public class Food extends MacrosEntity<Food> {
 
-    public static final List<Column<Food, Types.Text, String>> DESCRIPTION_COLUMNS = Arrays.asList(
-        BRAND
-        , COMMERCIAL_NAME
-        , VARIETY_PREFIX_1
-        , VARIETY_PREFIX_2
-        , NAME
-        , VARIETY_SUFFIX
-        , NOTES
-        , INDEX_NAME
+    public static final List<Column<Food, String>> DESCRIPTION_COLUMNS = Arrays.asList(
+        Schema.FoodTable.BRAND
+        , Schema.FoodTable.VARIETY
+        , Schema.FoodTable.NAME
+        , Schema.FoodTable.NOTES
+        , Schema.FoodTable.INDEX_NAME
     );
 
     private final List<Serving> servings;
 
     private NutritionData nutritionData;
     private FoodType foodType;
+    private FoodCategory foodCategory;
 
-    public Food(ColumnData<Food> dataMap, boolean isFromDb) {
-        super(dataMap, isFromDb);
+    public Food(ColumnData<Food> dataMap, ObjectSource objectSource) {
+        super(dataMap, objectSource);
         servings = new ArrayList<>();
         foodType = null;
         nutritionData = null;
@@ -41,44 +37,45 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public void setFoodType(@NotNull FoodType f) {
-        assert (foodType == null);
-        assert (f.toString().equals(getTypedDataForColumn(FOOD_TYPE)));
+        assert foodType == null && f.toString().equals(getTypedDataForColumn(Schema.FoodTable.FOOD_TYPE));
         foodType = f;
+    }
+
+    public void setFoodCategory(@NotNull FoodCategory c) {
+        assert foodCategory == null && foreignKeyMatches(this, Schema.FoodTable.CATEGORY, c);
+        foodCategory = c;
+    }
+    public FoodCategory getFoodCategory() {
+        return foodCategory;
     }
 
     @Override
     public Table<Food> getTable() {
-        return Tables.FoodTable.instance();
+        return Schema.FoodTable.instance();
     }
 
     public void addServing(@NotNull Serving s) {
-        assert (getId().equals(s.getFoodId()));
-        assert (equals(s.getFood()));
-        assert (!servings.contains(s));
+        assert (!servings.contains(s)) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this);
         servings.add(s);
     }
 
     @Nullable
     public Long getUsdaIndex() {
-        return getTypedDataForColumn(USDA_INDEX);
+        return getTypedDataForColumn(Schema.FoodTable.USDA_INDEX);
     }
 
     @Nullable
     public String getNuttabIndex() {
-        return getTypedDataForColumn(NUTTAB_INDEX);
+        return getTypedDataForColumn(Schema.FoodTable.NUTTAB_INDEX);
     }
 
-    @Nullable
-    public Double getDensity() {
-        return getTypedDataForColumn(DENSITY);
-    }
 
     @Override
     public boolean equals(Object o) {
         return o instanceof Food && super.equals(o);
     }
 
-    private String getDescriptionData(Column<Food, Types.Text, String> fieldName) {
+    private String getDescriptionData(Column<Food, String> fieldName) {
         assert (DESCRIPTION_COLUMNS.contains(fieldName));
         return getTypedDataForColumn(fieldName);
     }
@@ -99,58 +96,37 @@ public class Food extends MacrosEntity<Food> {
         return prettyFormat(true, true, true);
     }
 
-    public Long getCategoryId() {
-        return getTypedDataForColumn(CATEGORY);
+    public String getCategoryId() {
+        return getTypedDataForColumn(Schema.FoodTable.CATEGORY);
     }
 
-    private String prettyFormat(boolean withBrand, boolean withDetails,
-                                boolean sortable) {
-        StringBuilder prettyName = new StringBuilder(getDescriptionData(NAME));
+    private String prettyFormat(boolean withBrand, boolean withNotes, boolean sortable) {
+        StringBuilder prettyName = new StringBuilder(getDescriptionData(Schema.FoodTable.NAME));
 
-        String vp1 = getDescriptionData(VARIETY_PREFIX_1);
-        String vp2 = getDescriptionData(VARIETY_PREFIX_2);
-        String vs = getDescriptionData(VARIETY_SUFFIX);
+        String v = getDescriptionData(Schema.FoodTable.VARIETY);
 
         if (sortable) {
-            if (hasDescriptionData(COMMERCIAL_NAME)) {
-                prettyName.append(", ");
-                if (withBrand && hasDescriptionData(BRAND)) {
-                    prettyName.append(getDescriptionData(BRAND)).append(" ");
-                }
-                prettyName.append(getDescriptionData(COMMERCIAL_NAME));
-            } else {
-                if (hasDescriptionData(VARIETY_PREFIX_1) && hasDescriptionData(VARIETY_PREFIX_2)) {
-                    prettyName.append(", ").append(vp1).append(" ").append(vp2);
-                } else if (hasDescriptionData(VARIETY_PREFIX_1)) {
-                    prettyName.append(", ").append(vp1);
-                } else if (hasDescriptionData(VARIETY_PREFIX_2)) {
-                    prettyName.append(", ").append(vp2);
-                }
-                if (hasDescriptionData(VARIETY_SUFFIX)) {
-                    prettyName.append(", ").append(vs);
-                }
+            if (withBrand && hasDescriptionData(Schema.FoodTable.BRAND)) {
+                prettyName.append(getDescriptionData(Schema.FoodTable.BRAND)).append(", ");
+            }
+            if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
+                prettyName.append(", ").append(v);
             }
         } else {
-            if (hasDescriptionData(COMMERCIAL_NAME)) {
-                prettyName.insert(0, getDescriptionData(COMMERCIAL_NAME) + " ");
-            } else {
-                if (hasDescriptionData(VARIETY_PREFIX_2)) {
-                    prettyName.insert(0, vp2 + " ");
-                }
-                if (hasDescriptionData(VARIETY_PREFIX_1)) {
-                    prettyName.insert(0, vp1 + " ");
-                }
-                if (hasDescriptionData(VARIETY_SUFFIX)) {
-                    prettyName.append(" ").append(vs);
+            if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
+                if (getTypedDataForColumn(Schema.FoodTable.VARIETY_AFTER_NAME)) {
+                    prettyName.append(" ").append(v);
+                } else {
+                    prettyName.insert(0, v + " ");
                 }
             }
-            if (withBrand && hasDescriptionData(BRAND)) {
-                prettyName.insert(0, getDescriptionData(BRAND) + " ");
+            if (withBrand && hasDescriptionData(Schema.FoodTable.BRAND)) {
+                prettyName.insert(0, getDescriptionData(Schema.FoodTable.BRAND) + " ");
             }
         }
 
-        if (withDetails && hasDescriptionData(NOTES)) {
-            prettyName.append(" (").append(getDescriptionData(NOTES)).append(")");
+        if (withNotes && hasDescriptionData(Schema.FoodTable.NOTES)) {
+            prettyName.append(" (").append(getDescriptionData(Schema.FoodTable.NOTES)).append(")");
         }
 
         return prettyName.toString();
@@ -159,18 +135,14 @@ public class Food extends MacrosEntity<Food> {
     /*
      * Order of fields:
      * if sortable:
-     *   if commercialName is present:
-     *     <sqlName>, <brand> <commercialName> (<details>)
-     *   else
-     *     <sqlName>, <varPrefix1> <varPrefix2>, <varSuffix>, <brand> (<details>)
+     *     <name>, <brand>, <variety> (<notes>)
+     * else if variety_after_name is present:
+     *     <brand> <name> <variety> (<notes>)
      * else:
-     *   if commercialName is present:
-     *      <brand> <commercialName> <sqlName> (<details>)
-     *   else:
-     *      <brand> <varPrefix1> <varPrefix2> <sqlName> <varSuffix> (<details>)
+     *     <brand> <variety> <name> (<notes>)
      */
 
-    private Boolean hasDescriptionData(Column<Food, Types.Text, String> fieldName) {
+    private boolean hasDescriptionData(Column<Food, String> fieldName) {
         return hasData(fieldName);
     }
 
@@ -191,8 +163,7 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public void setNutritionData(@NotNull NutritionData nd) {
-        assert (nutritionData == null);
-        assert (getId().equals(nd.getFoodId()));
+        assert nutritionData == null && foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this);
         nutritionData = nd;
     }
 

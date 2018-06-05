@@ -3,7 +3,7 @@ package com.machfour.macros.data;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
-public interface MacrosType<J> {
+interface MacrosType<J> {
 
     // These methods perform type-specific conversion is necessary
     // if raw is null then null will be returned

@@ -1,9 +1,7 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.data.Tables;
 import com.machfour.macros.storage.CsvStorage;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +16,7 @@ class CsvTest {
     void testCsvRead() {
         List<Food> csvFoods;
         try {
-            csvFoods = CsvStorage.readObjects(Tables.FoodTable.instance(), CsvStorage.FOOD_CSV_FILENAME);
+            csvFoods = CsvStorage.buildFoodObjectTree(CsvStorage.FOOD_CSV_FILENAME);
             assertNotEquals(0, csvFoods.size(), "CSV read in zero foods!");
             System.out.println(csvFoods.get(0));
         } catch (IOException e) {

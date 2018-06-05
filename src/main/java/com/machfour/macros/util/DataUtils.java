@@ -2,8 +2,7 @@ package com.machfour.macros.util;
 
 import com.machfour.macros.core.NutritionData;
 import com.machfour.macros.data.Column;
-import com.machfour.macros.data.Columns;
-import com.machfour.macros.data.Types;
+import com.machfour.macros.data.Schema;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -14,19 +13,19 @@ import java.util.Map;
  */
 
 public final class DataUtils {
-    public static final Map<Column<NutritionData, Types.Real, Double>, String> unitString;
+    public static final Map<Column<NutritionData, Double>, String> unitString;
 
     static {
         unitString = new HashMap<>(NutritionData.NUTRIENT_COLUMNS.size());
-        for (Column<NutritionData, Types.Real, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
-            if (nutrient.equals(Columns.NutritionDataCol.SODIUM) ||
-                nutrient.equals(Columns.NutritionDataCol.CALCIUM) ||
-                nutrient.equals(Columns.NutritionDataCol.OMEGA_3_FAT) ||
-                nutrient.equals(Columns.NutritionDataCol.OMEGA_6_FAT)) {
+        for (Column<NutritionData, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
+            if (nutrient.equals(Schema.NutritionDataTable.SODIUM) ||
+                nutrient.equals(Schema.NutritionDataTable.CALCIUM) ||
+                nutrient.equals(Schema.NutritionDataTable.OMEGA_3_FAT) ||
+                nutrient.equals(Schema.NutritionDataTable.OMEGA_6_FAT)) {
                 unitString.put(nutrient, "mg");
-            } else if (nutrient.equals(Columns.NutritionDataCol.CALORIES)) {
+            } else if (nutrient.equals(Schema.NutritionDataTable.CALORIES)) {
                 unitString.put(nutrient, "cal");
-            } else if (nutrient.equals(Columns.NutritionDataCol.KILOJOULES)) {
+            } else if (nutrient.equals(Schema.NutritionDataTable.KILOJOULES)) {
                 unitString.put(nutrient, "kj");
             } else {
                 unitString.put(nutrient, "g");
@@ -39,7 +38,7 @@ public final class DataUtils {
 
     // Formats the given data field (assumed to be a double) to a string.
     // Automatically adds an asterisk if the data is missing.
-    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Types.Real, Double> field, int decimalPoints) {
+    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Double> field, int decimalPoints) {
         return formatDouble(nd.getNutrientData(field), decimalPoints, !nd.hasNutrient(field));
     }
 

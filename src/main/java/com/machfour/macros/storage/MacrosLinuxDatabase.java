@@ -2,9 +2,7 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.data.*;
-import com.machfour.macros.data.Columns.*;
-import com.machfour.macros.data.Tables.*;
-import com.machfour.macros.data.Types;
+import com.machfour.macros.data.Schema.*;
 import com.machfour.macros.util.DateStamp;
 import com.sun.istack.internal.NotNull;
 import org.sqlite.SQLiteDataSource;
@@ -17,7 +15,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 
-import static com.machfour.macros.storage.SqlUtils.toList;
+import static com.machfour.macros.storage.StorageUtils.toList;
 
 // data source provided by Xerial library
 
@@ -105,12 +103,13 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     private <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException {
         try (Connection c = getConnection();
-                PreparedStatement s = c.prepareStatement(SqlUtils.deleteTemplate(t, t.getIdColumn()))) {
-            SqlUtils.bindObjects(s, toList(id));
+                PreparedStatement s = c.prepareStatement(StorageUtils.deleteTemplate(t, t.getIdColumn()))) {
+            StorageUtils.bindObjects(s, toList(id));
             s.executeUpdate();
             return 1;
         }
     }
+    // TODO select by secondary key
 
     @Override
     // TODO make this the general one
@@ -129,26 +128,26 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     @Override
     public List<Long> foodSearch(String keyword) throws SQLException {
-        List<Column<Food, Types.Text, String>> columns = Arrays.asList(
-              Columns.FoodCol.INDEX_NAME
-            , Columns.FoodCol.NAME
-            , Columns.FoodCol.COMMERCIAL_NAME
-            , Columns.FoodCol.BRAND
+        List<Column<Food, String>> columns = Arrays.asList(
+              FoodTable.INDEX_NAME
+            , FoodTable.NAME
+            , FoodTable.VARIETY
+            , FoodTable.BRAND
         );
-        return prefixSearch(Tables.FoodTable.instance(), columns, keyword);
+        return prefixSearch(FoodTable.instance(), columns, keyword);
     }
 
     public <M extends MacrosPersistable> List<Long> prefixSearch(
-            Table<M> t, List<Column<M, Types.Text, String>> cols, String keyword) throws SQLException {
+            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
         List<Long> resultList = new ArrayList<>(0);
         if (!cols.isEmpty()) {
             // TODO copy-pasted from SelectColumn... probably needs refactoring
             try (Connection c = getConnection();
-                 PreparedStatement p = c.prepareStatement(SqlUtils.selectLikeTemplate(t, t.getIdColumn(), cols))) {
+                 PreparedStatement p = c.prepareStatement(StorageUtils.selectLikeTemplate(t, t.getIdColumn(), cols))) {
                 // have to append the percent sign for LIKE globbing to the actual argument string
                 String keywordGlob = keyword + "%";
                 List<String> bindString = Collections.nCopies(cols.size(), keywordGlob);
-                SqlUtils.bindObjects(p, bindString);
+                StorageUtils.bindObjects(p, bindString);
                 try (ResultSet rs = p.executeQuery()) {
                     for (; rs.next(); rs.afterLast()) {
                         resultList.add(rs.getLong(0));
@@ -168,7 +167,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     public List<Food> getFoodsById(@NotNull List<Long> foodIds) throws SQLException {
         List<Food> foods = getRawObjectsByIds(FoodTable.instance(), foodIds);
-        Map<Long, Food> idMap = SqlUtils.makeIdMap(foods);
+        Map<Long, Food> idMap = StorageUtils.makeIdMap(foods);
         applyServingsToRawFoods(idMap);
         applyNutritionDataToRawFoods(idMap);
         // TODO FoodType, FoodCategory
@@ -177,8 +176,8 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     private void applyServingsToRawFoods(Map<Long, Food> foodMap) throws SQLException {
         List<Long> foodIds = new ArrayList<>(foodMap.keySet());
-        List<Long> servingIds = selectColumn(ServingTable.instance(), ServingCol.ID, ServingCol.FOOD_ID, foodIds);
-        List<Serving> servings = getRawObjectsByKeys(ServingTable.instance(), ServingCol.ID, servingIds);
+        List<Long> servingIds = selectColumn(ServingTable.instance(), ServingTable.ID, ServingTable.FOOD_ID, foodIds);
+        List<Serving> servings = getRawObjectsByKeys(ServingTable.instance(), ServingTable.ID, servingIds);
         for (Serving s : servings) {
             // this query should never fail, due to database constraints
             Food f = foodMap.get(s.getFoodId());
@@ -189,8 +188,8 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     private void applyNutritionDataToRawFoods(Map<Long, Food> foodMap) throws SQLException {
         List<Long> foodIds = new ArrayList<>(foodMap.keySet());
-        List<Long> nutritionDataIds = selectColumn(NutritionDataTable.instance(), NutritionDataCol.ID, NutritionDataCol.FOOD_ID, foodIds);
-        List<NutritionData> servings = getRawObjectsByKeys(NutritionDataTable.instance(), NutritionDataCol.ID, nutritionDataIds);
+        List<Long> nutritionDataIds = selectColumn(NutritionDataTable.instance(), NutritionDataTable.ID, NutritionDataTable.FOOD_ID, foodIds);
+        List<NutritionData> servings = getRawObjectsByKeys(NutritionDataTable.instance(), NutritionDataTable.ID, nutritionDataIds);
         for (NutritionData nd : servings) {
             // this query should never fail, due to database constraints
             Food f = foodMap.get(nd.getFoodId());
@@ -205,27 +204,27 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return resultFood.isEmpty() ? null : resultFood.get(0);
     }
 
-    private <M, S extends MacrosType<I>, T extends MacrosType<J>, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, S, I> selectColumn, Column<M, T, J> whereColumn, J whereValue) throws SQLException {
+    private <M, I, J> List<I> selectColumn(
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, J whereValue) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, toList(whereValue), false);
     }
 
-    private <M, S extends MacrosType<I>, T extends MacrosType<J>, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, S, I> selectColumn, Column<M, T, J> whereColumn, List<J> whereValues) throws SQLException {
+    private <M, I, J> List<I> selectColumn(
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    private <M, S extends MacrosType<I>, T extends MacrosType<J>, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, S, I> selectColumn, Column<M, T, J> whereColumn, List<J> whereValues, boolean distinct) throws SQLException {
+    private <M, I, J> List<I> selectColumn(
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues, boolean distinct) throws SQLException {
         List<I> resultList = new ArrayList<>(0);
         try (Connection c = getConnection();
-             PreparedStatement p = c.prepareStatement(SqlUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
-            SqlUtils.bindObjects(p, whereValues);
+             PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
+            StorageUtils.bindObjects(p, whereValues);
             try (ResultSet rs = p.executeQuery()) {
                 for (; rs.next(); rs.afterLast()) {
-                    resultList.add(selectColumn.type().fromRaw(rs.getObject(0)));
+                    resultList.add(selectColumn.fromRaw(rs.getObject(0)));
                 }
             }
 
@@ -240,7 +239,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
     private Long getFoodIdForIndexName(String indexName) throws SQLException {
-        List<Long> idList = selectColumn(FoodTable.instance(), FoodCol.ID, FoodCol.INDEX_NAME, indexName);
+        List<Long> idList = selectColumn(FoodTable.instance(), FoodTable.ID, FoodTable.INDEX_NAME, indexName);
         // a bit redundant since we only need the ID but whatever
         return idList.isEmpty() ? null : idList.get(0);
     }
@@ -277,13 +276,13 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
     private List<Long> getFoodIdsForMeals(List<Long> mealIds) throws SQLException {
-        return selectColumn(FoodPortionTable.instance(), FoodPortionCol.FOOD_ID, FoodPortionCol.MEAL_ID, mealIds, true);
+        return selectColumn(FoodPortionTable.instance(), FoodPortionTable.FOOD_ID, FoodPortionTable.MEAL_ID, mealIds, true);
     }
 
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
     private List<Meal> getRawMealsById(@NotNull List<Long> mealIds) throws SQLException {
-        return getRawObjectsByKeys(MealTable.instance(), MealCol.ID, mealIds);
+        return getRawObjectsByKeys(MealTable.instance(), MealTable.ID, mealIds);
     }
 
     /*
@@ -291,7 +290,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
      * in that meal.
      */
     private void applyFoodPortionsToRawMeal(Meal meal, Map<Long, Food> foodMap) throws SQLException {
-        List<Long> foodPortionIds = selectColumn(FoodPortionTable.instance(), FoodPortionCol.ID, FoodPortionCol.MEAL_ID, meal.getId());
+        List<Long> foodPortionIds = selectColumn(FoodPortionTable.instance(), FoodPortionTable.ID, FoodPortionTable.MEAL_ID, meal.getId());
         if (!foodPortionIds.isEmpty()) {
             List<FoodPortion> foodPortions = getRawObjectsByIds(FoodPortionTable.instance(), foodPortionIds);
             for (FoodPortion fp : foodPortions) {
@@ -317,7 +316,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     @Override
     public List<Long> getMealIdsForDay(@NotNull DateStamp day) throws SQLException {
-        return selectColumn(MealTable.instance(), MealCol.ID, MealCol.DAY, Collections.singletonList(day));
+        return selectColumn(MealTable.instance(), MealTable.ID, MealTable.DAY, Collections.singletonList(day));
         // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
     }
 
@@ -331,25 +330,25 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
-    private <M, T extends MacrosType<J>, J> List<M> getRawObjectsByKeys(Table<M> t, Column<M, T, J> keyCol, List<J> keys) throws SQLException {
+    private <M, J> List<M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, List<J> keys) throws SQLException {
         List<M> objects = new ArrayList<>(keys.size());
         try (Connection c = getConnection();
-             PreparedStatement p = c.prepareStatement(SqlUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
-            SqlUtils.bindObjects(p, keys);
+             PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
+            StorageUtils.bindObjects(p, keys);
             try (ResultSet rs = p.executeQuery()) {
                 for (; !rs.isAfterLast(); rs.next()) {
-                    ColumnData<M> container = new ColumnData<>(t);
-                    for (Column<M, ?, ?> col : t.columns()) {
-                        SqlUtils.rawToColumnData(container, col, rs.getObject(col.sqlName()));
+                    ColumnData<M> data = new ColumnData<>(t);
+                    for (Column<M, ?> col : t.columns()) {
+                        StorageUtils.rawToColumnData(data, col, rs.getObject(col.sqlName()));
                     }
-                    objects.add(t.construct(container, true));
+                    objects.add(MacrosEntity.construct(t, data, ObjectSource.DATABASE));
                 }
             }
         }
         return objects;
     }
 
-    private <M, T extends MacrosType<J>, J> M getRawObjectByKey(Table<M> t, Column<M, T, J> keyCol, J key) throws SQLException {
+    private <M, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
         List<M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
         assert returned.size() <= 1;
         return returned.isEmpty() ? null : returned.get(0);
@@ -362,16 +361,17 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
         int saved = 0;
         Table<M> table = objects.get(0).getTable();
-        List<Column<M, ?, ?>> columnsToInsert = table.columns();
+        List<Column<M, ?>> columnsToInsert = table.columns();
         if (!withId) {
             columnsToInsert = new ArrayList<>(table.columns());
             columnsToInsert.remove(table.getIdColumn());
         } // else inserting for the first time, but it has an ID that we want to keep intact
         try (Connection c = getConnection()) {
             c.setAutoCommit(false);
-            try (PreparedStatement p = c.prepareStatement(SqlUtils.insertTemplate(table, columnsToInsert))) {
+            String statement = StorageUtils.insertTemplate(table, columnsToInsert);
+            try (PreparedStatement p = c.prepareStatement(statement)) {
                 for (M object : objects) {
-                    SqlUtils.bindData(p, object.getAllData(), columnsToInsert);
+                    StorageUtils.bindData(p, object.getAllData(), columnsToInsert);
                     saved += p.executeUpdate();
                     p.clearParameters();
                 }
@@ -392,9 +392,9 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         Table<M> table = objects.get(0).getTable();
         try (Connection c = getConnection()) {
             c.setAutoCommit(false);
-            try (PreparedStatement p = c.prepareStatement(SqlUtils.updateTemplate(table, table.columns(), table.getIdColumn()))) {
+            try (PreparedStatement p = c.prepareStatement(StorageUtils.updateTemplate(table, table.columns(), table.getIdColumn()))) {
                 for (M object : objects) {
-                    SqlUtils.bindData(p, object.getAllData(), table.columns(), object.getId());
+                    StorageUtils.bindData(p, object.getAllData(), table.columns(), object.getId());
                     saved += p.executeUpdate();
                     p.clearParameters();
                 }
@@ -407,14 +407,61 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     public <M extends MacrosPersistable> int removeAll(Table<M> t) throws SQLException {
         try (Connection c = getConnection();
-                PreparedStatement p = c.prepareStatement(SqlUtils.deleteTemplate(t))) {
+                PreparedStatement p = c.prepareStatement(StorageUtils.deleteTemplate(t))) {
             return p.executeUpdate();
+        }
+    }
+
+    private <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
+        String idCol = table.getIdColumn().sqlName();
+        String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name() + " WHERE " + idCol + " = " + id;
+        try (Connection c = getConnection()) {
+            try (Statement s = c.createStatement()) {
+                ResultSet rs = s.executeQuery(query);
+                rs.next();
+                return rs.getInt("count") == 1;
+            }
+        }
+    }
+
+    private <M extends MacrosPersistable<M>> boolean isInDatabase(@NotNull M o) throws SQLException {
+        if (o.getId() != MacrosPersistable.NO_ID) {
+            return idExistsInTable(o.getTable(), o.getId());
+        } else {
+            List<Column<M, ?>> secondaryKey = o.getTable().getSecondaryKey();
+            if (secondaryKey.isEmpty()) {
+                // no way to know except by ID...
+            }
+            return false;
+        }
+    }
+
+    private <M extends MacrosPersistable<M>> boolean shouldUpdate(@NotNull M o) throws SQLException {
+        switch (o.getObjectSource()) {
+            case IMPORT:
+                return false;
+            case USER_EDIT:
+                return true;
+            case DATABASE:
+                // though really, if it's unchanged we shouldn't be doing anything at all!
+                return true;
+            case USER_NEW:
+                return true;
+            case RESTORE:
+                // will have ID. Assume database has been cleared
+                return isInDatabase(o);
+            case COMPUTED:
+                // don't want to save these ones either
+                return false;
+            default:
+                assert (false);
+                return false;
         }
     }
 
     @Override
     public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
-        if (o.isFromDb()) {
+        if (shouldUpdate(o)) {
             return updateObjects(toList(o));
         } else {
             return insertObjects(toList(o), !o.getId().equals(MacrosPersistable.NO_ID));

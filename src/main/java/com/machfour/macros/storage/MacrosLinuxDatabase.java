@@ -71,15 +71,13 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     }
 
 
-    public boolean dbExists() {
-        return Files.exists(DB_PATH);
-    }
-
-    public boolean removeDb() throws IOException {
+    public boolean deleteIfExists() throws IOException {
         if (Files.exists(DB_PATH)) {
             Files.delete(DB_PATH);
+            return true;
+        } else {
+            return false;
         }
-        return true;
     }
 
     private Connection getConnection() throws SQLException {

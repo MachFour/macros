@@ -63,7 +63,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
      * value cannot be null; an exception will be thrown if so
      */
     public <J> void setField(Column<M, J> col, J value) {
-        draftData.putData(col, value);
+        draftData.put(col, value);
         isValidValue.put(col, checkErrors(col).isEmpty());
     }
 

@@ -88,6 +88,10 @@ public class CsvStorage {
                 NutritionData nd = MacrosEntity.construct(ndTable, ndData, ObjectSource.IMPORT);
                 Food f = MacrosEntity.construct(foodTable, foodData, ObjectSource.IMPORT);
                 f.setNutritionData(nd);
+                // do secondary key stuff
+                SecondaryKeyData<Food> secondaryFoodKey = new SecondaryKeyData<>(foodTable);
+                secondaryFoodKey.setFromObject(f);
+                nd.setSecondaryFkData(Schema.NutritionDataTable.FOOD_ID, secondaryFoodKey);
                 foods.add(f);
             }
         }

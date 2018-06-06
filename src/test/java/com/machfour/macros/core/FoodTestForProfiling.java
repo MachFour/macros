@@ -17,9 +17,7 @@ public class FoodTestForProfiling {
     static void initDb() {
         db = MacrosLinuxDatabase.getInstance();
         try {
-            if (db.dbExists()) {
-                db.removeDb();
-            }
+            db.deleteIfExists();
             db.initDb();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
@@ -36,19 +34,19 @@ public class FoodTestForProfiling {
 
     static void doFood() {
         foodDc = new ColumnData<>(Schema.FoodTable.instance());
-        foodDc.putData(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
-        foodDc.putData(Schema.FoodTable.CREATE_TIME, 0L);
-        foodDc.putData(Schema.FoodTable.MODIFY_TIME, 0L);
-        foodDc.putData(Schema.FoodTable.INDEX_NAME, "food1");
-        foodDc.putData(Schema.FoodTable.BRAND, "Max's");
-        foodDc.putData(Schema.FoodTable.VARIETY, "really good");
-        foodDc.putData(Schema.FoodTable.NAME, "food");
-        foodDc.putData(Schema.FoodTable.VARIETY_AFTER_NAME, false);
-        foodDc.putData(Schema.FoodTable.NOTES, "notes");
-        foodDc.putData(Schema.FoodTable.CATEGORY, "Dairy");
-        foodDc.putData(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.name);
-        foodDc.putData(Schema.FoodTable.USDA_INDEX, null);
-        foodDc.putData(Schema.FoodTable.NUTTAB_INDEX, null);
+        foodDc.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
+        foodDc.put(Schema.FoodTable.CREATE_TIME, 0L);
+        foodDc.put(Schema.FoodTable.MODIFY_TIME, 0L);
+        foodDc.put(Schema.FoodTable.INDEX_NAME, "food1");
+        foodDc.put(Schema.FoodTable.BRAND, "Max's");
+        foodDc.put(Schema.FoodTable.VARIETY, "really good");
+        foodDc.put(Schema.FoodTable.NAME, "food");
+        foodDc.put(Schema.FoodTable.VARIETY_AFTER_NAME, false);
+        foodDc.put(Schema.FoodTable.NOTES, "notes");
+        foodDc.put(Schema.FoodTable.CATEGORY, "Dairy");
+        foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.name);
+        foodDc.put(Schema.FoodTable.USDA_INDEX, null);
+        foodDc.put(Schema.FoodTable.NUTTAB_INDEX, null);
         testFood = new Food(foodDc, ObjectSource.IMPORT);
     }
 
@@ -56,8 +54,8 @@ public class FoodTestForProfiling {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
             ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
-            modifiedData.putData(Schema.FoodTable.ID, i);
-            modifiedData.putData(Schema.FoodTable.INDEX_NAME, "food" + i);
+            modifiedData.put(Schema.FoodTable.ID, i);
+            modifiedData.put(Schema.FoodTable.INDEX_NAME, "food" + i);
             Food modifiedIndexName = new Food(modifiedData, ObjectSource.IMPORT);
             lotsOfFoods.add(modifiedIndexName);
         }

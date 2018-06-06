@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
+import com.machfour.macros.data.SecondaryKeyData;
 import com.machfour.macros.data.Table;
 import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
@@ -18,6 +19,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
     private final ObjectSource objectSource;
+    private final Map<Column.ForeignKey<M, ?, ?>, SecondaryKeyData<?>> secondaryKeyDataMap;
 
     MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
         Map<Column<M, ?>, ValidationError> errors = checkMappings(data);
@@ -26,6 +28,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         }
         this.dataMap = data;
         this.objectSource = objectSource;
+        this.secondaryKeyDataMap = new HashMap<>();
         checkObjectSource();
     }
 
@@ -64,7 +67,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         List<Column<M, ?>> required = getColumns();
         Map<Column<M, ?>, ValidationError> badMappings = new HashMap<>(required.size());
         for (Column<M, ?> col : required) {
-            if (dataMap.unboxColumn(col) == null && !col.isNullable()) {
+            if (dataMap.get(col) == null && !col.isNullable()) {
                 badMappings.put(col, ValidationError.NON_NULL);
             }
         }
@@ -137,7 +140,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     @Override
     public <J> J getTypedDataForColumn(Column<M, J> c) {
-        return dataMap.unboxColumn(c);
+        return dataMap.get(c);
     }
 
     @Override
@@ -160,6 +163,27 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     }
 
     public abstract Table<M> getTable();
+
+    // used when importing objects and we don't know the ID to use
+    // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
+    // parent object has been stored in the database.
+    public <N extends MacrosPersistable<N>> void setSecondaryFkData(Column.ForeignKey<M, Long, N> col, SecondaryKeyData<N> sKeyData) {
+        secondaryKeyDataMap.put(col, sKeyData);
+    }
+    // used when importing objects and we don't know the ID to use
+    // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
+    // parent object has been stored in the database.
+    @SuppressWarnings("unchecked")
+    public <N extends MacrosPersistable<N>> SecondaryKeyData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col) {
+        // Generics ensure that the table types match
+        return (SecondaryKeyData<N>) secondaryKeyDataMap.get(col);
+    }
+
+    //public SecondaryKeyData<M> void makeSecondaryFkData() {
+    //    SecondaryKeyData<M> data = new SecondaryKeyData<>(getTable());
+    //    data.setFromObject(this);
+    //    return data;
+    //}
 
     @Override
     public String toString() {

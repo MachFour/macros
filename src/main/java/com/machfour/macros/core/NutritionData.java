@@ -102,12 +102,12 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
         ColumnData<NutritionData> combinedDataMap = new ColumnData<>(Schema.NutritionDataTable.instance());
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
-            combinedDataMap.putData(col, sumData.get(col));
+            combinedDataMap.put(col, sumData.get(col));
         }
-        combinedDataMap.putData(Schema.NutritionDataTable.QUANTITY, sumQuantity);
-        combinedDataMap.putData(Schema.NutritionDataTable.QUANTITY_UNIT, QuantityUnit.GRAMS.getAbbreviation());
-        combinedDataMap.putData(Schema.NutritionDataTable.FOOD_ID, null);
-        combinedDataMap.putData(Schema.NutritionDataTable.DATA_SOURCE, "Sum");
+        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY, sumQuantity);
+        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY_UNIT, QuantityUnit.GRAMS.getAbbreviation());
+        combinedDataMap.put(Schema.NutritionDataTable.FOOD_ID, null);
+        combinedDataMap.put(Schema.NutritionDataTable.DATA_SOURCE, "Sum");
         return new NutritionData(combinedDataMap, COMPUTED, combinedHasData);
     }
 
@@ -229,8 +229,8 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData = getAllData(); // all other data remains the same
-        newData.putData(Schema.NutritionDataTable.QUANTITY, newQuantity);
-        newData.putData(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getName());
+        newData.put(Schema.NutritionDataTable.QUANTITY, newQuantity);
+        newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getName());
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
         if (isDensityGuessed) {
             newHasData.put(Schema.NutritionDataTable.QUANTITY, false);
@@ -277,7 +277,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         ColumnData<NutritionData> newData = getAllData();
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             if (hasNutrient(c)) {
-                newData.putData(c, getNutrientData(c) * conversionRatio);
+                newData.put(c, getNutrientData(c) * conversionRatio);
             }
         }
         return new NutritionData(newData, COMPUTED);

@@ -18,27 +18,27 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
     static {
         ColumnData<QuantityUnit> gramsData = new ColumnData<>(Schema.QuantityUnitTable.instance());
-        gramsData.putData(Schema.QuantityUnitTable.ID, 1L);
-        gramsData.putData(Schema.QuantityUnitTable.NAME, "grams");
-        gramsData.putData(Schema.QuantityUnitTable.ABBREVIATION, "g");
-        gramsData.putData(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
-        gramsData.putData(Schema.QuantityUnitTable.IS_VOLUME_UNIT, false);
+        gramsData.put(Schema.QuantityUnitTable.ID, 1L);
+        gramsData.put(Schema.QuantityUnitTable.NAME, "grams");
+        gramsData.put(Schema.QuantityUnitTable.ABBREVIATION, "g");
+        gramsData.put(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
+        gramsData.put(Schema.QuantityUnitTable.IS_VOLUME_UNIT, false);
         GRAMS = new QuantityUnit(gramsData, ObjectSource.DATABASE);
 
         ColumnData<QuantityUnit> milsData = new ColumnData<>(Schema.QuantityUnitTable.instance());
-        milsData.putData(Schema.QuantityUnitTable.ID, 2L);
-        gramsData.putData(Schema.QuantityUnitTable.NAME, "millilitres");
-        gramsData.putData(Schema.QuantityUnitTable.ABBREVIATION, "ml");
-        gramsData.putData(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
-        gramsData.putData(Schema.QuantityUnitTable.IS_VOLUME_UNIT, true);
+        milsData.put(Schema.QuantityUnitTable.ID, 2L);
+        gramsData.put(Schema.QuantityUnitTable.NAME, "millilitres");
+        gramsData.put(Schema.QuantityUnitTable.ABBREVIATION, "ml");
+        gramsData.put(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
+        gramsData.put(Schema.QuantityUnitTable.IS_VOLUME_UNIT, true);
         MILLILITRES = new QuantityUnit(milsData, ObjectSource.DATABASE);
 
         ColumnData<QuantityUnit> mgData = new ColumnData<>(Schema.QuantityUnitTable.instance());
-        mgData.putData(Schema.QuantityUnitTable.ID, 3L);
-        mgData.putData(Schema.QuantityUnitTable.NAME, "milligrams");
-        mgData.putData(Schema.QuantityUnitTable.ABBREVIATION, "mg");
-        mgData.putData(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 0.001);
-        mgData.putData(Schema.QuantityUnitTable.IS_VOLUME_UNIT, false);
+        mgData.put(Schema.QuantityUnitTable.ID, 3L);
+        mgData.put(Schema.QuantityUnitTable.NAME, "milligrams");
+        mgData.put(Schema.QuantityUnitTable.ABBREVIATION, "mg");
+        mgData.put(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 0.001);
+        mgData.put(Schema.QuantityUnitTable.IS_VOLUME_UNIT, false);
         MILLIGRAMS = new QuantityUnit(gramsData, ObjectSource.DATABASE);
 
         INBUILT = Arrays.asList(GRAMS, MILLIGRAMS, MILLILITRES);

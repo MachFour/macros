@@ -35,18 +35,11 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     @NotNull
     Long getModifyTime();
 
-    boolean isFromDb();
-
     @NotNull
     ObjectSource getObjectSource();
 
-    // Used to access the columns defined in the corresponding table schema
-    List<Column<M, ?>> getColumns();
-
-    Map<String, Column<M, ?>> getColumnsByName();
-
     // Used to get data by column objects
-    <J> J getTypedDataForColumn(Column<M, J> c);
+    <J> J getData(Column<M, J> c);
 
     boolean hasData(Column<M, ?> c);
 
@@ -54,4 +47,10 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     ColumnData<M> getAllData();
 
     Table<M> getTable();
+
+    <N extends MacrosPersistable<N>> void setSecondaryFkParent(Column.ForeignKey<M, Long, N> col, N parent);
+
+    <N extends MacrosPersistable<N>> ColumnData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col);
+
+    Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> getSecondaryFkMap();
 }

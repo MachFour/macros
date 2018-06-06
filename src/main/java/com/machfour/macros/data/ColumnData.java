@@ -6,15 +6,16 @@ import com.sun.istack.internal.Nullable;
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
-public class ColumnData<M> {
+public final class ColumnData<M> {
     // internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     private final Table<M> table;
     private final Object[] data;
     private final boolean[] hasData;
-    private final boolean immutable;
     // which columns have data stored in this ColumnData object;
     private final Set<Column<M, ?>> columns;
+
+    private boolean immutable;
 
     @Override
     public boolean equals(Object o) {
@@ -27,10 +28,6 @@ public class ColumnData<M> {
 
     public boolean hasColumns(@NotNull List<Column<M, ?>> cols) {
         return getColumns().containsAll(cols);
-    }
-
-    public boolean hasColumn(@NotNull Column<M, ?> col) {
-        return getColumns().contains(col);
     }
 
     public Set<Column<M, ?>> getColumns() {
@@ -59,36 +56,40 @@ public class ColumnData<M> {
         return "ColumnData<" + table.name() + "> : " + Arrays.deepToString(data);
     }
 
-    protected ColumnData(Table<M> table, List<Column<M, ?>> cols, @Nullable ColumnData<M> existing, boolean immutable) {
+    // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
+    private ColumnData(Table<M> table, List<Column<M, ?>> cols, @Nullable ColumnData<M> existing) {
         // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
         // hold columns of any index, up to the number of columns in the table minus 1.
         int arraySize = table.columns().size();
         this.data = new Object[arraySize];
         this.hasData = new boolean[arraySize];
         this.table = table;
-        this.immutable = immutable;
+        this.immutable = false;
         HashSet<Column<M, ?>> tempCols = new HashSet<>(cols.size(), 1);
         // initialise to defaults
         for (Column<M, ?> col : cols) {
             // can't use the put() method due to type erasure
-            Object initialData = (existing == null) ? col.defaultData() : existing.get(col);
+            Object initialData = existing == null ? col.defaultData() : existing.getWithoutAssert(col);
             data[col.index()] = initialData;
             hasData[col.index()] = (initialData != null);
             tempCols.add(col);
         }
         columns = Collections.unmodifiableSet(tempCols);
+        if (existing != null) {
+            copyData(existing, this, cols);
+        }
+    }
+
+    public void setImmutable() {
+        this.immutable = true;
+    }
+
+    public ColumnData(Table<M> t, List<Column<M, ?>> cols) {
+        this(t, cols, null);
     }
 
     public ColumnData(@NotNull Table<M> t) {
-        this(t, t.columns(), null, false);
-    }
-
-    public ColumnData(@NotNull ColumnData<M> existing) {
-        this(existing.table, existing.table.columns(), existing, false);
-    }
-
-    public ColumnData(@NotNull ColumnData<M> existing, boolean isImmutableCopy) {
-        this(existing.table, existing.table.columns(), existing, isImmutableCopy);
+        this(t, t.columns(), null);
     }
 
     public boolean isImmutable() {
@@ -106,11 +107,23 @@ public class ColumnData<M> {
         }
     }
 
+    public ColumnData<M> copy() {
+        return new ColumnData<>(table, table.columns(), this);
+    }
+
+    public ColumnData<M> copy(List<Column<M, ?>> whichCols) {
+        assertHasColumns(whichCols);
+        return new ColumnData<>(table, whichCols, this);
+    }
+
     private void assertHasColumn(Column<M, ?> col) {
-        assert hasColumn(col) : "Column " + col + " not present";
+        assertHasColumns(Collections.singletonList(col));
+    }
+    private void assertHasColumns(List<Column<M, ?>> cols) {
+        assert columns.containsAll(cols);
     }
     private void assertMutable() {
-        assert !isImmutable() : getClass().toString() + " is immutable";
+        assert !isImmutable() : "ColumnData is immutable";
     }
 
     public Table<M> getTable() {
@@ -120,20 +133,22 @@ public class ColumnData<M> {
     // the type of the data is ensured at time of adding it to this columnData object.
     public <J> J get(@NotNull Column<M, J> col) {
         assertHasColumn(col);
-        return col.javaClass().cast(data[col.index()]);
+        return getWithoutAssert(col);
+    }
+    private <J> J getWithoutAssert(@NotNull Column<M, J> col) {
+        return col.getType().cast(data[col.index()]);
     }
 
     // will throw exception if the data doesn't match the type
-    public <J> void put(@NotNull Column<M, J> col, J d) {
+    public <J> void put(@NotNull Column<M, J> col, J data) {
         assertHasColumn(col);
         assertMutable();
-        data[col.index()] = d;
-        hasData[col.index()] = (d != null);
+        this.data[col.index()] = data;
+        hasData[col.index()] = (data != null);
     }
 
     public boolean hasData(Column<M, ?> col) {
         assertHasColumn(col);
-        assertMutable();
         return hasData[col.index()];
     }
 }

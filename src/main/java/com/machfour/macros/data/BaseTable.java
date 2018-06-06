@@ -7,7 +7,9 @@ import java.util.*;
 public abstract class BaseTable<M> implements Table<M> {
     private final String name;
     private final List<Column<M, ?>> columns;
-    private final List<Column<M, ?>> secondaryKey;
+    // can't define this as a List<Column.ForeignKey<M, ?, ?>> due to generics issues
+    private final List<Column<M, ?>> fkColumns;
+    private final List<Column<M, ?>> secondaryKeyCols;
     private final Map<String, Column<M, ?>> columnsByName;
     private final Column<M, Long> idColumn;
     private final Column<M, Long> createTimeColumn;
@@ -27,16 +29,22 @@ public abstract class BaseTable<M> implements Table<M> {
         columns = Collections.unmodifiableList(cols);
 
         // make name map and secondary key cols list
-        Map<String, Column<M, ?>> colsByName = new HashMap<>(cols.size(), 1);
+        Map<String, Column<M, ?>> columnsByName = new HashMap<>(cols.size(), 1);
         List<Column<M, ?>> secondaryKeyCols = new ArrayList<>(2);
+        List<Column<M, ?>> fkColumns = new ArrayList<>(2);
+
         for (Column<M, ?> c : cols) {
-            colsByName.put(c.sqlName(), c);
+            columnsByName.put(c.sqlName(), c);
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
+            if (c instanceof Column.ForeignKey) {
+                fkColumns.add(c);
+            }
         }
-        columnsByName = Collections.unmodifiableMap(colsByName);
-        secondaryKey = Collections.unmodifiableList(secondaryKeyCols);
+        this.columnsByName = Collections.unmodifiableMap(columnsByName);
+        this.secondaryKeyCols = Collections.unmodifiableList(secondaryKeyCols);
+        this.fkColumns = Collections.unmodifiableList(fkColumns);
     }
 
     @Override
@@ -60,12 +68,17 @@ public abstract class BaseTable<M> implements Table<M> {
         return columns;
     }
     @Override
+    public List<Column<M, ?>> fkColumns() {
+        return fkColumns;
+    }
+
+    @Override
     public Map<String, Column<M, ?>> columnsByName() {
         return columnsByName;
     }
     @Override
-    public List<Column<M, ?>> getSecondaryKey() {
-        return secondaryKey;
+    public List<Column<M, ?>> getSecondaryKeyCols() {
+        return secondaryKeyCols;
     }
     @Override
     public abstract M construct(ColumnData<M> dataMap, ObjectSource objectSource);

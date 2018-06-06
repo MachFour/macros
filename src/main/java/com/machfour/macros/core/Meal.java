@@ -52,7 +52,7 @@ public class Meal extends MacrosEntity<Meal> {
     }
 
     public DateStamp getDay() {
-        return getTypedDataForColumn(Schema.MealTable.DAY);
+        return getData(Schema.MealTable.DAY);
     }
 
     public List<FoodPortion> getFoodPortions() {

@@ -2,7 +2,6 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.data.Column;
 import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.SecondaryKeyData;
 import com.machfour.macros.data.Table;
 import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
@@ -19,16 +18,25 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
     private final ObjectSource objectSource;
-    private final Map<Column.ForeignKey<M, ?, ?>, SecondaryKeyData<?>> secondaryKeyDataMap;
 
+    @Override
+    public Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> getSecondaryFkMap() {
+        return Collections.unmodifiableMap(secondaryFkMap);
+    }
+
+    private final Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> secondaryFkMap;
+
+    // NOTE data passed in is made Immutable as a side effect
     MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
         Map<Column<M, ?>, ValidationError> errors = checkMappings(data);
         if (!errors.isEmpty()) {
             throw new SchemaViolation(errors);
         }
+        //this.dataMap = new ColumnData<>(data);
         this.dataMap = data;
+        this.dataMap.setImmutable();
         this.objectSource = objectSource;
-        this.secondaryKeyDataMap = new HashMap<>();
+        this.secondaryFkMap = new HashMap<>();
         checkObjectSource();
     }
 
@@ -37,7 +45,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     }
 
     // ensures that the presence of the ID is consistent with the semantics of the objectSource
-    // see ObjectSource
+    // see ObjectSource class for more documentation
     private void checkObjectSource() {
         switch (objectSource) {
             case IMPORT:
@@ -45,7 +53,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
             case COMPUTED:
                 assert !hasId() : "Object should not have an ID";
                 break;
-            case USER_EDIT:
+            case DB_EDIT:
             case RESTORE:
             case DATABASE:
                 assert hasId() : "Object should have an ID";
@@ -77,10 +85,10 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
 
     // this also works for import (without IDs) because both columns are NO_ID
-    protected static <M extends MacrosPersistable, J, N extends MacrosPersistable> boolean foreignKeyMatches(
+    protected static <M extends MacrosPersistable<M>, J, N extends MacrosPersistable<N>> boolean foreignKeyMatches(
             MacrosEntity<M> childObj, Column.ForeignKey<M, J, N> childCol, MacrosEntity<N> parentObj) {
-        J childData = childObj.getTypedDataForColumn(childCol);
-        J parentData = parentObj.getTypedDataForColumn(childCol.getParentColumn());
+        J childData = childObj.getData(childCol);
+        J parentData = parentObj.getData(childCol.getParentColumn());
         return Objects.equals(childData, parentData);
 
     }
@@ -92,20 +100,15 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     */
     @NotNull
     public Long getId() {
-        return getTypedDataForColumn(getTable().getIdColumn());
+        return getData(getTable().getIdColumn());
     }
 
     public Long getCreateTime() {
-        return getTypedDataForColumn(getTable().getCreateTimeColumn());
+        return getData(getTable().getCreateTimeColumn());
     }
 
     public Long getModifyTime() {
-        return getTypedDataForColumn(getTable().getModifyTimeColumn());
-    }
-
-    @Override
-    public boolean isFromDb() {
-        return objectSource == ObjectSource.DATABASE;
+        return getData(getTable().getModifyTimeColumn());
     }
 
     @Override
@@ -115,7 +118,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     @Override
     public int hashCode() {
-        //return getAllData().hashCode() + (isFromDb ? 1 : 0);
+        //return getAllData().hashCode() + getObjectSource().ordinal();
         return getAllData().hashCode();
     }
 
@@ -130,7 +133,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         if (o == null) {
             return false;
         }
-        List<Column<M, ?>> columnsToCheck = new ArrayList<>(getColumns());
+        List<Column<M, ?>> columnsToCheck = new ArrayList<>(getTable().columns());
         columnsToCheck.remove(getTable().getIdColumn());
         columnsToCheck.remove(getTable().getCreateTimeColumn());
         columnsToCheck.remove(getTable().getModifyTimeColumn());
@@ -139,7 +142,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     }
 
     @Override
-    public <J> J getTypedDataForColumn(Column<M, J> c) {
+    public <J> J getData(Column<M, J> c) {
         return dataMap.get(c);
     }
 
@@ -151,15 +154,11 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // returns immutable copy of data map
     @Override
     public ColumnData<M> getAllData() {
-        return new ColumnData<>(dataMap, true);
+        return dataMap;
     }
 
     public List<Column<M, ?>> getColumns() {
         return getTable().columns();
-    }
-
-    public Map<String, Column<M, ?>> getColumnsByName() {
-        return getTable().columnsByName();
     }
 
     public abstract Table<M> getTable();
@@ -167,23 +166,25 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // used when importing objects and we don't know the ID to use
     // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
     // parent object has been stored in the database.
-    public <N extends MacrosPersistable<N>> void setSecondaryFkData(Column.ForeignKey<M, Long, N> col, SecondaryKeyData<N> sKeyData) {
-        secondaryKeyDataMap.put(col, sKeyData);
+    public <N extends MacrosPersistable<N>> void setSecondaryFkParent(Column.ForeignKey<M, Long, N> col, @NotNull N parent) {
+        Table<N> table = parent.getTable();
+        assert (!table.getSecondaryKeyCols().isEmpty()) : "Table " + table.name() + " has no secondary key columns";
+        ColumnData<N> parentSecondaryKey = parent.getAllData().copy(table.getSecondaryKeyCols());
+        secondaryFkMap.put(col, parentSecondaryKey);
     }
+
     // used when importing objects and we don't know the ID to use
     // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
     // parent object has been stored in the database.
     @SuppressWarnings("unchecked")
-    public <N extends MacrosPersistable<N>> SecondaryKeyData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col) {
+    public <N extends MacrosPersistable<N>> ColumnData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col) {
+        ColumnData<?> secondaryFkData = secondaryFkMap.get(col);
         // Generics ensure that the table types match
-        return (SecondaryKeyData<N>) secondaryKeyDataMap.get(col);
+        return (ColumnData<N>) secondaryFkData;
     }
+    // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
+    // shares the same parameter as the wildcard being captured.
 
-    //public SecondaryKeyData<M> void makeSecondaryFkData() {
-    //    SecondaryKeyData<M> data = new SecondaryKeyData<>(getTable());
-    //    data.setFromObject(this);
-    //    return data;
-    //}
 
     @Override
     public String toString() {

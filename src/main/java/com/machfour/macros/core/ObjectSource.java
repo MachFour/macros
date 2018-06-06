@@ -46,7 +46,7 @@ public enum ObjectSource {
      * MOD: yes
      * DB: yes
      */
-    , USER_EDIT("user edit")
+    , DB_EDIT("user edit")
 
     /*
      * Describes when objects are together, e.g. combined nutrition data objects.

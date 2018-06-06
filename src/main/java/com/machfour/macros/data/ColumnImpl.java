@@ -1,6 +1,5 @@
 package com.machfour.macros.data;
 
-import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
 import com.sun.istack.internal.NotNull;
@@ -65,26 +64,11 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
     }
 
     @Override
-    public J fromRaw(Object raw) {
-        return type.fromRaw(raw);
+    public MacrosType<J> getType() {
+        return type;
     }
 
-    @Override
-    public J fromString(String stringData) {
-        return type.fromString(stringData);
-    }
-
-    @Override
-    public Object toRaw(J data) {
-        return type.toRaw(data);
-    }
-
-    @Override
-    public Class<J> javaClass() {
-        return type.javaClass();
-    }
-
-    public static class ForeignKey<M, J, N> implements Column.ForeignKey<M, J, N> {
+    public static final class ForeignKey<M, J, N> implements Column.ForeignKey<M, J, N> {
         private final Column<N, J> parent;
         private final Table<N> parentTable;
         private final Column<M, J> child;
@@ -98,25 +82,15 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         public String sqlName() {
             return child.sqlName();
         }
-        @Override
-        public Class<J> javaClass() {
-            return child.javaClass();
-        }
+
         @Override
         public J defaultData() {
             return child.defaultData();
         }
+
         @Override
-        public J fromRaw(Object raw) {
-            return child.fromRaw(raw);
-        }
-        @Override
-        public J fromString(String stringData) {
-            return child.fromString(stringData);
-        }
-        @Override
-        public Object toRaw(J data) {
-            return child.toRaw(data);
+        public MacrosType<J> getType() {
+            return child.getType();
         }
         @Override
         public int index() {

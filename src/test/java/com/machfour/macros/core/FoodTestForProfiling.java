@@ -53,7 +53,7 @@ public class FoodTestForProfiling {
     void saveALotOfFood() {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
-            ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+            ColumnData<Food> modifiedData = foodDc.copy();
             modifiedData.put(Schema.FoodTable.ID, i);
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food" + i);
             Food modifiedIndexName = new Food(modifiedData, ObjectSource.IMPORT);

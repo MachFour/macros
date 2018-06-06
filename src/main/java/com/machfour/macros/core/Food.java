@@ -37,7 +37,7 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public void setFoodType(@NotNull FoodType f) {
-        assert foodType == null && f.toString().equals(getTypedDataForColumn(Schema.FoodTable.FOOD_TYPE));
+        assert foodType == null && f.toString().equals(getData(Schema.FoodTable.FOOD_TYPE));
         foodType = f;
     }
 
@@ -61,12 +61,12 @@ public class Food extends MacrosEntity<Food> {
 
     @Nullable
     public Long getUsdaIndex() {
-        return getTypedDataForColumn(Schema.FoodTable.USDA_INDEX);
+        return getData(Schema.FoodTable.USDA_INDEX);
     }
 
     @Nullable
     public String getNuttabIndex() {
-        return getTypedDataForColumn(Schema.FoodTable.NUTTAB_INDEX);
+        return getData(Schema.FoodTable.NUTTAB_INDEX);
     }
 
 
@@ -77,7 +77,7 @@ public class Food extends MacrosEntity<Food> {
 
     private String getDescriptionData(Column<Food, String> fieldName) {
         assert (DESCRIPTION_COLUMNS.contains(fieldName));
-        return getTypedDataForColumn(fieldName);
+        return getData(fieldName);
     }
 
     public String getShortName() {
@@ -97,7 +97,7 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public String getCategoryId() {
-        return getTypedDataForColumn(Schema.FoodTable.CATEGORY);
+        return getData(Schema.FoodTable.CATEGORY);
     }
 
     private String prettyFormat(boolean withBrand, boolean withNotes, boolean sortable) {
@@ -114,7 +114,7 @@ public class Food extends MacrosEntity<Food> {
             }
         } else {
             if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
-                if (getTypedDataForColumn(Schema.FoodTable.VARIETY_AFTER_NAME)) {
+                if (getData(Schema.FoodTable.VARIETY_AFTER_NAME)) {
                     prettyName.append(" ").append(v);
                 } else {
                     prettyName.insert(0, v + " ");

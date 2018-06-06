@@ -113,7 +113,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @Nullable
     public Long getFoodId() {
-        return getTypedDataForColumn(Schema.NutritionDataTable.FOOD_ID);
+        return getData(Schema.NutritionDataTable.FOOD_ID);
     }
 
     public Food getFood() {
@@ -137,7 +137,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @NotNull
     public String getQuantityUnitAbbr() {
-        return getTypedDataForColumn(Schema.NutritionDataTable.QUANTITY_UNIT);
+        return getData(Schema.NutritionDataTable.QUANTITY_UNIT);
     }
 
     @Override
@@ -228,7 +228,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             ratio /= density;
         }
         double newQuantity = getQuantity() * ratio;
-        ColumnData<NutritionData> newData = getAllData(); // all other data remains the same
+        ColumnData<NutritionData> newData =  getAllData().copy(); // all other data remains the same
         newData.put(Schema.NutritionDataTable.QUANTITY, newQuantity);
         newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getName());
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
@@ -245,7 +245,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @Nullable
     public Double getDensity() {
-        return getTypedDataForColumn(Schema.NutritionDataTable.DENSITY);
+        return getData(Schema.NutritionDataTable.DENSITY);
     }
     private NutritionData convertToGramsIfNecessary() {
         if (!getQuantityUnit().equals(QuantityUnit.GRAMS)) {
@@ -274,7 +274,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     public NutritionData rescale(double quantity) {
         double conversionRatio = quantity / getQuantity();
-        ColumnData<NutritionData> newData = getAllData();
+        ColumnData<NutritionData> newData = getAllData().copy();
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             if (hasNutrient(c)) {
                 newData.put(c, getNutrientData(c) * conversionRatio);
@@ -285,7 +285,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Schema.NutritionDataTable.QUANTITY);
+        return getData(Schema.NutritionDataTable.QUANTITY);
     }
 
     @Override
@@ -300,7 +300,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     public Double getNutrientData(Column<NutritionData, Double> col, Double defaultValue) {
         assert (NUTRIENT_COLUMNS.contains(col));
-        return hasNutrient(col) ? getTypedDataForColumn(col) : defaultValue;
+        return hasNutrient(col) ? getData(col) : defaultValue;
     }
 }
 

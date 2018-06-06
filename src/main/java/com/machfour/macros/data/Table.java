@@ -9,6 +9,7 @@ public interface Table<M> {
     String name();
 
     List<Column<M, ?>> columns();
+    List<Column<M, ?>> fkColumns();
 
     Map<String, Column<M, ?>> columnsByName();
 
@@ -22,7 +23,7 @@ public interface Table<M> {
 
     // returns a list of columns that can be used to identify an individual row,
     // if such a list exists for this table. If not, an empty list is returned.
-    List<Column<M, ?>> getSecondaryKey();
+    List<Column<M, ?>> getSecondaryKeyCols();
 
     M construct(ColumnData<M> dataMap, ObjectSource objectSource);
 }

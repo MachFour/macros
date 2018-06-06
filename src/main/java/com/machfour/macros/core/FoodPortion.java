@@ -52,7 +52,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.QUANTITY_UNIT);
+        return getData(Schema.FoodPortionTable.QUANTITY_UNIT);
     }
 
     public Meal getMeal() {
@@ -66,7 +66,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @NotNull
     public Long getMealId() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.MEAL_ID);
+        return getData(Schema.FoodPortionTable.MEAL_ID);
     }
 
     public Food getFood() {
@@ -81,7 +81,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @NotNull
     public Long getFoodId() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.FOOD_ID);
+        return getData(Schema.FoodPortionTable.FOOD_ID);
     }
 
     @Nullable
@@ -98,12 +98,12 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @Nullable
     public Long getServingId() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.SERVING_ID);
+        return getData(Schema.FoodPortionTable.SERVING_ID);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.QUANTITY);
+        return getData(Schema.FoodPortionTable.QUANTITY);
     }
 
     public NutritionData getNutritionData() {
@@ -112,7 +112,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @Nullable
     public String getNotes() {
-        return getTypedDataForColumn(Schema.FoodPortionTable.NOTES);
+        return getData(Schema.FoodPortionTable.NOTES);
     }
 
     // returns a string containing the serving count. If the serving count is close to an integer,

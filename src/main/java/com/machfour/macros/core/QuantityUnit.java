@@ -67,21 +67,21 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
     @NotNull
     public String getName() {
-        return getTypedDataForColumn(Schema.QuantityUnitTable.NAME);
+        return getData(Schema.QuantityUnitTable.NAME);
     }
 
     @NotNull
     public String getAbbreviation() {
-        return getTypedDataForColumn(Schema.QuantityUnitTable.ABBREVIATION);
+        return getData(Schema.QuantityUnitTable.ABBREVIATION);
     }
 
     @NotNull
     public Double metricEquivalent() {
-        return getTypedDataForColumn(Schema.QuantityUnitTable.METRIC_EQUIVALENT);
+        return getData(Schema.QuantityUnitTable.METRIC_EQUIVALENT);
     }
 
     @NotNull
     public Boolean isVolumeUnit() {
-        return getTypedDataForColumn(Schema.QuantityUnitTable.IS_VOLUME_UNIT);
+        return getData(Schema.QuantityUnitTable.IS_VOLUME_UNIT);
     }
 }

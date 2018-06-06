@@ -221,8 +221,9 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
              PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
             StorageUtils.bindObjects(p, whereValues);
             try (ResultSet rs = p.executeQuery()) {
-                for (; rs.next(); rs.afterLast()) {
-                    resultList.add(selectColumn.fromRaw(rs.getObject(0)));
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                    Object resultValue = rs.getObject(selectColumn.sqlName());
+                    resultList.add(selectColumn.getType().fromRaw(resultValue));
                 }
             }
 
@@ -354,11 +355,18 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     @Override
     public <M extends MacrosPersistable<M>> int insertObjects(@NotNull List<M> objects, boolean withId) throws SQLException {
-        if (objects.isEmpty()) {
+        List<ColumnData<M>> objectData = new ArrayList<>(objects.size());
+        for (M object: objects)  {
+            objectData.add(object.getAllData());
+        }
+        return insertObjectData(objectData, withId);
+    }
+    private <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
+        if (objectData.isEmpty()) {
             return 0;
         }
         int saved = 0;
-        Table<M> table = objects.get(0).getTable();
+        Table<M> table = objectData.get(0).getTable();
         List<Column<M, ?>> columnsToInsert = table.columns();
         if (!withId) {
             columnsToInsert = new ArrayList<>(table.columns());
@@ -368,8 +376,8 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             c.setAutoCommit(false);
             String statement = StorageUtils.insertTemplate(table, columnsToInsert);
             try (PreparedStatement p = c.prepareStatement(statement)) {
-                for (M object : objects) {
-                    StorageUtils.bindData(p, object.getAllData(), columnsToInsert);
+                for (ColumnData<M> row : objectData) {
+                    StorageUtils.bindData(p, row, columnsToInsert);
                     saved += p.executeUpdate();
                     p.clearParameters();
                 }
@@ -380,12 +388,79 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return saved;
     }
 
+
+    private <M, J> Long getIdForSecondaryKeyHelper(ColumnData<M> keyData, Column<M, J> keyCol) throws SQLException {
+        Table<M> parentTable = keyData.getTable();
+        J secondaryKeyValue = keyData.get(keyCol);
+        List<Long> result = selectColumn(parentTable, parentTable.getIdColumn(), keyCol, secondaryKeyValue);
+        assert result.size() == 1 : "Secondary key did not uniquely identify a row!";
+        return result.get(0);
+    }
+
+    /*
+     * TODO support case when secondary key has more than one column.
+     */
+    private <M> Long getIdForSecondaryKey(ColumnData<M> secondaryKeyData) throws SQLException{
+        if (secondaryKeyData.getColumns().size() != 1) {
+            throw new UnsupportedOperationException("Can only support secondary keys with one column");
+        }
+        Column<M, ?> secondaryKeyCol = secondaryKeyData.getColumns().iterator().next();
+        return getIdForSecondaryKeyHelper(secondaryKeyData, secondaryKeyCol);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    // fkColumns by definition contains only the foreign key columns
+    private static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
+        for (Column<M, ?> col : object.getTable().fkColumns()) {
+            Column.ForeignKey<M, ?, ?> fkCol = (Column.ForeignKey<M, ?, ?>) col;
+            if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn())) {
+                // then we can cast it to an Id column;
+                Column.ForeignKey<M, Long, ?> fkIdCol = (Column.ForeignKey<M, Long, ?>) col;
+                if (object.hasData(fkIdCol) && object.getData(fkIdCol).equals(MacrosPersistable.NO_ID)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // use secondary key data
+    public <M extends MacrosPersistable<M>> int insertImportedObjects(@NotNull List<M> objects) throws SQLException {
+        Table<M> table = objects.get(0).getTable();
+        List<Column<M, ?>> columnsToInsert = new ArrayList<>(table.columns());
+        columnsToInsert.remove(table.getIdColumn());
+
+        // Split objects up into ones that need FK enhancements and ones that don't
+        // TODO can we just specify this per table at compile time?
+        List<ColumnData<M>> augmentedData = new ArrayList<>(objects.size());
+        List<ColumnData<M>> unAugmentedData = new ArrayList<>(objects.size());
+        for (M object : objects) {
+            assert (object.getObjectSource() == ObjectSource.IMPORT) : "Object source is not import";
+            if (fkIdsPresent(object)) {
+                // don't need to do anything special much
+                unAugmentedData.add(object.getAllData());
+            } else {
+                Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> secondaryFkMap = object.getSecondaryFkMap();
+                // need to find actual ID for object
+                assert !secondaryFkMap.isEmpty() : "Object " + object + " is missing FKs but has no secondary FK data";
+                ColumnData<M> dataCopy = object.getAllData().copy();
+                for (Column.ForeignKey<M, Long, ?> fkCol : secondaryFkMap.keySet()) {
+                    Long id = getIdForSecondaryKey(secondaryFkMap.get(fkCol));
+                    dataCopy.put(fkCol, id);
+                }
+            }
+        }
+        return insertObjectData(augmentedData, false) + insertObjectData(unAugmentedData, false);
+    }
+
     // Note that if the id is not found in the database, nothing will be inserted
     @Override
     public <M extends MacrosPersistable<M>> int updateObjects(@NotNull List<M> objects) throws SQLException {
         if (objects.isEmpty()) {
             return 0;
         }
+
         int saved = 0;
         Table<M> table = objects.get(0).getTable();
         try (Connection c = getConnection()) {
@@ -426,7 +501,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         if (o.getId() != MacrosPersistable.NO_ID) {
             return idExistsInTable(o.getTable(), o.getId());
         } else {
-            List<Column<M, ?>> secondaryKey = o.getTable().getSecondaryKey();
+            List<Column<M, ?>> secondaryKey = o.getTable().getSecondaryKeyCols();
             if (secondaryKey.isEmpty()) {
                 // no way to know except by ID...
             }
@@ -434,35 +509,29 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
     }
 
-    private <M extends MacrosPersistable<M>> boolean shouldUpdate(@NotNull M o) throws SQLException {
-        switch (o.getObjectSource()) {
-            case IMPORT:
-                return false;
-            case USER_EDIT:
-                return true;
-            case DATABASE:
-                // though really, if it's unchanged we shouldn't be doing anything at all!
-                return true;
-            case USER_NEW:
-                return true;
-            case RESTORE:
-                // will have ID. Assume database has been cleared
-                return isInDatabase(o);
-            case COMPUTED:
-                // don't want to save these ones either
-                return false;
-            default:
-                assert (false);
-                return false;
-        }
-    }
-
     @Override
     public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
-        if (shouldUpdate(o)) {
-            return updateObjects(toList(o));
-        } else {
-            return insertObjects(toList(o), !o.getId().equals(MacrosPersistable.NO_ID));
+        List<M> oAsList = toList(o);
+        switch (o.getObjectSource()) {
+            case IMPORT:
+                return insertImportedObjects(toList(o));
+            case DB_EDIT:
+                return updateObjects(oAsList);
+            case DATABASE:
+                // it's unchanged we don't need to do anything at all!
+                return 1;
+            case USER_NEW:
+                return insertObjects(oAsList, false);
+            case RESTORE:
+                // will have ID. Assume database has been cleared?
+                return isInDatabase(o) ? updateObjects(oAsList) : insertObjects(oAsList, true);
+            case COMPUTED:
+                // don't want to save these ones either
+                assert false : "Why save a computed object?";
+                return 0;
+            default:
+                assert (false) : "Unrecognised object source: " + o.getObjectSource();
+                return 0;
         }
     }
 }

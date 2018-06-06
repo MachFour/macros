@@ -158,14 +158,14 @@ class StorageUtils {
     }
 
     static <M, J> Object columnDataToRaw(ColumnData<M> c, Column<M, J> col) {
-        return col.toRaw(c.get(col));
+        return col.getType().toRaw(c.get(col));
     }
 
     static <M, J> void rawToColumnData(ColumnData<M> c, Column<M, J> col, Object data) {
-        c.put(col, col.fromRaw(data));
+        c.put(col, col.getType().fromRaw(data));
     }
     static <M, J> void stringToColumnData(ColumnData<M> c, Column<M, J> col, @NotNull String data) {
-        c.put(col, col.fromString(data));
+        c.put(col, col.getType().fromString(data));
     }
     static <M, J> void nullableStringToColumnData(ColumnData<M> c, Column<M, J> col, @Nullable String data) {
         // also catch empty whitespace with trim()

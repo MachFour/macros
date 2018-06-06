@@ -65,7 +65,7 @@ class FoodTest {
 
     @Test
     void getFoodFromDb() {
-        ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+        ColumnData<Food> modifiedData = foodDc.copy();
         modifiedData.put(Schema.FoodTable.ID, 50L);
         Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {
@@ -100,7 +100,7 @@ class FoodTest {
     void saveALotOfFood() {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
-            ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+            ColumnData<Food> modifiedData = foodDc.copy();
             modifiedData.put(Schema.FoodTable.ID, i);
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food" + i);
             Food modifiedIndexName = new Food(modifiedData, ObjectSource.RESTORE);
@@ -116,7 +116,7 @@ class FoodTest {
 
     @Test
     void saveFoodFromDb() {
-        ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+        ColumnData<Food> modifiedData = foodDc.copy();
         modifiedData.put(Schema.FoodTable.ID, 50L);
         Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {
@@ -127,8 +127,9 @@ class FoodTest {
             fail("DB save threw exception");
         }
         // now change the data and save with same ID
-        modifiedData.put(Schema.FoodTable.NAME, "newName");
-        Food f1 = new Food(modifiedData, ObjectSource.USER_EDIT);
+        ColumnData<Food> modifiedData2 = modifiedData.copy();
+        modifiedData2.put(Schema.FoodTable.NAME, "newName");
+        Food f1 = new Food(modifiedData2, ObjectSource.DB_EDIT);
         try {
             assertEquals(1, db.saveObject(f1));
         } catch (SQLException e) {
@@ -139,7 +140,7 @@ class FoodTest {
 
     @Test
     void testSaveWithId() {
-        ColumnData<Food> modifiedData = new ColumnData<>(foodDc);
+        ColumnData<Food> modifiedData = foodDc.copy();
         modifiedData.put(Schema.FoodTable.ID, 500L);
         Food f = new Food(modifiedData, ObjectSource.RESTORE);
         try {

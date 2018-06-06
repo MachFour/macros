@@ -19,18 +19,9 @@ public interface Column<M, J> {
     }
 
     String sqlName();
-    Class<J> javaClass();
 
     J defaultData();
-    // These methods perform type-specific conversion is necessary
-    // if raw is null then null will be returned
-    J fromRaw(@Nullable Object raw);
-    J fromString(@NotNull String stringData);
-
-    default Object toRaw(J data) {
-        return data;
-    }
-
+    MacrosType<J> getType();
 
     // index used to store and look up data in the ColumnMap. Not necessarily the order in the DB
     int index();

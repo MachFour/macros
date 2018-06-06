@@ -16,6 +16,6 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
     }
 
     public String getName() {
-        return getTypedDataForColumn(Schema.FoodCategoryTable.NAME);
+        return getData(Schema.FoodCategoryTable.NAME);
     }
 }

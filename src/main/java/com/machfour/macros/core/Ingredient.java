@@ -53,7 +53,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getQuantityUnitId() {
-        return getTypedDataForColumn(Schema.IngredientTable.QUANTITY_UNIT);
+        return getData(Schema.IngredientTable.QUANTITY_UNIT);
     }
 
     public Food getCompositeFood() {
@@ -72,7 +72,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getCompositeFoodId() {
-        return getTypedDataForColumn(Schema.IngredientTable.COMPOSITE_FOOD_ID);
+        return getData(Schema.IngredientTable.COMPOSITE_FOOD_ID);
     }
 
     public Food getIngredientFood() {
@@ -88,7 +88,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @NotNull
     public Long getIngredientFoodId() {
-        return getTypedDataForColumn(Schema.IngredientTable.INGREDIENT_FOOD_ID);
+        return getData(Schema.IngredientTable.INGREDIENT_FOOD_ID);
     }
 
     @Nullable
@@ -106,17 +106,17 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @Nullable
     public Long getServingId() {
-        return getTypedDataForColumn(Schema.IngredientTable.SERVING_ID);
+        return getData(Schema.IngredientTable.SERVING_ID);
     }
 
     @NotNull
     public Double getQuantity() {
-        return getTypedDataForColumn(Schema.IngredientTable.QUANTITY);
+        return getData(Schema.IngredientTable.QUANTITY);
     }
 
     @Nullable
     public String getNotes() {
-        return getTypedDataForColumn(Schema.IngredientTable.NOTES);
+        return getData(Schema.IngredientTable.NOTES);
     }
 
     // returns a string containing the serving count. If the serving count is close to an integer,

@@ -6,6 +6,7 @@ import com.sun.istack.internal.NotNull;
 // basic types corresponding roughly to database types
 public class Types {
     public static final Bool BOOLEAN = new Bool();
+    public static final NullBool NULLBOOLEAN = new NullBool();
     public static final Id ID = new Id();
     public static final Int INTEGER = new Int();
     public static final Real REAL = new Real();
@@ -33,6 +34,39 @@ public class Types {
         public Boolean fromString(@NotNull String boolString) {
             return Boolean.parseBoolean(boolString);
         }
+        @Override
+        public Class<Boolean> javaClass() {
+            return Boolean.class;
+        }
+    }
+    // Boolean type where null means false. This is a hack used to ensure there's only one default serving per food,
+    // using a UNIQUE check on (food_id, is_default)
+    public static final class NullBool implements MacrosType<Boolean> {
+        @Override
+        public String toString() {
+            return "null-boolean";
+        }
+        @Override
+        public Boolean fromRaw(Object raw) {
+            if (raw == null) {
+                return false;
+            }
+            else if (raw instanceof Boolean) {
+                return (Boolean) raw;
+            } else {
+                return fromString(raw.toString());
+            }
+        }
+        @Override
+        public Boolean fromString(@NotNull String boolString) {
+            return Boolean.parseBoolean(boolString);
+        }
+        @Override
+        // return true if data is true, or null otherwise
+        public Object toRaw(Boolean data) {
+            return (data != null && data) ? true : null;
+        }
+
         @Override
         public Class<Boolean> javaClass() {
             return Boolean.class;

@@ -7,7 +7,7 @@ import java.util.*;
 public abstract class BaseTable<M> implements Table<M> {
     private final String name;
     private final List<Column<M, ?>> columns;
-    // can't define this as a List<Column.ForeignKey<M, ?, ?>> due to generics issues
+    // can't define this as a List<Column.Fk<M, ?, ?>> due to generics issues
     private final List<Column<M, ?>> fkColumns;
     private final List<Column<M, ?>> secondaryKeyCols;
     private final Map<String, Column<M, ?>> columnsByName;
@@ -38,7 +38,7 @@ public abstract class BaseTable<M> implements Table<M> {
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
-            if (c instanceof Column.ForeignKey) {
+            if (c instanceof Column.Fk) {
                 fkColumns.add(c);
             }
         }

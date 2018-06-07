@@ -13,7 +13,7 @@ public interface Column<M, J> {
     /*
      * Describes one column referencing another. N is the parent table type
      */
-    interface ForeignKey<M, J, N> extends Column<M, J> {
+    interface Fk<M, J, N> extends Column<M, J> {
         Column<N, J> getParentColumn();
         Table<N> getParentTable();
     }

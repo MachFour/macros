@@ -5,7 +5,6 @@ import com.machfour.macros.data.ColumnData;
 import com.machfour.macros.data.Table;
 import com.sun.istack.internal.NotNull;
 
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.Double.NaN;
@@ -48,9 +47,12 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
 
     Table<M> getTable();
 
-    <N extends MacrosPersistable<N>> void setSecondaryFkParent(Column.ForeignKey<M, Long, N> col, N parent);
+    // used to set Secondary FK data when an object is available
+    <N extends MacrosPersistable<N>> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, N parent);
+    // ... or when only the relevant column data is available, but then it's only limited to single-column secondary keys
+    <N extends MacrosPersistable<N>, J> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, Table<N> parentTable, Column<N, J> parent2aryKey, J data);
 
-    <N extends MacrosPersistable<N>> ColumnData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col);
+    <N extends MacrosPersistable<N>> ColumnData<N> getFkParent2aryData(Column.Fk<M, Long, N> col);
 
-    Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> getSecondaryFkMap();
+    Map<Column.Fk<M, Long, ?>, ColumnData<?>> getSecondaryFkMap();
 }

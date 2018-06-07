@@ -90,7 +90,7 @@ public class Schema {
         public static final Column<Food, String> FOOD_TYPE;
         public static final Column<Food, Long> USDA_INDEX;
         public static final Column<Food, String> NUTTAB_INDEX;
-        public static final Column.ForeignKey<Food, String, FoodCategory> CATEGORY;
+        public static final Column.Fk<Food, String, FoodCategory> CATEGORY;
         private static final String TABLE_NAME = "Food";
         private static final FoodTable INSTANCE;
 
@@ -145,8 +145,8 @@ public class Schema {
         public static final Column<Serving, String> NAME;
         public static final Column<Serving, Double> QUANTITY;
         public static final Column<Serving, Boolean> IS_DEFAULT;
-        public static final Column.ForeignKey<Serving, Long, Food> FOOD_ID;
-        public static final Column.ForeignKey<Serving, String, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<Serving, Long, Food> FOOD_ID;
+        public static final Column.Fk<Serving, String, QuantityUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "Serving";
         private static final ServingTable INSTANCE;
 
@@ -157,8 +157,8 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             NAME = builder("name", TEXT, columnIndex++).notNull().build();
             QUANTITY = builder("quantity", REAL, columnIndex++).notNull().build();
-            IS_DEFAULT = builder("is_default", BOOLEAN, columnIndex++).notNull().build();
-            FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull()
+            IS_DEFAULT = builder("is_default", NULLBOOLEAN, columnIndex++).notNull().defaultValue(false).build();
+            FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull().defaultValue(NO_ID)
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", TEXT, columnIndex++).notNull()
                     .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
@@ -189,10 +189,10 @@ public class Schema {
         public static final Column<FoodPortion, Long> CREATE_TIME;
         public static final Column<FoodPortion, Long> MODIFY_TIME;
         public static final Column<FoodPortion, Double> QUANTITY;
-        public static final Column.ForeignKey<FoodPortion, Long, QuantityUnit> QUANTITY_UNIT;
-        public static final Column.ForeignKey<FoodPortion, Long, Food> FOOD_ID;
-        public static final Column.ForeignKey<FoodPortion, Long, Meal> MEAL_ID;
-        public static final Column.ForeignKey<FoodPortion, Long, Serving> SERVING_ID;
+        public static final Column.Fk<FoodPortion, Long, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<FoodPortion, Long, Food> FOOD_ID;
+        public static final Column.Fk<FoodPortion, Long, Meal> MEAL_ID;
+        public static final Column.Fk<FoodPortion, Long, Serving> SERVING_ID;
         public static final Column<FoodPortion, String> NOTES;
         private static final String TABLE_NAME = "FoodPortion";
         private static final FoodPortionTable INSTANCE;
@@ -241,7 +241,7 @@ public class Schema {
         public static final Column<Meal, Long> CREATE_TIME;
         public static final Column<Meal, Long> MODIFY_TIME;
         public static final Column<Meal, DateStamp> DAY;
-        public static final Column.ForeignKey<Meal, String, MealDescription> DESCRIPTION;
+        public static final Column.Fk<Meal, String, MealDescription> DESCRIPTION;
         private static final String TABLE_NAME = "Meal";
         private static final MealTable INSTANCE;
 
@@ -334,11 +334,11 @@ public class Schema {
         public static final Column<Ingredient, Long> ID;
         public static final Column<Ingredient, Long> CREATE_TIME;
         public static final Column<Ingredient, Long> MODIFY_TIME;
-        public static final Column.ForeignKey<Ingredient, Long, Food> COMPOSITE_FOOD_ID;
-        public static final Column.ForeignKey<Ingredient, Long, Food> INGREDIENT_FOOD_ID;
+        public static final Column.Fk<Ingredient, Long, Food> COMPOSITE_FOOD_ID;
+        public static final Column.Fk<Ingredient, Long, Food> INGREDIENT_FOOD_ID;
         public static final Column<Ingredient, Double> QUANTITY;
-        public static final Column.ForeignKey<Ingredient, Long, QuantityUnit> QUANTITY_UNIT;
-        public static final Column.ForeignKey<Ingredient, Long, Serving> SERVING_ID;
+        public static final Column.Fk<Ingredient, Long, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<Ingredient, Long, Serving> SERVING_ID;
         public static final Column<Ingredient, String> NOTES;
         private static final String TABLE_NAME = "Ingredient";
         private static final IngredientTable INSTANCE;
@@ -386,7 +386,7 @@ public class Schema {
         public static final Column<RegularMeal, Long> CREATE_TIME;
         public static final Column<RegularMeal, Long> MODIFY_TIME;
         public static final Column<RegularMeal, String> NAME;
-        public static final Column.ForeignKey<RegularMeal, Long, Meal> MEAL_ID;
+        public static final Column.Fk<RegularMeal, Long, Meal> MEAL_ID;
         private static final String TABLE_NAME = "RegularMeal";
         private static final RegularMealTable INSTANCE;
 
@@ -417,10 +417,8 @@ public class Schema {
         public static final Column<NutritionData, Long> ID;
         public static final Column<NutritionData, Long> CREATE_TIME;
         public static final Column<NutritionData, Long> MODIFY_TIME;
-        public static final Column.ForeignKey<NutritionData, Long, Food> FOOD_ID;
         public static final Column<NutritionData, String> DATA_SOURCE;
         public static final Column<NutritionData, Double> QUANTITY;
-        public static final Column.ForeignKey<NutritionData, String, QuantityUnit> QUANTITY_UNIT;
         public static final Column<NutritionData, Double> DENSITY;
         public static final Column<NutritionData, Double> KILOJOULES;
         public static final Column<NutritionData, Double> CALORIES;
@@ -442,6 +440,8 @@ public class Schema {
         public static final Column<NutritionData, Double> CALCIUM;
         public static final Column<NutritionData, Double> WATER;
         public static final Column<NutritionData, Double> ALCOHOL;
+        public static final Column.Fk<NutritionData, Long, Food> FOOD_ID;
+        public static final Column.Fk<NutritionData, String, QuantityUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "NutritionData";
         private static final NutritionDataTable INSTANCE;
 
@@ -553,8 +553,8 @@ public class Schema {
         public static final Column<AttrMapping, Long> ID;
         public static final Column<AttrMapping, Long> CREATE_TIME;
         public static final Column<AttrMapping, Long> MODIFY_TIME;
-        public static final Column.ForeignKey<AttrMapping, Long, Food> FOOD_ID;
-        public static final Column.ForeignKey<AttrMapping, Long, FoodAttribute> ATTRIBUTE_ID;
+        public static final Column.Fk<AttrMapping, Long, Food> FOOD_ID;
+        public static final Column.Fk<AttrMapping, Long, FoodAttribute> ATTRIBUTE_ID;
         private static final String TABLE_NAME = "AttributeMapping";
         private static final AttrMappingTable INSTANCE;
 

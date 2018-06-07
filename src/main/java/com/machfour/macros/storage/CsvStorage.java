@@ -2,6 +2,7 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.data.*;
+import com.machfour.macros.util.Pair;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.ICsvMapReader;
 import org.supercsv.prefs.CsvPreference;
@@ -69,30 +70,41 @@ public class CsvStorage {
      *  - create and link appropriate tags
      *  - look up quantity unit
      *  - look up category
-     *
-     * TODO Think about saving the linked objects too
      */
-    public static List<Food> buildFoodObjectTree(String fileName) throws IOException {
-        List<Food> foods = new ArrayList<>();
+    public static Pair<List<Food>, List<NutritionData>> buildFoodObjectTree(String foodCsv) throws IOException {
+        Pair<List<Food>, List<NutritionData>> objectLists = new Pair<>(new ArrayList<>(), new ArrayList<>());
         Table<NutritionData> ndTable = Schema.NutritionDataTable.instance();
         Table<Food> foodTable = Schema.FoodTable.instance();
-        // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-        try (ICsvMapReader mapReader = getMapReader(fileName)) {
-            // header columns are used as the keys to the Map
+        try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
-            // iterate over lines in CSV
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ColumnData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
                 ColumnData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
                 NutritionData nd = MacrosEntity.construct(ndTable, ndData, ObjectSource.IMPORT);
                 Food f = MacrosEntity.construct(foodTable, foodData, ObjectSource.IMPORT);
-                f.setNutritionData(nd);
-                // do secondary key stuff
-                nd.setSecondaryFkParent(Schema.NutritionDataTable.FOOD_ID, f);
-                foods.add(f);
+                //f.setNutritionData(nd); without pairs, needed to recover nutrition data from return value
+                nd.setFkParentBy2aryKey(Schema.NutritionDataTable.FOOD_ID, f);
+                objectLists.first.add(f);
+                objectLists.second.add(nd);
             }
         }
-        return foods;
+        return objectLists;
+    }
+    public static List<Serving> buildServings(String servingCsv) throws IOException {
+        List<Serving> servings = new ArrayList<>();
+        Table<Serving> sTable = Schema.ServingTable.instance();
+        try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
+            final String[] header = mapReader.getHeader(true);
+            Map<String, String> csvRow;
+            while ((csvRow = mapReader.read(header)) != null) {
+                ColumnData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
+                Serving s = MacrosEntity.construct(sTable, servingData, ObjectSource.IMPORT);
+                String foodIndexName = csvRow.get(Schema.FoodTable.INDEX_NAME.sqlName());
+                s.setFkParentBy2aryKey(Schema.ServingTable.FOOD_ID, Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, foodIndexName);
+                servings.add(s);
+            }
+        }
+        return servings;
     }
 }

@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.storage.CsvStorage;
 import com.machfour.macros.storage.MacrosLinuxDatabase;
+import com.machfour.macros.util.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,26 +34,50 @@ class CsvTest {
     }
 
     @Test
-    void testCsvRead() {
-        List<Food> csvFoods;
+    void testCsvReadFoods() {
+        Pair<List<Food>, List<NutritionData>> csvObjects;
         try {
-            csvFoods = CsvStorage.buildFoodObjectTree(CsvStorage.FOOD_CSV_FILENAME);
-            assertNotEquals(0, csvFoods.size(), "CSV read in zero foods!");
-            System.out.println(csvFoods.get(0));
+            csvObjects = CsvStorage.buildFoodObjectTree(CsvStorage.FOOD_CSV_FILENAME);
+            assertNotEquals(0, csvObjects.first.size(), "CSV read in zero foods!");
+            System.out.println(csvObjects.first.get(0));
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");
         }
     }
     @Test
-    void testCsvSave() {
-        List<Food> csvFoods;
+    void testCsvReadServings() {
+        List<Serving> csvServings;
         try {
-            csvFoods = CsvStorage.buildFoodObjectTree(CsvStorage.FOOD_CSV_FILENAME);
-            for (Food f : csvFoods) {
-                db.saveObject(f);
-                db.saveObject(f.getNutritionData());
-            }
+            csvServings = CsvStorage.buildServings(CsvStorage.SERVING_CSV_FILENAME);
+            assertNotEquals(0, csvServings.size(), "CSV read in zero servings!");
+            System.out.println(csvServings.get(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("IOException was thrown");
+        }
+    }
+    @Test
+    void testCsvSaveFoods() {
+        Pair<List<Food>, List<NutritionData>> csvObjects;
+        try {
+            csvObjects = CsvStorage.buildFoodObjectTree(CsvStorage.FOOD_CSV_FILENAME);
+            db.saveObjects(csvObjects.first, ObjectSource.IMPORT);
+            db.saveObjects(csvObjects.second, ObjectSource.IMPORT);
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("IOException was thrown");
+        } catch (SQLException e2) {
+            e2.printStackTrace();
+            fail("Database save threw SQL exception");
+        }
+    }
+    @Test
+    void testCsvSaveServings() {
+        List<Serving> csvServings;
+        try {
+            csvServings = CsvStorage.buildServings(CsvStorage.SERVING_CSV_FILENAME);
+            db.saveObjects(csvServings, ObjectSource.IMPORT);
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");

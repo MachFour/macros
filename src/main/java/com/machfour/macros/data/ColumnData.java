@@ -53,7 +53,15 @@ public final class ColumnData<M> {
 
     @Override
     public String toString() {
-        return "ColumnData<" + table.name() + "> : " + Arrays.deepToString(data);
+        StringBuilder str = new StringBuilder("ColumnData<").append(table.name()).append("> [");
+        for (Column<M, ?> col: columns) {
+            str.append(col.sqlName());
+            str.append(" = ");
+            str.append(Objects.toString(data[col.index()]));
+            str.append(", ");
+        }
+        str.append("]");
+        return str.toString();
     }
 
     // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)

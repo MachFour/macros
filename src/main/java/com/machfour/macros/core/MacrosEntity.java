@@ -20,11 +20,11 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     private final ObjectSource objectSource;
 
     @Override
-    public Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> getSecondaryFkMap() {
+    public Map<Column.Fk<M, Long, ?>, ColumnData<?>> getSecondaryFkMap() {
         return Collections.unmodifiableMap(secondaryFkMap);
     }
 
-    private final Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> secondaryFkMap;
+    private final Map<Column.Fk<M, Long, ?>, ColumnData<?>> secondaryFkMap;
 
     // NOTE data passed in is made Immutable as a side effect
     MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
@@ -86,7 +86,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     // this also works for import (without IDs) because both columns are NO_ID
     protected static <M extends MacrosPersistable<M>, J, N extends MacrosPersistable<N>> boolean foreignKeyMatches(
-            MacrosEntity<M> childObj, Column.ForeignKey<M, J, N> childCol, MacrosEntity<N> parentObj) {
+            MacrosEntity<M> childObj, Column.Fk<M, J, N> childCol, MacrosEntity<N> parentObj) {
         J childData = childObj.getData(childCol);
         J parentData = parentObj.getData(childCol.getParentColumn());
         return Objects.equals(childData, parentData);
@@ -166,10 +166,18 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // used when importing objects and we don't know the ID to use
     // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
     // parent object has been stored in the database.
-    public <N extends MacrosPersistable<N>> void setSecondaryFkParent(Column.ForeignKey<M, Long, N> col, @NotNull N parent) {
+    public <N extends MacrosPersistable<N>> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, @NotNull N parent) {
         Table<N> table = parent.getTable();
         assert (!table.getSecondaryKeyCols().isEmpty()) : "Table " + table.name() + " has no secondary key columns";
         ColumnData<N> parentSecondaryKey = parent.getAllData().copy(table.getSecondaryKeyCols());
+        secondaryFkMap.put(col, parentSecondaryKey);
+    }
+    public <N extends MacrosPersistable<N>, J> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, Table<N> parentTable, Column<N, J> parent2aryKey, J data) {
+        List<Column<N, ?>> parentKeyColAsList = Collections.singletonList(parent2aryKey);
+        assert (parentTable.getSecondaryKeyCols().equals(parentKeyColAsList))
+            : "Column " + parent2aryKey.sqlName() + " must be exactly the secondary key of table " + parentTable.name();
+        ColumnData<N> parentSecondaryKey = new ColumnData<>(parentTable, parentKeyColAsList);
+        parentSecondaryKey.put(parent2aryKey, data);
         secondaryFkMap.put(col, parentSecondaryKey);
     }
 
@@ -177,7 +185,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // Supplying a (non-ID) secondary key is used to identify retrieve the ID once that
     // parent object has been stored in the database.
     @SuppressWarnings("unchecked")
-    public <N extends MacrosPersistable<N>> ColumnData<N> getSecondaryFkData(Column.ForeignKey<M, Long, N> col) {
+    public <N extends MacrosPersistable<N>> ColumnData<N> getFkParent2aryData(Column.Fk<M, Long, N> col) {
         ColumnData<?> secondaryFkData = secondaryFkMap.get(col);
         // Generics ensure that the table types match
         return (ColumnData<N>) secondaryFkData;
@@ -188,6 +196,6 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     @Override
     public String toString() {
-        return getTable().name() + " object, " + dataMap.toString() + " (from " + objectSource + ")";
+        return getTable().name() + " object, from " + objectSource + " data: " + dataMap.toString();
     }
 }

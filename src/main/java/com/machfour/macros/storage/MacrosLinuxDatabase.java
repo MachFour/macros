@@ -27,11 +27,9 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     private static final PrintStream err = System.err;
     private static final String DB_LOCATION = "/home/max/devel/macros-java/sample.db";
     private static final Path DB_PATH = Paths.get(DB_LOCATION);
-
-    private final SQLiteDataSource dataSource;
-
     // singleton
     private static MacrosLinuxDatabase INSTANCE;
+    private final SQLiteDataSource dataSource;
 
     private MacrosLinuxDatabase() {
         dataSource = new SQLiteDataSource();
@@ -70,6 +68,21 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    // fkColumns by definition contains only the foreign key columns
+    private static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
+        for (Column<M, ?> col : object.getTable().fkColumns()) {
+            Column.Fk<M, ?, ?> fkCol = (Column.Fk<M, ?, ?>) col;
+            if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn())) {
+                // then we can cast it to an Id column;
+                Column.Fk<M, Long, ?> fkIdCol = (Column.Fk<M, Long, ?>) col;
+                if (object.hasData(fkIdCol) && object.getData(fkIdCol).equals(MacrosPersistable.NO_ID)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public boolean deleteIfExists() throws IOException {
         if (Files.exists(DB_PATH)) {
@@ -98,6 +111,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     public <M extends MacrosPersistable<M>> int deleteObject(@NotNull M o) throws SQLException {
         return deleteById(o.getId(), o.getTable());
     }
+    // TODO select by secondary key
 
     private <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException {
         try (Connection c = getConnection();
@@ -107,7 +121,6 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             return 1;
         }
     }
-    // TODO select by secondary key
 
     @Override
     // TODO make this the general one
@@ -211,6 +224,23 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
+    private <M, I, J> Map<J, I> selectColumnMap(Table<M> t, Column<M, I> valueColumn, Column<M, J> keyColumn, List<J> keyValues) throws SQLException {
+        Map<J, I> resultMap = new HashMap<>();
+        List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
+        try (Connection c = getConnection();
+             // should be distinct by default: assert keyColumn.isUnique();
+             PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumns, valueColumn, keyValues.size(), false))) {
+            StorageUtils.bindObjects(p, keyValues);
+            try (ResultSet rs = p.executeQuery()) {
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                    J key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
+                    I value = valueColumn.getType().fromRaw(rs.getObject(valueColumn.sqlName()));
+                    resultMap.put(key, value);
+                }
+            }
+        }
+        return resultMap;
+    }
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
@@ -226,7 +256,6 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
                     resultList.add(selectColumn.getType().fromRaw(resultValue));
                 }
             }
-
         }
         return resultList;
     }
@@ -361,6 +390,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
         return insertObjectData(objectData, withId);
     }
+
     private <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
         if (objectData.isEmpty()) {
             return 0;
@@ -388,13 +418,23 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return saved;
     }
 
-
-    private <M, J> Long getIdForSecondaryKeyHelper(ColumnData<M> keyData, Column<M, J> keyCol) throws SQLException {
+    private <M, J> Long getIdForSecondaryKeyHelper(Column<M, J> keyCol, ColumnData<M> keyData) throws SQLException {
         Table<M> parentTable = keyData.getTable();
         J secondaryKeyValue = keyData.get(keyCol);
         List<Long> result = selectColumn(parentTable, parentTable.getIdColumn(), keyCol, secondaryKeyValue);
         assert result.size() == 1 : "Secondary key did not uniquely identify a row!";
         return result.get(0);
+    }
+    private <M, J> Map<J, Long> getIdsForSecondaryKeyHelper(Column<M, J> keyCol, List<ColumnData<M>> keyDataList) throws SQLException {
+        List<J> keyValues = new ArrayList<>(keyDataList.size());
+        if (keyDataList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Table<M> parentTable = keyDataList.get(0).getTable();
+        for (ColumnData<M> keyData : keyDataList) {
+            keyValues.add(keyData.get(keyCol));
+        }
+        return selectColumnMap(parentTable, parentTable.getIdColumn(), keyCol, keyValues);
     }
 
     /*
@@ -405,24 +445,7 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             throw new UnsupportedOperationException("Can only support secondary keys with one column");
         }
         Column<M, ?> secondaryKeyCol = secondaryKeyData.getColumns().iterator().next();
-        return getIdForSecondaryKeyHelper(secondaryKeyData, secondaryKeyCol);
-    }
-
-
-    @SuppressWarnings("unchecked")
-    // fkColumns by definition contains only the foreign key columns
-    private static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
-        for (Column<M, ?> col : object.getTable().fkColumns()) {
-            Column.ForeignKey<M, ?, ?> fkCol = (Column.ForeignKey<M, ?, ?>) col;
-            if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn())) {
-                // then we can cast it to an Id column;
-                Column.ForeignKey<M, Long, ?> fkIdCol = (Column.ForeignKey<M, Long, ?>) col;
-                if (object.hasData(fkIdCol) && object.getData(fkIdCol).equals(MacrosPersistable.NO_ID)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return getIdForSecondaryKeyHelper(secondaryKeyCol, secondaryKeyData);
     }
 
     // use secondary key data
@@ -441,11 +464,11 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
                 // don't need to do anything special much
                 unAugmentedData.add(object.getAllData());
             } else {
-                Map<Column.ForeignKey<M, Long, ?>, ColumnData<?>> secondaryFkMap = object.getSecondaryFkMap();
+                Map<Column.Fk<M, Long, ?>, ColumnData<?>> secondaryFkMap = object.getSecondaryFkMap();
                 // need to find actual ID for object
-                assert !secondaryFkMap.isEmpty() : "Object " + object + " is missing FKs but has no secondary FK data";
+                assert !secondaryFkMap.isEmpty() : object.getTable().name() + "object is missing FKs but has no secondary FK data";
                 ColumnData<M> dataCopy = object.getAllData().copy();
-                for (Column.ForeignKey<M, Long, ?> fkCol : secondaryFkMap.keySet()) {
+                for (Column.Fk<M, Long, ?> fkCol : secondaryFkMap.keySet()) {
                     Long id = getIdForSecondaryKey(secondaryFkMap.get(fkCol));
                     dataCopy.put(fkCol, id);
                 }
@@ -496,6 +519,28 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             }
         }
     }
+    private <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
+        Column<M, Long> idCol = table.getIdColumn();
+        Map<Long, Boolean> idMap = new HashMap<>(ids.size(), 1);
+        try (Connection c = getConnection()) {
+            try (PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(table, idCol, idCol, ids.size()))) {
+                StorageUtils.bindObjects(p, ids);
+                ResultSet rs = p.executeQuery();
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                    Long id = rs.getLong(idCol.sqlName());
+                    idMap.put(id, true);
+                }
+                rs.next();
+            }
+        }
+        // check for missing IDs
+        for (Long id : ids) {
+            if (!idMap.keySet().contains(id)) {
+                idMap.put(id, false);
+            }
+        }
+        return idMap;
+    }
 
     private <M extends MacrosPersistable<M>> boolean isInDatabase(@NotNull M o) throws SQLException {
         if (o.getId() != MacrosPersistable.NO_ID) {
@@ -505,33 +550,37 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             if (secondaryKey.isEmpty()) {
                 // no way to know except by ID...
             }
+            // TODO
             return false;
         }
     }
 
-    @Override
-    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
-        List<M> oAsList = toList(o);
-        switch (o.getObjectSource()) {
+    public <M extends MacrosPersistable<M>> int saveObjects(List<M> objects, ObjectSource objectSource) throws SQLException {
+        switch (objectSource) {
             case IMPORT:
-                return insertImportedObjects(toList(o));
+                return insertImportedObjects(objects);
             case DB_EDIT:
-                return updateObjects(oAsList);
+                return updateObjects(objects);
             case DATABASE:
                 // it's unchanged we don't need to do anything at all!
                 return 1;
             case USER_NEW:
-                return insertObjects(oAsList, false);
+                return insertObjects(objects, false);
             case RESTORE:
                 // will have ID. Assume database has been cleared?
-                return isInDatabase(o) ? updateObjects(oAsList) : insertObjects(oAsList, true);
+                return insertObjects(objects, true);
             case COMPUTED:
                 // don't want to save these ones either
                 assert false : "Why save a computed object?";
                 return 0;
             default:
-                assert (false) : "Unrecognised object source: " + o.getObjectSource();
+                assert (false) : "Unrecognised object source: " + objectSource;
                 return 0;
         }
+    }
+
+    @Override
+    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
+        return saveObjects(toList(o), o.getObjectSource());
     }
 }

@@ -68,12 +68,12 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         return type;
     }
 
-    public static final class ForeignKey<M, J, N> implements Column.ForeignKey<M, J, N> {
+    public static final class Fk<M, J, N> implements Column.Fk<M, J, N> {
         private final Column<N, J> parent;
         private final Table<N> parentTable;
         private final Column<M, J> child;
 
-        private ForeignKey(Column<M, J> child, Column<N, J> parent, Table<N> parentTable) {
+        private Fk(Column<M, J> child, Column<N, J> parent, Table<N> parentTable) {
             this.child = child;
             this.parent = parent;
             this.parentTable = parentTable;
@@ -168,8 +168,8 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         public <M> Column<M, J> build() {
             return new ColumnImpl<>(name, type, index, editable, nullable, inSecondaryKey, defaultValue);
         }
-        public <M, N> Column.ForeignKey<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
-            return new ForeignKey<>(build(), parent, parentTable);
+        public <M, N> Column.Fk<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
+            return new Fk<>(build(), parent, parentTable);
         }
     }
 }

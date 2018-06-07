@@ -87,18 +87,20 @@ class StorageUtils {
         }
     }
 
-    static <M, J> String selectLikeTemplate(
-            Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
+    static <M> String selectLikeTemplate(Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
         return selectTemplate(t, toList(selectColumn), makeWhereLikeString(likeColumns), false);
     }
 
-    static <M, J> String selectTemplate(
-            Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+    static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, toList(selectColumn), whereColumn, nValues, distinct);
     }
-
-    private static <M, J> String selectTemplate(
-            Table<M> t, List<Column<M, ?>> orderedColumns, String whereString, boolean distinct) {
+    static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues) {
+        return selectTemplate(t, toList(selectColumn), whereColumn, nValues, false);
+    }
+    static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+        return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct);
+    }
+    private static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, String whereString, boolean distinct) {
         List<String> words = new ArrayList<>(6);
         words.add("SELECT");
         if (distinct) {
@@ -109,11 +111,6 @@ class StorageUtils {
         words.add(t.name());
         words.add(whereString);
         return new StringJoiner<>(words).join();
-    }
-
-    static <M, J> String selectTemplate(
-            Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> whereColumn, int nValues, boolean distinct) {
-        return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct);
     }
 
     // columns must be a subset of table.columns()

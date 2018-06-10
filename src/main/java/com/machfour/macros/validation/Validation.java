@@ -1,6 +1,6 @@
 package com.machfour.macros.validation;
 
-import com.machfour.macros.data.Column;
+import com.machfour.macros.core.Column;
 
 import java.util.Map;
 

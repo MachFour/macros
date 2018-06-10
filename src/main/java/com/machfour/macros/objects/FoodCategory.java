@@ -1,8 +1,6 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
+import com.machfour.macros.core.*;
 
 public class FoodCategory extends MacrosEntity<FoodCategory> {
 
@@ -17,5 +15,13 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
 
     public String getName() {
         return getData(Schema.FoodCategoryTable.NAME);
+    }
+
+    public static Factory<FoodCategory> factory() {
+        return FoodCategory::new;
+    }
+    @Override
+    public Factory<FoodCategory> getFactory() {
+        return factory();
     }
 }

@@ -1,8 +1,8 @@
-package com.machfour.macros.data;
+package com.machfour.macros.core;
 
 import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,13 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
     private final boolean editable;
     private final boolean nullable;
     private final boolean inSecondaryKey;
+    private final boolean unique;
     //private final Table<M> table;
     private final MacrosType<J> type;
     private final Supplier<J> defaultValue;
 
-    private ColumnImpl(String name, MacrosType<J> type, //Table<M> table,
-                       int index, boolean editable, boolean nullable, boolean inSecondaryKey, @NotNull Supplier<J> defaultValue) {
+    private ColumnImpl(String name, MacrosType<J> type, /*Table<M> table, */ @NotNull Supplier<J> defaultValue,
+            int index, boolean editable, boolean nullable, boolean inSecondaryKey, boolean unique) {
         this.name = name;
         this.type = type;
         //this.table = table;
@@ -26,6 +27,7 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         this.editable = editable;
         this.nullable = nullable;
         this.inSecondaryKey = inSecondaryKey;
+        this.unique = unique;
         this.defaultValue = defaultValue;
     }
 
@@ -52,6 +54,10 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
     @Override
     public boolean inSecondaryKey() {
         return inSecondaryKey;
+    }
+    @Override
+    public boolean isUnique() {
+        return unique;
     }
     @Override
     public J defaultData() {
@@ -109,6 +115,10 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
             return child.inSecondaryKey();
         }
         @Override
+        public boolean isUnique() {
+            return child.isUnique();
+        }
+        @Override
         public List<Validation> getValidations() {
             return child.getValidations();
         }
@@ -122,7 +132,7 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         }
         @Override
         public String toString() {
-            return child.sqlName() + "(-> " + parentTable.name() + "." + parent.sqlName() + ")";
+            return child.sqlName() + " (-> " + parentTable.name() + "." + parent.sqlName() + ")";
         }
     }
 
@@ -133,6 +143,7 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         private boolean editable;
         private boolean nullable;
         private boolean inSecondaryKey;
+        private boolean unique;
         private Supplier<J> defaultValue;
 
         public Builder(String name, MacrosType<J> type, int index) {
@@ -142,8 +153,9 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
             this.index = index;
             this.editable = true;
             this.nullable = true;
-            this.defaultValue = () -> null;
             this.inSecondaryKey = false;
+            this.unique = false;
+            this.defaultValue = () -> null;
         }
         public Builder<J> notEditable() {
             this.editable = false;
@@ -157,16 +169,17 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
             this.inSecondaryKey = true;
             return this;
         }
-        public Builder<J> defaultValue(Supplier<J> defaultValue) {
-            this.defaultValue = defaultValue;
+        public Builder<J> unique() {
+            this.unique = true;
             return this;
         }
+
         public Builder<J> defaultValue(J defaultValue) {
             this.defaultValue = () -> defaultValue;
             return this;
         }
         public <M> Column<M, J> build() {
-            return new ColumnImpl<>(name, type, index, editable, nullable, inSecondaryKey, defaultValue);
+            return new ColumnImpl<>(name, type, defaultValue, index, editable, nullable, inSecondaryKey, unique);
         }
         public <M, N> Column.Fk<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
             return new Fk<>(build(), parent, parentTable);

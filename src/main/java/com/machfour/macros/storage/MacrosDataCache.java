@@ -1,10 +1,13 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
+import com.machfour.macros.linux.MacrosLinuxDatabase;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.FoodPortion;
+import com.machfour.macros.objects.Meal;
+import com.machfour.macros.objects.Serving;
 import com.machfour.macros.util.DateStamp;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;

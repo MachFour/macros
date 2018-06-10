@@ -1,23 +1,24 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Schema;
-import com.machfour.macros.storage.MacrosLinuxDatabase;
+import com.machfour.macros.linux.MacrosLinuxDatabase;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.FoodType;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodTestForProfiling {
-    static MacrosLinuxDatabase db;
-    static ColumnData<Food> foodDc;
-    static Food testFood;
+class FoodTestForProfiling {
+    private static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
+    private static MacrosLinuxDatabase db;
+    private static ColumnData<Food> foodDc;
+    private static Food testFood;
 
-    static void initDb() {
-        db = MacrosLinuxDatabase.getInstance();
+    private static void initDb() {
+        db = MacrosLinuxDatabase.getInstance(DB_LOCATION);
         try {
-            db.deleteIfExists();
+            db.deleteIfExists(DB_LOCATION);
             db.initDb();
         } catch (IOException | SQLException e) {
             e.printStackTrace();
@@ -32,7 +33,7 @@ public class FoodTestForProfiling {
         }
     }
 
-    static void doFood() {
+    private static void doFood() {
         foodDc = new ColumnData<>(Schema.FoodTable.instance());
         foodDc.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
         foodDc.put(Schema.FoodTable.CREATE_TIME, 0L);
@@ -44,19 +45,19 @@ public class FoodTestForProfiling {
         foodDc.put(Schema.FoodTable.VARIETY_AFTER_NAME, false);
         foodDc.put(Schema.FoodTable.NOTES, "notes");
         foodDc.put(Schema.FoodTable.CATEGORY, "Dairy");
-        foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.name);
+        foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.getName());
         foodDc.put(Schema.FoodTable.USDA_INDEX, null);
         foodDc.put(Schema.FoodTable.NUTTAB_INDEX, null);
-        testFood = new Food(foodDc, ObjectSource.IMPORT);
+        testFood = Food.factory().construct(foodDc, ObjectSource.IMPORT);
     }
 
-    void saveALotOfFood() {
+    private void saveALotOfFood() {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
             ColumnData<Food> modifiedData = foodDc.copy();
             modifiedData.put(Schema.FoodTable.ID, i);
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food" + i);
-            Food modifiedIndexName = new Food(modifiedData, ObjectSource.IMPORT);
+            Food modifiedIndexName = Food.factory().construct(modifiedData, ObjectSource.IMPORT);
             lotsOfFoods.add(modifiedIndexName);
         }
         try {

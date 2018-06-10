@@ -1,11 +1,12 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.*;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Food extends MacrosEntity<Food> {
@@ -19,26 +20,61 @@ public class Food extends MacrosEntity<Food> {
     );
 
     private final List<Serving> servings;
+    private Serving defaultServing;
 
     private NutritionData nutritionData;
     private FoodType foodType;
     private FoodCategory foodCategory;
+    private final List<Ingredient> ingredients;
 
-    public Food(ColumnData<Food> dataMap, ObjectSource objectSource) {
+    private Food(ColumnData<Food> dataMap, ObjectSource objectSource) {
         super(dataMap, objectSource);
         servings = new ArrayList<>();
         foodType = null;
         nutritionData = null;
+        foodType = FoodType.fromString(dataMap.get(Schema.FoodTable.FOOD_TYPE));
+        ingredients = (foodType == FoodType.COMPOSITE) ? new ArrayList<>() : null;
+    }
 
+    public List<Ingredient> getIngredients() {
+        assert foodType == FoodType.COMPOSITE;
+        return Collections.unmodifiableList(ingredients);
+    }
+
+    public void addIngredient(@NotNull Ingredient i) {
+        assert foodType.equals(FoodType.COMPOSITE)
+                && !ingredients.contains(i)
+                && MacrosEntity.foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
+        ingredients.add(i);
+    }
+
+    // quantity corresponds to that contained in the Schema.NutritionDataTable.QUANTITY table
+    @NotNull
+    public NutritionData getNutritionData() {
+        // TODO merge with compositeFood's nutrition data
+        if (foodType == FoodType.COMPOSITE) {
+            List<NutritionData> nutritionComponents = new ArrayList<>(ingredients.size());
+            for (Ingredient i : ingredients) {
+                nutritionComponents.add(i.getNutritionData());
+            }
+            return NutritionData.sum(nutritionComponents);
+        } else {
+            return nutritionData;
+        }
+    }
+
+    public NutritionData getNutritionData(double quantity) {
+        return getNutritionData().rescale(quantity);
+    }
+
+    public void setNutritionData(@NotNull NutritionData nd) {
+        assert nutritionData == null && nd != null
+            && foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this);
+        nutritionData = nd;
     }
 
     public FoodType getFoodType() {
         return foodType;
-    }
-
-    public void setFoodType(@NotNull FoodType f) {
-        assert foodType == null && f.toString().equals(getData(Schema.FoodTable.FOOD_TYPE));
-        foodType = f;
     }
 
     public void setFoodCategory(@NotNull FoodCategory c) {
@@ -51,12 +87,26 @@ public class Food extends MacrosEntity<Food> {
 
     @Override
     public Table<Food> getTable() {
+        return table();
+    }
+    public static Table<Food> table() {
         return Schema.FoodTable.instance();
+    }
+
+    @Override
+    public Factory<Food> getFactory() {
+        return factory();
+    }
+    public static Factory<Food> factory() {
+        return Food::new;
     }
 
     public void addServing(@NotNull Serving s) {
         assert (!servings.contains(s)) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this);
         servings.add(s);
+        if (s.isDefault()) {
+            setDefaultServing(s);
+        }
     }
 
     @Nullable
@@ -146,29 +196,14 @@ public class Food extends MacrosEntity<Food> {
         return hasData(fieldName);
     }
 
+    private void setDefaultServing(Serving s) {
+        assert defaultServing == null : "Default serving already set";
+        this.defaultServing = s;
+    }
+
     @Nullable
     public Serving getDefaultServing() {
-        Serving defaultServing = null;
-        for (Serving s : servings) {
-            if (s.isDefault()) {
-                defaultServing = s;
-            }
-        }
         return defaultServing;
-    }
-
-    // quantity corresponds to that assumed by the data in the DB
-    public NutritionData getNutritionData() {
-        return nutritionData;
-    }
-
-    public void setNutritionData(@NotNull NutritionData nd) {
-        assert nutritionData == null && foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this);
-        nutritionData = nd;
-    }
-
-    public NutritionData getNutritionData(double quantity) {
-        return nutritionData.rescale(quantity);
     }
 
     @Nullable
@@ -181,8 +216,18 @@ public class Food extends MacrosEntity<Food> {
         }
         return serving;
     }
+    @Nullable
+    public Serving getServingByName(@NotNull String name) {
+        Serving serving = null;
+        for (Serving s : servings) {
+            if (name.equals(s.getName())) {
+                serving = s;
+            }
+        }
+        return serving;
+    }
 
     public List<Serving> getServings() {
-        return new ArrayList<>(servings);
+        return Collections.unmodifiableList(servings);
     }
 }

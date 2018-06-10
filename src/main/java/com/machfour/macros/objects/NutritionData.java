@@ -1,8 +1,8 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.*;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,16 +45,27 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     // only NUTRIENT_COLUMNS are present in this map
     private final Map<Column<NutritionData, Double>, Boolean> hasNutrient;
     // measured in grams, per specified quantity
-    private QuantityUnit quantityUnit;
+    private final QuantityUnit quantityUnit;
     private Food food;
 
-    public NutritionData(ColumnData<NutritionData> dataMap, ObjectSource objectSource) {
+    private NutritionData(ColumnData<NutritionData> dataMap, ObjectSource objectSource) {
         super(dataMap, objectSource);
+        // food ID is allowed to be null only if this NutritionData is computed from a sum
+        assert (objectSource == COMPUTED || dataMap.get(Schema.NutritionDataTable.FOOD_ID) != null);
         hasNutrient = new HashMap<>(NUTRIENT_COLUMNS.size());
         // have to use temporary due to type parameterisation
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             hasNutrient.put(c, dataMap.hasData(c));
         }
+        quantityUnit = QuantityUnit.fromAbbreviation(dataMap.get(Schema.NutritionDataTable.QUANTITY_UNIT));
+    }
+
+    public static Factory<NutritionData> factory() {
+        return NutritionData::new;
+    }
+    @Override
+    public Factory<NutritionData> getFactory() {
+        return factory();
     }
 
     // allows keeping track of missing data when different nutritionData instances are added up
@@ -125,14 +136,9 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         food = f;
     }
 
+    @NotNull
     public QuantityUnit getQuantityUnit() {
         return quantityUnit;
-    }
-
-    public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert (quantityUnit == null);
-        assert (getQuantityUnitAbbr().equals(q.getAbbreviation()));
-        quantityUnit = q;
     }
 
     @NotNull
@@ -207,7 +213,9 @@ public class NutritionData extends MacrosEntity<NutritionData> {
      */
 
     public boolean hasNutrient(Column<NutritionData, Double> col) {
-        return hasNutrient.get(col);
+        boolean has = hasNutrient.get(col);
+        assert has == (getNutrientData(col) != null) : "hasData map is corrupted";
+        return has;
     }
 
     // Unless the target unit is identical to the current unit
@@ -230,7 +238,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData =  getAllData().copy(); // all other data remains the same
         newData.put(Schema.NutritionDataTable.QUANTITY, newQuantity);
-        newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getName());
+        newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getAbbreviation());
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
         if (isDensityGuessed) {
             newHasData.put(Schema.NutritionDataTable.QUANTITY, false);
@@ -239,7 +247,6 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         if (hasFood()) {
             converted.setFood(getFood());
         }
-        converted.setQuantityUnit(targetUnit);
         return converted;
     }
 
@@ -247,6 +254,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     public Double getDensity() {
         return getData(Schema.NutritionDataTable.DENSITY);
     }
+
     private NutritionData convertToGramsIfNecessary() {
         if (!getQuantityUnit().equals(QuantityUnit.GRAMS)) {
             // then convert to grams, guessing density if required
@@ -267,7 +275,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     public boolean hasFood() {
-        return getFood() == null;
+        return getFood() != null;
     }
 
     // Sums the nutrition data components, converting them to grams first, if necessary.

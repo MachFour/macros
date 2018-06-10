@@ -1,22 +1,23 @@
-package com.machfour.macros.data;
-
-import com.machfour.macros.core.ObjectSource;
+package com.machfour.macros.core;
 
 import java.util.*;
 
 public abstract class BaseTable<M> implements Table<M> {
     private final String name;
+    private final Factory<M> factory;
     private final List<Column<M, ?>> columns;
-    // can't define this as a List<Column.Fk<M, ?, ?>> due to generics issues
-    private final List<Column<M, ?>> fkColumns;
+    private final List<Column.Fk<M, ?, ?>> fkColumns;
     private final List<Column<M, ?>> secondaryKeyCols;
     private final Map<String, Column<M, ?>> columnsByName;
     private final Column<M, Long> idColumn;
     private final Column<M, Long> createTimeColumn;
     private final Column<M, Long> modifyTimeColumn;
+    private final Column<M, ?> naturalKeyColumn;
 
-    BaseTable(String tblName, Column<M, Long> id, Column<M, Long> createTime, Column<M, Long> modTime, List<Column<M, ?>> otherCols) {
-        name = tblName;
+    BaseTable(String name, Factory<M> factory,
+            Column<M, Long> id, Column<M, Long> createTime, Column<M, Long> modTime, List<Column<M, ?>> otherCols) {
+        this.name = name;
+        this.factory = factory;
         idColumn = id;
         createTimeColumn = createTime;
         modifyTimeColumn = modTime;
@@ -28,25 +29,43 @@ public abstract class BaseTable<M> implements Table<M> {
         cols.addAll(otherCols);
         columns = Collections.unmodifiableList(cols);
 
+        Column<M, ?> naturalKeyColumn = null;
         // make name map and secondary key cols list
         Map<String, Column<M, ?>> columnsByName = new HashMap<>(cols.size(), 1);
         List<Column<M, ?>> secondaryKeyCols = new ArrayList<>(2);
-        List<Column<M, ?>> fkColumns = new ArrayList<>(2);
+        List<Column.Fk<M, ?, ?>> fkColumns = new ArrayList<>(2);
 
         for (Column<M, ?> c : cols) {
             columnsByName.put(c.sqlName(), c);
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
-            if (c instanceof Column.Fk) {
-                fkColumns.add(c);
+            if (c.isUnique()) {
+                assert naturalKeyColumn == null : "two natural keys defined";
+                naturalKeyColumn = c;
             }
+            checkAndAddFk(fkColumns, c);
         }
         this.columnsByName = Collections.unmodifiableMap(columnsByName);
         this.secondaryKeyCols = Collections.unmodifiableList(secondaryKeyCols);
         this.fkColumns = Collections.unmodifiableList(fkColumns);
+        this.naturalKeyColumn = naturalKeyColumn;
     }
 
+    @SuppressWarnings("unchecked")
+    // There's no reason for this check to fail, as the parameter M is guaranteed to match,
+    // and everything else is a wildcard
+    private static <M> void checkAndAddFk(List<Column.Fk<M, ?, ?>> fkCols, Column<M, ?> c) {
+        if (c instanceof Column.Fk) {
+            Column.Fk<M, ?, ?> fk = (Column.Fk<M, ?, ?>) c;
+            fkCols.add(fk);
+        }
+    }
+
+    @Override
+    public Factory<M> getFactory() {
+        return factory;
+    }
     @Override
     public Column<M, Long> getIdColumn() {
         return idColumn;
@@ -68,8 +87,12 @@ public abstract class BaseTable<M> implements Table<M> {
         return columns;
     }
     @Override
-    public List<Column<M, ?>> fkColumns() {
+    public List<Column.Fk<M, ?, ?>> fkColumns() {
         return fkColumns;
+    }
+    @Override
+    public Column<M, ?> getNaturalKeyColumn() {
+        return naturalKeyColumn;
     }
 
     @Override
@@ -80,8 +103,6 @@ public abstract class BaseTable<M> implements Table<M> {
     public List<Column<M, ?>> getSecondaryKeyCols() {
         return secondaryKeyCols;
     }
-    @Override
-    public abstract M construct(ColumnData<M> dataMap, ObjectSource objectSource);
     @Override
     public Column<M, ?> columnForName(String name) {
         return columnsByName.getOrDefault(name, null);

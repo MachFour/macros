@@ -1,8 +1,6 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
+import com.machfour.macros.core.*;
 
 public class RegularMeal extends MacrosEntity<RegularMeal> {
 
@@ -15,4 +13,11 @@ public class RegularMeal extends MacrosEntity<RegularMeal> {
         return Schema.RegularMealTable.instance();
     }
 
+    public static Factory<RegularMeal> factory() {
+        return RegularMeal::new;
+    }
+    @Override
+    public Factory<RegularMeal> getFactory() {
+        return factory();
+    }
 }

@@ -1,7 +1,7 @@
-package com.machfour.macros.data;
+package com.machfour.macros.core;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -16,6 +16,27 @@ public final class ColumnData<M> {
     private final Set<Column<M, ?>> columns;
 
     private boolean immutable;
+
+    public <J> void putFromNullableString(Column<M, J> col, @Nullable String data) {
+        // also catch empty whitespace with trim()
+        if (data == null || data.trim().equals("")) {
+            putFromRaw(col, null);
+        } else {
+            putFromString(col, data);
+        }
+    }
+
+    public <J> void putFromString(Column<M, J> col, @NotNull String data) {
+        put(col, col.getType().fromString(data));
+    }
+
+    public <J> Object getAsRaw(Column<M, J> col) {
+        return col.getType().toRaw(get(col));
+    }
+
+    public <J> void putFromRaw(Column<M, J> col, Object data) {
+        put(col, col.getType().fromRaw(data));
+    }
 
     @Override
     public boolean equals(Object o) {

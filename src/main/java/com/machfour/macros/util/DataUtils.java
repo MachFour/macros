@@ -1,8 +1,8 @@
 package com.machfour.macros.util;
 
-import com.machfour.macros.core.NutritionData;
-import com.machfour.macros.data.Column;
-import com.machfour.macros.data.Schema;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.core.Column;
+import com.machfour.macros.core.Schema;
 
 import java.util.HashMap;
 import java.util.Locale;

@@ -1,8 +1,6 @@
-package com.machfour.macros.data;
+package com.machfour.macros.core;
 
 import com.machfour.macros.validation.Validation;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 
 import java.util.List;
 
@@ -34,6 +32,8 @@ public interface Column<M, J> {
     // NOTE there can also be other columns in the table needed to form the full secondary key.
     // Also, not all tables may have a secondary key.
     boolean inSecondaryKey();
+
+    boolean isUnique();
 
     List<Validation> getValidations();
 

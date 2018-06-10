@@ -1,0 +1,5 @@
+#!/bin/sh
+
+unset _JAVA_OPTIONS
+CLASSPATH="out/production/macros-java/:lib/super-csv-2.4.0.jar:/usr/share/java/xerial-sqlite-jdbc/xerial-sqlite-jdbc.jar"
+java -cp "$CLASSPATH" com.machfour.macros.cli.CliMain "$@"

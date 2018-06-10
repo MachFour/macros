@@ -1,14 +1,16 @@
-package com.machfour.macros.storage;
+package com.machfour.macros.linux;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.data.*;
-import com.machfour.macros.data.Schema.*;
+import com.machfour.macros.core.Schema.*;
+import com.machfour.macros.objects.*;
+import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.storage.StorageUtils;
 import com.machfour.macros.util.DateStamp;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
+import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,25 +22,27 @@ import static com.machfour.macros.storage.StorageUtils.toList;
 // data source provided by Xerial library
 
 public class MacrosLinuxDatabase implements MacrosDataSource {
-    private static final Path INIT_SQL = Paths.get("/home/max/devel/macros/macros-db-create.sql");
-    private static final Path TRIG_SQL = Paths.get("/home/max/devel/macros/macros-db-triggers.sql");
-    private static final Path DATA_SQL = Paths.get("/home/max/devel/macros/macros-initial-data.sql");
-    private static final PrintStream out = System.out;
-    private static final PrintStream err = System.err;
-    private static final String DB_LOCATION = "/home/max/devel/macros-java/sample.db";
-    private static final Path DB_PATH = Paths.get(DB_LOCATION);
     // singleton
     private static MacrosLinuxDatabase INSTANCE;
     private final SQLiteDataSource dataSource;
 
-    private MacrosLinuxDatabase() {
+    private MacrosLinuxDatabase(String dbFile) {
+        Path dbPath = Paths.get(dbFile);
         dataSource = new SQLiteDataSource();
-        dataSource.setUrl("jdbc:sqlite:" + DB_PATH.toAbsolutePath());
+        dataSource.setUrl("jdbc:sqlite:" + dbPath.toAbsolutePath());
+        SQLiteConfig config = new SQLiteConfig();
+        config.enableRecursiveTriggers(true);
+        config.enforceForeignKeys(true);
+        dataSource.setConfig(config);
     }
 
     public static MacrosLinuxDatabase getInstance() {
+        return getInstance(Config.DB_LOCATION);
+    }
+
+    public static MacrosLinuxDatabase getInstance(String dbFile) {
         if (INSTANCE == null) {
-            INSTANCE = new MacrosLinuxDatabase();
+            INSTANCE = new MacrosLinuxDatabase(dbFile);
         }
         return INSTANCE;
     }
@@ -68,25 +72,21 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         }
     }
 
-    @SuppressWarnings("unchecked")
     // fkColumns by definition contains only the foreign key columns
     private static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
-        for (Column<M, ?> col : object.getTable().fkColumns()) {
-            Column.Fk<M, ?, ?> fkCol = (Column.Fk<M, ?, ?>) col;
+        boolean idsPresent = true;
+        for (Column.Fk<M, ?, ?> fkCol : object.getTable().fkColumns()) {
             if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn())) {
-                // then we can cast it to an Id column;
-                Column.Fk<M, Long, ?> fkIdCol = (Column.Fk<M, Long, ?>) col;
-                if (object.hasData(fkIdCol) && object.getData(fkIdCol).equals(MacrosPersistable.NO_ID)) {
-                    return false;
-                }
+                idsPresent &= object.hasData(fkCol) && !object.getData(fkCol).equals(MacrosPersistable.NO_ID);
             }
         }
-        return true;
+        return idsPresent;
     }
 
-    public boolean deleteIfExists() throws IOException {
-        if (Files.exists(DB_PATH)) {
-            Files.delete(DB_PATH);
+    public boolean deleteIfExists(String dbFile) throws IOException {
+        Path dbPath = Paths.get(dbFile);
+        if (Files.exists(dbPath)) {
+            Files.delete(dbPath);
             return true;
         } else {
             return false;
@@ -100,9 +100,9 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     public void initDb() throws SQLException, IOException {
         try (Connection c = getConnection()) {
             List<String> initStatements = new ArrayList<>(3);
-            initStatements.add(createStatements(Files.readAllLines(INIT_SQL)));
-            initStatements.add(createStatements(Files.readAllLines(TRIG_SQL)));
-            initStatements.add(createStatements(Files.readAllLines(DATA_SQL)));
+            initStatements.add(createStatements(Files.readAllLines(Config.INIT_SQL)));
+            initStatements.add(createStatements(Files.readAllLines(Config.TRIG_SQL)));
+            initStatements.add(createStatements(Files.readAllLines(Config.DATA_SQL)));
             runStatements(c, initStatements);
         }
     }
@@ -181,17 +181,28 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         Map<Long, Food> idMap = StorageUtils.makeIdMap(foods);
         applyServingsToRawFoods(idMap);
         applyNutritionDataToRawFoods(idMap);
-        // TODO FoodType, FoodCategory
+        // TODO  FoodCategory, Ingredients
+        //applyIngredientsToRawFood();
+        //applyFoodCategoryToRawFood();
         return foods;
     }
 
     private void applyServingsToRawFoods(Map<Long, Food> foodMap) throws SQLException {
         List<Long> foodIds = new ArrayList<>(foodMap.keySet());
         List<Long> servingIds = selectColumn(ServingTable.instance(), ServingTable.ID, ServingTable.FOOD_ID, foodIds);
+        if (servingIds.isEmpty()) {
+            // no servings
+            return;
+        }
         List<Serving> servings = getRawObjectsByKeys(ServingTable.instance(), ServingTable.ID, servingIds);
         for (Serving s : servings) {
+            // QuantityUnit setup
+            QuantityUnit unit = QuantityUnit.fromAbbreviation(s.getQuantityUnitAbbr());
+            assert (unit != null) : "No quantity unit with the given abbreviation was found";
+            s.setQuantityUnit(unit);
             // this query should never fail, due to database constraints
             Food f = foodMap.get(s.getFoodId());
+            assert (f != null);
             s.setFood(f);
             f.addServing(s);
         }
@@ -200,9 +211,13 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     private void applyNutritionDataToRawFoods(Map<Long, Food> foodMap) throws SQLException {
         List<Long> foodIds = new ArrayList<>(foodMap.keySet());
         List<Long> nutritionDataIds = selectColumn(NutritionDataTable.instance(), NutritionDataTable.ID, NutritionDataTable.FOOD_ID, foodIds);
-        List<NutritionData> servings = getRawObjectsByKeys(NutritionDataTable.instance(), NutritionDataTable.ID, nutritionDataIds);
-        for (NutritionData nd : servings) {
-            // this query should never fail, due to database constraints
+        if (nutritionDataIds.isEmpty()) {
+            // no servings
+            return;
+        }
+        List<NutritionData> ndObjects = getRawObjectsByKeys(NutritionDataTable.instance(), NutritionDataTable.ID, nutritionDataIds);
+        for (NutritionData nd : ndObjects) {
+            // this lookup should never fail, due to database constraints
             Food f = foodMap.get(nd.getFoodId());
             nd.setFood(f);
             f.setNutritionData(nd);
@@ -224,19 +239,26 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
-    private <M, I, J> Map<J, I> selectColumnMap(Table<M> t, Column<M, I> valueColumn, Column<M, J> keyColumn, List<J> keyValues) throws SQLException {
-        Map<J, I> resultMap = new HashMap<>();
-        List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
+    private <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException {
+        Map<I, J> resultMap = new HashMap<>();
+        // for batch queries
+        //List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
+        List<Column<M, ?>> selectColumns = Collections.singletonList(valueColumn);
         try (Connection c = getConnection();
              // should be distinct by default: assert keyColumn.isUnique();
-             PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumns, valueColumn, keyValues.size(), false))) {
-            StorageUtils.bindObjects(p, keyValues);
-            try (ResultSet rs = p.executeQuery()) {
-                for (rs.next(); !rs.isAfterLast(); rs.next()) {
-                    J key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
-                    I value = valueColumn.getType().fromRaw(rs.getObject(valueColumn.sqlName()));
-                    resultMap.put(key, value);
+             PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumns, keyColumn, 1, false))) {
+            // do queries one by one so we don't send a huge number of parameters at once
+            for (I key : keys) {
+                StorageUtils.bindObjects(p, Collections.singletonList(key));
+                try (ResultSet rs = p.executeQuery()) {
+                    for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                        //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
+                        J value = valueColumn.getType().fromRaw(rs.getObject(valueColumn.sqlName()));
+                        assert !resultMap.containsKey(key) : "Two rows in the DB contained the same data in the key column!";
+                        resultMap.put(key, value);
+                    }
                 }
+                p.clearParameters();
             }
         }
         return resultMap;
@@ -262,14 +284,9 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
 
     @Override
     public Food getFoodByIndexName(String indexName) throws SQLException {
-        Long id = getFoodIdForIndexName(indexName);
-        return id == null ? null : getFoodById(id);
-    }
-
-    private Long getFoodIdForIndexName(String indexName) throws SQLException {
         List<Long> idList = selectColumn(FoodTable.instance(), FoodTable.ID, FoodTable.INDEX_NAME, indexName);
         // a bit redundant since we only need the ID but whatever
-        return idList.isEmpty() ? null : idList.get(0);
+        return idList.isEmpty() ? null : getFoodById(idList.get(0));
     }
 
     @Override
@@ -359,17 +376,19 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     private <M, J> List<M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, List<J> keys) throws SQLException {
+        // if the list of keys is empty, every row will be returned
+        assert !keys.isEmpty() : "List of keys is empty";
         List<M> objects = new ArrayList<>(keys.size());
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
             StorageUtils.bindObjects(p, keys);
             try (ResultSet rs = p.executeQuery()) {
-                for (; !rs.isAfterLast(); rs.next()) {
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
                     ColumnData<M> data = new ColumnData<>(t);
                     for (Column<M, ?> col : t.columns()) {
-                        StorageUtils.rawToColumnData(data, col, rs.getObject(col.sqlName()));
+                        data.putFromRaw(col, rs.getObject(col.sqlName()));
                     }
-                    objects.add(MacrosEntity.construct(t, data, ObjectSource.DATABASE));
+                    objects.add(t.getFactory().construct(data, ObjectSource.DATABASE));
                 }
             }
         }
@@ -418,63 +437,64 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
         return saved;
     }
 
-    private <M, J> Long getIdForSecondaryKeyHelper(Column<M, J> keyCol, ColumnData<M> keyData) throws SQLException {
-        Table<M> parentTable = keyData.getTable();
-        J secondaryKeyValue = keyData.get(keyCol);
-        List<Long> result = selectColumn(parentTable, parentTable.getIdColumn(), keyCol, secondaryKeyValue);
-        assert result.size() == 1 : "Secondary key did not uniquely identify a row!";
-        return result.get(0);
-    }
-    private <M, J> Map<J, Long> getIdsForSecondaryKeyHelper(Column<M, J> keyCol, List<ColumnData<M>> keyDataList) throws SQLException {
-        List<J> keyValues = new ArrayList<>(keyDataList.size());
-        if (keyDataList.isEmpty()) {
-            return Collections.emptyMap();
+    // wildcard capture helper for natural key column type
+    private <M extends MacrosPersistable<M>, J, N, I> Map<I, J> completeFkIdColHelper(
+            Column.Fk<M, J, N> fkColumn, Column<N, I> parentNaturalKeyCol, List<ColumnData<N>> data) throws SQLException {
+        assert (parentNaturalKeyCol.isUnique());
+        Set<I> uniqueColumnValues = new HashSet<>(data.size());
+        for (ColumnData<N> cd : data) {
+            uniqueColumnValues.add(cd.get(parentNaturalKeyCol));
         }
-        Table<M> parentTable = keyDataList.get(0).getTable();
-        for (ColumnData<M> keyData : keyDataList) {
-            keyValues.add(keyData.get(keyCol));
-        }
-        return selectColumnMap(parentTable, parentTable.getIdColumn(), keyCol, keyValues);
+        return selectColumnMap(fkColumn.getParentTable(), parentNaturalKeyCol, fkColumn.getParentColumn(), uniqueColumnValues);
     }
 
-    /*
-     * TODO support case when secondary key has more than one column.
-     */
-    private <M> Long getIdForSecondaryKey(ColumnData<M> secondaryKeyData) throws SQLException{
-        if (secondaryKeyData.getColumns().size() != 1) {
-            throw new UnsupportedOperationException("Can only support secondary keys with one column");
-        }
-        Column<M, ?> secondaryKeyCol = secondaryKeyData.getColumns().iterator().next();
-        return getIdForSecondaryKeyHelper(secondaryKeyCol, secondaryKeyData);
-    }
-
-    // use secondary key data
-    public <M extends MacrosPersistable<M>> int insertImportedObjects(@NotNull List<M> objects) throws SQLException {
-        Table<M> table = objects.get(0).getTable();
-        List<Column<M, ?>> columnsToInsert = new ArrayList<>(table.columns());
-        columnsToInsert.remove(table.getIdColumn());
-
-        // Split objects up into ones that need FK enhancements and ones that don't
-        // TODO can we just specify this per table at compile time?
-        List<ColumnData<M>> augmentedData = new ArrayList<>(objects.size());
-        List<ColumnData<M>> unAugmentedData = new ArrayList<>(objects.size());
+    // wildcard capture helper for parent unique column type
+    private <M extends MacrosPersistable<M>, J, N> List<M> completeFkCol(List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
+        List<M> completedObjects = new ArrayList<>(objects.size());
+        List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
         for (M object : objects) {
-            assert (object.getObjectSource() == ObjectSource.IMPORT) : "Object source is not import";
-            if (fkIdsPresent(object)) {
-                // don't need to do anything special much
-                unAugmentedData.add(object.getAllData());
-            } else {
-                Map<Column.Fk<M, Long, ?>, ColumnData<?>> secondaryFkMap = object.getSecondaryFkMap();
-                // need to find actual ID for object
-                assert !secondaryFkMap.isEmpty() : object.getTable().name() + "object is missing FKs but has no secondary FK data";
-                ColumnData<M> dataCopy = object.getAllData().copy();
-                for (Column.Fk<M, Long, ?> fkCol : secondaryFkMap.keySet()) {
-                    Long id = getIdForSecondaryKey(secondaryFkMap.get(fkCol));
-                    dataCopy.put(fkCol, id);
-                }
-            }
+            assert object.getObjectSource() == ObjectSource.IMPORT : "Object is not from import";
+            assert !object.getFkNaturalKeyMap().isEmpty() : "Object has no FK data maps";
+            ColumnData<N> objectNkData = object.getFkParentNaturalKey(fkCol);
+            assert objectNkData != null : "Natural key data was null";
+            naturalKeyData.add(objectNkData);
         }
-        return insertObjectData(augmentedData, false) + insertObjectData(unAugmentedData, false);
+        Column<N, ?> parentNaturalKeyCol = fkCol.getParentTable().getNaturalKeyColumn();
+        assert (parentNaturalKeyCol != null) : "Table " + fkCol.getParentTable().name() + " has no natural key defined";
+        Map<?, J> uniqueKeyToFkParent = completeFkIdColHelper(fkCol, parentNaturalKeyCol, naturalKeyData);
+        for (M object : objects) {
+            ColumnData<M> newData = object.getAllData().copy();
+            // TODO might be able to remove one level of indirection here because the ParentUniqueColData only contains parentNaturalKeyCol
+            newData.put(fkCol, uniqueKeyToFkParent.get(object.getFkParentNaturalKey(fkCol).get(parentNaturalKeyCol)));
+            M newObject = object.getTable().construct(newData, object.getObjectSource());
+            // copy over old FK data to new object
+            newObject.copyFkNaturalKeyMap(object);
+            completedObjects.add(newObject);
+        }
+        return completedObjects;
+    }
+
+    public <M extends MacrosPersistable<M>> List<M> completeForeignKeys(List<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+        return completeForeignKeys(objects, toList(fk));
+    }
+
+    public <M extends MacrosPersistable<M>> List<M> completeForeignKeys(List<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
+        List<M> partiallyCompletedObjects = objects;
+        List<M> completedObjects = new ArrayList<>(objects.size());
+        if (objects.isEmpty()) {
+            return completedObjects;
+        }
+        Factory<M> factory = objects.get(0).getFactory();
+        // cycle through the FK columns.
+        for (Column.Fk<M, ?, ?> fkCol: which) {
+            partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
+        }
+        // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT
+        for (M object : partiallyCompletedObjects) {
+            assert fkIdsPresent(object);
+            completedObjects.add(factory.construct(object.getAllData(), object.getObjectSource()));
+        }
+        return completedObjects;
     }
 
     // Note that if the id is not found in the database, nothing will be inserted
@@ -558,14 +578,15 @@ public class MacrosLinuxDatabase implements MacrosDataSource {
     public <M extends MacrosPersistable<M>> int saveObjects(List<M> objects, ObjectSource objectSource) throws SQLException {
         switch (objectSource) {
             case IMPORT:
-                return insertImportedObjects(objects);
+                // TODO have overwrite mode; split import into new insert and updates
+                /* fall through */
+            case USER_NEW:
+                return insertObjects(objects, false);
             case DB_EDIT:
                 return updateObjects(objects);
             case DATABASE:
                 // it's unchanged we don't need to do anything at all!
                 return 1;
-            case USER_NEW:
-                return insertObjects(objects, false);
             case RESTORE:
                 // will have ID. Assume database has been cleared?
                 return insertObjects(objects, true);

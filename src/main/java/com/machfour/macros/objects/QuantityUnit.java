@@ -1,13 +1,12 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
@@ -27,10 +26,10 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
 
         ColumnData<QuantityUnit> milsData = new ColumnData<>(Schema.QuantityUnitTable.instance());
         milsData.put(Schema.QuantityUnitTable.ID, 2L);
-        gramsData.put(Schema.QuantityUnitTable.NAME, "millilitres");
-        gramsData.put(Schema.QuantityUnitTable.ABBREVIATION, "ml");
-        gramsData.put(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
-        gramsData.put(Schema.QuantityUnitTable.IS_VOLUME_UNIT, true);
+        milsData.put(Schema.QuantityUnitTable.NAME, "millilitres");
+        milsData.put(Schema.QuantityUnitTable.ABBREVIATION, "ml");
+        milsData.put(Schema.QuantityUnitTable.METRIC_EQUIVALENT, 1.0);
+        milsData.put(Schema.QuantityUnitTable.IS_VOLUME_UNIT, true);
         MILLILITRES = new QuantityUnit(milsData, ObjectSource.DATABASE);
 
         ColumnData<QuantityUnit> mgData = new ColumnData<>(Schema.QuantityUnitTable.instance());
@@ -44,25 +43,39 @@ public class QuantityUnit extends MacrosEntity<QuantityUnit> {
         INBUILT = Arrays.asList(GRAMS, MILLIGRAMS, MILLILITRES);
     }
 
-    @Nullable
-    public static QuantityUnit getInbuiltByAbbreviation(String abbeviation) {
+    public static QuantityUnit fromAbbreviation(String abbreviation, boolean allowNull) {
         QuantityUnit found = null;
         for (QuantityUnit q : INBUILT) {
-            if (q.getAbbreviation().equals(abbeviation)) {
+            if (q.getAbbreviation().equals(abbreviation)) {
                 found = q;
                 break;
             }
         }
+        if (found == null && !allowNull) {
+            throw new IllegalArgumentException("No QuantityUnit exists with abbreviation '" + abbreviation + "'");
+        }
         return found;
     }
 
-    public QuantityUnit(ColumnData<QuantityUnit> data, ObjectSource objectSource) {
+    public static QuantityUnit fromAbbreviation(String abbreviation) {
+        return fromAbbreviation(abbreviation, false);
+    }
+
+    private QuantityUnit(ColumnData<QuantityUnit> data, ObjectSource objectSource) {
         super(data, objectSource);
     }
 
     @Override
     public Table<QuantityUnit> getTable() {
         return Schema.QuantityUnitTable.instance();
+    }
+
+    public static Factory<QuantityUnit> factory() {
+        return QuantityUnit::new;
+    }
+    @Override
+    public Factory<QuantityUnit> getFactory() {
+        return factory();
     }
 
     @NotNull

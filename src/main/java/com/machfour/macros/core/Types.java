@@ -1,7 +1,8 @@
-package com.machfour.macros.data;
+package com.machfour.macros.core;
 
+import com.machfour.macros.core.MacrosType;
 import com.machfour.macros.util.DateStamp;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 // basic types corresponding roughly to database types
 public class Types {
@@ -14,7 +15,7 @@ public class Types {
     public static final Time TIMESTAMP = new Time();
     public static final Date DATESTAMP = new Date();
 
-    public static final class Bool implements MacrosType<Boolean> {
+    public static class Bool implements MacrosType<Boolean> {
         @Override
         public String toString() {
             return "boolean";
@@ -32,7 +33,9 @@ public class Types {
         }
         @Override
         public Boolean fromString(@NotNull String boolString) {
-            return Boolean.parseBoolean(boolString);
+            return boolString.equalsIgnoreCase("true")
+                || boolString.equalsIgnoreCase("yes")
+                || boolString.equals("1");
         }
         @Override
         public Class<Boolean> javaClass() {
@@ -41,35 +44,23 @@ public class Types {
     }
     // Boolean type where null means false. This is a hack used to ensure there's only one default serving per food,
     // using a UNIQUE check on (food_id, is_default)
-    public static final class NullBool implements MacrosType<Boolean> {
+    public static final class NullBool extends Bool {
         @Override
         public String toString() {
             return "null-boolean";
         }
         @Override
         public Boolean fromRaw(Object raw) {
-            if (raw == null) {
-                return false;
-            }
-            else if (raw instanceof Boolean) {
-                return (Boolean) raw;
-            } else {
-                return fromString(raw.toString());
-            }
+            return raw == null ? false : super.fromRaw(raw);
         }
         @Override
         public Boolean fromString(@NotNull String boolString) {
-            return Boolean.parseBoolean(boolString);
+            return boolString.equals("") ? false : super.fromString(boolString);
         }
         @Override
         // return true if data is true, or null otherwise
         public Object toRaw(Boolean data) {
             return (data != null && data) ? true : null;
-        }
-
-        @Override
-        public Class<Boolean> javaClass() {
-            return Boolean.class;
         }
     }
     public static final class Id implements MacrosType<Long> {

@@ -1,8 +1,8 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.Food;
+import com.machfour.macros.objects.Food;
 import com.machfour.macros.core.MacrosPersistable;
-import com.machfour.macros.core.Meal;
+import com.machfour.macros.objects.Meal;
 import com.machfour.macros.util.DateStamp;
 
 import java.sql.SQLException;

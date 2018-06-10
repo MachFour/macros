@@ -1,11 +1,8 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.data.Column;
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
 import com.machfour.macros.validation.Validation;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;

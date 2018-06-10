@@ -1,10 +1,8 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class Ingredient extends MacrosEntity<Ingredient> {
 
@@ -19,13 +17,21 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     @Nullable
     private Serving serving;
 
-    public Ingredient(ColumnData<Ingredient> data, ObjectSource objectSource) {
+    private Ingredient(ColumnData<Ingredient> data, ObjectSource objectSource) {
         super(data, objectSource);
         serving = null;
         quantityUnit = null;
         compositeFood = null;
         ingredientFood = null;
 
+    }
+
+    public static Factory<Ingredient> factory() {
+        return Ingredient::new;
+    }
+    @Override
+    public Factory<Ingredient> getFactory() {
+        return factory();
     }
 
     @Override
@@ -45,14 +51,13 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert (quantityUnit == null);
-        assert (getQuantityUnitId().equals(q.getId()));
+        assert quantityUnit == null && foreignKeyMatches(this, Schema.IngredientTable.QUANTITY_UNIT, q);
         quantityUnit = q;
 
     }
 
     @NotNull
-    public Long getQuantityUnitId() {
+    public String getQuantityUnitAbbr() {
         return getData(Schema.IngredientTable.QUANTITY_UNIT);
     }
 
@@ -80,8 +85,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     public void setIngredientFood(@NotNull Food f) {
-        assert (ingredientFood == null);
-        assert (getIngredientFoodId().equals(f.getId()));
+        assert ingredientFood == null && foreignKeyMatches(this, Schema.IngredientTable.INGREDIENT_FOOD_ID, f);
         ingredientFood = f;
         nutritionData = f.getNutritionData(getQuantity());
     }
@@ -96,10 +100,8 @@ public class Ingredient extends MacrosEntity<Ingredient> {
         return serving;
     }
 
-    // for use during construction
     public void setServing(@NotNull Serving s) {
-        assert (serving == null);
-        assert (getServingId().equals(s.getId()));
+        assert serving == null && foreignKeyMatches(this, Schema.IngredientTable.SERVING_ID, s);
         assert (getIngredientFoodId().equals(s.getFoodId()));
         serving = s;
     }

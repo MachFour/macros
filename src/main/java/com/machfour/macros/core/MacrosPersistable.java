@@ -1,9 +1,6 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.data.Column;
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -46,13 +43,12 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     ColumnData<M> getAllData();
 
     Table<M> getTable();
+    Factory<M> getFactory();
 
-    // used to set Secondary FK data when an object is available
-    <N extends MacrosPersistable<N>> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, N parent);
-    // ... or when only the relevant column data is available, but then it's only limited to single-column secondary keys
-    <N extends MacrosPersistable<N>, J> void setFkParentBy2aryKey(Column.Fk<M, Long, N> col, Table<N> parentTable, Column<N, J> parent2aryKey, J data);
-
-    <N extends MacrosPersistable<N>> ColumnData<N> getFkParent2aryData(Column.Fk<M, Long, N> col);
-
-    Map<Column.Fk<M, Long, ?>, ColumnData<?>> getSecondaryFkMap();
+    // ... Alternative methods that can be used with unique columns
+    <N extends MacrosPersistable<N>, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> fkCol, Column<N, J> parentNaturalKey, N parent);
+    <N, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> fkCol, Column<N, J> parentNaturalKey, J data);
+    <N> ColumnData<N> getFkParentNaturalKey(Column.Fk<M, ?, N> fkCol);
+    Map<Column.Fk<M, ?, ?>, ?> getFkNaturalKeyMap();
+    void copyFkNaturalKeyMap(MacrosPersistable<M> from);
 }

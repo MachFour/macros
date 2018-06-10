@@ -1,16 +1,14 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
-import com.sun.istack.internal.NotNull;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
 
 public class Serving extends MacrosEntity<Serving> {
 
     private Food food;
     private QuantityUnit quantityUnit;
 
-    public Serving(ColumnData<Serving> data, ObjectSource objectSource) {
+    private Serving(ColumnData<Serving> data, ObjectSource objectSource) {
         super(data, objectSource);
         food = null;
         quantityUnit = null;
@@ -18,7 +16,17 @@ public class Serving extends MacrosEntity<Serving> {
 
     @Override
     public Table<Serving> getTable() {
+        return table();
+    }
+    public static Table<Serving> table() {
         return Schema.ServingTable.instance();
+    }
+    @Override
+    public Factory<Serving> getFactory() {
+        return factory();
+    }
+    public static Factory<Serving> factory() {
+        return Serving::new;
     }
 
     @Override
@@ -49,8 +57,7 @@ public class Serving extends MacrosEntity<Serving> {
         quantityUnit = q;
     }
 
-    @NotNull
-    public Long getFoodId() {
+    public long getFoodId() {
         return getData(Schema.ServingTable.FOOD_ID);
     }
 
@@ -59,13 +66,11 @@ public class Serving extends MacrosEntity<Serving> {
         return getData(Schema.ServingTable.NAME);
     }
 
-    @NotNull
-    public Double getQuantity() {
+    public double getQuantity() {
         return getData(Schema.ServingTable.QUANTITY);
     }
 
-    @NotNull
-    public Boolean isDefault() {
+    public boolean isDefault() {
         return getData(Schema.ServingTable.IS_DEFAULT);
     }
 }

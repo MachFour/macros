@@ -1,10 +1,8 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
-import com.machfour.macros.data.ColumnData;
-import com.machfour.macros.data.Table;
-import com.machfour.macros.data.Schema;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.machfour.macros.core.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FoodPortion extends MacrosEntity<FoodPortion> {
 
@@ -30,7 +28,17 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     @Override
     public Table<FoodPortion> getTable() {
+        return table();
+    }
+    public static Table<FoodPortion> table() {
         return Schema.FoodPortionTable.instance();
+    }
+    public static Factory<FoodPortion> factory() {
+        return FoodPortion::new;
+    }
+    @Override
+    public Factory<FoodPortion> getFactory() {
+        return factory();
     }
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
@@ -51,7 +59,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     }
 
     @NotNull
-    public Long getQuantityUnitId() {
+    public String getQuantityUnitAbbr() {
         return getData(Schema.FoodPortionTable.QUANTITY_UNIT);
     }
 

@@ -1,4 +1,4 @@
-package com.machfour.macros.core;
+package com.machfour.macros.objects;
 
 import java.util.NoSuchElementException;
 

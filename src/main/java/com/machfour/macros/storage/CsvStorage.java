@@ -1,7 +1,9 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.data.*;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.objects.Serving;
 import com.machfour.macros.util.Pair;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.ICsvMapReader;
@@ -12,9 +14,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class CsvStorage {
-    public static final String FOOD_CSV_FILENAME = "/home/max/devel/macros/macros-data/foods.csv";
-    public static final String SERVING_CSV_FILENAME = "/home/max/devel/macros/macros-data/foods.csv";
-
     /*
      * Method for reading CSV files that directly correspond to a table
      */
@@ -35,11 +34,14 @@ public class CsvStorage {
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ColumnData<M> data = extractData(csvRow, table);
-                objectList.add(MacrosEntity.construct(table, data, ObjectSource.RESTORE));
+                objectList.add(table.getFactory().construct(data, ObjectSource.RESTORE));
             }
         }
         System.out.println("Warning: unknown columns: " + unrecognisedStrings);
         return objectList;
+    }
+    public static <M> void writeObjectsToCsv(Factory<M> factory, String fileName, List<M> objects) throws IOException {
+        // TODO
     }
 
     // don't edit keyset!
@@ -51,7 +53,7 @@ public class CsvStorage {
             String value = csvRow.get(colName);
             Column<M, ?> col = table.columnForName(colName);
             // map empty strings in CSV to null
-            StorageUtils.nullableStringToColumnData(data, col, value);
+            data.putFromNullableString(col, value);
         }
         return data;
     }
@@ -73,18 +75,18 @@ public class CsvStorage {
      */
     public static Pair<List<Food>, List<NutritionData>> buildFoodObjectTree(String foodCsv) throws IOException {
         Pair<List<Food>, List<NutritionData>> objectLists = new Pair<>(new ArrayList<>(), new ArrayList<>());
-        Table<NutritionData> ndTable = Schema.NutritionDataTable.instance();
-        Table<Food> foodTable = Schema.FoodTable.instance();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
-                ColumnData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
                 ColumnData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
-                NutritionData nd = MacrosEntity.construct(ndTable, ndData, ObjectSource.IMPORT);
-                Food f = MacrosEntity.construct(foodTable, foodData, ObjectSource.IMPORT);
+                Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
+
+                ColumnData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
+                NutritionData nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
+
                 //f.setNutritionData(nd); without pairs, needed to recover nutrition data from return value
-                nd.setFkParentBy2aryKey(Schema.NutritionDataTable.FOOD_ID, f);
+                nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, f);
                 objectLists.first.add(f);
                 objectLists.second.add(nd);
             }
@@ -93,18 +95,18 @@ public class CsvStorage {
     }
     public static List<Serving> buildServings(String servingCsv) throws IOException {
         List<Serving> servings = new ArrayList<>();
-        Table<Serving> sTable = Schema.ServingTable.instance();
         try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ColumnData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
-                Serving s = MacrosEntity.construct(sTable, servingData, ObjectSource.IMPORT);
+                Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
                 String foodIndexName = csvRow.get(Schema.FoodTable.INDEX_NAME.sqlName());
-                s.setFkParentBy2aryKey(Schema.ServingTable.FOOD_ID, Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, foodIndexName);
+                s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, foodIndexName);
                 servings.add(s);
             }
         }
         return servings;
     }
+
 }

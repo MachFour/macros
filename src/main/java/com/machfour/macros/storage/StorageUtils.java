@@ -1,16 +1,16 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.MacrosPersistable;
-import com.machfour.macros.data.*;
+import com.machfour.macros.core.Column;
+import com.machfour.macros.core.ColumnData;
+import com.machfour.macros.core.Table;
 import com.machfour.macros.util.StringJoiner;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
-class StorageUtils {
+public class StorageUtils {
     private StorageUtils() {
     }
 
@@ -62,12 +62,12 @@ class StorageUtils {
         }
     }
 
-    static <M> String deleteTemplate(Table<M> table, Column<M, ?> whereColumn) {
+    public static <M> String deleteTemplate(Table<M> table, Column<M, ?> whereColumn) {
         return deleteTemplate(table) + makeWhereString(whereColumn, 1);
 
     }
     // delete all!
-    static <M> String deleteTemplate(Table<M> table) {
+    public static <M> String deleteTemplate(Table<M> table) {
         return "DELETE FROM " + table.name();
     }
 
@@ -87,20 +87,20 @@ class StorageUtils {
         }
     }
 
-    static <M> String selectLikeTemplate(Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
+    public static <M> String selectLikeTemplate(Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
         return selectTemplate(t, toList(selectColumn), makeWhereLikeString(likeColumns), false);
     }
 
-    static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+    public static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, toList(selectColumn), whereColumn, nValues, distinct);
     }
-    static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues) {
+    public static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues) {
         return selectTemplate(t, toList(selectColumn), whereColumn, nValues, false);
     }
-    static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> whereColumn, int nValues, boolean distinct) {
+    public static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct);
     }
-    private static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, String whereString, boolean distinct) {
+    public static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, String whereString, boolean distinct) {
         List<String> words = new ArrayList<>(6);
         words.add("SELECT");
         if (distinct) {
@@ -114,21 +114,21 @@ class StorageUtils {
     }
 
     // columns must be a subset of table.columns()
-    static <M> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
+    public static <M> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
         String placeholders = makeQuestionMarks(orderedColumns.size());
         return "INSERT INTO " + t.name() + " (" + joinColumns(orderedColumns) + ") VALUES ( " + placeholders + ")";
     }
 
-    static <M, J> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> keyCol) {
+    public static <M, J> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> keyCol) {
         return "UPDATE " + t.name() + " SET " + joinColumns(orderedColumns, "= ?") + makeWhereString(keyCol, 1);
     }
 
 
-    static <M> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
+    public static <M> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
         int colIndex = 1; // parameters are 1 indexed!
         for (Column<M, ?> col : orderedColumns) {
             // Internally, setObject() relies on a ladder of instanceof checks
-            p.setObject(colIndex, columnDataToRaw(values, col));
+            p.setObject(colIndex, values.getAsRaw(col));
             colIndex++;
         }
         bindObjects(p, colIndex, extras);
@@ -142,7 +142,7 @@ class StorageUtils {
         }
     }
 
-    static <E> void bindObjects(PreparedStatement p, List<E> objects) throws SQLException {
+    public static <E> void bindObjects(PreparedStatement p, List<E> objects) throws SQLException {
         bindObjects(p, 1, objects);
     }
 
@@ -154,35 +154,17 @@ class StorageUtils {
         }
     }
 
-    static <M, J> Object columnDataToRaw(ColumnData<M> c, Column<M, J> col) {
-        return col.getType().toRaw(c.get(col));
-    }
 
-    static <M, J> void rawToColumnData(ColumnData<M> c, Column<M, J> col, Object data) {
-        c.put(col, col.getType().fromRaw(data));
-    }
-    static <M, J> void stringToColumnData(ColumnData<M> c, Column<M, J> col, @NotNull String data) {
-        c.put(col, col.getType().fromString(data));
-    }
-    static <M, J> void nullableStringToColumnData(ColumnData<M> c, Column<M, J> col, @Nullable String data) {
-        // also catch empty whitespace with trim()
-        if (data == null || data.trim().equals("")) {
-            StorageUtils.rawToColumnData(c, col, null);
-        } else {
-            StorageUtils.stringToColumnData(c, col, data);
-        }
-    }
-
-
-    static <M extends MacrosPersistable> Map<Long, M> makeIdMap(List<M> objects) {
+    public static <M extends MacrosPersistable> Map<Long, M> makeIdMap(List<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);
         for (M m : objects) {
+            assert !idMap.containsKey(m.getId()) : "Two objects had the same ID";
             idMap.put(m.getId(), m);
         }
         return idMap;
     }
 
-    static <E> List<E> toList(E e) {
+    public static <E> List<E> toList(E e) {
         return Collections.singletonList(e);
     }
 }

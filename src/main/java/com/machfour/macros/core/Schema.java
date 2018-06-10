@@ -1,15 +1,17 @@
-package com.machfour.macros.data;
+package com.machfour.macros.core;
 
-import com.machfour.macros.core.*;
+import com.machfour.macros.objects.*;
 import com.machfour.macros.util.DateStamp;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 import static com.machfour.macros.core.MacrosPersistable.NO_ID;
-import static com.machfour.macros.data.Column.builder;
-import static com.machfour.macros.data.Types.*;
+import static com.machfour.macros.core.Column.builder;
 
+@SuppressWarnings("UnusedAssignment")
+// columnIndex++ is used to make sure the indices for each column are unique
+// the last '++' statement is always technically unused
 public class Schema {
 
     public static final String ID_COLUMN_NAME = "id";
@@ -20,20 +22,21 @@ public class Schema {
     }
 
     private static <M> Column<M, Long> idColumn(int index) {
-        return builder(ID_COLUMN_NAME, ID, index).defaultValue(NO_ID).build();
+        return builder(ID_COLUMN_NAME, Types.ID, index).defaultValue(NO_ID).build();
     }
 
     private static <M> Column<M, Long> createTimeColumn(int index) {
-        return builder(CREATE_TIME_COLUMN_NAME, TIMESTAMP, index).defaultValue(0L).build();
+        return builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).build();
     }
 
     private static <M> Column<M, Long> modifyTimeColumn(int index) {
-        return builder(MODIFY_TIME_COLUMN_NAME, TIMESTAMP, index).defaultValue(0L).build();
+        return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).build();
     }
 
     /*
      * CAREFUL: The 'INSTANCE = new ...' line needs to come at the end of all static initialisers,
      * due to static initialisation ordering matching line ordering in the source file.
+     * -> Solution: lazy initialisation of instances
      */
 
     public final static class QuantityUnitTable extends BaseTable<QuantityUnit> {
@@ -45,35 +48,31 @@ public class Schema {
         public static final Column<QuantityUnit, Boolean> IS_VOLUME_UNIT;
         public static final Column<QuantityUnit, Double> METRIC_EQUIVALENT;
         private static final String TABLE_NAME = "QuantityUnit";
-        private static final QuantityUnitTable INSTANCE;
+        private static QuantityUnitTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().build();
-            ABBREVIATION = builder("abbreviation", TEXT, columnIndex++).notNull().inSecondaryKey().build();
-            IS_VOLUME_UNIT = builder("is_volume_unit", BOOLEAN, columnIndex++).notNull().build();
-            METRIC_EQUIVALENT = builder("metric_equivalent", REAL, columnIndex++).notNull().build();
-
-            INSTANCE = new QuantityUnitTable();
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
+            ABBREVIATION = builder("abbreviation", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
+            IS_VOLUME_UNIT = builder("is_volume_unit", Types.BOOLEAN, columnIndex++).notNull().build();
+            METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL, columnIndex++).notNull().build();
         }
-        QuantityUnitTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private QuantityUnitTable() {
+            super(TABLE_NAME, QuantityUnit.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     NAME
                     , ABBREVIATION
                     , IS_VOLUME_UNIT
                     , METRIC_EQUIVALENT
             ));
         }
-
         public static QuantityUnitTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new QuantityUnitTable();
+            }
             return INSTANCE;
-        }
-
-        public QuantityUnit construct(ColumnData<QuantityUnit> dataMap, ObjectSource objectSource) {
-            return new QuantityUnit(dataMap, objectSource);
         }
     }
 
@@ -92,30 +91,27 @@ public class Schema {
         public static final Column<Food, String> NUTTAB_INDEX;
         public static final Column.Fk<Food, String, FoodCategory> CATEGORY;
         private static final String TABLE_NAME = "Food";
-        private static final FoodTable INSTANCE;
+        private static FoodTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            INDEX_NAME = builder("index_name", TEXT, columnIndex++).notNull().inSecondaryKey().build();
-            BRAND = builder("brand", TEXT, columnIndex++).build();
-            VARIETY = builder("variety", TEXT, columnIndex++).build();
-            VARIETY_AFTER_NAME = builder("variety_after_name", BOOLEAN, columnIndex++).notNull().build();
-            NAME = builder("name", TEXT, columnIndex++).notNull().build();
-            NOTES = builder("notes", TEXT, columnIndex++).build();
-            FOOD_TYPE = builder("food_type", TEXT, columnIndex++).notEditable().notNull().defaultValue(FoodType.PRIMARY.getName()).build();
-            USDA_INDEX = builder("usda_index", INTEGER, columnIndex++).notEditable().build();
-            NUTTAB_INDEX = builder("nuttab_index", TEXT, columnIndex++).notEditable().build();
-            CATEGORY = builder("category", TEXT, columnIndex++).notEditable().notNull()
+            INDEX_NAME = builder("index_name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
+            BRAND = builder("brand", Types.TEXT, columnIndex++).build();
+            VARIETY = builder("variety", Types.TEXT, columnIndex++).build();
+            VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN, columnIndex++).notNull().build();
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
+            NOTES = builder("notes", Types.TEXT, columnIndex++).build();
+            FOOD_TYPE = builder("food_type", Types.TEXT, columnIndex++).notEditable().notNull().defaultValue(FoodType.PRIMARY.getName()).build();
+            USDA_INDEX = builder("usda_index", Types.INTEGER, columnIndex++).notEditable().build();
+            NUTTAB_INDEX = builder("nuttab_index", Types.TEXT, columnIndex++).notEditable().build();
+            CATEGORY = builder("category", Types.TEXT, columnIndex++).notEditable().notNull()
                         .buildFk(FoodCategoryTable.NAME, FoodCategoryTable.instance());
-
-            INSTANCE = new FoodTable();
         }
-
-        FoodTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private FoodTable() {
+            super(TABLE_NAME, Food.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     INDEX_NAME
                     , BRAND
                     , VARIETY
@@ -128,13 +124,11 @@ public class Schema {
                     , NUTTAB_INDEX
             ));
         }
-
         public static FoodTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new FoodTable();
+            }
             return INSTANCE;
-        }
-
-        public Food construct(ColumnData<Food> dataMap, ObjectSource objectSource) {
-            return new Food(dataMap, objectSource);
         }
     }
 
@@ -148,25 +142,23 @@ public class Schema {
         public static final Column.Fk<Serving, Long, Food> FOOD_ID;
         public static final Column.Fk<Serving, String, QuantityUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "Serving";
-        private static final ServingTable INSTANCE;
+        private static ServingTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().build();
-            QUANTITY = builder("quantity", REAL, columnIndex++).notNull().build();
-            IS_DEFAULT = builder("is_default", NULLBOOLEAN, columnIndex++).notNull().defaultValue(false).build();
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
+            QUANTITY = builder("quantity", Types.REAL, columnIndex++).notNull().build();
+            IS_DEFAULT = builder("is_default", Types.NULLBOOLEAN, columnIndex++).notNull().defaultValue(false).build();
             FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull().defaultValue(NO_ID)
                     .buildFk(FoodTable.ID, FoodTable.instance());
-            QUANTITY_UNIT = builder("quantity_unit", TEXT, columnIndex++).notNull()
+            QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notNull()
                     .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
-
-            INSTANCE = new ServingTable();
         }
         ServingTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+            super(TABLE_NAME, Serving.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     NAME
                     , QUANTITY
                     , QUANTITY_UNIT
@@ -176,11 +168,10 @@ public class Schema {
         }
 
         public static ServingTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new ServingTable();
+            }
             return INSTANCE;
-        }
-
-        public Serving construct(ColumnData<Serving> dataMap, ObjectSource objectSource) {
-            return new Serving(dataMap, objectSource);
         }
     }
 
@@ -189,35 +180,32 @@ public class Schema {
         public static final Column<FoodPortion, Long> CREATE_TIME;
         public static final Column<FoodPortion, Long> MODIFY_TIME;
         public static final Column<FoodPortion, Double> QUANTITY;
-        public static final Column.Fk<FoodPortion, Long, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<FoodPortion, String, QuantityUnit> QUANTITY_UNIT;
         public static final Column.Fk<FoodPortion, Long, Food> FOOD_ID;
         public static final Column.Fk<FoodPortion, Long, Meal> MEAL_ID;
         public static final Column.Fk<FoodPortion, Long, Serving> SERVING_ID;
         public static final Column<FoodPortion, String> NOTES;
         private static final String TABLE_NAME = "FoodPortion";
-        private static final FoodPortionTable INSTANCE;
+        private static FoodPortionTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            QUANTITY = builder("quantity", REAL, columnIndex++).notNull().build();
-            NOTES = builder("notes", TEXT, columnIndex++).notNull().build();
+            QUANTITY = builder("quantity", Types.REAL, columnIndex++).notNull().build();
+            NOTES = builder("notes", Types.TEXT, columnIndex++).build();
             FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             MEAL_ID = builder("meal_id", Types.ID, columnIndex++).notEditable().notNull()
                     .buildFk(MealTable.ID, MealTable.instance());
-            SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notEditable().notNull()
+            SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notEditable()
                     .buildFk(ServingTable.ID, ServingTable.instance());
-            QUANTITY_UNIT = builder("quantity_unit", Types.ID, columnIndex++).notEditable().notNull()
-                    .buildFk(QuantityUnitTable.ID, QuantityUnitTable.instance());
-
-
-            INSTANCE = new FoodPortionTable();
+            QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
+                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
         }
-        FoodPortionTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private FoodPortionTable() {
+            super(TABLE_NAME, FoodPortion.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     QUANTITY
                     , QUANTITY_UNIT
                     , FOOD_ID
@@ -228,11 +216,10 @@ public class Schema {
         }
 
         public static FoodPortionTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new FoodPortionTable();
+            }
             return INSTANCE;
-        }
-
-        public FoodPortion construct(ColumnData<FoodPortion> dataMap, ObjectSource objectSource) {
-            return new FoodPortion(dataMap, objectSource);
         }
     }
 
@@ -243,29 +230,26 @@ public class Schema {
         public static final Column<Meal, DateStamp> DAY;
         public static final Column.Fk<Meal, String, MealDescription> DESCRIPTION;
         private static final String TABLE_NAME = "Meal";
-        private static final MealTable INSTANCE;
+        private static MealTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            DAY = builder("name", DATESTAMP, columnIndex++).notNull().build();
-            DESCRIPTION = builder("name", TEXT, columnIndex++).notNull()
+            DAY = builder("name", Types.DATESTAMP, columnIndex++).notNull().build();
+            DESCRIPTION = builder("name", Types.TEXT, columnIndex++).notNull()
                     .buildFk(MealDescriptionTable.NAME, MealDescriptionTable.instance());
-
-            INSTANCE = new MealTable();
         }
-        MealTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(DESCRIPTION, DAY));
+        private MealTable() {
+            super(TABLE_NAME, Meal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(DESCRIPTION, DAY));
         }
 
         public static MealTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new MealTable();
+            }
             return INSTANCE;
-        }
-
-        public Meal construct(ColumnData<Meal> dataMap, ObjectSource objectSource) {
-            return new Meal(dataMap, objectSource);
         }
     }
 
@@ -275,28 +259,24 @@ public class Schema {
         public static final Column<FoodCategory, Long> MODIFY_TIME;
         public static final Column<FoodCategory, String> NAME;
         private static final String TABLE_NAME = "FoodCategory";
-        private static final FoodCategoryTable INSTANCE;
+        private static FoodCategoryTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().inSecondaryKey().build();
-
-            INSTANCE = new FoodCategoryTable();
-
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
         }
-        FoodCategoryTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
+        private FoodCategoryTable() {
+            super(TABLE_NAME, FoodCategory.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
         }
 
         public static FoodCategoryTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new FoodCategoryTable();
+            }
             return INSTANCE;
-        }
-
-        public FoodCategory construct(ColumnData<FoodCategory> dataMap, ObjectSource objectSource) {
-            return new FoodCategory(dataMap, objectSource);
         }
     }
 
@@ -306,27 +286,22 @@ public class Schema {
         public static final Column<MealDescription, Long> MODIFY_TIME;
         public static final Column<MealDescription, String> NAME;
         private static final String TABLE_NAME = "MealDescription";
-        private static final MealDescriptionTable INSTANCE;
-
+        private static MealDescriptionTable INSTANCE;
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().inSecondaryKey().build();
-
-            INSTANCE = new MealDescriptionTable();
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
         }
-        MealDescriptionTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
+        private MealDescriptionTable() {
+            super(TABLE_NAME, MealDescription.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
         }
-
         public static MealDescriptionTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new MealDescriptionTable();
+            }
             return INSTANCE;
-        }
-
-        public MealDescription construct(ColumnData<MealDescription> dataMap, ObjectSource objectSource) {
-            return new MealDescription(dataMap, objectSource);
         }
     }
 
@@ -337,32 +312,30 @@ public class Schema {
         public static final Column.Fk<Ingredient, Long, Food> COMPOSITE_FOOD_ID;
         public static final Column.Fk<Ingredient, Long, Food> INGREDIENT_FOOD_ID;
         public static final Column<Ingredient, Double> QUANTITY;
-        public static final Column.Fk<Ingredient, Long, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<Ingredient, String, QuantityUnit> QUANTITY_UNIT;
         public static final Column.Fk<Ingredient, Long, Serving> SERVING_ID;
         public static final Column<Ingredient, String> NOTES;
         private static final String TABLE_NAME = "Ingredient";
-        private static final IngredientTable INSTANCE;
+        private static IngredientTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NOTES = builder("notes", TEXT, columnIndex++).build();
+            NOTES = builder("notes", Types.TEXT, columnIndex++).build();
             COMPOSITE_FOOD_ID = builder("composite_food_id", Types.ID, columnIndex++).notEditable().notNull()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             INGREDIENT_FOOD_ID = builder("ingredient_food_id", Types.ID, columnIndex++).notEditable().notNull()
                     .buildFk(FoodTable.ID, FoodTable.instance());
-            QUANTITY = builder("quantity", REAL, columnIndex++).notEditable().notNull().build();
-            QUANTITY_UNIT = builder("quantity_unit", Types.ID, columnIndex++).notEditable().notNull()
-                    .buildFk(QuantityUnitTable.ID, QuantityUnitTable.instance());
+            QUANTITY = builder("quantity", Types.REAL, columnIndex++).notEditable().notNull().build();
+            QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
+                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
             SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notNull()
                     .buildFk(ServingTable.ID, ServingTable.instance());
-
-            INSTANCE = new IngredientTable();
         }
-        IngredientTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private IngredientTable() {
+            super(TABLE_NAME, Ingredient.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                   COMPOSITE_FOOD_ID
                 , INGREDIENT_FOOD_ID
                 , QUANTITY
@@ -373,11 +346,10 @@ public class Schema {
         }
 
         public static IngredientTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new IngredientTable();
+            }
             return INSTANCE;
-        }
-
-        public Ingredient construct(ColumnData<Ingredient> dataMap, ObjectSource objectSource) {
-            return new Ingredient(dataMap, objectSource);
         }
     }
 
@@ -388,28 +360,26 @@ public class Schema {
         public static final Column<RegularMeal, String> NAME;
         public static final Column.Fk<RegularMeal, Long, Meal> MEAL_ID;
         private static final String TABLE_NAME = "RegularMeal";
-        private static final RegularMealTable INSTANCE;
+        private static RegularMealTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().build();
-            MEAL_ID = builder("meal_id", Types.ID, columnIndex++).notEditable().notNull().inSecondaryKey()
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
+            MEAL_ID = builder("meal_id", Types.ID, columnIndex++).notEditable().notNull().inSecondaryKey().unique()
                     .buildFk(MealTable.ID, MealTable.instance());
-            INSTANCE = new RegularMealTable();
         }
-        RegularMealTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(NAME, MEAL_ID));
+        RegularMealTable()  {
+            super(TABLE_NAME, RegularMeal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(NAME, MEAL_ID));
         }
 
         public static RegularMealTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new RegularMealTable();
+            }
             return INSTANCE;
-        }
-
-        public RegularMeal construct(ColumnData<RegularMeal> dataMap, ObjectSource objectSource) {
-            return new RegularMeal(dataMap, objectSource);
         }
     }
 
@@ -443,45 +413,44 @@ public class Schema {
         public static final Column.Fk<NutritionData, Long, Food> FOOD_ID;
         public static final Column.Fk<NutritionData, String, QuantityUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "NutritionData";
-        private static final NutritionDataTable INSTANCE;
+        private static NutritionDataTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            DATA_SOURCE = builder("data_source", TEXT, columnIndex++).build();
-            QUANTITY = builder("quantity", REAL, columnIndex++).notNull().defaultValue(100.0).build();
-            DENSITY = builder("density", REAL, columnIndex++).build();
-            KILOJOULES = builder("kilojoules", REAL, columnIndex++).build();
-            CALORIES = builder("calories", REAL, columnIndex++).build();
-            PROTEIN = builder("protein", REAL, columnIndex++).build();
-            CARBOHYDRATE = builder("carbohydrate", REAL, columnIndex++).build();
-            CARBOHYDRATE_BY_DIFF = builder("carbohydrate_by_diff", REAL, columnIndex++).build();
-            SUGAR = builder("sugar", REAL, columnIndex++).build();
-            SUGAR_ALCOHOL = builder("sugar_alcohol", REAL, columnIndex++).build();
-            STARCH = builder("starch", REAL, columnIndex++).build();
-            FAT = builder("fat", REAL, columnIndex++).build();
-            SATURATED_FAT = builder("saturated_fat", REAL, columnIndex++).build();
-            MONOUNSATURATED_FAT = builder("monounsaturated_fat", REAL, columnIndex++).build();
-            POLYUNSATURATED_FAT = builder("polyunsaturated_fat", REAL, columnIndex++).build();
-            OMEGA_3_FAT = builder("omega_3", REAL, columnIndex++).build();
-            OMEGA_6_FAT = builder("omega_6", REAL, columnIndex++).build();
-            FIBRE = builder("fibre", REAL, columnIndex++).build();
-            SODIUM = builder("sodium", REAL, columnIndex++).build();
-            SALT = builder("salt", REAL, columnIndex++).build();
-            CALCIUM = builder("calcium", REAL, columnIndex++).build();
-            WATER = builder("water", REAL, columnIndex++).build();
-            ALCOHOL = builder("alcohol", REAL, columnIndex++).build();
-            FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull().defaultValue(NO_ID).inSecondaryKey()
+            DATA_SOURCE = builder("data_source", Types.TEXT, columnIndex++).build();
+            QUANTITY = builder("quantity", Types.REAL, columnIndex++).notNull().defaultValue(100.0).build();
+            DENSITY = builder("density", Types.REAL, columnIndex++).build();
+            KILOJOULES = builder("kilojoules", Types.REAL, columnIndex++).build();
+            CALORIES = builder("calories", Types.REAL, columnIndex++).build();
+            PROTEIN = builder("protein", Types.REAL, columnIndex++).build();
+            CARBOHYDRATE = builder("carbohydrate", Types.REAL, columnIndex++).build();
+            CARBOHYDRATE_BY_DIFF = builder("carbohydrate_by_diff", Types.REAL, columnIndex++).build();
+            SUGAR = builder("sugar", Types.REAL, columnIndex++).build();
+            SUGAR_ALCOHOL = builder("sugar_alcohol", Types.REAL, columnIndex++).build();
+            STARCH = builder("starch", Types.REAL, columnIndex++).build();
+            FAT = builder("fat", Types.REAL, columnIndex++).build();
+            SATURATED_FAT = builder("saturated_fat", Types.REAL, columnIndex++).build();
+            MONOUNSATURATED_FAT = builder("monounsaturated_fat", Types.REAL, columnIndex++).build();
+            POLYUNSATURATED_FAT = builder("polyunsaturated_fat", Types.REAL, columnIndex++).build();
+            OMEGA_3_FAT = builder("omega_3", Types.REAL, columnIndex++).build();
+            OMEGA_6_FAT = builder("omega_6", Types.REAL, columnIndex++).build();
+            FIBRE = builder("fibre", Types.REAL, columnIndex++).build();
+            SODIUM = builder("sodium", Types.REAL, columnIndex++).build();
+            SALT = builder("salt", Types.REAL, columnIndex++).build();
+            CALCIUM = builder("calcium", Types.REAL, columnIndex++).build();
+            WATER = builder("water", Types.REAL, columnIndex++).build();
+            ALCOHOL = builder("alcohol", Types.REAL, columnIndex++).build();
+            // FOOD_ID doesn't have to be null for computed instances
+            FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().defaultValue(NO_ID).inSecondaryKey().unique()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
                     .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
-
-            INSTANCE = new NutritionDataTable();
         }
-        NutritionDataTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private NutritionDataTable() {
+            super(TABLE_NAME, NutritionData.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     FOOD_ID
                     , DATA_SOURCE
                     , QUANTITY
@@ -509,13 +478,11 @@ public class Schema {
                     , ALCOHOL
             ));
         }
-
         public static NutritionDataTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new NutritionDataTable();
+            }
             return INSTANCE;
-        }
-
-        public NutritionData construct(ColumnData<NutritionData> dataMap, ObjectSource objectSource) {
-            return new NutritionData(dataMap, objectSource);
         }
     }
 
@@ -525,27 +492,23 @@ public class Schema {
         public static final Column<FoodAttribute, Long> MODIFY_TIME;
         public static final Column<FoodAttribute, String> NAME;
         private static final String TABLE_NAME = "FoodAttribute";
-        private static final FoodAttributeTable INSTANCE;
+        private static FoodAttributeTable INSTANCE;
 
         static {
             int columnIndex = 0;
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", TEXT, columnIndex++).notNull().inSecondaryKey().build();
-
-            INSTANCE = new FoodAttributeTable();
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
         }
-        FoodAttributeTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
+        private FoodAttributeTable() {
+            super(TABLE_NAME, FoodAttribute.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
         }
-
         public static FoodAttributeTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new FoodAttributeTable();
+            }
             return INSTANCE;
-        }
-
-        public FoodAttribute construct(ColumnData<FoodAttribute> dataMap, ObjectSource objectSource) {
-            return new FoodAttribute(dataMap, objectSource);
         }
     }
 
@@ -556,7 +519,7 @@ public class Schema {
         public static final Column.Fk<AttrMapping, Long, Food> FOOD_ID;
         public static final Column.Fk<AttrMapping, Long, FoodAttribute> ATTRIBUTE_ID;
         private static final String TABLE_NAME = "AttributeMapping";
-        private static final AttrMappingTable INSTANCE;
+        private static AttrMappingTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -567,18 +530,15 @@ public class Schema {
                     .buildFk(FoodTable.ID, FoodTable.instance());
             ATTRIBUTE_ID = builder("attribute_id", Types.ID, columnIndex++).notEditable().notNull().inSecondaryKey()
                     .buildFk(FoodAttributeTable.ID, FoodAttributeTable.instance());
-            INSTANCE = new AttrMappingTable();
         }
-        AttrMappingTable() {
-            super(TABLE_NAME, ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(FOOD_ID , ATTRIBUTE_ID));
+        private AttrMappingTable() {
+            super(TABLE_NAME, AttrMapping.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(FOOD_ID , ATTRIBUTE_ID));
         }
-
         public static AttrMappingTable instance() {
+            if (INSTANCE == null) {
+                INSTANCE = new AttrMappingTable();
+            }
             return INSTANCE;
-        }
-
-        public AttrMapping construct(ColumnData<AttrMapping> dataMap, ObjectSource objectSource) {
-            return new AttrMapping(dataMap, objectSource);
         }
     }
 }

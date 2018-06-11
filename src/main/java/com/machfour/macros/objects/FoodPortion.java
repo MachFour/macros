@@ -114,6 +114,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         return getData(Schema.FoodPortionTable.QUANTITY);
     }
 
+    @NotNull
     public NutritionData getNutritionData() {
         return nutritionData;
     }

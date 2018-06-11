@@ -228,7 +228,7 @@ public class Schema {
         public static final Column<Meal, Long> CREATE_TIME;
         public static final Column<Meal, Long> MODIFY_TIME;
         public static final Column<Meal, DateStamp> DAY;
-        public static final Column.Fk<Meal, String, MealDescription> DESCRIPTION;
+        public static final Column<Meal, String> NAME;
         private static final String TABLE_NAME = "Meal";
         private static MealTable INSTANCE;
 
@@ -238,11 +238,10 @@ public class Schema {
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             DAY = builder("name", Types.DATESTAMP, columnIndex++).notNull().build();
-            DESCRIPTION = builder("name", Types.TEXT, columnIndex++).notNull()
-                    .buildFk(MealDescriptionTable.NAME, MealDescriptionTable.instance());
+            NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
         }
         private MealTable() {
-            super(TABLE_NAME, Meal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(DESCRIPTION, DAY));
+            super(TABLE_NAME, Meal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(NAME, DAY));
         }
 
         public static MealTable instance() {
@@ -275,31 +274,6 @@ public class Schema {
         public static FoodCategoryTable instance() {
             if (INSTANCE == null) {
                 INSTANCE = new FoodCategoryTable();
-            }
-            return INSTANCE;
-        }
-    }
-
-    public final static class MealDescriptionTable extends BaseTable<MealDescription> {
-        public static final Column<MealDescription, Long> ID;
-        public static final Column<MealDescription, Long> CREATE_TIME;
-        public static final Column<MealDescription, Long> MODIFY_TIME;
-        public static final Column<MealDescription, String> NAME;
-        private static final String TABLE_NAME = "MealDescription";
-        private static MealDescriptionTable INSTANCE;
-        static {
-            int columnIndex = 0;
-            ID = idColumn(columnIndex++);
-            CREATE_TIME = createTimeColumn(columnIndex++);
-            MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
-        }
-        private MealDescriptionTable() {
-            super(TABLE_NAME, MealDescription.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
-        }
-        public static MealDescriptionTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new MealDescriptionTable();
             }
             return INSTANCE;
         }

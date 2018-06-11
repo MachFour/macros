@@ -13,10 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,16 +29,21 @@ public class FileParser {
     private Meal currentMeal;
     // if we encounter a food line before a meal title,
     // have to instantiate a dummy meal to hold it
-    boolean haveCurrentMeal;
+    private boolean haveCurrentMeal;
 
-    public FileParser(MacrosLinuxDatabase db) {
+    FileParser(MacrosLinuxDatabase db) {
         this.db = db;
-        errorLines = new HashMap<>();
+        // use LinkedHashMap to maintain insertion order
+        errorLines = new LinkedHashMap<>();
         currentMeal = null;
         haveCurrentMeal = false;
     }
 
-    public List<Meal> parseFile(String fileName) throws IOException, SQLException {
+    Map<String, String> getErrorLines() {
+        return Collections.unmodifiableMap(errorLines);
+    }
+
+    List<Meal> parseFile(String fileName) throws IOException, SQLException {
         List<Meal> meals = new ArrayList<>();
         Path filePath = Paths.get(fileName);
         List<String> fileLines = Files.readAllLines(filePath);
@@ -209,7 +211,7 @@ public class FileParser {
 
     private static Meal makeMeal(@NotNull String description, @NotNull DateStamp day) {
         ColumnData<Meal> mealData = new ColumnData<>(Meal.table());
-        mealData.put(Schema.MealTable.DESCRIPTION, description);
+        mealData.put(Schema.MealTable.NAME, description);
         mealData.put(Schema.MealTable.DAY, day);
         return Meal.factory().construct(mealData, ObjectSource.USER_NEW);
 

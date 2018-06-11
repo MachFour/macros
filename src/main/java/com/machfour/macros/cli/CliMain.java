@@ -86,34 +86,37 @@ public class CliMain {
         public void doAction(String[] args) {
             String foodCsvFile = Config.FOOD_CSV_FILENAME;
             String servingCsvFile = Config.SERVING_CSV_FILENAME;
+            MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
 
             Pair<List<Food>, List<NutritionData>> csvObjects;
             List<Serving> csvServings;
             try {
-                out.printf("Importing foods and nutrition data from CSV file: %s\n", foodCsvFile);
+                out.printf("Importing food data from CSV file: %s\n", foodCsvFile);
                 csvObjects = CsvStorage.buildFoodObjectTree(foodCsvFile);
                 out.printf("Importing servings from CSV file: %s\n", servingCsvFile);
                 csvServings = CsvStorage.buildServings(servingCsvFile);
             } catch (IOException e) {
+                out.println();
                 e.printStackTrace(out);
                 out.println();
                 out.println("No data was imported.");
                 return;
             }
 
-            MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
             try {
-                out.println("Saving foods");
+                out.println("Saving data into database...");
                 db.saveObjects(csvObjects.first, ObjectSource.IMPORT);
-                out.println("Saving nutrition data");
+                out.println("Saved food data");
                 List<NutritionData> completedNd = db.completeForeignKeys(csvObjects.second, Schema.NutritionDataTable.FOOD_ID);
                 db.saveObjects(completedNd, ObjectSource.IMPORT);
-
-                out.println("Saving servings");
+                out.println("Saved nutrition information");
                 List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
                 db.saveObjects(completedServings, ObjectSource.IMPORT);
+                out.println("Saved servings");
             } catch (SQLException e) {
+                out.println();
                 e.printStackTrace(out);
+                return;
             }
 
             out.println();
@@ -137,10 +140,10 @@ public class CliMain {
             }
             String filename = args[1];
             MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
-            FileParser fp = new FileParser(db);
+            FileParser fileParser = new FileParser(db);
             List<Meal> meals;
             try {
-                meals = fp.parseFile(filename);
+                meals = fileParser.parseFile(filename);
             } catch (IOException e1) {
                 err.println("IO exception occurred: " + e1.getMessage());
                 return;
@@ -150,6 +153,14 @@ public class CliMain {
             }
             MealPrinter mp = new MealPrinter(out);
             mp.printMeals(meals);
+            Map<String, String> errors = fileParser.getErrorLines();
+            if (!errors.isEmpty()) {
+                out.println();
+                out.println("Warning: the following lines were skipped");
+                for (Map.Entry<String, String> line : errors.entrySet()) {
+                    out.printf("'%s' - %s\n", line.getKey(), line.getValue());
+                }
+            }
         }
     }
     static class Help extends ModeImpl {

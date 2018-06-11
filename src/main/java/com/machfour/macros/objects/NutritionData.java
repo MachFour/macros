@@ -4,46 +4,78 @@ import com.machfour.macros.core.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.machfour.macros.core.ObjectSource.COMPUTED;
+import com.machfour.macros.core.ObjectSource;
+
+import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 // immutable class storing nutrition data for a food or meal
 public class NutritionData extends MacrosEntity<NutritionData> {
 
-    public static final double CAL_TO_KJ_FACTOR = 4.186;
+    private static final double CAL_TO_KJ_FACTOR = 4.186;
+    private static final double CALS_PER_G_PROTEIN = 17/CAL_TO_KJ_FACTOR;
+    private static final double CALS_PER_G_FAT = 37/CAL_TO_KJ_FACTOR;
+    private static final double CALS_PER_G_CARBOHYDRATE = 17/CAL_TO_KJ_FACTOR;
+    private static final double CALS_PER_G_FIBRE = 8/CAL_TO_KJ_FACTOR;
 
     // measured in the relevant FoodTable's QuantityUnits
     public static final double DEFAULT_QUANTITY = 100;
     public static final List<Column<NutritionData, Double>> NUTRIENT_COLUMNS = Arrays.asList(
-        Schema.NutritionDataTable.QUANTITY
-        , Schema.NutritionDataTable.KILOJOULES
-        , Schema.NutritionDataTable.CALORIES
-        , Schema.NutritionDataTable.PROTEIN
-        , Schema.NutritionDataTable.CARBOHYDRATE
-        , Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF
-        , Schema.NutritionDataTable.SUGAR
-        , Schema.NutritionDataTable.SUGAR_ALCOHOL
-        , Schema.NutritionDataTable.STARCH
-        , Schema.NutritionDataTable.FAT
-        , Schema.NutritionDataTable.SATURATED_FAT
-        , Schema.NutritionDataTable.MONOUNSATURATED_FAT
-        , Schema.NutritionDataTable.POLYUNSATURATED_FAT
-        , Schema.NutritionDataTable.OMEGA_3_FAT
-        , Schema.NutritionDataTable.OMEGA_6_FAT
-        , Schema.NutritionDataTable.FIBRE
-        , Schema.NutritionDataTable.SODIUM
-        , Schema.NutritionDataTable.CALCIUM
-        , Schema.NutritionDataTable.SALT
-        , Schema.NutritionDataTable.WATER
-        , Schema.NutritionDataTable.ALCOHOL
+        QUANTITY
+        , KILOJOULES
+        , CALORIES
+        , PROTEIN
+        , CARBOHYDRATE
+        , CARBOHYDRATE_BY_DIFF
+        , SUGAR
+        , SUGAR_ALCOHOL
+        , STARCH
+        , FAT
+        , SATURATED_FAT
+        , MONOUNSATURATED_FAT
+        , POLYUNSATURATED_FAT
+        , OMEGA_3_FAT
+        , OMEGA_6_FAT
+        , FIBRE
+        , SODIUM
+        , CALCIUM
+        , SALT
+        , WATER
+        , ALCOHOL
+    );
+
+    /*
+     * For units
+     */
+    private static final List<Column<NutritionData, Double>> COLS_IN_GRAMS = Arrays.asList(
+            PROTEIN
+            , CARBOHYDRATE
+            , CARBOHYDRATE_BY_DIFF
+            , SUGAR
+            , SUGAR_ALCOHOL
+            , STARCH
+            , FAT
+            , SATURATED_FAT
+            , MONOUNSATURATED_FAT
+            , POLYUNSATURATED_FAT
+            , FIBRE
+            , SALT
+            , WATER
+            , ALCOHOL
+    );
+    private static final List<Column<NutritionData, Double>> COLS_IN_MG = Arrays.asList(
+            OMEGA_3_FAT
+            , OMEGA_6_FAT
+            , SODIUM
+            , CALCIUM
+    );
+    private static final List<Column<NutritionData, Double>> ENERGY_COLS = Arrays.asList(
+            CALORIES, KILOJOULES
     );
     // keeps track of missing data for adding different instances of NutritionDataTable together
     // only NUTRIENT_COLUMNS are present in this map
-    private final Map<Column<NutritionData, Double>, Boolean> hasNutrient;
+    private final Map<Column<NutritionData, Double>, Boolean> completeData;
     // measured in grams, per specified quantity
     private final QuantityUnit quantityUnit;
     private Food food;
@@ -51,13 +83,17 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     private NutritionData(ColumnData<NutritionData> dataMap, ObjectSource objectSource) {
         super(dataMap, objectSource);
         // food ID is allowed to be null only if this NutritionData is computed from a sum
-        assert (objectSource == COMPUTED || dataMap.get(Schema.NutritionDataTable.FOOD_ID) != null);
-        hasNutrient = new HashMap<>(NUTRIENT_COLUMNS.size());
+        assert (objectSource == ObjectSource.COMPUTED || dataMap.get(FOOD_ID) != null);
+        completeData = new HashMap<>(NUTRIENT_COLUMNS.size());
         // have to use temporary due to type parameterisation
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
-            hasNutrient.put(c, dataMap.hasData(c));
+            completeData.put(c, dataMap.hasData(c));
         }
-        quantityUnit = QuantityUnit.fromAbbreviation(dataMap.get(Schema.NutritionDataTable.QUANTITY_UNIT));
+        // account for energy conversion
+        boolean hasEnergy = completeData.get(CALORIES) || completeData.get(KILOJOULES);
+        completeData.put(CALORIES, hasEnergy);
+        completeData.put(KILOJOULES, hasEnergy);
+        quantityUnit = QuantityUnit.fromAbbreviation(dataMap.get(QUANTITY_UNIT));
     }
 
     public static Factory<NutritionData> factory() {
@@ -70,16 +106,34 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     // allows keeping track of missing data when different nutritionData instances are added up
     private NutritionData(ColumnData<NutritionData> dataMap, ObjectSource objectSource,
-                          Map<Column<NutritionData, Double>, Boolean> reliableData) {
+                          Map<Column<NutritionData, Double>, Boolean> completeData) {
         this(dataMap, objectSource);
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
-            if (!reliableData.get(c)) {
-                hasNutrient.put(c, false);
+            if (!completeData.get(c)) {
+                this.completeData.put(c, false);
             } else {
                 // we shouldn't need to correct this case, since if the thing is null (and so makeHasDataMap
                 // said it was not present), then we shouldn't be correcting that to say that it is present!
-                assert (hasNutrient.get(c));
+                assert (this.completeData.get(c));
             }
+        }
+    }
+
+    @NotNull
+    public static String getUnitForNutrient(Column<NutritionData, Double> col) {
+        assert NUTRIENT_COLUMNS.contains(col);
+        // TODO make hashmap
+        if (col.equals(KILOJOULES)) {
+            return "kJ";
+        } else if (col.equals(CALORIES)) {
+            return "cal";
+        } else if (COLS_IN_GRAMS.contains(col)) {
+            return "g";
+        } else if (COLS_IN_MG.contains(col))
+            return "mg";
+        else {
+            assert false : "Unknown unit for nutrient: " + col.toString();
+            return "";
         }
     }
 
@@ -95,36 +149,35 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         for (NutritionData nd : components) {
             NutritionData ndToSum = nd.convertToGramsIfNecessary();
             sumQuantity += ndToSum.getQuantity();
-            if (!ndToSum.hasNutrient(Schema.NutritionDataTable.QUANTITY)) {
+            if (!ndToSum.hasCompleteData(QUANTITY)) {
                 // means we guessed the density
-                combinedHasData.put(Schema.NutritionDataTable.QUANTITY, false);
+                combinedHasData.put(QUANTITY, false);
             }
             for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
                 // total has correct data for a field if and only if each component does
                 // if the current component has no data for a field, we add nothing to the total,
                 // implicitly treating it as zero
-                if (!ndToSum.hasNutrient(col)) {
+                if (!ndToSum.hasCompleteData(col)) {
                     combinedHasData.put(col, false);
-                } else {
-                    // don't need to modify combinedHasData because X & True == X;
-                    sumData.put(col, sumData.get(col) + ndToSum.getNutrientData(col));
                 }
+                Double colData = ndToSum.amountOf(col, 0.0);
+                sumData.put(col, sumData.get(col) + colData);
             }
         }
         ColumnData<NutritionData> combinedDataMap = new ColumnData<>(Schema.NutritionDataTable.instance());
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             combinedDataMap.put(col, sumData.get(col));
         }
-        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY, sumQuantity);
-        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY_UNIT, QuantityUnit.GRAMS.getAbbreviation());
-        combinedDataMap.put(Schema.NutritionDataTable.FOOD_ID, null);
-        combinedDataMap.put(Schema.NutritionDataTable.DATA_SOURCE, "Sum");
-        return new NutritionData(combinedDataMap, COMPUTED, combinedHasData);
+        combinedDataMap.put(QUANTITY, sumQuantity);
+        combinedDataMap.put(QUANTITY_UNIT, QuantityUnit.GRAMS.getAbbreviation());
+        combinedDataMap.put(FOOD_ID, null);
+        combinedDataMap.put(DATA_SOURCE, "Sum");
+        return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
     }
 
     @Nullable
     public Long getFoodId() {
-        return getData(Schema.NutritionDataTable.FOOD_ID);
+        return getData(FOOD_ID);
     }
 
     public Food getFood() {
@@ -132,7 +185,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     public void setFood(@NotNull Food f) {
-        assert food == null && foreignKeyMatches(this, Schema.NutritionDataTable.FOOD_ID, f);
+        assert food == null && foreignKeyMatches(this, FOOD_ID, f);
         food = f;
     }
 
@@ -143,28 +196,26 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
     @NotNull
     public String getQuantityUnitAbbr() {
-        return getData(Schema.NutritionDataTable.QUANTITY_UNIT);
+        return getData(QUANTITY_UNIT);
     }
 
     @Override
     public Table<NutritionData> getTable() {
-        return Schema.NutritionDataTable.instance();
+        return instance();
     }
 
-    @NotNull
-    // converts the energy quantity in units of the 'From' column to that of the 'to' column.
-    // If the 'from' column has a null value, returns 0.
-    private Double convertEnergy(Column<NutritionData, Double> from, Column<NutritionData, Double> to) {
-        assert (from == Schema.NutritionDataTable.CALORIES || from == Schema.NutritionDataTable.KILOJOULES);
-        assert (to == Schema.NutritionDataTable.CALORIES || to == Schema.NutritionDataTable.KILOJOULES);
-        if (!hasNutrient(from)) {
-            return 0.0;
-        } else if (from == to) {
-            return getNutrientData(from);
-        } else if (from == Schema.NutritionDataTable.KILOJOULES) { // to == CALORIES
-            return getNutrientData(from) / CAL_TO_KJ_FACTOR;
-        } else { // from == CALORIES && to == KILOJOULES
-            return getNutrientData(from) * CAL_TO_KJ_FACTOR;
+    @Nullable
+    private Double getEnergyAs(Column<NutritionData, Double> energyCol) {
+        assert ENERGY_COLS.contains(energyCol);
+        Double toValue = getData(energyCol);
+        if (toValue != null) {
+            return toValue;
+        } else if (energyCol.equals(CALORIES)) {
+            Double kjData = getData(KILOJOULES);
+            return kjData != null ? kjData / CAL_TO_KJ_FACTOR : null;
+        } else { // energyCol.equals(KILOJOULES)
+            Double calData = getData(CALORIES);
+            return calData != null ? calData * CAL_TO_KJ_FACTOR : null;
         }
     }
 
@@ -174,25 +225,29 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     // If there is not enough data to do that, return 0.
     @NotNull
     private Double getCarbsBestEffort() {
-        if (hasNutrient(Schema.NutritionDataTable.CARBOHYDRATE)) {
-            return getNutrientData(Schema.NutritionDataTable.CARBOHYDRATE);
-        } else if (hasNutrient(Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF) && hasNutrient(Schema.NutritionDataTable.FIBRE)) {
-            return getNutrientData(Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF) - getNutrientData(Schema.NutritionDataTable.FIBRE);
-        } else if (hasNutrient(Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF)) {
-            return getNutrientData(Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF);
+        if (hasCompleteData(CARBOHYDRATE)) {
+            return amountOf(CARBOHYDRATE);
+        } else if (hasCompleteData(CARBOHYDRATE_BY_DIFF) && hasCompleteData(FIBRE)) {
+            return amountOf(CARBOHYDRATE_BY_DIFF) - amountOf(FIBRE);
+        } else if (hasCompleteData(CARBOHYDRATE_BY_DIFF)) {
+            return amountOf(CARBOHYDRATE_BY_DIFF);
         } else {
             return 0.0;
         }
     }
 
+    public boolean hasCompleteData(Column<NutritionData, Double> col) {
+        return completeData.get(col);
+    }
+
     /*
      * WONTFIX fundamental problem with unit conversion
-     * In the database, nutrient quantities are stored with the implicit assumption that they
-     * are always a by-weight quantity, while the quantity of the food (or serving, FoodPortionTable, etc.)
-     * can be in either weight or volume measurements.
+     * In the database, nutrient quantities are always considered by-weight, while quantities
+     * of a food (or serving, FoodPortionTable, etc.) can be either by-weight or by volume.
      * Converting from a by-weight quantity unit to a by-volume one, or vice-versa, for a
-     * NutritionDataTable object, still keeps the actual (gram) values of the data the same,
-     * but simply means changing the corresponding quantity, according to the given density value.
+     * NutritionData object, then, must keep the actual (gram) values of the data the same,
+     * and simply change the corresponding quantity, according to the given density value.
+     *
      * Converting between different units of the same measurement (either weight or volume), then,
      * only makes sense if it means changing the actual numerical data in each column, such that,
      * when interpreted in the new unit, still means the same as the old one, when both are converted to grams.
@@ -204,20 +259,12 @@ public class NutritionData extends MacrosEntity<NutritionData> {
      * to/from the user needs to be in these units.
      * Later on, we'll need a separate system to convert units for user display.
      * So I guess there are two distinct 'unit convert' operations that need to be considered.
-     * 1. Just converting the quantity unit, which means the only numerical value changed is the quantity column.
+     * 1. Just converting the quantity unit, which means only the value of the quantity column changes.
      *    All the nutrition data stays the same, in grams. [This is what we'll do now]
      * 2. Converting the entire row of data for display purposes. [This will come later on]
      *    (e.g. 30g nutrient X / 120g quantity --> 1 oz nutrient X / 4 oz quantity.)
      *    This only works for mass units, not when the quantity unit is in ml
-     *
      */
-
-    public boolean hasNutrient(Column<NutritionData, Double> col) {
-        boolean has = hasNutrient.get(col);
-        assert has == (getNutrientData(col) != null) : "hasData map is corrupted";
-        return has;
-    }
-
     // Unless the target unit is identical to the current unit
     // returns a new NutritionDataTable object (not from DB) with the converted data.
     // nutrient values always remain in grams.
@@ -237,22 +284,48 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData =  getAllData().copy(); // all other data remains the same
-        newData.put(Schema.NutritionDataTable.QUANTITY, newQuantity);
-        newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.getAbbreviation());
-        Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(hasNutrient);
+        newData.put(QUANTITY, newQuantity);
+        newData.put(QUANTITY_UNIT, targetUnit.getAbbreviation());
+        Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(completeData);
         if (isDensityGuessed) {
-            newHasData.put(Schema.NutritionDataTable.QUANTITY, false);
+            newHasData.put(QUANTITY, false);
         }
-        NutritionData converted = new NutritionData(newData, COMPUTED, newHasData);
+        NutritionData converted = new NutritionData(newData, ObjectSource.COMPUTED, newHasData);
         if (hasFood()) {
             converted.setFood(getFood());
         }
         return converted;
     }
 
+    public Map<Column<NutritionData, Double>, Double> makeEnergyProportionsMap() {
+        // preserve iteration order
+        Map<Column<NutritionData, Double>, Double> proportionMap = new LinkedHashMap<>();
+        // energy from...
+        double protein = amountOf(PROTEIN, 0.0)*CALS_PER_G_PROTEIN;
+        double fat = amountOf(FAT, 0.0)*CALS_PER_G_FAT;
+        double carb = amountOf(CARBOHYDRATE, 0.0)*CALS_PER_G_CARBOHYDRATE;
+        double sugar = amountOf(SUGAR, 0.0)*CALS_PER_G_CARBOHYDRATE;
+        double fibre = amountOf(FIBRE, 0.0)*CALS_PER_G_FIBRE;
+        double satFat = amountOf(SATURATED_FAT, 0.0)*CALS_PER_G_FAT;
+        // correct subtypes (sugar is part of carbs, saturated is part of fat)
+        carb = Math.max(carb - sugar, 0);
+        fat = Math.max(fat - satFat, 0);
+        // if total energy is missing, fallback to summing over previous energy quantities
+        double totalEnergy = amountOf(CALORIES, protein + fat + satFat + carb + sugar + fibre);
+
+        proportionMap.put(PROTEIN, protein/totalEnergy*100);
+        proportionMap.put(FAT, fat/totalEnergy*100);
+        proportionMap.put(SATURATED_FAT, satFat/totalEnergy*100);
+        proportionMap.put(CARBOHYDRATE, carb/totalEnergy*100);
+        proportionMap.put(SUGAR, sugar/totalEnergy*100);
+        proportionMap.put(FIBRE, fibre/totalEnergy*100);
+        return proportionMap;
+    }
+
+
     @Nullable
     public Double getDensity() {
-        return getData(Schema.NutritionDataTable.DENSITY);
+        return getData(DENSITY);
     }
 
     private NutritionData convertToGramsIfNecessary() {
@@ -279,21 +352,20 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     // Sums the nutrition data components, converting them to grams first, if necessary.
-
+    @NotNull
     public NutritionData rescale(double quantity) {
         double conversionRatio = quantity / getQuantity();
         ColumnData<NutritionData> newData = getAllData().copy();
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
-            if (hasNutrient(c)) {
-                newData.put(c, getNutrientData(c) * conversionRatio);
+            if (hasCompleteData(c)) {
+                newData.put(c, amountOf(c) * conversionRatio);
             }
         }
-        return new NutritionData(newData, COMPUTED);
+        return new NutritionData(newData, ObjectSource.COMPUTED);
     }
 
-    @NotNull
-    public Double getQuantity() {
-        return getData(Schema.NutritionDataTable.QUANTITY);
+    public double getQuantity() {
+        return getData(QUANTITY);
     }
 
     @Override
@@ -302,13 +374,19 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     @Nullable
-    public Double getNutrientData(Column<NutritionData, Double> col) {
-        return getNutrientData(col, null);
+    public Double amountOf(@NotNull Column<NutritionData, Double> col) {
+        assert (NUTRIENT_COLUMNS.contains(col));
+        if (ENERGY_COLS.contains(col)) {
+            // return any energy value, converting if necessary. Return null if neither column.
+            return getEnergyAs(col);
+        } else {
+            return getData(col);
+        }
     }
 
-    public Double getNutrientData(Column<NutritionData, Double> col, Double defaultValue) {
-        assert (NUTRIENT_COLUMNS.contains(col));
-        return hasNutrient(col) ? getData(col) : defaultValue;
+    public double amountOf(Column<NutritionData, Double> col, double defaultValue) {
+        Double data = amountOf(col);
+        return data != null ? data : defaultValue;
     }
 }
 

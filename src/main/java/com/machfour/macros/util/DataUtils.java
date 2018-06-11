@@ -39,7 +39,7 @@ public final class DataUtils {
     // Formats the given data field (assumed to be a double) to a string.
     // Automatically adds an asterisk if the data is missing.
     public static String formatNutrnData(NutritionData nd, Column<NutritionData, Double> field, int decimalPoints) {
-        return formatDouble(nd.getNutrientData(field), decimalPoints, !nd.hasNutrient(field));
+        return formatDouble(nd.amountOf(field), decimalPoints, !nd.hasCompleteData(field));
     }
 
     public static String formatDouble(double in, int decimalPoints, boolean missing) {

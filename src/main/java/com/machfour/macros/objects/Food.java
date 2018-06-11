@@ -130,23 +130,27 @@ public class Food extends MacrosEntity<Food> {
         return getData(fieldName);
     }
 
+    @NotNull
     public String getShortName() {
         return prettyFormat(false, false, false);
     }
 
+    @NotNull
     public String getLongName() {
         return prettyFormat(true, true, false);
     }
 
+    @NotNull
     public String getMediumName() {
         return prettyFormat(true, false, false);
     }
 
+    @NotNull
     public String getSortableName() {
         return prettyFormat(true, true, true);
     }
 
-    public String getCategoryId() {
+    public String getCategoryName() {
         return getData(Schema.FoodTable.CATEGORY);
     }
 
@@ -198,6 +202,7 @@ public class Food extends MacrosEntity<Food> {
 
     private void setDefaultServing(Serving s) {
         assert defaultServing == null : "Default serving already set";
+        assert servings.contains(s) : "Serving does not belong to this food";
         this.defaultServing = s;
     }
 

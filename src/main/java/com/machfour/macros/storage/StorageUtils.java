@@ -110,7 +110,7 @@ public class StorageUtils {
         words.add("FROM");
         words.add(t.name());
         words.add(whereString);
-        return new StringJoiner<>(words).join();
+        return new StringJoiner<>(words).sep(" ").join();
     }
 
     // columns must be a subset of table.columns()

@@ -3,7 +3,6 @@ package com.machfour.macros.objects;
 import com.machfour.macros.core.*;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +10,10 @@ import java.util.List;
 public class Meal extends MacrosEntity<Meal> {
 
     private final List<FoodPortion> foodPortions;
-    private final MealDescription mealDescription;
 
     public Meal(ColumnData<Meal> data, ObjectSource objectSource) {
         super(data, objectSource);
         foodPortions = new ArrayList<>();
-        mealDescription = makeMealDescription(data.get(Schema.MealTable.DESCRIPTION));
-    }
-
-    private MealDescription makeMealDescription(@NotNull String name) {
-        ColumnData<MealDescription> mdData = new ColumnData<>(MealDescription.table());
-        mdData.put(Schema.MealDescriptionTable.NAME, name);
-        // TODO decide whether to keep using MealDescription
-        return MealDescription.factory().construct(mdData, ObjectSource.IMPORT);
     }
 
     public static NutritionData sumNutritionTotals(List<Meal> meals) {
@@ -62,9 +52,8 @@ public class Meal extends MacrosEntity<Meal> {
         return o instanceof Meal && super.equals(o);
     }
 
-    @NotNull
-    public MealDescription getDescription() {
-        return mealDescription;
+    public String getName() {
+        return getData(Schema.MealTable.NAME);
     }
 
     public DateStamp getDay() {

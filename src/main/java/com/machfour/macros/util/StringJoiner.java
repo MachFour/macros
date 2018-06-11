@@ -24,7 +24,7 @@ public class StringJoiner<E> {
 
     public StringJoiner(Iterator<E> iterator) {
         this.iterator = iterator;
-        this.sep = " ";
+        this.sep = "";
         this.suffix = "";
         this.stringFunc = Object::toString;
     }

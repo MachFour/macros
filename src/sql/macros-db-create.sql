@@ -90,8 +90,8 @@ CREATE TABLE Food (
         CHECK (variety_after_name IN (0, 1))
     , CONSTRAINT valid_food_type
         CHECK (food_type IN ("primary", "composite", "usda", "nuttab", "special"))
-
 );
+CREATE UNIQUE INDEX food_index ON Food (index_name);
 
 CREATE TABLE FoodCategory (
       id                   INTEGER PRIMARY KEY ASC

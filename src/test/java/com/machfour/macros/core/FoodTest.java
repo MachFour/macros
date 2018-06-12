@@ -1,6 +1,6 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.linux.MacrosLinuxDatabase;
+import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodType;
 import org.junit.jupiter.api.AfterEach;
@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FoodTest {
     private static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
-    private static MacrosLinuxDatabase db;
+    private static LinuxDatabase db;
     private static ColumnData<Food> foodDc;
     private static Food testFood;
 
     @BeforeAll
     static void initDb() {
-        db = MacrosLinuxDatabase.getInstance(DB_LOCATION);
+        db = LinuxDatabase.getInstance(DB_LOCATION);
         try {
             db.deleteIfExists(DB_LOCATION);
             db.initDb();

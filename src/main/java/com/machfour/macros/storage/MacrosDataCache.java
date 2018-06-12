@@ -1,7 +1,7 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.linux.MacrosLinuxDatabase;
+import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
@@ -25,7 +25,7 @@ public class MacrosDataCache implements MacrosDataSource {
     private boolean allFoodsNeedsRefresh;
 
     private MacrosDataCache() {
-        upstream = MacrosLinuxDatabase.getInstance();
+        upstream = LinuxDatabase.getInstance();
         mealCache = new HashMap<>(100);
         foodCache = new LinkedHashMap<>(100);
         allFoodsCache = new ArrayList<>(100);

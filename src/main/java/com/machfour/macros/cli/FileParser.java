@@ -1,10 +1,10 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.Schema;
-import com.machfour.macros.linux.MacrosLinuxDatabase;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,14 +24,14 @@ public class FileParser {
     private static final Pattern servingCountPattern = Pattern.compile(quantityRegex);
     private static final Pattern quantityAndUnitPattern = Pattern.compile(quantityRegex + "\\s*" + unitRegex);
 
-    private final MacrosLinuxDatabase db;
+    private final MacrosDatabase db;
     private final Map<String, String> errorLines;
     private Meal currentMeal;
     // if we encounter a food line before a meal title,
     // have to instantiate a dummy meal to hold it
     private boolean haveCurrentMeal;
 
-    FileParser(MacrosLinuxDatabase db) {
+    FileParser(MacrosDatabase db) {
         this.db = db;
         // use LinkedHashMap to maintain insertion order
         errorLines = new LinkedHashMap<>();
@@ -109,7 +109,7 @@ public class FileParser {
         ColumnData<FoodPortion> fpData = new ColumnData<>(FoodPortion.table());
         Serving serving = null;
         double quantity = 0.0;
-        QuantityUnit unit = null;
+        QtyUnit unit = null;
         boolean parseError = false;
         switch (tokens.length) {
             case 1:
@@ -121,7 +121,7 @@ public class FileParser {
                 } else {
                     serving = defaultServing;
                     quantity = serving.getQuantity();
-                    unit = serving.getQuantityUnit();
+                    unit = serving.getQtyUnit();
                 }
                 break;
             case 2:
@@ -144,9 +144,9 @@ public class FileParser {
                 }
                 String unitString = quantityMatch.group("unit");
                 if (unitString == null) {
-                    unit = QuantityUnit.GRAMS;
+                    unit = QtyUnit.GRAMS;
                 } else {
-                    unit = QuantityUnit.fromAbbreviation(unitString);
+                    unit = QtyUnit.fromAbbreviation(unitString);
                     if (unit == null) {
                         // invalid unit
                         errorLines.put(line, "unrecognised unit");
@@ -167,7 +167,7 @@ public class FileParser {
                     parseError = true;
                     break;
                 }
-                unit = serving.getQuantityUnit();
+                unit = serving.getQtyUnit();
                 // get quantity, which defaults to 1 of serving if not included
                 String servingCountStr = tokens[2];
                 if (servingCountStr.isEmpty()) {

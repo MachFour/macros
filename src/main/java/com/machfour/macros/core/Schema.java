@@ -39,16 +39,16 @@ public class Schema {
      * -> Solution: lazy initialisation of instances
      */
 
-    public final static class QuantityUnitTable extends BaseTable<QuantityUnit> {
-        public static final Column<QuantityUnit, Long> ID;
-        public static final Column<QuantityUnit, Long> CREATE_TIME;
-        public static final Column<QuantityUnit, Long> MODIFY_TIME;
-        public static final Column<QuantityUnit, String> NAME;
-        public static final Column<QuantityUnit, String> ABBREVIATION;
-        public static final Column<QuantityUnit, Boolean> IS_VOLUME_UNIT;
-        public static final Column<QuantityUnit, Double> METRIC_EQUIVALENT;
-        private static final String TABLE_NAME = "QuantityUnit";
-        private static QuantityUnitTable INSTANCE;
+    public final static class QtyUnitTable extends BaseTable<QtyUnit> {
+        public static final Column<QtyUnit, Long> ID;
+        public static final Column<QtyUnit, Long> CREATE_TIME;
+        public static final Column<QtyUnit, Long> MODIFY_TIME;
+        public static final Column<QtyUnit, String> NAME;
+        public static final Column<QtyUnit, String> ABBREVIATION;
+        public static final Column<QtyUnit, Boolean> IS_VOLUME_UNIT;
+        public static final Column<QtyUnit, Double> METRIC_EQUIVALENT;
+        private static final String TABLE_NAME = "QtyUnit";
+        private static QtyUnitTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -60,17 +60,19 @@ public class Schema {
             IS_VOLUME_UNIT = builder("is_volume_unit", Types.BOOLEAN, columnIndex++).notNull().build();
             METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL, columnIndex++).notNull().build();
         }
-        private QuantityUnitTable() {
-            super(TABLE_NAME, QuantityUnit.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
+        private QtyUnitTable() {
+            super(TABLE_NAME, QtyUnit.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     NAME
                     , ABBREVIATION
                     , IS_VOLUME_UNIT
                     , METRIC_EQUIVALENT
             ));
         }
-        public static QuantityUnitTable instance() {
+        public static QtyUnitTable instance() {
+            // avoid circular references with static initialisers, caused as the QtyUnit class
+            // uses static initialisation of the built in units
             if (INSTANCE == null) {
-                INSTANCE = new QuantityUnitTable();
+                INSTANCE = new QtyUnitTable();
             }
             return INSTANCE;
         }
@@ -91,7 +93,7 @@ public class Schema {
         public static final Column<Food, String> NUTTAB_INDEX;
         public static final Column.Fk<Food, String, FoodCategory> CATEGORY;
         private static final String TABLE_NAME = "Food";
-        private static FoodTable INSTANCE;
+        private static final FoodTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -109,6 +111,7 @@ public class Schema {
             NUTTAB_INDEX = builder("nuttab_index", Types.TEXT, columnIndex++).notEditable().build();
             CATEGORY = builder("category", Types.TEXT, columnIndex++).notEditable().notNull()
                         .buildFk(FoodCategoryTable.NAME, FoodCategoryTable.instance());
+            INSTANCE = new FoodTable();
         }
         private FoodTable() {
             super(TABLE_NAME, Food.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
@@ -125,9 +128,6 @@ public class Schema {
             ));
         }
         public static FoodTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new FoodTable();
-            }
             return INSTANCE;
         }
     }
@@ -140,9 +140,9 @@ public class Schema {
         public static final Column<Serving, Double> QUANTITY;
         public static final Column<Serving, Boolean> IS_DEFAULT;
         public static final Column.Fk<Serving, Long, Food> FOOD_ID;
-        public static final Column.Fk<Serving, String, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<Serving, String, QtyUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "Serving";
-        private static ServingTable INSTANCE;
+        private static final ServingTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -155,7 +155,8 @@ public class Schema {
             FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().notNull().defaultValue(NO_ID)
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notNull()
-                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
+                    .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
+            INSTANCE = new ServingTable();
         }
         ServingTable() {
             super(TABLE_NAME, Serving.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
@@ -168,9 +169,6 @@ public class Schema {
         }
 
         public static ServingTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new ServingTable();
-            }
             return INSTANCE;
         }
     }
@@ -180,13 +178,13 @@ public class Schema {
         public static final Column<FoodPortion, Long> CREATE_TIME;
         public static final Column<FoodPortion, Long> MODIFY_TIME;
         public static final Column<FoodPortion, Double> QUANTITY;
-        public static final Column.Fk<FoodPortion, String, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<FoodPortion, String, QtyUnit> QUANTITY_UNIT;
         public static final Column.Fk<FoodPortion, Long, Food> FOOD_ID;
         public static final Column.Fk<FoodPortion, Long, Meal> MEAL_ID;
         public static final Column.Fk<FoodPortion, Long, Serving> SERVING_ID;
         public static final Column<FoodPortion, String> NOTES;
         private static final String TABLE_NAME = "FoodPortion";
-        private static FoodPortionTable INSTANCE;
+        private static final FoodPortionTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -202,7 +200,8 @@ public class Schema {
             SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notEditable()
                     .buildFk(ServingTable.ID, ServingTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
-                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
+                    .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
+            INSTANCE = new FoodPortionTable();
         }
         private FoodPortionTable() {
             super(TABLE_NAME, FoodPortion.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
@@ -216,9 +215,6 @@ public class Schema {
         }
 
         public static FoodPortionTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new FoodPortionTable();
-            }
             return INSTANCE;
         }
     }
@@ -230,7 +226,7 @@ public class Schema {
         public static final Column<Meal, DateStamp> DAY;
         public static final Column<Meal, String> NAME;
         private static final String TABLE_NAME = "Meal";
-        private static MealTable INSTANCE;
+        private static final MealTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -239,15 +235,13 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             DAY = builder("name", Types.DATESTAMP, columnIndex++).notNull().build();
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
+            INSTANCE = new MealTable();
         }
         private MealTable() {
             super(TABLE_NAME, Meal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(NAME, DAY));
         }
 
         public static MealTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new MealTable();
-            }
             return INSTANCE;
         }
     }
@@ -258,7 +252,7 @@ public class Schema {
         public static final Column<FoodCategory, Long> MODIFY_TIME;
         public static final Column<FoodCategory, String> NAME;
         private static final String TABLE_NAME = "FoodCategory";
-        private static FoodCategoryTable INSTANCE;
+        private static final FoodCategoryTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -266,15 +260,13 @@ public class Schema {
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
+            INSTANCE = new FoodCategoryTable();
         }
         private FoodCategoryTable() {
             super(TABLE_NAME, FoodCategory.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
         }
 
         public static FoodCategoryTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new FoodCategoryTable();
-            }
             return INSTANCE;
         }
     }
@@ -286,11 +278,11 @@ public class Schema {
         public static final Column.Fk<Ingredient, Long, Food> COMPOSITE_FOOD_ID;
         public static final Column.Fk<Ingredient, Long, Food> INGREDIENT_FOOD_ID;
         public static final Column<Ingredient, Double> QUANTITY;
-        public static final Column.Fk<Ingredient, String, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<Ingredient, String, QtyUnit> QUANTITY_UNIT;
         public static final Column.Fk<Ingredient, Long, Serving> SERVING_ID;
         public static final Column<Ingredient, String> NOTES;
         private static final String TABLE_NAME = "Ingredient";
-        private static IngredientTable INSTANCE;
+        private static final IngredientTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -304,9 +296,10 @@ public class Schema {
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY = builder("quantity", Types.REAL, columnIndex++).notEditable().notNull().build();
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
-                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
+                    .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
             SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notNull()
                     .buildFk(ServingTable.ID, ServingTable.instance());
+            INSTANCE = new IngredientTable();
         }
         private IngredientTable() {
             super(TABLE_NAME, Ingredient.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
@@ -320,9 +313,6 @@ public class Schema {
         }
 
         public static IngredientTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new IngredientTable();
-            }
             return INSTANCE;
         }
     }
@@ -334,7 +324,7 @@ public class Schema {
         public static final Column<RegularMeal, String> NAME;
         public static final Column.Fk<RegularMeal, Long, Meal> MEAL_ID;
         private static final String TABLE_NAME = "RegularMeal";
-        private static RegularMealTable INSTANCE;
+        private static final RegularMealTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -344,15 +334,13 @@ public class Schema {
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
             MEAL_ID = builder("meal_id", Types.ID, columnIndex++).notEditable().notNull().inSecondaryKey().unique()
                     .buildFk(MealTable.ID, MealTable.instance());
+            INSTANCE = new RegularMealTable();
         }
         RegularMealTable()  {
             super(TABLE_NAME, RegularMeal.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(NAME, MEAL_ID));
         }
 
         public static RegularMealTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new RegularMealTable();
-            }
             return INSTANCE;
         }
     }
@@ -385,9 +373,9 @@ public class Schema {
         public static final Column<NutritionData, Double> WATER;
         public static final Column<NutritionData, Double> ALCOHOL;
         public static final Column.Fk<NutritionData, Long, Food> FOOD_ID;
-        public static final Column.Fk<NutritionData, String, QuantityUnit> QUANTITY_UNIT;
+        public static final Column.Fk<NutritionData, String, QtyUnit> QUANTITY_UNIT;
         private static final String TABLE_NAME = "NutritionData";
-        private static NutritionDataTable INSTANCE;
+        private static final NutritionDataTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -421,7 +409,8 @@ public class Schema {
             FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().defaultValue(NO_ID).inSecondaryKey().unique()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
-                    .buildFk(QuantityUnitTable.ABBREVIATION, QuantityUnitTable.instance());
+                    .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
+            INSTANCE = new NutritionDataTable();
         }
         private NutritionDataTable() {
             super(TABLE_NAME, NutritionData.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
@@ -453,9 +442,6 @@ public class Schema {
             ));
         }
         public static NutritionDataTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new NutritionDataTable();
-            }
             return INSTANCE;
         }
     }
@@ -466,7 +452,7 @@ public class Schema {
         public static final Column<FoodAttribute, Long> MODIFY_TIME;
         public static final Column<FoodAttribute, String> NAME;
         private static final String TABLE_NAME = "FoodAttribute";
-        private static FoodAttributeTable INSTANCE;
+        private static final FoodAttributeTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -474,14 +460,12 @@ public class Schema {
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
+            INSTANCE = new FoodAttributeTable();
         }
         private FoodAttributeTable() {
             super(TABLE_NAME, FoodAttribute.factory(), ID, CREATE_TIME, MODIFY_TIME, Collections.singletonList(NAME));
         }
         public static FoodAttributeTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new FoodAttributeTable();
-            }
             return INSTANCE;
         }
     }
@@ -493,7 +477,7 @@ public class Schema {
         public static final Column.Fk<AttrMapping, Long, Food> FOOD_ID;
         public static final Column.Fk<AttrMapping, Long, FoodAttribute> ATTRIBUTE_ID;
         private static final String TABLE_NAME = "AttributeMapping";
-        private static AttrMappingTable INSTANCE;
+        private static final AttrMappingTable INSTANCE;
 
         static {
             int columnIndex = 0;
@@ -504,14 +488,12 @@ public class Schema {
                     .buildFk(FoodTable.ID, FoodTable.instance());
             ATTRIBUTE_ID = builder("attribute_id", Types.ID, columnIndex++).notEditable().notNull().inSecondaryKey()
                     .buildFk(FoodAttributeTable.ID, FoodAttributeTable.instance());
+            INSTANCE = new AttrMappingTable();
         }
         private AttrMappingTable() {
             super(TABLE_NAME, AttrMapping.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(FOOD_ID , ATTRIBUTE_ID));
         }
         public static AttrMappingTable instance() {
-            if (INSTANCE == null) {
-                INSTANCE = new AttrMappingTable();
-            }
             return INSTANCE;
         }
     }

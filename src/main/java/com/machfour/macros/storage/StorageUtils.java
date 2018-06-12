@@ -81,9 +81,9 @@ public class StorageUtils {
             default:
                 List<String> bracketedWhereClauses = new ArrayList<>(likeColumns.size());
                 for (Column<?, String> c : likeColumns) {
-                    bracketedWhereClauses.add("(" + c.sqlName() + " LIKE ? )");
+                    bracketedWhereClauses.add("(" + c.sqlName() + " LIKE ?)");
                 }
-                return new StringJoiner<>(bracketedWhereClauses).sep(" OR ").join();
+                return " WHERE " + new StringJoiner<>(bracketedWhereClauses).sep(" OR ").join();
         }
     }
 

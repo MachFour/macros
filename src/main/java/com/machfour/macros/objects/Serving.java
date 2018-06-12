@@ -6,12 +6,12 @@ import org.jetbrains.annotations.NotNull;
 public class Serving extends MacrosEntity<Serving> {
 
     private Food food;
-    private QuantityUnit quantityUnit;
+    private QtyUnit qtyUnit;
 
     private Serving(ColumnData<Serving> data, ObjectSource objectSource) {
         super(data, objectSource);
         food = null;
-        quantityUnit = null;
+        qtyUnit = null;
     }
 
     @Override
@@ -48,13 +48,13 @@ public class Serving extends MacrosEntity<Serving> {
         return getData(Schema.ServingTable.QUANTITY_UNIT);
     }
 
-    public QuantityUnit getQuantityUnit() {
-        return quantityUnit;
+    public QtyUnit getQtyUnit() {
+        return qtyUnit;
     }
 
-    public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert getQuantityUnit() == null && foreignKeyMatches(this, Schema.ServingTable.QUANTITY_UNIT, q);
-        quantityUnit = q;
+    public void setQtyUnit(@NotNull QtyUnit q) {
+        assert getQtyUnit() == null && foreignKeyMatches(this, Schema.ServingTable.QUANTITY_UNIT, q);
+        qtyUnit = q;
     }
 
     public long getFoodId() {

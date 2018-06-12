@@ -65,7 +65,8 @@ public class Meal extends MacrosEntity<Meal> {
     }
 
     public void addFoodPortion(@NotNull FoodPortion fp) {
-        assert !foodPortions.contains(fp) && foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this);
+        // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
+        assert foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this);
         foodPortions.add(fp);
     }
 }

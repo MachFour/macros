@@ -45,10 +45,6 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         checkObjectSource();
     }
 
-    public static <M> M construct(Factory<M> factory, ColumnData<M> data, ObjectSource objectSource) {
-        return factory.construct(data, objectSource);
-    }
-
     // ensures that the presence of the ID is consistent with the semantics of the objectSource
     // see ObjectSource class for more documentation
     private void checkObjectSource() {

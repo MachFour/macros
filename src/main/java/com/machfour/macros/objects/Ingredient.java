@@ -11,7 +11,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
      */
     private Food compositeFood;
     private Food ingredientFood;
-    private QuantityUnit quantityUnit;
+    private QtyUnit qtyUnit;
     private NutritionData nutritionData;
     // this is the only thing that may remain null after all initialisation is complete
     @Nullable
@@ -20,7 +20,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     private Ingredient(ColumnData<Ingredient> data, ObjectSource objectSource) {
         super(data, objectSource);
         serving = null;
-        quantityUnit = null;
+        qtyUnit = null;
         compositeFood = null;
         ingredientFood = null;
 
@@ -46,13 +46,13 @@ public class Ingredient extends MacrosEntity<Ingredient> {
         return o instanceof Ingredient && super.equals(o);
     }
 
-    public QuantityUnit getQuantityUnit() {
-        return quantityUnit;
+    public QtyUnit getQtyUnit() {
+        return qtyUnit;
     }
 
-    public void setQuantityUnit(@NotNull QuantityUnit q) {
-        assert quantityUnit == null && foreignKeyMatches(this, Schema.IngredientTable.QUANTITY_UNIT, q);
-        quantityUnit = q;
+    public void setQtyUnit(@NotNull QtyUnit q) {
+        assert qtyUnit == null && foreignKeyMatches(this, Schema.IngredientTable.QUANTITY_UNIT, q);
+        qtyUnit = q;
 
     }
 

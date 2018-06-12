@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.machfour.macros.core.Schema.FoodTable.*;
+
 public class Food extends MacrosEntity<Food> {
 
     public static final List<Column<Food, String>> DESCRIPTION_COLUMNS = Arrays.asList(
@@ -68,8 +70,7 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public void setNutritionData(@NotNull NutritionData nd) {
-        assert nutritionData == null && nd != null
-            && foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this);
+        assert nutritionData == null && foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this);
         nutritionData = nd;
     }
 
@@ -78,7 +79,7 @@ public class Food extends MacrosEntity<Food> {
     }
 
     public void setFoodCategory(@NotNull FoodCategory c) {
-        assert foodCategory == null && foreignKeyMatches(this, Schema.FoodTable.CATEGORY, c);
+        assert foodCategory == null && foreignKeyMatches(this, CATEGORY, c);
         foodCategory = c;
     }
     public FoodCategory getFoodCategory() {
@@ -111,12 +112,12 @@ public class Food extends MacrosEntity<Food> {
 
     @Nullable
     public Long getUsdaIndex() {
-        return getData(Schema.FoodTable.USDA_INDEX);
+        return getData(USDA_INDEX);
     }
 
     @Nullable
     public String getNuttabIndex() {
-        return getData(Schema.FoodTable.NUTTAB_INDEX);
+        return getData(NUTTAB_INDEX);
     }
 
 
@@ -143,6 +144,11 @@ public class Food extends MacrosEntity<Food> {
     @NotNull
     public String getMediumName() {
         return prettyFormat(true, false, false);
+    }
+
+    @NotNull
+    public String getIndexName() {
+        return getData(INDEX_NAME);
     }
 
     @NotNull

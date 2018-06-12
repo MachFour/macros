@@ -1,5 +1,5 @@
 #!/bin/sh
 
 unset _JAVA_OPTIONS
-CLASSPATH="out/production/macros-java/:lib/super-csv-2.4.0.jar:/usr/share/java/xerial-sqlite-jdbc/xerial-sqlite-jdbc.jar"
-java -cp "$CLASSPATH" com.machfour.macros.cli.CliMain "$@"
+CLASSPATH="/home/max/devel/macros-java/out/production/macros-java/:/home/max/devel/macros-java/lib/super-csv-2.4.0.jar:/usr/share/java/xerial-sqlite-jdbc/xerial-sqlite-jdbc.jar"
+java -enableassertions -cp "$CLASSPATH" com.machfour.macros.cli.CliMain "$@"

@@ -5,7 +5,7 @@ import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.objects.Serving;
 import com.machfour.macros.storage.CsvStorage;
-import com.machfour.macros.linux.MacrosLinuxDatabase;
+import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.util.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,12 +19,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CsvTest {
-    static MacrosLinuxDatabase db;
+    static LinuxDatabase db;
     static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
 
     @BeforeAll
     static void initDb() {
-        db = MacrosLinuxDatabase.getInstance(DB_LOCATION);
+        db = LinuxDatabase.getInstance(DB_LOCATION);
         try {
             db.deleteIfExists(DB_LOCATION);
             db.initDb();
@@ -65,10 +65,7 @@ class CsvTest {
     void testCsvSaveFoods() {
         Pair<List<Food>, List<NutritionData>> csvObjects;
         try {
-            csvObjects = CsvStorage.buildFoodObjectTree(Config.FOOD_CSV_FILENAME);
-            db.saveObjects(csvObjects.first, ObjectSource.IMPORT);
-            List<NutritionData> completedNd = db.completeForeignKeys(csvObjects.second, Schema.NutritionDataTable.FOOD_ID);
-            db.saveObjects(completedNd, ObjectSource.IMPORT);
+            CsvStorage.importFoodData(Config.FOOD_CSV_FILENAME, db, true);
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");
@@ -81,9 +78,7 @@ class CsvTest {
     void testCsvSaveServings() {
         List<Serving> csvServings;
         try {
-            csvServings = CsvStorage.buildServings(Config.SERVING_CSV_FILENAME);
-            List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
-            db.saveObjects(completedServings, ObjectSource.IMPORT);
+            CsvStorage.importServings(Config.SERVING_CSV_FILENAME, db, true);
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");

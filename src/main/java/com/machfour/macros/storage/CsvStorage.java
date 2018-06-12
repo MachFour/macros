@@ -11,6 +11,7 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 public class CsvStorage {
@@ -107,6 +108,19 @@ public class CsvStorage {
             }
         }
         return servings;
+    }
+
+    public static void importFoodData(String foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+        Pair<List<Food>, List<NutritionData>> csvObjects = buildFoodObjectTree(foodCsv);
+        db.saveObjects(csvObjects.first, ObjectSource.IMPORT);
+        List<NutritionData> completedNd = db.completeForeignKeys(csvObjects.second, Schema.NutritionDataTable.FOOD_ID);
+        db.saveObjects(completedNd, ObjectSource.IMPORT);
+    }
+
+    public static void importServings(String servingCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+        List<Serving> csvServings = CsvStorage.buildServings(servingCsv);
+        List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
+        db.saveObjects(completedServings, ObjectSource.IMPORT);
     }
 
 }

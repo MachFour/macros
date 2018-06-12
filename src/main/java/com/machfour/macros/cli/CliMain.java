@@ -1,38 +1,41 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.objects.Food;
+import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.objects.Meal;
-import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.core.ObjectSource;
-import com.machfour.macros.objects.Serving;
-import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.storage.CsvStorage;
-import com.machfour.macros.linux.MacrosLinuxDatabase;
-import com.machfour.macros.util.Pair;
+import com.machfour.macros.linux.LinuxDatabase;
+import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CliMain {
-    private static final PrintStream out = System.out;
-    private static final PrintStream err = System.err;
+    private static final String PROGNAME = "macros";
+    private static final PrintStream OUT = System.out;
+    private static final PrintStream ERR = System.err;
 
     private static final Mode IMPORT = new Import();
     private static final Mode INIT = new Init();
     private static final Mode READ = new Read();
     private static final Mode HELP = new Help();
+    private static final Mode SEARCH = new SearchFood();
+    private static final Mode LISTFOOD = new ListFood();
     private static final Mode NO_ARGS = new NoArgs();
     private static final Mode INVALID_MODE = new InvalidMode();
     private static final Mode[] MODES = {
             IMPORT
             , READ
             , INIT
+            , SEARCH
+            , LISTFOOD
             , HELP
             , INVALID_MODE
             , NO_ARGS
@@ -42,7 +45,7 @@ public class CliMain {
     static {
         MODES_BY_NAME = new HashMap<>();
         for (Mode m : MODES) {
-            assert MODES_BY_NAME.containsKey(m.name()): "Two modes have the same name";
+            assert !MODES_BY_NAME.containsKey(m.name()): "Two modes have the same name";
             MODES_BY_NAME.put(m.name(), m);
         }
     }
@@ -55,24 +58,24 @@ public class CliMain {
         }
         @Override
         public void doAction(String[] args) {
-            MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
+            LinuxDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
             try {
                 db.deleteIfExists(Config.DB_LOCATION);
-                out.printf("Deleted database at %s\n", Config.DB_LOCATION);
+                OUT.printf("Deleted database at %s\n", Config.DB_LOCATION);
             } catch (IOException e) {
-                e.printStackTrace(out);
-                out.println();
-                out.println("Error deleting the database");
+                e.printStackTrace(OUT);
+                OUT.println();
+                OUT.println("Error deleting the database");
                 return;
             }
             try {
                 db.initDb();
             } catch (SQLException | IOException e) {
-                e.printStackTrace(out);
-                out.println();
-                out.println("Error initialising the database");
+                e.printStackTrace(OUT);
+                OUT.println();
+                OUT.println("Error initialising the database");
             }
-            out.printf("Database re-initialised at %s\n", Config.DB_LOCATION);
+            OUT.printf("Database re-initialised at %s\n", Config.DB_LOCATION);
         }
     }
 
@@ -86,41 +89,98 @@ public class CliMain {
         public void doAction(String[] args) {
             String foodCsvFile = Config.FOOD_CSV_FILENAME;
             String servingCsvFile = Config.SERVING_CSV_FILENAME;
-            MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
+            MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
-            Pair<List<Food>, List<NutritionData>> csvObjects;
-            List<Serving> csvServings;
             try {
-                out.printf("Importing food data from CSV file: %s\n", foodCsvFile);
-                csvObjects = CsvStorage.buildFoodObjectTree(foodCsvFile);
-                out.printf("Importing servings from CSV file: %s\n", servingCsvFile);
-                csvServings = CsvStorage.buildServings(servingCsvFile);
-            } catch (IOException e) {
-                out.println();
-                e.printStackTrace(out);
-                out.println();
-                out.println("No data was imported.");
+                OUT.println("Importing data into database...");
+                CsvStorage.importFoodData(foodCsvFile, db, false);
+                OUT.println("Saved foods and nutrition data");
+                CsvStorage.importServings(servingCsvFile, db, false);
+                OUT.println("Saved servings");
+            } catch (SQLException | IOException e) {
+                OUT.println();
+                e.printStackTrace(OUT);
                 return;
             }
 
+            OUT.println();
+            OUT.println("Import completed successfully");
+        }
+    }
+
+    static class SearchFood extends ModeImpl {
+        private static final String NAME = "search";
+        @Override
+        public String name() {
+            return NAME;
+        }
+        @Override
+        public void doAction(String[] args) {
+            assert args.length > 0;
+            if (args.length == 1) {
+                OUT.printf("Usage: %s %s <keyword>\n", PROGNAME, args[0]);
+                OUT.println("Please enter a search keyword for the food database");
+                return;
+            }
+            MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+            String keyword = args[1];
+            List<Food> resultFoods = Collections.emptyList();
             try {
-                out.println("Saving data into database...");
-                db.saveObjects(csvObjects.first, ObjectSource.IMPORT);
-                out.println("Saved food data");
-                List<NutritionData> completedNd = db.completeForeignKeys(csvObjects.second, Schema.NutritionDataTable.FOOD_ID);
-                db.saveObjects(completedNd, ObjectSource.IMPORT);
-                out.println("Saved nutrition information");
-                List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
-                db.saveObjects(completedServings, ObjectSource.IMPORT);
-                out.println("Saved servings");
+                List<Long> resultIds = db.foodSearch(keyword);
+                if (!resultIds.isEmpty()) {
+                    resultFoods = db.getFoodsById(resultIds);
+                }
             } catch (SQLException e) {
-                out.println();
-                e.printStackTrace(out);
+                OUT.print("SQL exception occurred: ");
+                OUT.println(e.getErrorCode());
                 return;
             }
+            if (resultFoods.isEmpty()) {
+                OUT.printf("No matches for keyword '%s'\n", keyword);
+            } else {
+                OUT.println("Search results:");
+                OUT.println();
+                OUT.printf("%-40s        %-15s\n", "Food name", "index name");
+                OUT.println(new StringJoiner<>(Collections.nCopies(63, "=")).join());
+                for (Food f : resultFoods) {
+                    OUT.printf("%-40s        %-15s\n", f.getMediumName(), f.getIndexName());
+                }
+            }
+        }
+    }
 
-            out.println();
-            out.println("Import completed successfully");
+    static class ListFood extends ModeImpl {
+        private static final String NAME = "list";
+        @Override
+        public String name() {
+            return NAME;
+        }
+        @Override
+        public void doAction(String[] args) {
+            assert args.length > 0;
+            if (args.length == 1) {
+                OUT.printf("Usage: %s %s <index_name>\n", PROGNAME, args[0]);
+                OUT.println("Please enter the index name of the food to list");
+                return;
+            }
+            MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+            String indexName = args[1];
+            Food foodToList = null;
+            try {
+                foodToList = db.getFoodByIndexName(indexName);
+            } catch (SQLException e) {
+                OUT.print("SQL exception occurred: ");
+                OUT.println(e.getErrorCode());
+            }
+            if (foodToList == null) {
+                OUT.printf("No food found with index name %s\n", indexName);
+            } else {
+                //TODO
+                OUT.printf("Food data for '%s':\n", indexName);
+                OUT.println(foodToList.getAllData());
+                OUT.printf("Nutrition data for '%s':\n", indexName);
+                OUT.println(foodToList.getNutritionData());
+            }
         }
     }
 
@@ -133,32 +193,32 @@ public class CliMain {
         @Override
         public void doAction(String[] args) {
             if (args.length < 2) {
-                out.println("Usage: macros --read <file>");
-                out.println();
-                out.println("Please specify a file to read");
+                OUT.println("Usage: macros --read <file>");
+                OUT.println();
+                OUT.println("Please specify a file to read");
                 return;
             }
             String filename = args[1];
-            MacrosLinuxDatabase db = MacrosLinuxDatabase.getInstance(Config.DB_LOCATION);
+            MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
             FileParser fileParser = new FileParser(db);
             List<Meal> meals;
             try {
                 meals = fileParser.parseFile(filename);
             } catch (IOException e1) {
-                err.println("IO exception occurred: " + e1.getMessage());
+                ERR.println("IO exception occurred: " + e1.getMessage());
                 return;
             } catch (SQLException e2) {
-                err.println("SQL exception occurred: " + e2.getMessage());
+                ERR.println("SQL exception occurred: " + e2.getMessage());
                 return;
             }
-            MealPrinter mp = new MealPrinter(out);
+            MealPrinter mp = new MealPrinter(OUT);
             mp.printMeals(meals);
             Map<String, String> errors = fileParser.getErrorLines();
             if (!errors.isEmpty()) {
-                out.println();
-                out.println("Warning: the following lines were skipped");
+                OUT.println();
+                OUT.println("Warning: the following lines were skipped");
                 for (Map.Entry<String, String> line : errors.entrySet()) {
-                    out.printf("'%s' - %s\n", line.getKey(), line.getValue());
+                    OUT.printf("'%s' - %s\n", line.getKey(), line.getValue());
                 }
             }
         }
@@ -171,7 +231,7 @@ public class CliMain {
         }
         @Override
         public void doAction(String[] args) {
-            out.println("Help!");
+            OUT.println("Help!");
         }
     }
     static class InvalidMode extends ModeImpl {
@@ -182,8 +242,8 @@ public class CliMain {
         }
         @Override
         public void doAction(String[] args) {
-            out.printf("Mode not recognised: '%s'\n", args[0]);
-            out.println();
+            OUT.printf("Mode not recognised: '%s'\n", args[0]);
+            OUT.println();
             NO_ARGS.doAction(new String[0]);
         }
     }
@@ -196,10 +256,10 @@ public class CliMain {
 
         @Override
         public void doAction(String[] args) {
-            out.println("Please specify one of the following modes:");
+            OUT.println("Please specify one of the following modes:");
             for (Mode m : MODES) {
                 if (m.isUserMode()) {
-                    out.println(m.name());
+                    OUT.println(m.name());
                 }
             }
         }

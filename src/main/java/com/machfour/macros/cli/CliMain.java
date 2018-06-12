@@ -132,18 +132,29 @@ public class CliMain {
                 }
             } catch (SQLException e) {
                 OUT.print("SQL exception occurred: ");
-                OUT.println(e.getErrorCode());
+                OUT.println(e.getMessage());
                 return;
             }
             if (resultFoods.isEmpty()) {
                 OUT.printf("No matches for keyword '%s'\n", keyword);
             } else {
+                // work out how wide the column should be
+                int maxNameLength = 0;
+                for (Food f : resultFoods) {
+                    int nameLength = f.getMediumName().length();
+                    if (nameLength > maxNameLength) {
+                        maxNameLength = nameLength;
+                    }
+                }
+                String formatStr = "%-" + maxNameLength + "s        %s\n";
+                // horizontal line - extra spaces are for whitespace + index name length
+                String hline = new StringJoiner<>("=").copies(maxNameLength+8+14).join();
                 OUT.println("Search results:");
                 OUT.println();
-                OUT.printf("%-40s        %-15s\n", "Food name", "index name");
-                OUT.println(new StringJoiner<>(Collections.nCopies(63, "=")).join());
+                OUT.printf(formatStr, "Food name", "index name");
+                OUT.println(hline);
                 for (Food f : resultFoods) {
-                    OUT.printf("%-40s        %-15s\n", f.getMediumName(), f.getIndexName());
+                    OUT.printf(formatStr, f.getMediumName(), f.getIndexName());
                 }
             }
         }

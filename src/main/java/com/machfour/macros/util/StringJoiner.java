@@ -2,6 +2,7 @@ package com.machfour.macros.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /*
@@ -19,6 +20,8 @@ public class StringJoiner<E> {
     @NotNull
     private String suffix;
     private Function<E, String> stringFunc;
+    // how many copies of each element
+    private int copies;
 
     private final Iterator<E> iterator;
 
@@ -26,10 +29,14 @@ public class StringJoiner<E> {
         this.iterator = iterator;
         this.sep = "";
         this.suffix = "";
+        this.copies = 1;
         this.stringFunc = Object::toString;
     }
     public StringJoiner(Iterable<E> iterable) {
         this(iterable.iterator());
+    }
+    public StringJoiner(E element) {
+        this(Collections.singletonList(element));
     }
 
     public StringJoiner<E> sep(@NotNull String sep) {
@@ -40,22 +47,38 @@ public class StringJoiner<E> {
         this.suffix = suffix;
         return this;
     }
+    public StringJoiner<E> copies(int copies) {
+        if (copies < 1) {
+            throw new IllegalArgumentException("copies must be >= 1");
+        }
+        this.copies = copies;
+        return this;
+    }
+
     public StringJoiner<E> stringFunc(@NotNull Function<E, String> stringFunc) {
         this.stringFunc = stringFunc;
         return this;
     }
 
     // StringFunc is arbitary function to apply to object to produce a string
+    @NotNull
     public String join() {
+        if (!iterator.hasNext()) {
+            return "";
+        }
         StringBuilder joined = new StringBuilder();
-        if (iterator.hasNext()) {
-            joined.append(stringFunc.apply(iterator.next()));
-            joined.append(suffix);
-            while (iterator.hasNext()) {
-                joined.append(sep);
-                joined.append(stringFunc.apply(iterator.next()));
+        // there will be one last separator string at the end but we'll remove it
+        while (iterator.hasNext()) {
+            String next = stringFunc.apply(iterator.next());
+            for (int i = 1; i <= copies; ++i) {
+                joined.append(next);
                 joined.append(suffix);
+                joined.append(sep);
             }
+        }
+        // remove the last sep
+        if (!sep.isEmpty()) {
+            joined.delete(joined.length() - sep.length(), joined.length() - 1);
         }
         return joined.toString();
     }

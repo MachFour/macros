@@ -214,8 +214,6 @@ public class CliMain {
             MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
             FileParser fileParser = new FileParser(db);
             List<Meal> meals;
-            // record time parsing
-            long parseStart = DataUtils.systemMillis();
             try {
                 meals = fileParser.parseFile(filename);
             } catch (IOException e1) {
@@ -225,7 +223,6 @@ public class CliMain {
                 ERR.println("SQL exception occurred: " + e2.getMessage());
                 return;
             }
-            long parseEnd = DataUtils.systemMillis();
             MealPrinter mp = new MealPrinter(OUT);
             mp.printMeals(meals);
             Map<String, String> errors = fileParser.getErrorLines();
@@ -236,9 +233,6 @@ public class CliMain {
                     OUT.printf("'%s' - %s\n", line.getKey(), line.getValue());
                 }
             }
-            OUT.println("\n");
-            OUT.printf("Millis for file parse: %d\n", parseEnd - parseStart);
-            OUT.printf(" -- Millis in database: %d\n", ((LinuxDatabase) db).getMillisInDb());
         }
     }
     static class Help extends ModeImpl {

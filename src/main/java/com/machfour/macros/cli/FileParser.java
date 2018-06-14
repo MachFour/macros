@@ -38,7 +38,7 @@ final class FileParser {
         // for serving mode. servingName = "" means default serving
         private String servingName;
         private double servingCount;
-        private int line;
+        private int lineIdx;
     }
 
     private static class MealSpec {
@@ -83,7 +83,7 @@ final class FileParser {
                 }
                 FoodPortionSpec fpSpec = makefoodPortionSpecFromLine(line);
                 if (fpSpec != null) {
-                    fpSpec.line = index + 1;
+                    fpSpec.lineIdx = index;
                     currentFpSpecs.add(fpSpec);
                 }
 
@@ -106,7 +106,7 @@ final class FileParser {
             meals.add(m);
             for (FoodPortionSpec fps : spec.getValue()) {
                 if (!foods.containsKey(fps.foodIndexName)) {
-                    errorLines.put(fileLines.get(fps.line), "unrecognised food");
+                    errorLines.put(fileLines.get(fps.lineIdx), "unrecognised food");
                     // skip this
                     continue;
                 }
@@ -120,13 +120,13 @@ final class FileParser {
                         // default serving
                         s = f.getDefaultServing();
                         if (s == null) {
-                            errorLines.put(fileLines.get(fps.line), "food has no default serving");
+                            errorLines.put(fileLines.get(fps.lineIdx), "food has no default serving");
                             continue;
                         }
                     } else {
                         s = f.getServingByName(fps.servingName);
                         if (s == null) {
-                            errorLines.put(fileLines.get(fps.line), "food has no serving named '" + fps.servingName + "'");
+                            errorLines.put(fileLines.get(fps.lineIdx), "food has no serving named '" + fps.servingName + "'");
                             continue;
                         }
                     }
@@ -176,7 +176,8 @@ final class FileParser {
 
     // returns null if there was an error during parsing (not a DB error)
     private FoodPortionSpec makefoodPortionSpecFromLine(String line) {
-        String[] tokens = line.split(",");
+        // if you don't specify an array length limit, it won't match empty strings between commas
+        String[] tokens = line.split(",", 4);
         for (int i = 0; i < tokens.length; ++i) {
             tokens[i] = tokens[i].trim();
         }

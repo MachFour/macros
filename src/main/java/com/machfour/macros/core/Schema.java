@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static com.machfour.macros.core.MacrosPersistable.NO_ID;
-import static com.machfour.macros.core.Column.builder;
 
 @SuppressWarnings("UnusedAssignment")
 // columnIndex++ is used to make sure the indices for each column are unique
@@ -22,7 +21,7 @@ public class Schema {
     }
 
     private static <M> Column<M, Long> idColumn(int index) {
-        return builder(ID_COLUMN_NAME, Types.ID, index).defaultValue(NO_ID).build();
+        return builder(ID_COLUMN_NAME, Types.ID, index).defaultValue(NO_ID).notNull().unique().build();
     }
 
     private static <M> Column<M, Long> createTimeColumn(int index) {
@@ -31,6 +30,10 @@ public class Schema {
 
     private static <M> Column<M, Long> modifyTimeColumn(int index) {
         return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).build();
+    }
+
+    private static <J> ColumnImpl.Builder<J> builder(String name, MacrosType<J> type, int index) {
+        return new ColumnImpl.Builder<>(name, type, index);
     }
 
     /*

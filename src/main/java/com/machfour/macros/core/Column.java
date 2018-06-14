@@ -36,9 +36,4 @@ public interface Column<M, J> {
     boolean isUnique();
 
     List<Validation> getValidations();
-
-
-    static <J> ColumnImpl.Builder<J> builder(String name, MacrosType<J> type, int index) {
-        return new ColumnImpl.Builder<>(name, type, index);
-    }
 }

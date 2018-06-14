@@ -1,6 +1,5 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.core.MacrosType;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 

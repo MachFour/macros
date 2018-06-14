@@ -2,7 +2,6 @@ package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
 import com.machfour.macros.objects.*;
-import com.machfour.macros.storage.StorageUtils;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,6 +44,9 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return idsPresent;
     }
 
+    public abstract void openConnection() throws SQLException;
+    public abstract void closeConnection() throws SQLException;
+
     protected abstract <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException;
 
     @NotNull
@@ -56,11 +58,11 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     protected abstract <M, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues, boolean distinct) throws SQLException;
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException;
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
-    protected abstract <M, J> List<M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, List<J> keys) throws SQLException;
+    protected abstract <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
@@ -111,58 +113,55 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     public List<Food> getAllFoods() throws SQLException {
-        List<Serving> allServings = getRawObjectsByIds(Schema.ServingTable.instance(), new ArrayList<>());
+        Map<Long, Serving> allServings = getRawObjectsByIds(Schema.ServingTable.instance(), new ArrayList<>());
         // TODO
-        return getFoodsById(new ArrayList<>(0));
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Nullable
-    public Food getFoodByIndexName(String indexName) throws SQLException {
-        List<Food> resultFood = getFoodsByIndexName(toList(indexName));
-        // a bit redundant since we only need the ID but whatever
-        return resultFood.isEmpty() ? null : resultFood.get(0);
+    public Food getFoodByIndexName(@NotNull String indexName) throws SQLException {
+        Map<String, Food> resultFood = getFoodsByIndexName(toList(indexName));
+        return resultFood.getOrDefault(indexName, null);
     }
 
     @Nullable
-    public Food getFoodById(Long id) throws SQLException {
-        List<Food> resultFood = getFoodsById(toList(id));
-        return resultFood.isEmpty() ? null : resultFood.get(0);
+    public Food getFoodById(@NotNull Long id) throws SQLException {
+        Map<Long, Food> resultFood = getFoodsById(toList(id));
+        return resultFood.getOrDefault(id, null);
     }
 
-    public List<Food> getFoodsById(@NotNull List<Long> foodIds) throws SQLException {
-        List<Food> foods = getRawObjectsByIds(Schema.FoodTable.instance(), foodIds);
-        return processRawFoods(foods);
-    }
-
-    public List<Food> getFoodsByIndexName(@NotNull List<String> indexNames) throws SQLException {
-        List<Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
-        return processRawFoods(foods);
-    }
-
-    private List<Food> processRawFoods(List<Food> foods) throws SQLException {
-        Map<Long, Food> idMap = StorageUtils.makeIdMap(foods);
-        if (idMap.isEmpty()) {
-            return Collections.emptyList();
+    @Override
+    public Map<Long, Food> getFoodsById(@NotNull List<Long> foodIds) throws SQLException {
+        Map<Long, Food> foods = getRawObjectsByIds(Schema.FoodTable.instance(), foodIds);
+        if (!foods.isEmpty()) {
+            applyServingsToRawFoods(foods);
+            applyNutritionDataToRawFoods(foods);
+            // TODO  FoodCategory, Ingredients
         }
-        applyServingsToRawFoods(idMap);
-        applyNutritionDataToRawFoods(idMap);
-        // TODO  FoodCategory, Ingredients
-        //applyIngredientsToRawFood();
-        //applyFoodCategoryToRawFood();
         return foods;
+    }
 
+    public Map<String, Food> getFoodsByIndexName(@NotNull List<String> indexNames) throws SQLException {
+        Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
+        if (!foods.isEmpty()) {
+            // TODO this is kind of inefficient
+            Map<Long, Food> idMap = StorageUtils.makeIdMap(foods.values());
+            applyServingsToRawFoods(idMap);
+            applyNutritionDataToRawFoods(idMap);
+            // TODO  FoodCategory, Ingredients
+        }
+        return foods;
     }
 
     private void applyServingsToRawFoods(Map<Long, Food> foodMap) throws SQLException {
         assert !foodMap.isEmpty();
-        List<Long> foodIds = new ArrayList<>(foodMap.keySet());
-        List<Long> servingIds = selectColumn(Schema.ServingTable.instance(), Schema.ServingTable.ID, Schema.ServingTable.FOOD_ID, foodIds);
+        List<Long> servingIds = selectColumn(Schema.ServingTable.instance(), Schema.ServingTable.ID, Schema.ServingTable.FOOD_ID, foodMap.keySet());
         if (servingIds.isEmpty()) {
             // no servings
             return;
         }
-        List<Serving> servings = getRawObjectsByKeys(Schema.ServingTable.instance(), Schema.ServingTable.ID, servingIds);
-        for (Serving s : servings) {
+        Map<Long, Serving> servings = getRawObjectsByKeys(Schema.ServingTable.instance(), Schema.ServingTable.ID, servingIds);
+        for (Serving s : servings.values()) {
             // QtyUnit setup
             QtyUnit unit = QtyUnit.fromAbbreviation(s.getQuantityUnitAbbr());
             assert (unit != null) : "No quantity unit with the given abbreviation was found";
@@ -183,8 +182,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             // no servings
             return;
         }
-        List<NutritionData> ndObjects = getRawObjectsByKeys(Schema.NutritionDataTable.instance(), Schema.NutritionDataTable.ID, nutritionDataIds);
-        for (NutritionData nd : ndObjects) {
+        Map<Long, NutritionData> ndObjects = getRawObjectsByKeys(Schema.NutritionDataTable.instance(), Schema.NutritionDataTable.ID, nutritionDataIds);
+        for (NutritionData nd : ndObjects.values()) {
             // this lookup should never fail, due to database constraints
             Food f = foodMap.get(nd.getFoodId());
             assert f != null;
@@ -199,31 +198,28 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     private <M, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues) throws SQLException {
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
 
-    public Meal getMealById(Long id) throws SQLException {
-        List<Meal> resultMeals = getMealsById(Collections.singletonList(id));
-        return (!resultMeals.isEmpty()) ? resultMeals.get(0) : null;
+    @Nullable
+    public Meal getMealById(@NotNull Long id) throws SQLException {
+        Map<Long, Meal> resultMeals = getMealsById(Collections.singletonList(id));
+        return resultMeals.getOrDefault(id, null);
     }
 
-    public List<Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
+    public Map<Long, Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
         if (mealIds.isEmpty()) {
-            return new ArrayList<>(0);
+            return Collections.emptyMap();
         }
         List<Long> foodIds = getFoodIdsForMeals(mealIds);
-        List<Meal> meals = getRawMealsById(mealIds);
-        // this check stops an unnecessary lookup of all foods, which happens if no IDS are passed
-        // into getFoodsByID;
+        Map<Long, Meal> meals = getRawMealsById(mealIds);
+        // this check stops an unnecessary lookup of all foods, which happens if no IDs are passed
+        // into getFoodsById;
         if (!foodIds.isEmpty()) {
-            List<Food> foods = getFoodsById(foodIds);
-            Map<Long, Food> foodMap = new HashMap<>(foods.size(), 1);
-            for (Food food : foods) {
-                foodMap.put(food.getId(), food);
-            }
+            Map<Long, Food> foodMap = getFoodsById(foodIds);
 
-            for (Meal meal : meals) {
+            for (Meal meal : meals.values()) {
                 applyFoodPortionsToRawMeal(meal, foodMap);
             }
         }
@@ -238,7 +234,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
-    private List<Meal> getRawMealsById(@NotNull List<Long> mealIds) throws SQLException {
+    private Map<Long, Meal> getRawMealsById(@NotNull List<Long> mealIds) throws SQLException {
         return getRawObjectsByKeys(Schema.MealTable.instance(), Schema.MealTable.ID, mealIds);
     }
 
@@ -249,8 +245,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     private void applyFoodPortionsToRawMeal(Meal meal, Map<Long, Food> foodMap) throws SQLException {
         List<Long> foodPortionIds = selectColumn(Schema.FoodPortionTable.instance(), Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.getId());
         if (!foodPortionIds.isEmpty()) {
-            List<FoodPortion> foodPortions = getRawObjectsByIds(Schema.FoodPortionTable.instance(), foodPortionIds);
-            for (FoodPortion fp : foodPortions) {
+            Map<Long, FoodPortion> foodPortions = getRawObjectsByIds(Schema.FoodPortionTable.instance(), foodPortionIds);
+            for (FoodPortion fp : foodPortions.values()) {
                 Food portionFood = foodMap.get(fp.getFoodId());
                 fp.setFood(portionFood);
                 Long servingId = fp.getServingId();
@@ -265,9 +261,9 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public List<Meal> getMealsForDay(DateStamp day) throws SQLException {
+    public Collection<Meal> getMealsForDay(DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(day);
-        return getMealsById(mealIds);
+        return getMealsById(mealIds).values();
     }
 
     public List<Long> getMealIdsForDay(@NotNull DateStamp day) throws SQLException {
@@ -279,14 +275,13 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return getRawObjectByKey(t, t.getIdColumn(), id);
     }
 
-    private <M extends MacrosPersistable> List<M> getRawObjectsByIds(Table<M> t, List<Long> ids) throws SQLException {
+    private <M extends MacrosPersistable> Map<Long, M> getRawObjectsByIds(Table<M> t, List<Long> ids) throws SQLException {
         return getRawObjectsByKeys(t, t.getIdColumn(), ids);
     }
 
     private <M, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
-        List<M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
-        assert returned.size() <= 1;
-        return returned.isEmpty() ? null : returned.get(0);
+        Map<J, M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
+        return returned.getOrDefault(key, null);
     }
 
     public <M extends MacrosPersistable<M>> int insertObjects(@NotNull List<M> objects, boolean withId) throws SQLException {

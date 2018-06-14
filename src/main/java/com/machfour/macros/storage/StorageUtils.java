@@ -142,11 +142,11 @@ public class StorageUtils {
         }
     }
 
-    public static <E> void bindObjects(PreparedStatement p, List<E> objects) throws SQLException {
+    public static <E> void bindObjects(PreparedStatement p, Collection<E> objects) throws SQLException {
         bindObjects(p, 1, objects);
     }
 
-    private static void bindObjects(PreparedStatement p, int startIndex, List<?> objects) throws SQLException {
+    private static void bindObjects(PreparedStatement p, int startIndex, Collection<?> objects) throws SQLException {
         int colIndex = startIndex;
         for (Object o : objects) {
             p.setObject(colIndex, o);
@@ -155,7 +155,7 @@ public class StorageUtils {
     }
 
 
-    public static <M extends MacrosPersistable> Map<Long, M> makeIdMap(List<M> objects) {
+    static <M extends MacrosPersistable> Map<Long, M> makeIdMap(Collection<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);
         for (M m : objects) {
             assert !idMap.containsKey(m.getId()) : "Two objects had the same ID";

@@ -1,10 +1,9 @@
 <component name="libraryTable">
   <library name="xerial-sqlite-jdbc">
     <CLASSES>
-      <root url="file:///usr/share/java/xerial-sqlite-jdbc" />
+      <root url="jar://$PROJECT_DIR$/lib/sqlite-jdbc-3.23.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file:///usr/share/java/xerial-sqlite-jdbc" recursive="false" />
   </library>
 </component>

@@ -4,6 +4,7 @@ import com.machfour.macros.core.*;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.storage.StorageUtils;
+import com.machfour.macros.util.DataUtils;
 import org.jetbrains.annotations.NotNull;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
@@ -23,6 +24,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // singleton
     private static LinuxDatabase INSTANCE;
     private final SQLiteDataSource dataSource;
+    // records how much time spent in database transactions
+    private Connection connection;
+    private long millisInDb;
 
     private LinuxDatabase(String dbFile) {
         Path dbPath = Paths.get(dbFile);
@@ -32,6 +36,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         config.enableRecursiveTriggers(true);
         config.enforceForeignKeys(true);
         dataSource.setConfig(config);
+        connection = null;
+        millisInDb = 0;
     }
 
     public static MacrosDatabase getInstance() {
@@ -53,8 +59,32 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         }
     }
 
+    // returns persistent connection if there is one, othewise a new temporary one.
     private Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        if (connection != null) {
+            return connection;
+        } else {
+            return dataSource.getConnection();
+        }
+    }
+
+    // caller-managed connection, useful to reduce number of calls to DB
+    // caller needs to call closeConnection() after
+    @Override
+    public void openConnection() throws SQLException {
+        if (connection != null) {
+            connection = dataSource.getConnection();
+        }
+    }
+    @Override
+    public void closeConnection() throws SQLException {
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
+    }
+    public long getMillisInDb() {
+        return millisInDb;
     }
 
     public void initDb() throws SQLException, IOException {
@@ -81,6 +111,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     protected <M extends MacrosPersistable> List<Long> prefixSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
         List<Long> resultList = new ArrayList<>(0);
+        long startMillis = DataUtils.systemMillis();
         if (!cols.isEmpty()) {
             // TODO copy-pasted from SelectColumn... probably needs refactoring
             try (Connection c = getConnection();
@@ -96,15 +127,18 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 }
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return resultList;
     }
 
     @Override
     protected <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException {
-        Map<I, J> resultMap = new HashMap<>();
+        Map<I, J> resultMap = new HashMap<>(keys.size(), 1);
         // for batch queries
         //List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
         List<Column<M, ?>> selectColumns = Collections.singletonList(valueColumn);
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection();
              // should be distinct by default: assert keyColumn.isUnique();
              PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumns, keyColumn, 1, false))) {
@@ -122,6 +156,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 p.clearParameters();
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return resultMap;
     }
 
@@ -129,8 +165,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Override
     protected <M, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, List<J> whereValues, boolean distinct) throws SQLException {
+            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException {
         List<I> resultList = new ArrayList<>(0);
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
             StorageUtils.bindObjects(p, whereValues);
@@ -141,17 +178,20 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 }
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return resultList;
     }
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     @Override
-    @NotNull
-    protected <M, J> List<M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, List<J> keys) throws SQLException {
+    protected <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
-        List<M> objects = new ArrayList<>(keys.size());
+        assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
+        Map<J, M> objects = new HashMap<>(keys.size(), 1);
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
             StorageUtils.bindObjects(p, keys);
@@ -161,12 +201,16 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                     for (Column<M, ?> col : t.columns()) {
                         data.putFromRaw(col, rs.getObject(col.sqlName()));
                     }
+                    J key = data.get(keyCol);
+                    assert (key != null);
+                    assert (!objects.containsKey(key)) : "Key " + key + " already in returned objects map!";
                     M newObject = t.getFactory().construct(data, ObjectSource.DATABASE);
-                    assert (newObject != null);
-                    objects.add(newObject);
+                    objects.put(key, newObject);
                 }
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return objects;
     }
 
@@ -182,6 +226,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             columnsToInsert = new ArrayList<>(table.columns());
             columnsToInsert.remove(table.getIdColumn());
         } // else inserting for the first time, but it has an ID that we want to keep intact
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection()) {
             c.setAutoCommit(false);
             String statement = StorageUtils.insertTemplate(table, columnsToInsert);
@@ -195,6 +240,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             c.commit();
             c.setAutoCommit(true);
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return saved;
     }
 
@@ -207,6 +254,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
         int saved = 0;
         Table<M> table = objects.get(0).getTable();
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection()) {
             c.setAutoCommit(false);
             try (PreparedStatement p = c.prepareStatement(StorageUtils.updateTemplate(table, table.columns(), table.getIdColumn()))) {
@@ -219,32 +267,46 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             c.commit();
             c.setAutoCommit(true);
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         return saved;
     }
 
     public <M extends MacrosPersistable> int removeAll(Table<M> t) throws SQLException {
+        long startMillis = DataUtils.systemMillis();
+        int removed = 0;
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement(StorageUtils.deleteTemplate(t))) {
-            return p.executeUpdate();
+            removed = p.executeUpdate();
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
+        return removed;
     }
 
     @Override
     protected <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
         String idCol = table.getIdColumn().sqlName();
         String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name() + " WHERE " + idCol + " = " + id;
+        boolean exists = false;
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection()) {
             try (Statement s = c.createStatement()) {
                 ResultSet rs = s.executeQuery(query);
                 rs.next();
-                return rs.getInt("count") == 1;
+                exists = rs.getInt("count") == 1;
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
+        return exists;
     }
+
     @Override
     protected <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
         Column<M, Long> idCol = table.getIdColumn();
         Map<Long, Boolean> idMap = new HashMap<>(ids.size(), 1);
+        long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection()) {
             try (PreparedStatement p = c.prepareStatement(StorageUtils.selectTemplate(table, idCol, idCol, ids.size()))) {
                 StorageUtils.bindObjects(p, ids);
@@ -256,6 +318,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 rs.next();
             }
         }
+        long endMillis = DataUtils.systemMillis();
+        millisInDb += (endMillis - startMillis);
         // check for missing IDs
         for (Long id : ids) {
             if (!idMap.keySet().contains(id)) {

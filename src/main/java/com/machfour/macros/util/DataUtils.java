@@ -6,32 +6,12 @@ import com.machfour.macros.core.Schema;
 
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Created by max on 25/10/17.
  */
 
 public final class DataUtils {
-    public static final Map<Column<NutritionData, Double>, String> unitString;
-
-    static {
-        unitString = new HashMap<>(NutritionData.NUTRIENT_COLUMNS.size());
-        for (Column<NutritionData, Double> nutrient : NutritionData.NUTRIENT_COLUMNS) {
-            if (nutrient.equals(Schema.NutritionDataTable.SODIUM) ||
-                nutrient.equals(Schema.NutritionDataTable.CALCIUM) ||
-                nutrient.equals(Schema.NutritionDataTable.OMEGA_3_FAT) ||
-                nutrient.equals(Schema.NutritionDataTable.OMEGA_6_FAT)) {
-                unitString.put(nutrient, "mg");
-            } else if (nutrient.equals(Schema.NutritionDataTable.CALORIES)) {
-                unitString.put(nutrient, "cal");
-            } else if (nutrient.equals(Schema.NutritionDataTable.KILOJOULES)) {
-                unitString.put(nutrient, "kj");
-            } else {
-                unitString.put(nutrient, "g");
-            }
-        }
-    }
 
     private DataUtils() {
     }
@@ -52,4 +32,7 @@ public final class DataUtils {
         return String.format(Locale.getDefault(), formatString, in);
     }
 
+    public static long systemMillis() {
+        return System.nanoTime()/1000000;
+    }
 }

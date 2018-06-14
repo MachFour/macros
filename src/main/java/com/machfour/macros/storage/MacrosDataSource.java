@@ -6,7 +6,9 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.util.DateStamp;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface MacrosDataSource {
 
@@ -18,7 +20,7 @@ public interface MacrosDataSource {
 
     Food getFoodByIndexName(String indexName) throws SQLException;
 
-    List<Food> getFoodsById(List<Long> foodIds) throws SQLException;
+    Map<Long, Food> getFoodsById(List<Long> foodIds) throws SQLException;
 
     Meal getMealById(Long id) throws SQLException;
 
@@ -30,9 +32,9 @@ public interface MacrosDataSource {
      * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
      * It's probably worth caching the results of these!
      */
-    List<Meal> getMealsById(List<Long> mealIds) throws SQLException;
+    Map<Long, Meal> getMealsById(List<Long> mealIds) throws SQLException;
 
-    List<Meal> getMealsForDay(DateStamp day) throws SQLException;
+    Collection<Meal> getMealsForDay(DateStamp day) throws SQLException;
 
     <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
 

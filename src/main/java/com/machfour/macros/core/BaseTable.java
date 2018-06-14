@@ -40,7 +40,8 @@ public abstract class BaseTable<M> implements Table<M> {
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
-            if (c.isUnique()) {
+            // record secondary key
+            if (c.isUnique() && !c.equals(id)) {
                 assert naturalKeyColumn == null : "two natural keys defined";
                 naturalKeyColumn = c;
             }

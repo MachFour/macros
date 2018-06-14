@@ -48,31 +48,26 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     /*
      * For units
      */
-    private static final List<Column<NutritionData, Double>> COLS_IN_GRAMS = Arrays.asList(
-            PROTEIN
-            , CARBOHYDRATE
-            , CARBOHYDRATE_BY_DIFF
-            , SUGAR
-            , SUGAR_ALCOHOL
-            , STARCH
-            , FAT
-            , SATURATED_FAT
-            , MONOUNSATURATED_FAT
-            , POLYUNSATURATED_FAT
-            , FIBRE
-            , SALT
-            , WATER
-            , ALCOHOL
-    );
-    private static final List<Column<NutritionData, Double>> COLS_IN_MG = Arrays.asList(
-            OMEGA_3_FAT
-            , OMEGA_6_FAT
-            , SODIUM
-            , CALCIUM
-    );
     private static final List<Column<NutritionData, Double>> ENERGY_COLS = Arrays.asList(
             CALORIES, KILOJOULES
     );
+
+    private static final Map<Column<NutritionData, Double>, String> unitString;
+    static {
+        unitString = new HashMap<>(NUTRIENT_COLUMNS.size());
+        for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
+            if (col.equals(SODIUM) || col.equals(CALCIUM) || col.equals(OMEGA_3_FAT) || col.equals(OMEGA_6_FAT)) {
+                NutritionData.unitString.put(col, "mg");
+            } else if (col.equals(CALORIES)) {
+                NutritionData.unitString.put(col, "cal");
+            } else if (col.equals(KILOJOULES)) {
+                NutritionData.unitString.put(col, "kj");
+            } else {
+                NutritionData.unitString.put(col, "g");
+            }
+        }
+    }
+
     // keeps track of missing data for adding different instances of NutritionDataTable together
     // only NUTRIENT_COLUMNS are present in this map
     private final Map<Column<NutritionData, Double>, Boolean> completeData;
@@ -122,19 +117,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     @NotNull
     public static String getUnitForNutrient(Column<NutritionData, Double> col) {
         assert NUTRIENT_COLUMNS.contains(col);
-        // TODO make hashmap
-        if (col.equals(KILOJOULES)) {
-            return "kJ";
-        } else if (col.equals(CALORIES)) {
-            return "cal";
-        } else if (COLS_IN_GRAMS.contains(col)) {
-            return "g";
-        } else if (COLS_IN_MG.contains(col))
-            return "mg";
-        else {
-            assert false : "Unknown unit for nutrient: " + col.toString();
-            return "";
-        }
+        return unitString.get(col);
     }
 
     public static NutritionData sum(List<NutritionData> components) {

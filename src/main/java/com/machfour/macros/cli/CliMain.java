@@ -6,6 +6,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.storage.CsvStorage;
 import com.machfour.macros.linux.LinuxDatabase;
+import com.machfour.macros.util.DataUtils;
 import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 
@@ -124,7 +125,7 @@ public class CliMain {
             }
             MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
             String keyword = args[1];
-            List<Food> resultFoods = Collections.emptyList();
+            Map<Long, Food> resultFoods = Collections.emptyMap();
             try {
                 List<Long> resultIds = db.foodSearch(keyword);
                 if (!resultIds.isEmpty()) {
@@ -140,7 +141,7 @@ public class CliMain {
             } else {
                 // work out how wide the column should be
                 int maxNameLength = 0;
-                for (Food f : resultFoods) {
+                for (Food f : resultFoods.values()) {
                     int nameLength = f.getMediumName().length();
                     if (nameLength > maxNameLength) {
                         maxNameLength = nameLength;
@@ -153,7 +154,7 @@ public class CliMain {
                 OUT.println();
                 OUT.printf(formatStr, "Food name", "index name");
                 OUT.println(hline);
-                for (Food f : resultFoods) {
+                for (Food f : resultFoods.values()) {
                     OUT.printf(formatStr, f.getMediumName(), f.getIndexName());
                 }
             }
@@ -213,6 +214,8 @@ public class CliMain {
             MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
             FileParser fileParser = new FileParser(db);
             List<Meal> meals;
+            // record time parsing
+            long parseStart = DataUtils.systemMillis();
             try {
                 meals = fileParser.parseFile(filename);
             } catch (IOException e1) {
@@ -222,6 +225,7 @@ public class CliMain {
                 ERR.println("SQL exception occurred: " + e2.getMessage());
                 return;
             }
+            long parseEnd = DataUtils.systemMillis();
             MealPrinter mp = new MealPrinter(OUT);
             mp.printMeals(meals);
             Map<String, String> errors = fileParser.getErrorLines();
@@ -232,6 +236,9 @@ public class CliMain {
                     OUT.printf("'%s' - %s\n", line.getKey(), line.getValue());
                 }
             }
+            OUT.println("\n");
+            OUT.printf("Millis for file parse: %d\n", parseEnd - parseStart);
+            OUT.printf(" -- Millis in database: %d\n", ((LinuxDatabase) db).getMillisInDb());
         }
     }
     static class Help extends ModeImpl {
@@ -289,6 +296,12 @@ public class CliMain {
     }
 
     public static void main(String[] args) {
+        //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
+
+        // tell the SQLite JDBC driver where I've put the library that it otherwise auto-extracts each time
+        System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
+        System.setProperty("org.sqlite.lib.name", "libsqlitejdbc.so");
+
         Mode mode = args.length == 0 ? NO_ARGS : parseMode(args[0]);
         // mode args start from index 1
         mode.doAction(args);

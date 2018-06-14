@@ -84,7 +84,7 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public List<Food> getFoodsById(List<Long> foodIds) throws SQLException {
+    public Map<Long, Food> getFoodsById(List<Long> foodIds) throws SQLException {
         return upstream.getFoodsById(foodIds);
     }
 
@@ -94,34 +94,32 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public List<Meal> getMealsForDay(DateStamp day) throws SQLException {
+    public Collection<Meal> getMealsForDay(DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(day);
-        return getMealsById(mealIds);
+        return getMealsById(mealIds).values();
     }
 
     @Override
-    public List<Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
+    public Map<Long, Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
         List<Long> unCachedIds = new ArrayList<>(mealIds.size());
-        List<Meal> mealsToReturn = new ArrayList<>(mealIds.size());
+        Map<Long, Meal> mealsToReturn = new HashMap<>(mealIds.size(), 1);
         for (Long id : mealIds) {
             if (mealCache.containsKey(id)) {
-                mealsToReturn.add(mealCache.get(id));
+                mealsToReturn.put(id, mealCache.get(id));
             } else {
                 unCachedIds.add(id);
             }
         }
-        List<Meal> freshMeals = getUncachedMealsById(unCachedIds);
-        mealsToReturn.addAll(freshMeals);
+        Map<Long, Meal> freshMeals = getUncachedMealsById(unCachedIds);
+        mealsToReturn.putAll(freshMeals);
 
         return mealsToReturn;
     }
 
-    private List<Meal> getUncachedMealsById(@NotNull List<Long> mealIds) throws SQLException {
-        List<Meal> UncachedMeals = upstream.getMealsById(mealIds);
-        for (Meal meal : UncachedMeals) {
-            mealCache.put(meal.getId(), meal);
-        }
-        return UncachedMeals;
+    private Map<Long, Meal> getUncachedMealsById(@NotNull List<Long> mealIds) throws SQLException {
+        Map<Long, Meal> uncachedMeals = upstream.getMealsById(mealIds);
+        mealCache.putAll(uncachedMeals);
+        return uncachedMeals;
     }
 
     @Override

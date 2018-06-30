@@ -13,7 +13,6 @@ import java.util.*;
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 class MealPrinter {
-    private final PrintStream out;
     private static final String columnSep = " | ";
     private static final int nameWidth = 45;
     private static final int servingWidth = 6;
@@ -57,29 +56,13 @@ class MealPrinter {
                 , FIBRE
                 , SODIUM
         );
-
     }
 
-
-    MealPrinter(PrintStream out) {
-        this.out = out;
+    private static void printPer100g(NutritionData nd, boolean verbose, PrintStream out) {
+        printNutritionData(nd.rescale(100), verbose, out);
     }
 
-    private void println(String s) {
-        out.println(s);
-    }
-    private void printf(String s, Object ... args) {
-        out.printf(s, args);
-    }
-    private void println() {
-        out.println();
-    }
-
-    private void printPer100g(NutritionData nd, boolean verbose) {
-        printNutritionData(nd.rescale(100), verbose);
-    }
-
-    private void printNutritionData(NutritionData nd, boolean verbose) {
+    private static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
         String lineFormat = "%15s: %4.0f %s";
         for (Column<NutritionData, Double> col: allNutrientsToPrint) {
             Double value = nd.amountOf(col, 0.0);
@@ -88,15 +71,15 @@ class MealPrinter {
                 // mark incomplete
                 unit += " **";
             }
-            println(String.format(lineFormat, prettyNames.get(col), value, unit));
+            out.println(String.format(lineFormat, prettyNames.get(col), value, unit));
         }
     }
 
-    private void printEnergyProportions(NutritionData nd, boolean verbose) {
-        println("Energy proportions (approx.)");
+    private static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
+        out.println("Energy proportions (approx.)");
         Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
         for (Column<NutritionData, Double> col: proportionMap.keySet()) {
-            printf("%15s: %5.1f%%\n", prettyNames.get(col), proportionMap.get(col));
+            out.printf("%15s: %5.1f%%\n", prettyNames.get(col), proportionMap.get(col));
         }
     }
 
@@ -111,21 +94,21 @@ class MealPrinter {
     /*
      * Prints a row of a table (helper method for printMeal())
      */
-    private void printRow(List<String> row, List<Integer> widths, List<Boolean> rightAlign, String sep) {
+    private static void printRow(List<String> row, List<Integer> widths, List<Boolean> rightAlign, String sep, PrintStream out) {
         assert (row.size() == widths.size() && row.size() == rightAlign.size());
         for (int i = 0; i < row.size(); ++i) {
             String align = rightAlign.get(i) ? "" : "-";
             String width = String.valueOf(widths.get(i));
-            printf("%" + align + width + "s%s", row.get(i), sep);
+            out.printf("%" + align + width + "s%s", row.get(i), sep);
         }
-        println();
+        out.println();
     }
 
     private static String formatDouble(Double d, int width) {
         return d == null ? "" : String.format("%" + width + ".0f", d);
     }
 
-    private List<String> nutritionDataToRow(String name, NutritionData nd)  {
+    private static List<String> nutritionDataToRow(String name, NutritionData nd)  {
         List<String> row = new ArrayList<>(conciseTableCols.size() + 2);
         // add food name
         row.add(name);
@@ -142,7 +125,7 @@ class MealPrinter {
         return row;
     }
 
-    private void printMeal(@NotNull Meal meal) {
+    static void printMeal(@NotNull Meal meal, @NotNull PrintStream out) {
         /*
          * Columns: first the food name, then one for each nutrient, then quantity/serving
          */
@@ -171,8 +154,8 @@ class MealPrinter {
         int rowSepLength = sum(rowWidths) + rowWidths.size()*columnSep.length() - 1;
         String rowSeparator = new StringJoiner<>(Collections.nCopies(rowSepLength, "=")).join();
 
-        printRow(headingRow, rowWidths, rightAlign, columnSep);
-        println(rowSeparator);
+        printRow(headingRow, rowWidths, rightAlign, columnSep, out);
+        out.println(rowSeparator);
         // now we get to the actual data
         List<List<String>> dataRows = new ArrayList<>();
         for (FoodPortion fp : meal.getFoodPortions()) {
@@ -181,31 +164,31 @@ class MealPrinter {
             dataRows.add(nutritionDataToRow(name, nd));
         }
         for (List<String> row : dataRows) {
-            printRow(row, rowWidths, rightAlign, columnSep);
+            printRow(row, rowWidths, rightAlign, columnSep, out);
         }
         // now print total
-        println(rowSeparator);
+        out.println(rowSeparator);
         String totalName = String.format("Total for %s", meal.getName());
         NutritionData totalNd = meal.getNutritionTotal();
         List<String> totalRow = nutritionDataToRow(totalName, totalNd);
-        printRow(totalRow, rowWidths, rightAlign, columnSep);
+        printRow(totalRow, rowWidths, rightAlign, columnSep, out);
     }
 
-    public void printMeals(List<Meal> meals) {
+    static void printMeals(List<Meal> meals, PrintStream out) {
         boolean print100 = false;
         boolean verbose = false;
         boolean printGrandTotal = true;
-        println("============");
-        println("Meal totals:");
-        println("============");
-        println();
+        out.println("============");
+        out.println("Meal totals:");
+        out.println("============");
+        out.println();
         for (Meal m : meals) {
-            printMeal(m);
-            println();
+            printMeal(m, out);
+            out.println();
             if (print100) {
-                printPer100g(m.getNutritionTotal(), verbose);
-                println("============================");
-                println();
+                printPer100g(m.getNutritionTotal(), verbose, out);
+                out.println("============================");
+                out.println();
             }
         }
         if (printGrandTotal) {
@@ -214,12 +197,12 @@ class MealPrinter {
                 allNutData.add(m.getNutritionTotal());
             }
             NutritionData totalNutData = NutritionData.sum(allNutData);
-            println("====================");
-            println("Total for all meals:");
-            println("====================");
-            printNutritionData(totalNutData, verbose);
-            println();
-            printEnergyProportions(totalNutData, verbose);
+            out.println("====================");
+            out.println("Total for all meals:");
+            out.println("====================");
+            printNutritionData(totalNutData, verbose, out);
+            out.println();
+            printEnergyProportions(totalNutData, verbose, out);
         }
     }
 }

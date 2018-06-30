@@ -22,7 +22,8 @@ import static com.machfour.macros.storage.StorageUtils.toList;
 
 public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // singleton
-    private static LinuxDatabase INSTANCE;
+    private static LinuxDatabase instance;
+    private static String dbPath = null;
     private final SQLiteDataSource dataSource;
     // records how much time spent in database transactions
     private Connection connection;
@@ -40,15 +41,12 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         millisInDb = 0;
     }
 
-    public static MacrosDatabase getInstance() {
-        return getInstance(Config.DB_LOCATION);
-    }
-
-    public static LinuxDatabase getInstance(String dbFile) {
-        if (INSTANCE == null) {
-            INSTANCE = new LinuxDatabase(dbFile);
+    public static LinuxDatabase getInstance(@NotNull String dbFile) {
+        if (instance == null || !dbFile.equals(dbPath)) {
+            instance = new LinuxDatabase(dbFile);
+            dbPath = dbFile;
         }
-        return INSTANCE;
+        return instance;
     }
 
     private static void runStatements(Connection c, List<String> sqlStatements) throws SQLException {
@@ -215,6 +213,29 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
+    // returns a map of objects by ID
+    // TODO make protected
+    public <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
+        Map<Long, M> objects = new HashMap<>();
+        try (Connection c = getConnection();
+             Statement p = c.createStatement();) {
+            try (ResultSet rs = p.executeQuery("SELECT * FROM " + t.name())) {
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                    ColumnData<M> data = new ColumnData<>(t);
+                    for (Column<M, ?> col : t.columns()) {
+                        data.putFromRaw(col, rs.getObject(col.sqlName()));
+                    }
+                    Long id = data.get(t.getIdColumn());
+                    assert (!objects.containsKey(id)) : "ID " + id + " already in returned objects map!";
+                    M newObject = t.getFactory().construct(data, ObjectSource.DATABASE);
+                    objects.put(id, newObject);
+                }
+            }
+        }
+        return objects;
+    }
+
+    @Override
     protected <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
         if (objectData.isEmpty()) {
             return 0;
@@ -247,13 +268,13 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     // Note that if the id is not found in the database, nothing will be inserted
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(@NotNull List<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException {
         if (objects.isEmpty()) {
             return 0;
         }
 
         int saved = 0;
-        Table<M> table = objects.get(0).getTable();
+        Table<M> table = objects.iterator().next().getTable();
         long startMillis = DataUtils.systemMillis();
         try (Connection c = getConnection()) {
             c.setAutoCommit(false);

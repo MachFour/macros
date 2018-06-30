@@ -34,7 +34,8 @@ public interface MacrosDataSource {
      */
     Map<Long, Meal> getMealsById(List<Long> mealIds) throws SQLException;
 
-    Collection<Meal> getMealsForDay(DateStamp day) throws SQLException;
+    // key is the meal name, which is unique given a particular day
+    Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException;
 
     <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
 
@@ -47,8 +48,8 @@ public interface MacrosDataSource {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    <M extends MacrosPersistable<M>> int insertObjects(List<M> objects, boolean withId) throws SQLException;
-    <M extends MacrosPersistable<M>> int updateObjects(List<M> objects) throws SQLException;
+    <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException;
+    <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException;
 
     <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException;
 

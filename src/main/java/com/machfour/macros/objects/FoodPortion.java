@@ -17,7 +17,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     @Nullable
     private Serving serving;
 
-    public FoodPortion(ColumnData<FoodPortion> data, ObjectSource objectSource) {
+    private FoodPortion(ColumnData<FoodPortion> data, ObjectSource objectSource) {
         super(data, objectSource);
         serving = null;
         qtyUnit = null;

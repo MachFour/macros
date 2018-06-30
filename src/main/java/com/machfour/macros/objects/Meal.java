@@ -11,7 +11,7 @@ public class Meal extends MacrosEntity<Meal> {
 
     private final List<FoodPortion> foodPortions;
 
-    public Meal(ColumnData<Meal> data, ObjectSource objectSource) {
+    private Meal(ColumnData<Meal> data, ObjectSource objectSource) {
         super(data, objectSource);
         foodPortions = new ArrayList<>();
     }

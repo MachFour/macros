@@ -188,6 +188,8 @@ CREATE TABLE Meal (
     --    -- don't care, just keep old name
     --    ON DELETE NO ACTION
     --    ON UPDATE CASCADE
+    , CONSTRAINT single_meal_per_day
+        UNIQUE (day, name)
 );
 
 CREATE TABLE FoodPortion (

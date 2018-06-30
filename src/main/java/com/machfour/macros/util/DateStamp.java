@@ -88,8 +88,8 @@ public class DateStamp implements Comparable<DateStamp> {
         return (d != null) && (midnightToday().compareTo(d.midnightOnDay) < 0);
     }
 
-    public static DateStamp step(DateStamp d, int increment) {
-        Calendar then = midnightOnDate(d.year, d.month, d.day);
+    public DateStamp step(int increment) {
+        Calendar then = midnightOnDate(year, month, day);
         then.add(Calendar.DATE, increment);
         return new DateStamp(then);
     }

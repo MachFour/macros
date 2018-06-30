@@ -4,6 +4,7 @@ import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 
 // basic types corresponding roughly to database types
+// TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type
 public class Types {
     public static final Bool BOOLEAN = new Bool();
     public static final NullBool NULLBOOLEAN = new NullBool();

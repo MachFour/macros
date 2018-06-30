@@ -64,10 +64,14 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     // Returns null if no row in the corresponding table had a key with the given value
     protected abstract <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
+    // returns map of all objects in table, by ID
+    // TODO make protected
+    public abstract <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
+
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
     // Note that if the id is not found in the database, nothing will be inserted
-    public abstract <M extends MacrosPersistable<M>> int updateObjects(@NotNull List<M> objects) throws SQLException;
+    public abstract <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException;
 
@@ -99,6 +103,32 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             }
         }
         return deleted;
+    }
+
+    public void saveFoodPortions(@NotNull Meal m) throws SQLException {
+        for (FoodPortion fp : m.getFoodPortions()) {
+            if (!fp.getObjectSource().equals(ObjectSource.DATABASE)) {
+                saveObject(fp);
+            }
+        }
+    }
+
+    public Meal getOrCreateMeal(@NotNull DateStamp day, @NotNull String name) throws SQLException {
+        Map<String, Meal> mealsForDay = getMealsForDay(day);
+        if (mealsForDay.containsKey(name)) {
+            return mealsForDay.get(name);
+        } else {
+            ColumnData<Meal> newMealData = new ColumnData<>(Meal.table());
+            newMealData.put(Schema.MealTable.DAY, day);
+            newMealData.put(Schema.MealTable.NAME, name);
+            Meal newMeal = Meal.factory().construct(newMealData, ObjectSource.USER_NEW);
+            saveObject(newMeal);
+            // get it back again, so that it has an ID and stuff
+            mealsForDay = getMealsForDay(day);
+            assert (mealsForDay.containsKey(name)) : "didn't find saved meal in meals for its day";
+            return mealsForDay.get(name);
+        }
+
     }
 
     @NotNull
@@ -261,9 +291,16 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public Collection<Meal> getMealsForDay(DateStamp day) throws SQLException {
+    @Override
+    public Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(day);
-        return getMealsById(mealIds).values();
+        Map<Long, Meal> mealsById = getMealsById(mealIds);
+        Map<String, Meal> mealsByName = new HashMap<>();
+        for (Meal m : mealsById.values()) {
+            assert !mealsByName.containsKey(m.getName());
+            mealsByName.put(m.getName(), m);
+        }
+        return mealsByName;
     }
 
     public List<Long> getMealIdsForDay(@NotNull DateStamp day) throws SQLException {
@@ -284,7 +321,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return returned.getOrDefault(key, null);
     }
 
-    public <M extends MacrosPersistable<M>> int insertObjects(@NotNull List<M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException {
         List<ColumnData<M>> objectData = new ArrayList<>(objects.size());
         for (M object: objects)  {
             objectData.add(object.getAllData());
@@ -330,17 +367,18 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // only Storage classes should know about these two methods
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(List<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
         return completeForeignKeys(objects, toList(fk));
     }
 
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(List<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
-        List<M> partiallyCompletedObjects = objects;
+    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
+        List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
+        partiallyCompletedObjects.addAll(objects);
         List<M> completedObjects = new ArrayList<>(objects.size());
         if (objects.isEmpty()) {
             return completedObjects;
         }
-        Factory<M> factory = objects.get(0).getFactory();
+        Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
         // cycle through the FK columns.
         for (Column.Fk<M, ?, ?> fkCol: which) {
             partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
@@ -366,7 +404,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public <M extends MacrosPersistable<M>> int saveObjects(List<M> objects, ObjectSource objectSource) throws SQLException {
+    public <M extends MacrosPersistable<M>> int saveObjects(Collection<M> objects, ObjectSource objectSource) throws SQLException {
         switch (objectSource) {
             case IMPORT:
                 // TODO have overwrite mode; split import into new insert and updates

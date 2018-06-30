@@ -26,6 +26,18 @@ public final class ColumnData<M> {
         }
     }
 
+    @NotNull
+    public <J> String getAsNotNullString(Column<M, J> col) {
+        Object data = getAsRaw(col);
+        if (data == null) {
+            return "";
+        } else if (data instanceof String) {
+            return (String) data;
+        } else {
+            return data.toString();
+        }
+    }
+
     public <J> void putFromString(Column<M, J> col, @NotNull String data) {
         put(col, col.getType().fromString(data));
     }

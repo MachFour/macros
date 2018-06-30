@@ -236,7 +236,7 @@ public class Schema {
             ID = idColumn(columnIndex++);
             CREATE_TIME = createTimeColumn(columnIndex++);
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
-            DAY = builder("name", Types.DATESTAMP, columnIndex++).notNull().build();
+            DAY = builder("day", Types.DATESTAMP, columnIndex++).notNull().build();
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
             INSTANCE = new MealTable();
         }

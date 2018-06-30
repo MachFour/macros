@@ -24,8 +24,8 @@ public class MacrosDataCache implements MacrosDataSource {
     private final Map<Long, Food> foodCache;
     private boolean allFoodsNeedsRefresh;
 
-    private MacrosDataCache() {
-        upstream = LinuxDatabase.getInstance();
+    private MacrosDataCache(String dbPath) {
+        upstream = LinuxDatabase.getInstance(dbPath);
         mealCache = new HashMap<>(100);
         foodCache = new LinkedHashMap<>(100);
         allFoodsCache = new ArrayList<>(100);
@@ -33,9 +33,9 @@ public class MacrosDataCache implements MacrosDataSource {
 
     }
 
-    public static MacrosDataCache getInstance() {
+    public static MacrosDataCache getInstance(String dbPath) {
         if (INSTANCE == null) {
-            INSTANCE = new MacrosDataCache();
+            INSTANCE = new MacrosDataCache(dbPath);
         }
         return INSTANCE;
     }
@@ -94,9 +94,8 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public Collection<Meal> getMealsForDay(DateStamp day) throws SQLException {
-        List<Long> mealIds = getMealIdsForDay(day);
-        return getMealsById(mealIds).values();
+    public Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException {
+        return upstream.getMealsForDay(day);
     }
 
     @Override
@@ -135,14 +134,14 @@ public class MacrosDataCache implements MacrosDataSource {
 
 
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(List<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
         return upstream.updateObjects(objects);
     }
     @Override
-    public <M extends MacrosPersistable<M>> int insertObjects(List<M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }

@@ -5,6 +5,7 @@ import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.storage.MacrosDatabase;
 
+import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,11 +19,16 @@ class ListFood extends ModeImpl {
         return NAME;
     }
     @Override
+    public void printHelp(PrintStream out) {
+        OUT.printf("Usage: %s %s <index_name>\n", PROGNAME, NAME);
+    }
+    @Override
     public void doAction(List<String> args) {
-        assert !args.isEmpty();
-        if (args.size() == 1) {
-            OUT.printf("Usage: %s %s <index_name>\n", PROGNAME, args.get(0));
-            OUT.println("Please enter the index name of the food to list");
+        if (args.size() == 1 || args.contains("--help")) {
+            printHelp(OUT);
+            if (args.size() == 1) {
+                OUT.println("Please enter the index name of the food to list");
+            }
             return;
         }
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);

@@ -6,3 +6,4 @@ lib/
 sample.db
 .idea/workspace.xml
 *.sqlite
+test/

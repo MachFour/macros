@@ -6,6 +6,7 @@ import com.machfour.macros.storage.CsvStorage;
 import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,7 +19,17 @@ class Import extends ModeImpl {
         return NAME;
     }
     @Override
+    public void printHelp(PrintStream out) {
+        out.println("Imports CSV data (foods and servings) into the database.");
+        out.println("Only foods with index names not already in the database will be imported.");
+        out.println("However, it will try to import all servings, and so will fail if duplicate servings exist.");
+    }
+    @Override
     public void doAction(List<String> args) {
+        if (args.contains("--help")) {
+            printHelp(OUT);
+            return;
+        }
         String foodCsvFile = Config.FOOD_CSV_FILENAME;
         String servingCsvFile = Config.SERVING_CSV_FILENAME;
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);

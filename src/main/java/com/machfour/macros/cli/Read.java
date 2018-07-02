@@ -6,6 +6,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +23,13 @@ class Read extends ModeImpl {
         return NAME;
     }
     @Override
+    public void printHelp(PrintStream out) {
+        out.printf("Usage: %s %s <file>\n", PROGNAME, NAME);
+    }
+    @Override
     public void doAction(List<String> args) {
         if (args.size() < 2) {
-            OUT.println("Usage: " + PROGNAME + " --read <file>");
+            printHelp(OUT);
             OUT.println();
             OUT.println("Please specify a file to read");
             return;

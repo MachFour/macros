@@ -6,6 +6,7 @@ import com.machfour.macros.objects.Food;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.StringJoiner;
 
+import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -22,11 +23,16 @@ class SearchFood extends ModeImpl {
         return NAME;
     }
     @Override
+    public void printHelp(PrintStream out) {
+        OUT.printf("Usage: %s %s <keyword>\n", PROGNAME, NAME);
+    }
+    @Override
     public void doAction(List<String> args) {
-        assert !args.isEmpty();
-        if (args.size() == 1) {
-            OUT.printf("Usage: %s %s <keyword>\n", PROGNAME, args.get(0));
-            OUT.println("Please enter a search keyword for the food database");
+        if (args.size() == 1 || args.contains("--help")) {
+            printHelp(OUT);
+            if (args.size() == 1) {
+                OUT.println("Please enter a search keyword for the food database");
+            }
             return;
         }
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);

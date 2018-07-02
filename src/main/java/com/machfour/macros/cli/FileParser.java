@@ -26,10 +26,6 @@ final class FileParser {
 
     private final Map<String, String> errorLines;
 
-    private static class MealSpec {
-        private String name;
-    }
-
     FileParser() {
         // use LinkedHashMap to maintain insertion order
         errorLines = new LinkedHashMap<>();

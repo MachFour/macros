@@ -16,21 +16,23 @@ public class CliMain {
     private static final Mode HELP = new Help();
     private static final Mode SEARCH = new SearchFood();
     private static final Mode LISTFOOD = new ListFood();
+    private static final Mode TOTAL = new Total();
     private static final Mode PORTION = new Portion();
     private static final Mode NO_ARGS = new NoArgs();
     private static final Mode INVALID_MODE = new InvalidMode();
-    private static final Mode[] MODES = {
+    static final Mode[] MODES = {
             IMPORT
             , READ
             , INIT
             , PORTION
             , SEARCH
             , LISTFOOD
+            , TOTAL
             , HELP
             , INVALID_MODE
             , NO_ARGS
     };
-    private static final Map<String, Mode> MODES_BY_NAME;
+    static final Map<String, Mode> MODES_BY_NAME;
 
     static {
         MODES_BY_NAME = new HashMap<>();
@@ -40,17 +42,6 @@ public class CliMain {
         }
     }
 
-    static class Help extends ModeImpl {
-        private static final String NAME = "help";
-        @Override
-        public String name() {
-            return NAME;
-        }
-        @Override
-        public void doAction(List<String> args) {
-            OUT.println("Help!");
-        }
-    }
     static class InvalidMode extends ModeImpl {
         private static final String NAME = "_invalidMode";
         @Override

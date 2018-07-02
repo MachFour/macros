@@ -4,6 +4,7 @@ import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -16,7 +17,15 @@ class Init extends ModeImpl {
         return NAME;
     }
     @Override
+    public void printHelp(PrintStream out) {
+        out.println("Recreates and initialises the database. All previous data is deleted!");
+    }
+    @Override
     public void doAction(List<String> args) {
+        if (args.contains("--help")) {
+            printHelp(OUT);
+            return;
+        }
         LinuxDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
         try {
             db.deleteIfExists(Config.DB_LOCATION);

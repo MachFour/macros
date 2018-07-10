@@ -37,28 +37,18 @@ class Total extends ModeImpl {
     }
 
     static void process(MealSpec mealSpec, MacrosDatabase db, boolean verbose) {
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
-            return;
-        }
         /*
         if (!mealSpec.mealSpecified) {
             OUT.println("Assuming " + mealSpec.name + " on " + CliUtils.prettyDay(mealSpec.day));
             OUT.println();
         }
         */
-        try {
-            CliUtils.processMealSpec(mealSpec, db, false);
-        } catch (SQLException e) {
-            OUT.println("Error retrieving meal: " + e.getMessage());
-            return;
-        }
+        CliUtils.processMealSpec(mealSpec, db, false);
         if (mealSpec.error != null) {
             OUT.println(mealSpec.error);
             return;
         }
-        assert (mealSpec.createdObject != null) : "No error message but no created object";
-        OUT.println("Meal total:");
+        OUT.println();
         MealPrinter.printMeal(mealSpec.createdObject, OUT);
     }
 

@@ -17,7 +17,9 @@ class Help extends ModeImpl {
         out.println("Max's nutrition calculator");
         out.println("Available modes:");
         for (Mode m : CliMain.MODES) {
-            out.println(m.name());
+            if (m.isUserMode()) {
+                out.println(m.name());
+            }
         }
         out.println();
         out.printf("For help using a particular mode, run %s %s <mode> or %s <mode> --help\n", PROGNAME, NAME, PROGNAME);
@@ -26,8 +28,8 @@ class Help extends ModeImpl {
     @Override
     public void doAction(List<String> args) {
         // help on a particular action
-        if (args.size() > 1 && CliMain.MODES_BY_NAME.containsKey(args.get(0))) {
-            Mode forHelp = CliMain.MODES_BY_NAME.get(args.get(0));
+        if (args.size() >= 2 && CliMain.MODES_BY_NAME.containsKey(args.get(1))) {
+            Mode forHelp = CliMain.MODES_BY_NAME.get(args.get(1));
             forHelp.printHelp(OUT);
         } else {
             printHelp(OUT);

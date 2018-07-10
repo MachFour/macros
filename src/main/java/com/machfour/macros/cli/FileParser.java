@@ -146,7 +146,7 @@ final class FileParser {
         fpData.put(Schema.FoodPortionTable.FOOD_ID, f.getId());
         fpData.put(Schema.FoodPortionTable.SERVING_ID, s == null ? null : s.getId());
         fpData.put(Schema.FoodPortionTable.MEAL_ID, m.getId());
-        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.getAbbreviation());
+        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.getAbbr());
         fpData.put(Schema.FoodPortionTable.QUANTITY, quantity);
         FoodPortion fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW);
         fp.setFood(f);

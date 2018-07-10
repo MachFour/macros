@@ -35,32 +35,20 @@ class Portion extends ModeImpl {
         String foodPortionArg = args.get(args.size() - 1);
         FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(foodPortionArg);
 
-        process(mealSpec, spec, db);
+        if (!mealSpec.mealSpecified) {
+            OUT.printf("No meal specified, assuming %s on %s\n", mealSpec.name, CliUtils.prettyDay(mealSpec.day));
+        }
+        CliUtils.processMealSpec(mealSpec, db, true);
+        if (mealSpec.error != null) {
+            OUT.println(mealSpec.error);
+            return;
+        }
+
+        process(mealSpec.createdObject, spec, db);
 
     }
 
-    private static void process(MealSpec mealSpec, FoodPortionSpec spec, MacrosDatabase db) {
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
-            return;
-        }
-        if (!mealSpec.mealSpecified) {
-            OUT.println("No meal specified, assuming " + mealSpec.createdObject.getName() + " on " + CliUtils.prettyDay(mealSpec.day));
-        }
-        try {
-            CliUtils.processMealSpec(mealSpec, db, true);
-        } catch (SQLException e) {
-            OUT.println("Error retrieving meal: " + e.getMessage());
-            return;
-        }
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
-            return;
-        }
-
-        assert (mealSpec.createdObject != null) : "No error message but no created object";
-        Meal toAddTo = mealSpec.createdObject;
-
+    static void process(Meal toAddTo, FoodPortionSpec spec, MacrosDatabase db) {
         // now read the food portion
         // assume it's last arg
         Food f;
@@ -89,9 +77,7 @@ class Portion extends ModeImpl {
             return;
         }
         OUT.println();
-        OUT.println("Meal total:");
         MealPrinter.printMeal(toAddTo, OUT);
 
     }
-
 }

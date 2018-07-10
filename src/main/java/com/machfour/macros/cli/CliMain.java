@@ -2,6 +2,8 @@ package com.machfour.macros.cli;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -9,9 +11,11 @@ public class CliMain {
     static final String PROGNAME = "macros";
     static final PrintStream OUT = System.out;
     static final PrintStream ERR = System.err;
+    static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
 
     private static final Mode IMPORT = new Import();
     private static final Mode INIT = new Init();
+    private static final Mode EDIT = new Edit();
     private static final Mode READ = new Read();
     private static final Mode HELP = new Help();
     private static final Mode SEARCH = new SearchFood();
@@ -21,12 +25,13 @@ public class CliMain {
     private static final Mode NO_ARGS = new NoArgs();
     private static final Mode INVALID_MODE = new InvalidMode();
     static final Mode[] MODES = {
-            IMPORT
-            , READ
+              EDIT
+            , IMPORT
             , INIT
-            , PORTION
-            , SEARCH
             , LISTFOOD
+            , PORTION
+            , READ
+            , SEARCH
             , TOTAL
             , HELP
             , INVALID_MODE

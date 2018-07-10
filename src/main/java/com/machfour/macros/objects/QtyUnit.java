@@ -44,7 +44,7 @@ public class QtyUnit extends MacrosEntity<QtyUnit> {
     public static QtyUnit fromAbbreviation(String abbreviation, boolean allowNull) {
         QtyUnit found = null;
         for (QtyUnit q : INBUILT) {
-            if (q.getAbbreviation().equals(abbreviation)) {
+            if (q.getAbbr().equals(abbreviation)) {
                 found = q;
                 break;
             }
@@ -82,7 +82,7 @@ public class QtyUnit extends MacrosEntity<QtyUnit> {
     }
 
     @NotNull
-    public String getAbbreviation() {
+    public String getAbbr() {
         return getData(Schema.QtyUnitTable.ABBREVIATION);
     }
 

@@ -18,69 +18,14 @@ class MealPrinter {
     private static final int servingWidth = 6;
     private static final int dataWidth = 4;
     private static final List<Column<NutritionData, Double>> conciseTableCols;
-    private static final List<Column<NutritionData, Double>> allNutrientsToPrint;
-    private static final Map<Column<NutritionData, Double>, String> briefNames;
-    private static final Map<Column<NutritionData, Double>, String> prettyNames;
+
     static {
-        briefNames = new HashMap<>();
-        briefNames.put(CALORIES, "Cals");
-        briefNames.put(PROTEIN, "Prot");
-        briefNames.put(FAT, "Fat");
-        briefNames.put(CARBOHYDRATE, "Carb");
-        briefNames.put(QUANTITY, "Qty");
-        prettyNames = new HashMap<>();
-        prettyNames.put(KILOJOULES, "Kilojoules");
-        prettyNames.put(CALORIES, "Calories");
-        prettyNames.put(PROTEIN, "Protein");
-        prettyNames.put(FAT, "Fat");
-        prettyNames.put(SATURATED_FAT, "Saturated");
-        prettyNames.put(CARBOHYDRATE, "Carbohydrate");
-        prettyNames.put(SUGAR, "Sugar");
-        prettyNames.put(FIBRE, "Fibre");
-        prettyNames.put(SODIUM, "Sodium");
-        prettyNames.put(QUANTITY, "Quantity");
         conciseTableCols = Arrays.asList(
-                  CALORIES
+                CALORIES
                 , PROTEIN
                 , FAT
                 , CARBOHYDRATE
         );
-        allNutrientsToPrint = Arrays.asList(
-                  KILOJOULES
-                , CALORIES
-                , PROTEIN
-                , FAT
-                , SATURATED_FAT
-                , CARBOHYDRATE
-                , SUGAR
-                , FIBRE
-                , SODIUM
-        );
-    }
-
-    private static void printPer100g(NutritionData nd, boolean verbose, PrintStream out) {
-        printNutritionData(nd.rescale(100), verbose, out);
-    }
-
-    private static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
-        String lineFormat = "%15s: %4.0f %s";
-        for (Column<NutritionData, Double> col: allNutrientsToPrint) {
-            Double value = nd.amountOf(col, 0.0);
-            String unit = NutritionData.getUnitForNutrient(col);
-            if (!nd.hasCompleteData(col)) {
-                // mark incomplete
-                unit += " **";
-            }
-            out.println(String.format(lineFormat, prettyNames.get(col), value, unit));
-        }
-    }
-
-    private static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
-        out.println("Energy proportions (approx.)");
-        Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
-        for (Column<NutritionData, Double> col: proportionMap.keySet()) {
-            out.printf("%15s: %5.1f%%\n", prettyNames.get(col), proportionMap.get(col));
-        }
     }
 
     private static int sum(List<Integer> sums) {
@@ -140,12 +85,12 @@ class MealPrinter {
         rightAlign.add(false);
         // next columns have names for each nutrient (heading) then corresponding data
         for (Column<NutritionData, Double> col : conciseTableCols) {
-            headingRow.add(briefNames.get(col));
+            headingRow.add(CliUtils.briefNames.get(col));
             rowWidths.add(dataWidth);
             rightAlign.add(true);
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(briefNames.get(QUANTITY));
+        headingRow.add(CliUtils.briefNames.get(QUANTITY));
         rowWidths.add(servingWidth);
         rightAlign.add(true);
 
@@ -186,7 +131,7 @@ class MealPrinter {
             printMeal(m, out);
             out.println();
             if (print100) {
-                printPer100g(m.getNutritionTotal(), verbose, out);
+                CliUtils.printPer100g(m.getNutritionTotal(), verbose, out);
                 out.println("============================");
                 out.println();
             }
@@ -200,9 +145,9 @@ class MealPrinter {
             out.println("====================");
             out.println("Total for all meals:");
             out.println("====================");
-            printNutritionData(totalNutData, verbose, out);
+            CliUtils.printNutritionData(totalNutData, verbose, out);
             out.println();
-            printEnergyProportions(totalNutData, verbose, out);
+            CliUtils.printEnergyProportions(totalNutData, verbose, out);
         }
     }
 }

@@ -1,19 +1,57 @@
 package com.machfour.macros.cli;
 
 
+import com.machfour.macros.core.Column;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.PrintStream;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 public class CliUtils {
+    static final List<Column<NutritionData, Double>> allNutrientsToPrint;
+    static final Map<Column<NutritionData, Double>, String> briefNames;
+    static final Map<Column<NutritionData, Double>, String> prettyNames;
+
+
+    static {
+        briefNames = new HashMap<>();
+        briefNames.put(CALORIES, "Cals");
+        briefNames.put(PROTEIN, "Prot");
+        briefNames.put(FAT, "Fat");
+        briefNames.put(CARBOHYDRATE, "Carb");
+        briefNames.put(QUANTITY, "Qty");
+        prettyNames = new HashMap<>();
+        prettyNames.put(KILOJOULES, "Kilojoules");
+        prettyNames.put(CALORIES, "Calories");
+        prettyNames.put(PROTEIN, "Protein");
+        prettyNames.put(FAT, "Fat");
+        prettyNames.put(SATURATED_FAT, "Saturated");
+        prettyNames.put(CARBOHYDRATE, "Carbohydrate");
+        prettyNames.put(SUGAR, "Sugar");
+        prettyNames.put(FIBRE, "Fibre");
+        prettyNames.put(SODIUM, "Sodium");
+        prettyNames.put(QUANTITY, "Quantity");
+        allNutrientsToPrint = Arrays.asList(
+                KILOJOULES
+                , CALORIES
+                , PROTEIN
+                , FAT
+                , SATURATED_FAT
+                , CARBOHYDRATE
+                , SUGAR
+                , FIBRE
+                , SODIUM
+        );
+    }
+
     private CliUtils () {}
 
     // extracts a meal specification from the argument list using the following rules:
@@ -61,28 +99,46 @@ public class CliUtils {
         return spec;
     }
 
-    static void processMealSpec(@NotNull MealSpec spec, MacrosDatabase db, boolean create) throws SQLException {
+    static void processMealSpec(@NotNull MealSpec spec, MacrosDatabase db, boolean create) {
+        if (spec.error != null) {
+            // skip processing if there are already errors
+            return;
+        }
         // cases:
         // no meal specified -> use current meal (exists)
         // no meal specified -> no meal exists
         // meal specified that exists -> use it
         // meal specified that does not exist -> create it
-        Map<String, Meal> mealsForDay = db.getMealsForDay(spec.day);
+        Map<String, Meal> mealsForDay;
+        try {
+            mealsForDay = db.getMealsForDay(spec.day);
+        } catch (SQLException e) {
+            spec.error = String.format("Error retrieving meals for day %s: %s", spec.day.toString(), e.getMessage());
+            return;
+        }
         if (!spec.mealSpecified) {
             if (!mealsForDay.isEmpty()) {
                 // use most recently modified meal today
                 spec.createdObject = Collections.max(mealsForDay.values(), Comparator.comparingLong(Meal::getModifyTime));
             } else {
                 spec.error = "No meals recorded on " + prettyDay(spec.day);
-                // return;
             }
         } else if (mealsForDay.containsKey(spec.name)) {
             spec.createdObject = mealsForDay.get(spec.name);
         } else if (create) {
-            spec.createdObject = db.getOrCreateMeal(spec.day, spec.name);
+            try {
+                spec.createdObject = db.getOrCreateMeal(spec.day, spec.name);
+            } catch (SQLException e) {
+                spec.error = "Error retrieving meal: " + e.getMessage();
+                return;
+            }
         } else {
             // meal doesn't exist and not allowed to create new meal
             spec.error = String.format("No meal with name '%s' found on %s", spec.name, prettyDay(spec.day));
+        }
+        assert (spec.error != null || spec.createdObject != null) : "No error message but no created object";
+        if (spec.error != null) {
+            return;
         }
         // if adding code here, uncomment the return statement above
     }
@@ -110,5 +166,30 @@ public class CliUtils {
             prettyStr.append(" (yesterday)");
         }
         return prettyStr.toString();
+    }
+
+    static void printPer100g(NutritionData nd, boolean verbose, PrintStream out) {
+        printNutritionData(nd.rescale(100), verbose, out);
+    }
+
+    static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
+        String lineFormat = "%15s: %4.0f %s";
+        for (Column<NutritionData, Double> col: allNutrientsToPrint) {
+            Double value = nd.amountOf(col, 0.0);
+            String unit = NutritionData.getUnitForNutrient(col);
+            if (!nd.hasCompleteData(col)) {
+                // mark incomplete
+                unit += " **";
+            }
+            out.println(String.format(lineFormat, prettyNames.get(col), value, unit));
+        }
+    }
+
+    static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
+        out.println("Energy proportions (approx.)");
+        Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
+        for (Column<NutritionData, Double> col: proportionMap.keySet()) {
+            out.printf("%15s: %5.1f%%\n", prettyNames.get(col), proportionMap.get(col));
+        }
     }
 }

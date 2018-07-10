@@ -152,7 +152,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             combinedDataMap.put(col, sumData.get(col));
         }
         combinedDataMap.put(QUANTITY, sumQuantity);
-        combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.getAbbreviation());
+        combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.getAbbr());
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
         return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
@@ -268,7 +268,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData = copyDataForNew();
         newData.put(QUANTITY, newQuantity);
-        newData.put(QUANTITY_UNIT, targetUnit.getAbbreviation());
+        newData.put(QUANTITY_UNIT, targetUnit.getAbbr());
         // all other data remains the same
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(completeData);
         if (isDensityGuessed) {

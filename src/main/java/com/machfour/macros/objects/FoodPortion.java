@@ -26,6 +26,24 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         nutritionData = null;
     }
 
+    public String prettyFormat(boolean withNotes) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(food == null ? "<no food>" : food.getMediumName());
+        sb.append(", ");
+        sb.append(String.format("%.1f", getData(Schema.FoodPortionTable.QUANTITY)));
+        sb.append(getQuantityUnitAbbr());
+        if (serving != null) {
+            sb.append(" (").append(servingCountString()).append(" ").append(serving.getName()).append(")");
+        }
+        if (withNotes) {
+            String notes = getNotes();
+            if (getNotes() != null && !notes.isEmpty()) {
+                sb.append(" [").append(notes).append("]");
+            }
+        }
+        return sb.toString();
+    }
+
     @Override
     public Table<FoodPortion> getTable() {
         return table();
@@ -126,7 +144,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
 
     // returns a string containing the serving count. If the serving count is close to an integer,
     // it is formatted as an integer.
-    public String servingCountString() {
+    private String servingCountString() {
         // test if can round
         if (Math.round(servingCount()) - servingCount() < 0.001) {
             return String.valueOf(Math.round(servingCount()));
@@ -135,7 +153,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         }
     }
 
-    public double servingCount() {
+    private double servingCount() {
         return (serving != null) ? getQuantity() / serving.getQuantity() : 0;
     }
 }

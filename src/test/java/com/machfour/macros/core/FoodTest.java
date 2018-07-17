@@ -154,7 +154,7 @@ class FoodTest {
 
     private void clearFoodTable() {
         try {
-            db.removeAll(Schema.FoodTable.instance());
+            db.clearTable(Schema.FoodTable.instance());
         } catch (SQLException e) {
             e.printStackTrace();
             fail("Deleting all foods threw SQL exception");

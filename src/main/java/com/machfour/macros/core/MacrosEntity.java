@@ -33,7 +33,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     // NOTE data passed in is made Immutable as a side effect
     protected MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
-        Map<Column<M, ?>, ValidationError> errors = checkMappings(data);
+        Map<Column<M, ?>, ValidationError> errors = data.getTable().validate(data);
         if (!errors.isEmpty()) {
             throw new SchemaViolation(errors);
         }
@@ -64,27 +64,6 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         }
 
     }
-    /*
-       Checks that:
-       * Non null constraints as defined by the columns are upheld
-       If any violations are found, the affected column as well as an enum value describing the violation are recorded
-       in a map, which is returned at the end, after all columns have been processed.
-       Returns a list of columns whose non-null constraints have been violated, or an empty list otherwise
-       Note that if the assertion passes, then dataMap has the correct columns as keys
-     */
-    private Map<Column<M, ?>, ValidationError> checkMappings(ColumnData<M> dataMap) {
-        List<Column<M, ?>> required = getTable().columns();
-        Map<Column<M, ?>, ValidationError> badMappings = new HashMap<>(required.size());
-        for (Column<M, ?> col : required) {
-            if (dataMap.get(col) == null && !col.isNullable()) {
-                badMappings.put(col, ValidationError.NON_NULL);
-            }
-        }
-        return badMappings;
-    }
-
-
-
     // this also works for import (without IDs) because both columns are NO_ID
     protected static <M extends MacrosPersistable<M>, J, N extends MacrosPersistable<N>> boolean foreignKeyMatches(
             MacrosEntity<M> childObj, Column.Fk<M, J, N> childCol, MacrosEntity<N> parentObj) {
@@ -155,7 +134,15 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // returns immutable copy of data map
     @Override
     public ColumnData<M> getAllData() {
-        return dataMap;
+        return getAllData(true);
+    }
+    @Override
+    public ColumnData<M> getAllData(boolean readOnly) {
+        if (readOnly) {
+            return dataMap;
+        } else {
+            return dataMap.copy();
+        }
     }
 
     @Override

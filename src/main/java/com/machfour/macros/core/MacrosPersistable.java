@@ -40,6 +40,8 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     boolean hasData(Column<M, ?> c);
 
     // Creates a mapping of column objects to their values for this instance
+    ColumnData<M> getAllData(boolean readOnly);
+    // equivalent to getAllData(true)
     ColumnData<M> getAllData();
 
     Table<M> getTable();

@@ -1,15 +1,14 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
@@ -51,14 +50,16 @@ class Edit extends ModeImpl {
             return;
         }
         assert (toEdit.getObjectSource() == ObjectSource.DATABASE) : "Not editing an object from the database";
-        OUT.printf("Editing meal: %s on %s\n", toEdit.getName(), CliUtils.prettyDay(toEdit.getDay()));
-        OUT.println();
-        OUT.println("Please choose from one of the following options");
-        printInteractiveHelp(OUT);
-        OUT.println();
 
         while (true) {
             // TODO reload meal
+            OUT.println();
+            OUT.println();
+            OUT.printf("Editing meal: %s on %s\n", toEdit.getName(), CliUtils.prettyDay(toEdit.getDay()));
+            OUT.println();
+            OUT.println("Please choose from one of the following options");
+            printInteractiveHelp(OUT);
+            OUT.println();
             OUT.print("Type the letter of the action to perform and press enter: ");
             char action = getChar();
             OUT.println();
@@ -68,10 +69,15 @@ class Edit extends ModeImpl {
                     break;
                 case 'd':
                     deleteFoodPortion(toEdit, db);
+                    OUT.println("WARNING: meal is not reloaded");
                     break;
                 case 'D':
                     deleteMeal(toEdit, db);
                     // TODO exit if deleted
+                    break;
+                case 'e':
+                    editFoodPortion(toEdit, db);
+                    OUT.println("WARNING: meal is not reloaded");
                     break;
                 case 'm':
                     OUT.println("Meal");
@@ -79,6 +85,7 @@ class Edit extends ModeImpl {
                     break;
                 case 'n':
                     renameMeal();
+                    OUT.println("WARNING: meal is not reloaded");
                     break;
                 case 's':
                     showFoodPortions(toEdit);
@@ -98,7 +105,7 @@ class Edit extends ModeImpl {
     }
 
     private static char getChar() {
-        String input = getStringInput();
+        String input = CliUtils.getStringInput(IN, OUT);
         if (input == null || input.isEmpty()) {
             return '\0';
         } else {
@@ -116,6 +123,7 @@ class Edit extends ModeImpl {
         out.println("a - add a new food portion");
         out.println("d - delete a food portion");
         out.println("D - delete the entire meal");
+        out.println("e - edit a food portion");
         out.println("m - move a food portion to another meal");
         out.println("n - change the name of the meal");
         out.println("s - show current food portions");
@@ -126,7 +134,7 @@ class Edit extends ModeImpl {
     private static void addPortion(Meal toEdit, MacrosDatabase db) {
         OUT.println("Please enter the portion information (see help for how to specify a food portion)");
         // copy from portion
-        String inputString = getStringInput();
+        String inputString = CliUtils.getStringInput(IN, OUT);
         if (inputString != null && !inputString.isEmpty()) {
             FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(inputString);
             Portion.process(toEdit, spec, db);
@@ -143,6 +151,7 @@ class Edit extends ModeImpl {
         OUT.println();
     }
     private static void deleteMeal(Meal toDelete, MacrosDatabase db) {
+        OUT.print("Delete meal");
         OUT.print("Are you sure? [y/N] ");
         if (getChar() == 'y' | getChar() == 'Y') {
             try {
@@ -153,24 +162,17 @@ class Edit extends ModeImpl {
         }
     }
     private static void deleteFoodPortion(Meal toEdit, MacrosDatabase db) {
+        OUT.println("Delete food portion");
         showFoodPortions(toEdit);
         OUT.print("Enter the number of the food portion to delete and press enter: ");
-        String input = getStringInput();
-        if (input == null) {
+        List<FoodPortion> portions = toEdit.getFoodPortions();
+        Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
+        if (n == null) {
+            OUT.println("Invalid number");
             return;
         }
         try {
-            int portionNumber = Integer.parseInt(input);
-            List<FoodPortion> portions = toEdit.getFoodPortions();
-            if (portionNumber >= 0 && portionNumber < portions.size()) {
-                // delete it
-                db.deleteObject(portions.get(portionNumber));
-            } else {
-                OUT.println("No food portion with number: " + portionNumber);
-            }
-        } catch (NumberFormatException e2) {
-            OUT.printf("Could not read number: '%s'\n", input);
-            return;
+            db.deleteObject(portions.get(n));
         } catch (SQLException e3) {
             OUT.println("Error deleting the food portion: " + e3.getMessage());
             return;
@@ -178,28 +180,43 @@ class Edit extends ModeImpl {
         OUT.println("Deleted the food portion");
         OUT.println();
     }
+    private static void editFoodPortion(Meal m, MacrosDatabase db) {
+        OUT.println("Edit food portion");
+        showFoodPortions(m);
+        OUT.print("Enter the number of the food portion to edit and press enter: ");
+        List<FoodPortion> portions = m.getFoodPortions();
+        Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
+        if (n == null) {
+            OUT.println("Invalid number");
+            return;
+        }
+        OUT.print("Enter a new quantity (in the same unit) and press enter: ");
+        Double newQty = CliUtils.getDoubleInput(IN, OUT);
+        if (newQty == null) {
+            OUT.println("Invalid quantity");
+            return;
+        }
+
+        try {
+            ColumnData<FoodPortion> newData = portions.get(n).getAllData(false);
+            newData.put(Schema.FoodPortionTable.QUANTITY, newQty);
+            db.saveObject(FoodPortion.factory().construct(newData, ObjectSource.DB_EDIT));
+        } catch (SQLException e3) {
+            OUT.println("Error modifying the food portion: " + e3.getMessage());
+            return;
+        }
+        OUT.println("Successfully saved the food portion");
+        OUT.println();
+    }
 
     private static void renameMeal() {
+        OUT.println("Rename meal");
         OUT.print("Type a new name and press enter: ");
-        String newName = getStringInput();
+        String newName = CliUtils.getStringInput(IN, OUT);
         if (newName == null) {
             return;
         }
         OUT.println("The new name is: " + newName);
-    }
-
-    private static @Nullable String getStringInput() {
-        try {
-            String input = IN.readLine();
-            if (input != null) {
-                return input.trim();
-            } else {
-                return null;
-            }
-        } catch (IOException e) {
-            OUT.println("Error reading input: " + e.getMessage());
-            return null;
-        }
     }
 
     @Override

@@ -28,7 +28,7 @@ class MealPrinter {
         );
     }
 
-    private static int sum(List<Integer> sums) {
+    private static int sum(Collection<Integer> sums) {
         int sum = 0;
         for (Integer i : sums) {
             sum += i;
@@ -119,7 +119,7 @@ class MealPrinter {
         printRow(totalRow, rowWidths, rightAlign, columnSep, out);
     }
 
-    static void printMeals(List<Meal> meals, PrintStream out) {
+    static void printMeals(Collection<Meal> meals, PrintStream out) {
         boolean print100 = false;
         boolean verbose = false;
         boolean printGrandTotal = true;

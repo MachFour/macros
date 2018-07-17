@@ -1,5 +1,7 @@
 package com.machfour.macros.core;
 
+import com.machfour.macros.validation.ValidationError;
+
 import java.util.*;
 
 public abstract class BaseTable<M> implements Table<M> {
@@ -62,6 +64,7 @@ public abstract class BaseTable<M> implements Table<M> {
             fkCols.add(fk);
         }
     }
+
 
     @Override
     public Factory<M> getFactory() {

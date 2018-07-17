@@ -91,6 +91,10 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         qtyUnit = QtyUnit.fromAbbreviation(dataMap.get(QUANTITY_UNIT));
     }
 
+    public static Table<NutritionData> table() {
+        return Schema.NutritionDataTable.instance();
+    }
+
     public static Factory<NutritionData> factory() {
         return NutritionData::new;
     }

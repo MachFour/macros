@@ -1,7 +1,6 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
@@ -24,8 +23,8 @@ public class MacrosDataCache implements MacrosDataSource {
     private final Map<Long, Food> foodCache;
     private boolean allFoodsNeedsRefresh;
 
-    private MacrosDataCache(String dbPath) {
-        upstream = LinuxDatabase.getInstance(dbPath);
+    private MacrosDataCache(MacrosDataSource upstream) {
+        this.upstream = upstream;
         mealCache = new HashMap<>(100);
         foodCache = new LinkedHashMap<>(100);
         allFoodsCache = new ArrayList<>(100);
@@ -33,9 +32,13 @@ public class MacrosDataCache implements MacrosDataSource {
 
     }
 
-    public static MacrosDataCache getInstance(String dbPath) {
+    public static void setUpstream(MacrosDataSource upstream) {
+        INSTANCE = new MacrosDataCache(upstream);
+    }
+
+    public static MacrosDataCache getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new MacrosDataCache(dbPath);
+            throw new IllegalStateException("Not initialised with upstream data source");
         }
         return INSTANCE;
     }

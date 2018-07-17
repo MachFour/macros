@@ -9,6 +9,7 @@ import com.machfour.macros.storage.MacrosDatabase;
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
@@ -37,19 +38,25 @@ class Total extends ModeImpl {
     }
 
     static void process(MealSpec mealSpec, MacrosDatabase db, boolean verbose) {
-        /*
-        if (!mealSpec.mealSpecified) {
-            OUT.println("Assuming " + mealSpec.name + " on " + CliUtils.prettyDay(mealSpec.day));
+        if (mealSpec.mealSpecified) {
+            // total for specific meal
+            CliUtils.processMealSpec(mealSpec, db, false);
+            if (mealSpec.error != null) {
+                OUT.println(mealSpec.error);
+                return;
+            }
             OUT.println();
+            MealPrinter.printMeal(mealSpec.createdObject, OUT);
+
+        } else {
+            try {
+                Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day);
+                MealPrinter.printMeals(mealsForDay.values(), OUT);
+            } catch (SQLException e) {
+                OUT.println("Error retrieving meals: " + e.getMessage());
+                OUT.println();
+            }
         }
-        */
-        CliUtils.processMealSpec(mealSpec, db, false);
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
-            return;
-        }
-        OUT.println();
-        MealPrinter.printMeal(mealSpec.createdObject, OUT);
     }
 
 }

@@ -77,6 +77,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     protected abstract <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException;
 
+    public abstract <M extends MacrosPersistable> int clearTable(Table<M> t) throws SQLException;
+
     public boolean deleteIfExists(String dbFile) throws IOException {
         Path dbPath = Paths.get(dbFile);
         if (Files.exists(dbPath)) {
@@ -295,7 +297,11 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     public Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(day);
         Map<Long, Meal> mealsById = getMealsById(mealIds);
-        Map<String, Meal> mealsByName = new HashMap<>();
+        // sort by create time and put in tree map to preserve order
+        List<Meal> mealsByCreateTime = new ArrayList<>(mealsById.values());
+        mealsByCreateTime.sort(Comparator.comparingLong(Meal::getCreateTime));
+
+        Map<String, Meal> mealsByName = new TreeMap<>();
         for (Meal m : mealsById.values()) {
             assert !mealsByName.containsKey(m.getName());
             mealsByName.put(m.getName(), m);

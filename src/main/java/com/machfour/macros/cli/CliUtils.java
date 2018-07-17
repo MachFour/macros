@@ -9,10 +9,13 @@ import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.*;
 
+import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 public class CliUtils {
@@ -191,5 +194,60 @@ public class CliUtils {
         for (Column<NutritionData, Double> col: proportionMap.keySet()) {
             out.printf("%15s: %5.1f%%\n", prettyNames.get(col), proportionMap.get(col));
         }
+    }
+
+    // command line inputs
+    // returns null if there was an error or input was invalid
+    static @Nullable Integer getIntegerInput(BufferedReader in, PrintStream out, int min, int max) {
+        String input = getStringInput(in, out);
+        if (input == null) {
+            return null;
+        }
+        try {
+            int n = Integer.parseInt(input);
+            if (n >= min && n <= max) {
+                return n;
+            }
+        } catch (NumberFormatException ignore) {
+            OUT.printf("Bad number format: '%s'\n", input);
+        }
+        return null;
+    }
+
+    // command line inputs
+    // returns null if there was an error or input was invalid
+    static @Nullable Double getDoubleInput(BufferedReader in, PrintStream out) {
+        String input = getStringInput(in, out);
+        if (input == null) {
+            return null;
+        }
+        try {
+            double d = Double.parseDouble(input);
+            if (Double.isFinite(d)) {
+                return d;
+            }
+        } catch (NumberFormatException ignore) {
+            out.printf("Bad number format: '%s'\n", input);
+        }
+        return null;
+    }
+
+    static @Nullable String getStringInput(BufferedReader in, PrintStream out) {
+        try {
+            String input = in.readLine();
+            if (input != null) {
+                return input.trim();
+            }
+        } catch (IOException e) {
+            out.println("Error reading input: " + e.getMessage());
+        }
+        return null;
+    }
+
+    static void clearTerminal(PrintStream out) {
+        // this is what /usr/bin/clear outputs on my terminal
+        //OUT.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a");
+        // equivalent in octal
+        out.println("\033\133\110\033\133\062\112");
     }
 }

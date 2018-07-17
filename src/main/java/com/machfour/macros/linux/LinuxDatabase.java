@@ -293,7 +293,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return saved;
     }
 
-    public <M extends MacrosPersistable> int removeAll(Table<M> t) throws SQLException {
+    @Override
+    public <M extends MacrosPersistable> int clearTable(Table<M> t) throws SQLException {
         long startMillis = DataUtils.systemMillis();
         int removed = 0;
         try (Connection c = getConnection();

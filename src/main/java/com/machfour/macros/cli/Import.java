@@ -2,6 +2,9 @@ package com.machfour.macros.cli;
 
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.objects.Serving;
 import com.machfour.macros.storage.CsvStorage;
 import com.machfour.macros.storage.MacrosDatabase;
 
@@ -30,11 +33,19 @@ class Import extends ModeImpl {
             printHelp(OUT);
             return;
         }
+        boolean doClear = args.contains("--clear");
+
         String foodCsvFile = Config.FOOD_CSV_FILENAME;
         String servingCsvFile = Config.SERVING_CSV_FILENAME;
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
         try {
+            if (doClear) {
+                OUT.println("Clearing existing food and serving data...");
+                db.clearTable(Food.table());
+                db.clearTable(NutritionData.table());
+                db.clearTable(Serving.table());
+            }
             OUT.println("Importing data into database...");
             CsvStorage.importFoodData(foodCsvFile, db, false);
             OUT.println("Saved foods and nutrition data");

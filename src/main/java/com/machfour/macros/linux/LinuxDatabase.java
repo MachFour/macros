@@ -49,14 +49,6 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return instance;
     }
 
-    private static void runStatements(Connection c, List<String> sqlStatements) throws SQLException {
-        try (Statement s = c.createStatement()) {
-            for (String sql : sqlStatements) {
-                s.executeUpdate(sql);
-            }
-        }
-    }
-
     // returns persistent connection if there is one, othewise a new temporary one.
     private Connection getConnection() throws SQLException {
         if (connection != null) {
@@ -87,11 +79,17 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     public void initDb() throws SQLException, IOException {
         try (Connection c = getConnection()) {
-            List<String> initStatements = new ArrayList<>(3);
-            initStatements.add(createStatements(Files.readAllLines(Config.INIT_SQL)));
-            initStatements.add(createStatements(Files.readAllLines(Config.TRIG_SQL)));
-            initStatements.add(createStatements(Files.readAllLines(Config.DATA_SQL)));
-            runStatements(c, initStatements);
+            String createSchemaSql = createStatements(Files.readAllLines(Config.INIT_SQL));
+            String createTriggersSql = createStatements(Files.readAllLines(Config.TRIG_SQL));
+            String initialDataSql = createStatements(Files.readAllLines(Config.DATA_SQL));
+            try (Statement s = c.createStatement()) {
+                System.out.println("Create schema...");
+                s.executeUpdate(createSchemaSql);
+                System.out.println("Add triggers...");
+                s.executeUpdate(createTriggersSql);
+                System.out.println("Add data...");
+                s.executeUpdate(initialDataSql);
+            }
         }
     }
     @Override
@@ -184,7 +182,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     @Override
-    protected <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    protected <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";

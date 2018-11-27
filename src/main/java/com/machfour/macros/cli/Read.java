@@ -24,7 +24,7 @@ class Read extends ModeImpl {
     }
     @Override
     public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s <file>\n", PROGNAME, NAME);
+        out.printf("Usage: %s %s <file> [-v | --verbose] [--print100]\n", PROGNAME, NAME);
     }
     @Override
     public void doAction(List<String> args) {
@@ -33,8 +33,14 @@ class Read extends ModeImpl {
             OUT.println();
             OUT.println("Please specify a file to read");
             return;
+        } else if (args.contains("--help")) {
+            printHelp(OUT);
+            return;
         }
         String filename = args.get(1);
+        boolean verbose = args.contains("--verbose") || args.contains("-v");
+        boolean per100 = args.contains("--per100");
+
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
         FileParser fileParser = new FileParser();
         List<Meal> meals;
@@ -47,7 +53,7 @@ class Read extends ModeImpl {
             ERR.println("SQL exception occurred: " + e2.getMessage());
             return;
         }
-        MealPrinter.printMeals(meals, OUT);
+        MealPrinter.printMeals(meals, OUT, verbose, per100, true);
         Map<String, String> errors = fileParser.getErrorLines();
         if (!errors.isEmpty()) {
             OUT.println();

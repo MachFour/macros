@@ -6,6 +6,8 @@ import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.FoodPortionSpec;
+import com.machfour.macros.util.MealSpec;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -69,11 +71,7 @@ final class FileParser {
         return specMap;
     }
     List<Meal> parseFile(String fileName, MacrosDatabase db) throws IOException, SQLException {
-        List<Meal> meals = new ArrayList<>();
-        Path filePath = Paths.get(fileName);
-        List<String> fileLines = Files.readAllLines(filePath);
-
-        DateStamp currentDay = DateStamp.forCurrentDate();
+        List<String> fileLines = Files.readAllLines(Paths.get(fileName));
         // also gets list of index names to retrieve
         Map<MealSpec, List<FoodPortionSpec>> mealSpecs = createSpecFromLines(fileLines);
 
@@ -84,31 +82,35 @@ final class FileParser {
                 foodIndexNames.add(fps.foodIndexName);
             }
         }
-        Map<String, Food> foods = db.getFoodsByIndexName(foodIndexNames);
 
+        List<Meal> meals = new ArrayList<>();
+
+        Map<String, Food> foods = db.getFoodsByIndexName(foodIndexNames);
+        DateStamp currentDay = DateStamp.forCurrentDate();
         for (Map.Entry<MealSpec, List<FoodPortionSpec>> spec : mealSpecs.entrySet()) {
             Meal m = makeMeal(spec.getKey().name, currentDay);
-            meals.add(m);
             for (FoodPortionSpec fps : spec.getValue()) {
                 if (fps.error != null) {
                     // it was an error, log and then ignore
                     errorLines.put(fileLines.get(fps.lineIdx), fps.error);
-                    continue;
-                }
-                Food f = foods.getOrDefault(fps.foodIndexName, null);
-                if (f == null) {
-                    errorLines.put(fileLines.get(fps.lineIdx), "unrecognised food");
-                    // skip this
-                    continue;
-                }
-                processFpSpec(fps, m, f);
-                if (fps.createdObject != null) {
-                    m.addFoodPortion(fps.createdObject);
+                } else if (!foods.containsKey(fps.foodIndexName)) {
+                    // no food found
+                    String errormsg = String.format("unrecognised food index name: '%s'", fps.foodIndexName);
+                    errorLines.put(fileLines.get(fps.lineIdx), errormsg);
                 } else {
-                    assert fps.error != null : "No FoodPortion created but no error message";
-                    errorLines.put(fileLines.get(fps.lineIdx), fps.error);
+                    // everything seems okay
+                    processFpSpec(fps, m, foods.get(fps.foodIndexName));
+                    // was there a DB error?
+                    if (fps.createdObject == null) {
+                        assert fps.error != null : "No FoodPortion created but no error message";
+                        errorLines.put(fileLines.get(fps.lineIdx), fps.error);
+                    } else {
+                        // finally!
+                        m.addFoodPortion(fps.createdObject);
+                    }
                 }
             }
+            meals.add(m);
         }
         return meals;
     }

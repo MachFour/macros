@@ -20,10 +20,10 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     private FoodPortion(ColumnData<FoodPortion> data, ObjectSource objectSource) {
         super(data, objectSource);
         serving = null;
-        qtyUnit = null;
         food = null;
         meal = null;
         nutritionData = null;
+        qtyUnit = QtyUnit.fromAbbreviation(data.get(Schema.FoodPortionTable.QUANTITY_UNIT));
     }
 
     public String prettyFormat(boolean withNotes) {
@@ -31,7 +31,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         sb.append(food == null ? "<no food>" : food.getMediumName());
         sb.append(", ");
         sb.append(String.format("%.1f", getData(Schema.FoodPortionTable.QUANTITY)));
-        sb.append(getQuantityUnitAbbr());
+        sb.append(getQtyUnit().getAbbr());
         if (serving != null) {
             sb.append(" (").append(servingCountString()).append(" ").append(serving.getName()).append(")");
         }
@@ -66,19 +66,9 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         return o instanceof FoodPortion && super.equals(o);
     }
 
+    @NotNull
     public QtyUnit getQtyUnit() {
         return qtyUnit;
-    }
-
-    public void setQtyUnit(@NotNull QtyUnit q) {
-        assert qtyUnit == null && foreignKeyMatches(this, Schema.FoodPortionTable.QUANTITY_UNIT, q);
-        qtyUnit = q;
-
-    }
-
-    @NotNull
-    public String getQuantityUnitAbbr() {
-        return getData(Schema.FoodPortionTable.QUANTITY_UNIT);
     }
 
     public Meal getMeal() {

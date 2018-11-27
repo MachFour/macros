@@ -62,7 +62,12 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
-    protected abstract <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+    // The collection of keys must not be empty; an assertion error is thrown if so
+    protected abstract <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+
+    private <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+        return keys.isEmpty() ? Collections.emptyMap() : getRawObjectsByKeysNoEmpty(t, keyCol, keys);
+    }
 
     // returns map of all objects in table, by ID
     // TODO make protected
@@ -173,6 +178,10 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return foods;
     }
 
+    /*
+     * Constructs full food objects by their index name
+     * Returns a map of index name to food object
+     */
     public Map<String, Food> getFoodsByIndexName(@NotNull List<String> indexNames) throws SQLException {
         Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
         if (!foods.isEmpty()) {

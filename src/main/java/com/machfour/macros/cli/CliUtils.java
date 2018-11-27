@@ -6,6 +6,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.MealSpec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +21,11 @@ import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 public class CliUtils {
     static final List<Column<NutritionData, Double>> allNutrientsToPrint;
+    // shortest name for each nutrient printed in default mode
     static final Map<Column<NutritionData, Double>, String> briefNames;
+    // longer name for nutrients printed in verbose mode
+    static final Map<Column<NutritionData, Double>, String> longerNames;
+    // full name for each nutrient
     static final Map<Column<NutritionData, Double>, String> prettyNames;
 
 
@@ -31,6 +36,18 @@ public class CliUtils {
         briefNames.put(FAT, "Fat");
         briefNames.put(CARBOHYDRATE, "Carb");
         briefNames.put(QUANTITY, "Qty");
+
+        longerNames = new HashMap<>();
+        longerNames.put(CALORIES, "Cals");
+        longerNames.put(PROTEIN, "Protæn");
+        longerNames.put(FAT, "Fat");
+        longerNames.put(SATURATED_FAT, "SatFat");
+        longerNames.put(CARBOHYDRATE, "Carbs");
+        longerNames.put(SUGAR, "Sugar");
+        longerNames.put(FIBRE, "Fibre");
+        longerNames.put(SODIUM, "Sodium");
+        longerNames.put(QUANTITY, "Qty");
+
         prettyNames = new HashMap<>();
         prettyNames.put(KILOJOULES, "Kilojoules");
         prettyNames.put(CALORIES, "Calories");

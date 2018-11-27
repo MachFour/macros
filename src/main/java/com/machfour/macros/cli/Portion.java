@@ -5,6 +5,8 @@ import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.util.FoodPortionSpec;
+import com.machfour.macros.util.MealSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -77,7 +79,7 @@ class Portion extends ModeImpl {
             return;
         }
         OUT.println();
-        MealPrinter.printMeal(toAddTo, OUT);
+        MealPrinter.printMeal(toAddTo, false, OUT);
 
     }
 }

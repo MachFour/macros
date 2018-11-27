@@ -55,6 +55,11 @@ public class QtyUnit extends MacrosEntity<QtyUnit> {
         return found;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s (%s)", getName(), getAbbr());
+    }
+
     public static QtyUnit fromAbbreviation(String abbreviation) {
         return fromAbbreviation(abbreviation, false);
     }

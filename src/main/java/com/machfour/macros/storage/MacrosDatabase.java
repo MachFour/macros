@@ -3,6 +3,7 @@ package com.machfour.macros.storage;
 import com.machfour.macros.core.*;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,8 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.machfour.macros.storage.StorageUtils.toList;
+import static com.machfour.macros.storage.DatabaseUtils.getOrDefault;
+import static com.machfour.macros.storage.DatabaseUtils.toList;
 
 public abstract class MacrosDatabase implements MacrosDataSource {
     protected static String createStatements(List<String> sqlFileLines) {
@@ -30,7 +32,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
                 trimmedAndDecommented.add(line);
             }
         }
-        return String.join(" ", trimmedAndDecommented);
+        return new StringJoiner<>(trimmedAndDecommented).sep(" ").join();
     }
 
     // fkColumns by definition contains only the foreign key columns
@@ -44,12 +46,13 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return idsPresent;
     }
 
+    // caller-managed connection, useful to reduce number of calls to DB
+    // caller needs to call closeConnection() after
     public abstract void openConnection() throws SQLException;
     public abstract void closeConnection() throws SQLException;
 
     protected abstract <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException;
 
-    @NotNull
     protected abstract <M extends MacrosPersistable> List<Long> prefixSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException;
 
@@ -158,13 +161,13 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     @Nullable
     public Food getFoodByIndexName(@NotNull String indexName) throws SQLException {
         Map<String, Food> resultFood = getFoodsByIndexName(toList(indexName));
-        return resultFood.getOrDefault(indexName, null);
+        return DatabaseUtils.getOrDefault(resultFood, indexName, null);
     }
 
     @Nullable
     public Food getFoodById(@NotNull Long id) throws SQLException {
         Map<Long, Food> resultFood = getFoodsById(toList(id));
-        return resultFood.getOrDefault(id, null);
+        return DatabaseUtils.getOrDefault(resultFood, id, null);
     }
 
     @Override
@@ -186,7 +189,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
         if (!foods.isEmpty()) {
             // TODO this is kind of inefficient
-            Map<Long, Food> idMap = StorageUtils.makeIdMap(foods.values());
+            Map<Long, Food> idMap = DatabaseUtils.makeIdMap(foods.values());
             applyServingsToRawFoods(idMap);
             applyNutritionDataToRawFoods(idMap);
             // TODO  FoodCategory, Ingredients
@@ -246,7 +249,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     @Nullable
     public Meal getMealById(@NotNull Long id) throws SQLException {
         Map<Long, Meal> resultMeals = getMealsById(Collections.singletonList(id));
-        return resultMeals.getOrDefault(id, null);
+        return getOrDefault(resultMeals, id, null);
     }
 
     public Map<Long, Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
@@ -308,7 +311,12 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<Long, Meal> mealsById = getMealsById(mealIds);
         // sort by create time and put in tree map to preserve order
         List<Meal> mealsByCreateTime = new ArrayList<>(mealsById.values());
-        mealsByCreateTime.sort(Comparator.comparingLong(Meal::getCreateTime));
+        //TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::getCreateTime));
+        // TODO API level: Comparator.comparingLong(Meal::getCreateTime);
+        Collections.sort(mealsByCreateTime, (Meal m1, Meal m2) -> {
+            return Long.compare(m1.getCreateTime(), m2.getCreateTime());
+        });
+
 
         Map<String, Meal> mealsByName = new TreeMap<>();
         for (Meal m : mealsById.values()) {
@@ -333,7 +341,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     private <M, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
         Map<J, M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
-        return returned.getOrDefault(key, null);
+        return getOrDefault(returned, key, null);
     }
 
     public <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException {

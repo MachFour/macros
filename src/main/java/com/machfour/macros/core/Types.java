@@ -41,6 +41,10 @@ public class Types {
         public Class<Boolean> javaClass() {
             return Boolean.class;
         }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.INTEGER;
+        }
     }
     // Boolean type where null means false. This is a hack used to ensure there's only one default serving per food,
     // using a UNIQUE check on (food_id, is_default)
@@ -80,6 +84,10 @@ public class Types {
         public Class<Long> javaClass() {
             return Long.class;
         }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.INTEGER;
+        }
     }
 
     public static final class Int implements MacrosType<Long> {
@@ -98,6 +106,10 @@ public class Types {
         @Override
         public Class<Long> javaClass() {
             return Long.class;
+        }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.INTEGER;
         }
     }
 
@@ -128,6 +140,10 @@ public class Types {
         public Class<Double> javaClass() {
             return Double.class;
         }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.REAL;
+        }
     }
 
     public static final class Text implements MacrosType<String> {
@@ -147,6 +163,11 @@ public class Types {
         public Class<String> javaClass() {
             return String.class;
         }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.TEXT;
+        }
+
     }
 
     public static final class Time implements MacrosType<Long> {
@@ -165,6 +186,10 @@ public class Types {
         @Override
         public Class<Long> javaClass() {
             return Long.class;
+        }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.INTEGER;
         }
     }
 
@@ -189,6 +214,10 @@ public class Types {
         public Class<DateStamp> javaClass() {
             return DateStamp.class;
         }
+        @Override
+        public SqliteType sqliteType() {
+            return SqliteType.TEXT;
+        }
     }
 
     private static Long stringToLong(@NotNull String longString) {
@@ -206,7 +235,8 @@ public class Types {
         } else if (data instanceof Long) {
             converted = (Long) data;
         } else if (data instanceof Integer) {
-            converted = Integer.toUnsignedLong((Integer)data);
+            // TODO API level: converted = Integer.toUnsignedLong((Integer)data);
+            converted = Long.parseLong(data.toString());
         } else {
             return stringToLong(String.valueOf(data));
         }

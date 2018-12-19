@@ -3,15 +3,17 @@ package com.machfour.macros.storage;
 import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
+import com.machfour.macros.core.MacrosType;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.util.StringJoiner;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 
-public class StorageUtils {
-    private StorageUtils() {
+public class DatabaseUtils {
+    private DatabaseUtils() {
     }
 
     private static <M> String joinColumns(Iterable<Column<M, ?>> columns, String suffix) {
@@ -39,6 +41,11 @@ public class StorageUtils {
             }
         };
         return new StringJoiner<>(questionIterator).sep(", ").join();
+    }
+
+    // just for older Android API compatibility
+    public static <K, V> V getOrDefault(@NotNull Map<K, V> map, K key, V defaultValue) {
+        return map.containsKey(key) ? map.get(key) : defaultValue;
     }
 
     // " WHERE column1 = ?"
@@ -115,8 +122,8 @@ public class StorageUtils {
 
     // columns must be a subset of table.columns()
     public static <M> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
-        String placeholders = makeQuestionMarks(orderedColumns.size());
-        return "INSERT INTO " + t.name() + " (" + joinColumns(orderedColumns) + ") VALUES ( " + placeholders + ")";
+        String questionMarks = makeQuestionMarks(orderedColumns.size());
+        return "INSERT INTO " + t.name() + " (" + joinColumns(orderedColumns) + ") VALUES ( " + questionMarks + ")";
     }
 
     public static <M, J> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> keyCol) {
@@ -124,36 +131,25 @@ public class StorageUtils {
     }
 
 
-    public static <M> void bindData(PreparedStatement p, ColumnData<M> values, List<Column<M, ?>> orderedColumns, Object... extras) throws SQLException {
-        int colIndex = 1; // parameters are 1 indexed!
+    public static <J> String[] makeBindableStrings(Collection<J> objects, MacrosType<J> type) {
+        String[] array = new String[objects.size()];
+        int index = 0;
+        for (J o : objects) {
+            array[index++] = type.toSqlString(o);
+        }
+        return array;
+    }
+
+    // for use with Android SQLite implementation
+    // The Object array is only allowed to contain String, Long, Double, byte[] and null
+    public static <M> Object[] makeBindableObjects(ColumnData<M> data, List<Column<M, ?>> orderedColumns) {
+        Object[] array = new String[orderedColumns.size()];
+        int index = 0;
         for (Column<M, ?> col : orderedColumns) {
-            // Internally, setObject() relies on a ladder of instanceof checks
-            p.setObject(colIndex, values.getAsRaw(col));
-            colIndex++;
+            array[index++] = data.getAsRaw(col);
         }
-        bindObjects(p, colIndex, extras);
+        return array;
     }
-
-    private static void bindObjects(PreparedStatement p, int startIndex, Object... objects) throws SQLException {
-        int colIndex = startIndex;
-        for (Object o : objects) {
-            p.setObject(colIndex, o);
-            colIndex++;
-        }
-    }
-
-    public static <E> void bindObjects(PreparedStatement p, Collection<E> objects) throws SQLException {
-        bindObjects(p, 1, objects);
-    }
-
-    private static void bindObjects(PreparedStatement p, int startIndex, Collection<?> objects) throws SQLException {
-        int colIndex = startIndex;
-        for (Object o : objects) {
-            p.setObject(colIndex, o);
-            colIndex++;
-        }
-    }
-
 
     static <M extends MacrosPersistable> Map<Long, M> makeIdMap(Collection<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);

@@ -154,7 +154,7 @@ public class DateStamp implements Comparable<DateStamp> {
     }
 
     /*
-     * Returns date in ISO-8601 formay
+     * Returns date in ISO-8601 format
      */
     @Override
     public String toString() {

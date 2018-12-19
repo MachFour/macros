@@ -54,7 +54,7 @@ class ListFood extends ModeImpl {
         ColumnData<Food> data = foodToList.getAllData();
         for (Column<Food, ?> col : data.getColumns()) {
             if (data.hasData(col)) {
-                OUT.printf("%s: %s\n", col.sqlName(), data.getAsNotNullString(col));
+                OUT.printf("%s: %s\n", col.sqlName(), data.getAsString(col));
             }
         }
 

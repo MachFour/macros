@@ -92,8 +92,8 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
      * Returns a mapping from each fields whose value failed one or more com.machfour.macros.validation tests, to a list
      * of those failing tests.
      */
-    public Map<Column, List<Validation>> findAllErrors() {
-        Map<Column, List<Validation>> allValidationErrors = new HashMap<>(settableColumns.size(), 1);
+    public Map<Column<M, ?>, List<Validation>> findAllErrors() {
+        Map<Column<M, ?>, List<Validation>> allValidationErrors = new HashMap<>(settableColumns.size(), 1);
 
         for (Column<M, ?> field : settableColumns) {
             List<Validation> fieldErrors = checkErrors(field);

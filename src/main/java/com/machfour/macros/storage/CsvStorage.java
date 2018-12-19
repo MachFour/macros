@@ -75,7 +75,7 @@ public class CsvStorage {
         Map<String, String> dataMap = new HashMap<>();
         for (Map.Entry<String, Column<M, ?>> entry: data.getTable().columnsByName().entrySet()) {
             // null data gets mapped to empty string
-            String value = data.getAsNotNullString(entry.getValue());
+            String value = data.getAsString(entry.getValue());
             dataMap.put(entry.getKey(), value);
         }
         return dataMap;

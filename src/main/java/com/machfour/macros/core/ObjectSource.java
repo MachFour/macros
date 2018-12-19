@@ -19,7 +19,7 @@ public enum ObjectSource {
     /*
      * From import of user-friendly spreadsheet, which does not have IDs.
      * Need to use secondary keys to determine whether the object is in the DB, as it may already be.
-     * If foreign key data is not present in the data (e.g. IDs) then it is up to the caller to call MacrosDatabase.completeForeignKeys()
+     * If foreign key data is not present in the data (e.g. IDs) then it is up to the caller to call AndroidDatabase.completeForeignKeys()
      * ID: no
      * MOD: ?
      * DB: ?

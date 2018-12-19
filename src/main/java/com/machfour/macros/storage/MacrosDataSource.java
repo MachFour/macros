@@ -37,6 +37,7 @@ public interface MacrosDataSource {
     // key is the meal name, which is unique given a particular day
     Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException;
 
+    // returns number of objects saved correctly (i.e. 0 or 1)
     <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
 
     /* These functions save the objects given to them into the database, via INSERT or UPDATE.

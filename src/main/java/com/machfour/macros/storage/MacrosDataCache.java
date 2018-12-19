@@ -32,7 +32,7 @@ public class MacrosDataCache implements MacrosDataSource {
 
     }
 
-    public static void setUpstream(MacrosDataSource upstream) {
+    public static void initialise(MacrosDataSource upstream) {
         INSTANCE = new MacrosDataCache(upstream);
     }
 

@@ -5,6 +5,7 @@ import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Meal extends MacrosEntity<Meal> {
@@ -16,7 +17,7 @@ public class Meal extends MacrosEntity<Meal> {
         foodPortions = new ArrayList<>();
     }
 
-    public static NutritionData sumNutritionTotals(List<Meal> meals) {
+    public static NutritionData sumNutritionTotals(Collection<Meal> meals) {
         List<NutritionData> nutritionTotals = new ArrayList<>(meals.size());
         for (Meal m : meals) {
             nutritionTotals.add(m.getNutritionTotal());

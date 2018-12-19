@@ -13,7 +13,6 @@ public class Serving extends MacrosEntity<Serving> {
         food = null;
         qtyUnit = null;
     }
-
     @Override
     public Table<Serving> getTable() {
         return table();

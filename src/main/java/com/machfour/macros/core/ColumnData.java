@@ -26,16 +26,15 @@ public final class ColumnData<M> {
         }
     }
 
+    // null represented by empty string
     @NotNull
-    public <J> String getAsNotNullString(Column<M, J> col) {
-        Object data = getAsRaw(col);
-        if (data == null) {
-            return "";
-        } else if (data instanceof String) {
-            return (String) data;
-        } else {
-            return data.toString();
-        }
+    public <J> String getAsString(Column<M, J> col) {
+        return col.getType().toRawString(get(col));
+    }
+    // null represented by "NULL"
+    @NotNull
+    public <J> String getAsSqlString(Column<M, J> col) {
+        return col.getType().toSqlString(get(col));
     }
 
     public <J> void putFromString(Column<M, J> col, @NotNull String data) {
@@ -72,7 +71,8 @@ public final class ColumnData<M> {
             return false;
         }
         for (Column<M, ?> col: whichCols) {
-            if (!Objects.equals(c1.get(col), c2.get(col))) {
+            // TODO if (!Objects.equals(c1.get(col), c2.get(col))) {
+            if (c1.get(col) != null && c1.get(col).equals(c2.get(col))) {
                 return false;
             }
         }
@@ -81,7 +81,8 @@ public final class ColumnData<M> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(table, data);
+        // TODO return Objects.hash(table, data);
+        return Arrays.hashCode(new Object[]{table, data});
     }
 
     @Override
@@ -90,7 +91,8 @@ public final class ColumnData<M> {
         for (Column<M, ?> col: columns) {
             str.append(col.sqlName());
             str.append(" = ");
-            str.append(Objects.toString(data[col.index()]));
+            // TODO replace with Objects.toString() when Android API level can be bumped
+            str.append(String.valueOf(data[col.index()]));
             str.append(", ");
         }
         str.append("]");
@@ -180,7 +182,7 @@ public final class ColumnData<M> {
         return col.getType().cast(data[col.index()]);
     }
 
-    // will throw exception if the data doesn't match the type
+    // will throw exception if the column is not present
     public <J> void put(@NotNull Column<M, J> col, J data) {
         assertHasColumn(col);
         assertMutable();

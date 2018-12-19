@@ -93,7 +93,7 @@ public class CliMain {
     public static void main(String[] args) {
         //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
 
-        // tell the SQLite JDBC driver where I've put the library that it otherwise auto-extracts each time
+        // tell the SQLite JDBC driver where I've put the library. Otherwise it auto-extracts each time
         System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
         System.setProperty("org.sqlite.lib.name", "libsqlitejdbc.so");
 

@@ -22,6 +22,7 @@ public class Food extends MacrosEntity<Food> {
     );
 
     private final List<Serving> servings;
+    private final String sortableName;
     private Serving defaultServing;
 
     private NutritionData nutritionData;
@@ -36,6 +37,7 @@ public class Food extends MacrosEntity<Food> {
         nutritionData = null;
         foodType = FoodType.fromString(dataMap.get(Schema.FoodTable.FOOD_TYPE));
         ingredients = (foodType == FoodType.COMPOSITE) ? new ArrayList<>() : null;
+        sortableName = makeSortableName();
     }
 
     public List<Ingredient> getIngredients() {
@@ -152,8 +154,11 @@ public class Food extends MacrosEntity<Food> {
     }
 
     @NotNull
-    public String getSortableName() {
+    private String makeSortableName() {
         return prettyFormat(true, true, true);
+    }
+    public String getSortableName() {
+        return sortableName;
     }
 
     public String getCategoryName() {
@@ -163,25 +168,26 @@ public class Food extends MacrosEntity<Food> {
     private String prettyFormat(boolean withBrand, boolean withNotes, boolean sortable) {
         StringBuilder prettyName = new StringBuilder(getDescriptionData(Schema.FoodTable.NAME));
 
-        String v = getDescriptionData(Schema.FoodTable.VARIETY);
+        String variety = getDescriptionData(Schema.FoodTable.VARIETY);
+        String brand = getDescriptionData(Schema.FoodTable.BRAND);
 
         if (sortable) {
             if (withBrand && hasDescriptionData(Schema.FoodTable.BRAND)) {
-                prettyName.append(getDescriptionData(Schema.FoodTable.BRAND)).append(", ");
+                prettyName.append(", ").append(brand);
             }
             if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
-                prettyName.append(", ").append(v);
+                prettyName.append(", ").append(variety);
             }
         } else {
             if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
                 if (getData(Schema.FoodTable.VARIETY_AFTER_NAME)) {
-                    prettyName.append(" ").append(v);
+                    prettyName.append(" ").append(variety);
                 } else {
-                    prettyName.insert(0, v + " ");
+                    prettyName.insert(0, variety + " ");
                 }
             }
             if (withBrand && hasDescriptionData(Schema.FoodTable.BRAND)) {
-                prettyName.insert(0, getDescriptionData(Schema.FoodTable.BRAND) + " ");
+                prettyName.insert(0, brand + " ");
             }
         }
 
@@ -231,7 +237,7 @@ public class Food extends MacrosEntity<Food> {
     public Serving getServingByName(@NotNull String name) {
         Serving serving = null;
         for (Serving s : servings) {
-            if (name.equals(s.getName())) {
+            if (name.equals(s.name())) {
                 serving = s;
             }
         }

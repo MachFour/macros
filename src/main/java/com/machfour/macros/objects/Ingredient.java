@@ -133,7 +133,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     public double servingCount() {
-        return (serving != null) ? getQuantity() / serving.getQuantity() : 0;
+        return (serving != null) ? getQuantity() / serving.quantity() : 0;
     }
 }
 

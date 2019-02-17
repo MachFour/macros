@@ -1,6 +1,6 @@
 package com.machfour.macros.cli;
 
-abstract class ModeImpl implements Mode {
+abstract class CommandImpl implements Command {
     @Override
     public abstract String name();
     @Override
@@ -8,7 +8,7 @@ abstract class ModeImpl implements Mode {
         return name();
     }
     @Override
-    public boolean isUserMode() {
+    public boolean isUserCommand() {
         return !name().startsWith("_");
     }
 }

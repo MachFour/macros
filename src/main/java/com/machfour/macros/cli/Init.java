@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.machfour.macros.cli.CliMain.OUT;
 
-class Init extends ModeImpl {
+class Init extends CommandImpl {
     private static final String NAME = "init";
     @Override
     public String name() {

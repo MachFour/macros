@@ -9,7 +9,6 @@ import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.machfour.macros.util.MealSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -19,7 +18,7 @@ import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.IN;
 
-class Edit extends ModeImpl {
+class Edit extends CommandImpl {
     private final String NAME = "edit";
     @Override
     public void doAction(List<String> args) {
@@ -29,14 +28,17 @@ class Edit extends ModeImpl {
         }
 
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
-        MealSpec mealSpec = CliUtils.makeMealSpec(args);
-        CliUtils.processMealSpec(mealSpec, db, false);
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
+        MealSpec mealSpec = MealSpec.makeMealSpec(args);
+        mealSpec.processMealSpec(db, true);
+        if (mealSpec.error() != null) {
+            OUT.println(mealSpec.error());
             return;
         }
-
-        Meal toEdit = mealSpec.createdObject;
+        if (mealSpec.created()) {
+            String createMsg = String.format("Created meal '%s' on %s", mealSpec.name(), mealSpec.day());
+            OUT.println(createMsg);
+        }
+        Meal toEdit = mealSpec.processedObject();
         startEditor(db, toEdit.getId());
     }
 
@@ -230,10 +232,10 @@ class Edit extends ModeImpl {
         printInteractiveHelp(out);
         out.println();
         out.println("Food portions can be entered in one of the following forms:");
-        out.println("<> denotes mandatory arguments, [] denotes optional arguments, and other characters are literal");
         out.println("1. <food index name>, <quantity>[quantity unit]");
         out.println("2. <food index name>, [<serving name>], <serving count> (omit serving name for default serving)");
         out.println("3. <food index name> (this means 1 of the default serving)");
+        out.println("(<> denotes a mandatory argument and [] denotes an optional argument)");
     }
 
 }

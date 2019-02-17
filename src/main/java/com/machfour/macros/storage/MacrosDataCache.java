@@ -7,6 +7,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.objects.Serving;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -60,6 +61,12 @@ public class MacrosDataCache implements MacrosDataSource {
     @Override
     public List<Long> foodSearch(String keyword) throws SQLException {
         return upstream.foodSearch(keyword);
+    }
+
+    @Override
+    // TODO should this only return the ID, for caching purposes
+    public @Nullable Meal getCurrentMeal() throws SQLException {
+        return upstream.getCurrentMeal();
     }
 
     @Override

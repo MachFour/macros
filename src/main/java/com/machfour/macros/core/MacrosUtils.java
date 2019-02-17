@@ -1,5 +1,7 @@
 package com.machfour.macros.core;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -8,6 +10,11 @@ import java.util.Map;
 public class MacrosUtils {
 
     private MacrosUtils() {
+    }
+
+    // copied from Java Objects.equals() method, cause Android API is laggy
+    public static boolean objectsEquals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
     }
 
     public static void exceptionIfNull(Object variable, String name) {
@@ -114,5 +121,10 @@ public class MacrosUtils {
         } else {
             return value.toString();
         }
+    }
+
+    // just for older Android API compatibility
+    public static <K, V> V getOrDefault(@NotNull Map<K, V> map, K key, V defaultValue) {
+        return map.containsKey(key) ? map.get(key) : defaultValue;
     }
 }

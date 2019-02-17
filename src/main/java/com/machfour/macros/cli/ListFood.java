@@ -17,7 +17,7 @@ import java.util.List;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.OUT;
 
-class ListFood extends ModeImpl {
+class ListFood extends CommandImpl {
     private static final String NAME = "list";
     @Override
     public String name() {
@@ -59,7 +59,7 @@ class ListFood extends ModeImpl {
         }
 
         NutritionData nd = foodToList.getNutritionData();
-        OUT.printf("Nutrition data for '%s' (per 100%s):\n", indexName, nd.getQtyUnit().getAbbr());
+        OUT.printf("Nutrition data for '%s' (per 100%s):\n", indexName, nd.qtyUnit().abbr());
         OUT.printf("Data source: %s\n", nd.getData(Schema.NutritionDataTable.DATA_SOURCE));
         CliUtils.printNutritionData(nd, true, OUT);
 
@@ -70,7 +70,7 @@ class ListFood extends ModeImpl {
         OUT.println();
         OUT.println("Servings:");
         for (Serving s: servings) {
-            OUT.printf(" - %s: %.1f%s\n", s.getName(), s.getQuantity(), s.getQtyUnit().getAbbr());
+            OUT.printf(" - %s: %.1f%s\n", s.name(), s.quantity(), s.qtyUnit().abbr());
 
         }
     }

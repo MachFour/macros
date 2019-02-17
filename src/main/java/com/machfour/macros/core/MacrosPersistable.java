@@ -14,7 +14,7 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
 
     long NO_ID = -100;
     // special ID for the 'null' serving of just grams / mL
-    long METRIC_SERVING = -101;
+    long UNIT_SERVING = -101;
     long NO_DATE = -99;
     double UNSET = NaN;
 
@@ -29,7 +29,7 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     Long getCreateTime();
 
     @NotNull
-    Long getModifyTime();
+    Long modifyTime();
 
     @NotNull
     ObjectSource getObjectSource();

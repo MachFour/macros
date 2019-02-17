@@ -33,7 +33,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     // NOTE data passed in is made Immutable as a side effect
     protected MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
-        Map<Column<M, ?>, ValidationError> errors = data.getTable().validate(data);
+        Map<Column<M, ?>, ValidationError> errors = MacrosBuilder.validate(data);
         if (!errors.isEmpty()) {
             throw new SchemaViolation(errors);
         }
@@ -57,6 +57,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
             case DB_EDIT:
             case RESTORE:
             case DATABASE:
+            case INBUILT:
                 assert hasId() : "Object should have an ID";
                 break;
             default:
@@ -69,7 +70,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
             MacrosEntity<M> childObj, Column.Fk<M, J, N> childCol, MacrosEntity<N> parentObj) {
         J childData = childObj.getData(childCol);
         J parentData = parentObj.getData(childCol.getParentColumn());
-        return Objects.equals(childData, parentData);
+        return MacrosUtils.objectsEquals(childData, parentData);
     }
     /*
     // used by child classes to create default instance
@@ -86,7 +87,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         return getData(getTable().getCreateTimeColumn());
     }
 
-    public Long getModifyTime() {
+    public Long modifyTime() {
         return getData(getTable().getModifyTimeColumn());
     }
 

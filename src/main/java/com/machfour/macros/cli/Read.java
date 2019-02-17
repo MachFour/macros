@@ -16,7 +16,7 @@ import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.ERR;
 
 
-class Read extends ModeImpl {
+class Read extends CommandImpl {
     private static final String NAME = "read";
     @Override
     public String name() {

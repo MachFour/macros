@@ -6,7 +6,6 @@ import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.machfour.macros.util.MealSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -15,7 +14,7 @@ import java.util.List;
 import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
-class Portion extends ModeImpl {
+class Portion extends CommandImpl {
     private static final String NAME = "portion";
     @Override
     public String name() {
@@ -32,21 +31,21 @@ class Portion extends ModeImpl {
             return;
         }
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
-        MealSpec mealSpec = CliUtils.makeMealSpec(args);
+        MealSpec mealSpec = MealSpec.makeMealSpec(args);
 
         String foodPortionArg = args.get(args.size() - 1);
         FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(foodPortionArg);
 
-        if (!mealSpec.mealSpecified) {
-            OUT.printf("No meal specified, assuming %s on %s\n", mealSpec.name, CliUtils.prettyDay(mealSpec.day));
+        if (!mealSpec.mealSpecified()) {
+            OUT.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), CliUtils.prettyDay(mealSpec.day()));
         }
-        CliUtils.processMealSpec(mealSpec, db, true);
-        if (mealSpec.error != null) {
-            OUT.println(mealSpec.error);
+        mealSpec.processMealSpec(db, true);
+        if (mealSpec.error() != null) {
+            OUT.println(mealSpec.error());
             return;
         }
 
-        process(mealSpec.createdObject, spec, db);
+        process(mealSpec.processedObject(), spec, db);
 
     }
 

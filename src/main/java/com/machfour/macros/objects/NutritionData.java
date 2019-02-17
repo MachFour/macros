@@ -156,7 +156,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             combinedDataMap.put(col, sumData.get(col));
         }
         combinedDataMap.put(QUANTITY, sumQuantity);
-        combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.getAbbr());
+        combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.abbr());
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
         return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
@@ -177,7 +177,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     @NotNull
-    public QtyUnit getQtyUnit() {
+    public QtyUnit qtyUnit() {
         return qtyUnit;
     }
 
@@ -256,7 +256,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     // returns a new NutritionDataTable object (not from DB) with the converted data.
     // nutrient values always remain in grams.
     private NutritionData convertQuantityUnit(@NotNull QtyUnit targetUnit, double density, boolean isDensityGuessed) {
-        QtyUnit currentUnit = getQtyUnit();
+        QtyUnit currentUnit = qtyUnit();
         if (currentUnit.equals(targetUnit)) {
             // TODO should it be a copy?
             return this;
@@ -272,7 +272,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData = copyDataForNew();
         newData.put(QUANTITY, newQuantity);
-        newData.put(QUANTITY_UNIT, targetUnit.getAbbr());
+        newData.put(QUANTITY_UNIT, targetUnit.abbr());
         // all other data remains the same
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(completeData);
         if (isDensityGuessed) {
@@ -324,7 +324,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     private NutritionData convertToGramsIfNecessary() {
-        if (!getQtyUnit().equals(QtyUnit.GRAMS)) {
+        if (!qtyUnit().equals(QtyUnit.GRAMS)) {
             // then convert to grams, guessing density if required
             double density;
             boolean guessedDensity;
@@ -352,7 +352,9 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         double conversionRatio = quantity / getQuantity();
         ColumnData<NutritionData> newData = copyDataForNew();
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
-            if (hasCompleteData(c)) {
+            //if (hasCompleteData(c)) {
+            if (hasData(c)) {
+                // hasData() check avoids NullPointerException
                 newData.put(c, amountOf(c) * conversionRatio);
             }
         }
@@ -374,6 +376,8 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         if (ENERGY_COLS.contains(col)) {
             // return any energy value, converting if necessary. Return null if neither column.
             return getEnergyAs(col);
+            // TODO sodium/salt
+            // TODO carbs by difference / carbs
         } else {
             return getData(col);
         }

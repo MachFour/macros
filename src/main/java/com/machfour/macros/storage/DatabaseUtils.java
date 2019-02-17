@@ -5,10 +5,10 @@ import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.MacrosType;
 import com.machfour.macros.core.Table;
+import com.machfour.macros.core.Types;
 import com.machfour.macros.util.StringJoiner;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -17,35 +17,43 @@ public class DatabaseUtils {
     }
 
     private static <M> String joinColumns(Iterable<Column<M, ?>> columns, String suffix) {
-        return new StringJoiner<>(columns).sep(", ").stringFunc(Column::sqlName).suffix(suffix).join();
+        return StringJoiner.of(columns).sep(", ").stringFunc(Column::sqlName).suffix(suffix).join();
     }
 
     private static <M> String joinColumns(Iterable<Column<M, ?>> columns) {
         return joinColumns(columns, "");
     }
 
-    private static String makeQuestionMarks(int howMany) {
-        Iterator<Character> questionIterator = new Iterator<Character>() {
-            int current = 0;
-
-            @Override
-            public boolean hasNext() {
-                return current < howMany;
-            }
-
-            @Override
-            public Character next() {
-                Character c = hasNext() ? '?' : null;
-                current++;
-                return c;
-            }
-        };
-        return new StringJoiner<>(questionIterator).sep(", ").join();
+    // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
+    // needs to be entered as DATE('date_string'), so that logic is implemented here
+    private static String getSqlPlaceholder(MacrosType<?> columnType) {
+        String placeholder;
+        // for now, DateStamp is the only special one
+        if (columnType.equals(Types.DATESTAMP)) {
+            // need the space here in order for the binding to work properly
+            placeholder = "DATE( ? )";
+        } else {
+            placeholder = "?";
+        }
+        return placeholder;
     }
 
-    // just for older Android API compatibility
-    public static <K, V> V getOrDefault(@NotNull Map<K, V> map, K key, V defaultValue) {
-        return map.containsKey(key) ? map.get(key) : defaultValue;
+    // creates SQL placeholders for the given (ordered) list of columns
+    private static <M> String makeInsertPlaceholders(List<Column<M, ?>> columns) {
+        List<String> placeholders = new ArrayList<>(columns.size());
+        for (Column<M, ?> c : columns) {
+            placeholders.add(getSqlPlaceholder(c.getType()));
+        }
+        return StringJoiner.of(placeholders).sep(", ").join();
+    }
+
+    // creates SQL placeholders for the given (ordered) list of columns
+    private static <M> String makeUpdatePlaceholders(List<Column<M, ?>> columns) {
+        List<String> placeholders = new ArrayList<>(columns.size());
+        for (Column<M, ?> c : columns) {
+            placeholders.add(c.sqlName() + " = " + getSqlPlaceholder(c.getType()));
+        }
+        return StringJoiner.of(placeholders).sep(", ").join();
     }
 
     // " WHERE column1 = ?"
@@ -53,19 +61,22 @@ public class DatabaseUtils {
     // if nkeys is <= 0, no where string will be formed, so all objects will be returned.
     private static String makeWhereString(Column<?, ?> whereColumn, int nValues) {
         assert nValues >= 0;
-        switch (nValues) {
-            case 0:
-                return "";
-            case 1:
-                // TODO is this needed?
-                //if (whereColumn.type().equals(DATESTAMP)) {
-                //    sb.append("DATE(").append(whereColumn.sqlName()).append(")");
-                //} else {
-                //sb.append(whereColumn.sqlName());
-                //}
-                return " WHERE " + whereColumn.sqlName() + " = ?";
-            default:
-                return " WHERE " + whereColumn.sqlName() + " IN (" + makeQuestionMarks(nValues) + ")";
+        if (nValues == 0) {
+            return "";
+        }
+        String colName = whereColumn.sqlName();
+        String placeholder = getSqlPlaceholder(whereColumn.getType());
+
+        //if (whereColumn.type().equals(DATESTAMP)) {
+        //    sb.append("DATE(").append(whereColumn.sqlName()).append(")");
+        //} else {
+        //sb.append(whereColumn.sqlName());
+        //}
+        if (nValues == 1) {
+            return String.format(" WHERE %s = %s", colName, placeholder);
+        } else {
+            String placeholders = StringJoiner.of(placeholder).sep(", ").copies(nValues).join();
+            return String.format(" WHERE %s IN (%s)", colName, placeholders);
         }
     }
 
@@ -90,7 +101,7 @@ public class DatabaseUtils {
                 for (Column<?, String> c : likeColumns) {
                     bracketedWhereClauses.add("(" + c.sqlName() + " LIKE ?)");
                 }
-                return " WHERE " + new StringJoiner<>(bracketedWhereClauses).sep(" OR ").join();
+                return " WHERE " + StringJoiner.of(bracketedWhereClauses).sep(" OR ").join();
         }
     }
 
@@ -117,17 +128,19 @@ public class DatabaseUtils {
         words.add("FROM");
         words.add(t.name());
         words.add(whereString);
-        return new StringJoiner<>(words).sep(" ").join();
+        return StringJoiner.of(words).sep(" ").join();
     }
 
     // columns must be a subset of table.columns()
     public static <M> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
-        String questionMarks = makeQuestionMarks(orderedColumns.size());
-        return "INSERT INTO " + t.name() + " (" + joinColumns(orderedColumns) + ") VALUES ( " + questionMarks + ")";
+        String placeholders = makeInsertPlaceholders(orderedColumns);
+        return String.format("INSERT INTO %s (%s) VALUES (%s)", t.name(), joinColumns(orderedColumns), placeholders);
     }
 
     public static <M, J> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> keyCol) {
-        return "UPDATE " + t.name() + " SET " + joinColumns(orderedColumns, "= ?") + makeWhereString(keyCol, 1);
+        String updateColumnPlaceholders = makeUpdatePlaceholders(orderedColumns);
+        // TODO dynamic placeholders
+        return String.format("UPDATE %s SET %s %s", t.name(), updateColumnPlaceholders, makeWhereString(keyCol, 1));
     }
 
 

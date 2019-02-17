@@ -9,7 +9,6 @@ import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.DataOutput;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -86,7 +85,7 @@ class MealPrinter {
         }
         // add quantity and unit
         String qtyStr = formatDouble(qty, servingWidth - 2);
-        String qtyUnitStr = String.format("%-2s", unit.getAbbr());
+        String qtyUnitStr = String.format("%-2s", unit.abbr());
         row.add(qtyStr + qtyUnitStr);
         return row;
     }
@@ -122,7 +121,7 @@ class MealPrinter {
         // row separator spans all columns plus each separator, but we discount the space
         // after the last separator
         int rowSepLength = sum(rowWidths) + rowWidths.size()*columnSep.length() - 1;
-        String rowSeparator = new StringJoiner<>(Collections.nCopies(rowSepLength, "=")).join();
+        String rowSeparator = StringJoiner.of(Collections.nCopies(rowSepLength, "=")).join();
 
         printRow(headingRow, rowWidths, rightAlign, columnSep, out);
         out.println(rowSeparator);
@@ -141,7 +140,7 @@ class MealPrinter {
         String totalName = String.format("Total for %s", meal.getName());
         NutritionData totalNd = meal.getNutritionTotal();
         // for total data, just use the quantity and unit from the sum
-        List<String> totalRow = nutritionDataToRow(totalName, totalNd, totalNd.getQuantity(), totalNd.getQtyUnit(), verbose);
+        List<String> totalRow = nutritionDataToRow(totalName, totalNd, totalNd.getQuantity(), totalNd.qtyUnit(), verbose);
         printRow(totalRow, rowWidths, rightAlign, columnSep, out);
     }
 

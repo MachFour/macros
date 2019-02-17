@@ -7,12 +7,10 @@ import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.machfour.macros.util.MealSpec;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
@@ -50,17 +48,15 @@ final class FileParser {
             Matcher mealTitle = mealPattern.matcher(line);
             if (mealTitle.find()) {
                 // make a new meal
-                MealSpec m = new MealSpec();
-                m.name = mealTitle.group("mealdesc");
+                MealSpec m = MealSpec.makeMealSpec(mealTitle.group("mealdesc"));
                 currentFpSpecs = new ArrayList<>();
                 specMap.put(m, currentFpSpecs);
             } else if (!line.isEmpty() && !line.startsWith("#")) {
                 // ignore 'comment lines' and treat anything else as a FoodPortionSpec.
                 // make a new meal if necessary
                 if (currentFpSpecs == null) {
-                    MealSpec m = new MealSpec();
+                    MealSpec m = MealSpec.makeMealSpec("Unnamed meal");
                     currentFpSpecs = new ArrayList<>();
-                    m.name = "Unnamed meal";
                     specMap.put(m, currentFpSpecs);
                 }
                 FoodPortionSpec fpSpec = makefoodPortionSpecFromLine(line);
@@ -88,7 +84,7 @@ final class FileParser {
         Map<String, Food> foods = db.getFoodsByIndexName(foodIndexNames);
         DateStamp currentDay = DateStamp.forCurrentDate();
         for (Map.Entry<MealSpec, List<FoodPortionSpec>> spec : mealSpecs.entrySet()) {
-            Meal m = makeMeal(spec.getKey().name, currentDay);
+            Meal m = makeMeal(spec.getKey().name(), currentDay);
             for (FoodPortionSpec fps : spec.getValue()) {
                 if (fps.error != null) {
                     // it was an error, log and then ignore
@@ -136,8 +132,8 @@ final class FileParser {
                     return;
                 }
             }
-            quantity = fps.servingCount * s.getQuantity();
-            unit = s.getQtyUnit();
+            quantity = fps.servingCount * s.quantity();
+            unit = s.qtyUnit();
         } else {
             // not serving mode
             assert (fps.unit != null);
@@ -148,7 +144,7 @@ final class FileParser {
         fpData.put(Schema.FoodPortionTable.FOOD_ID, f.getId());
         fpData.put(Schema.FoodPortionTable.SERVING_ID, s == null ? null : s.getId());
         fpData.put(Schema.FoodPortionTable.MEAL_ID, m.getId());
-        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.getAbbr());
+        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.abbr());
         fpData.put(Schema.FoodPortionTable.QUANTITY, quantity);
         FoodPortion fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW);
         fp.setFood(f);

@@ -5,6 +5,8 @@ import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.util.DateStamp;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +27,11 @@ public interface MacrosDataSource {
     Meal getMealById(Long id) throws SQLException;
 
     List<Long> getMealIdsForDay(DateStamp day) throws SQLException;
+
+    // finds whether there is a 'current meal', and returns it if so.
+    // defined as the most recently modified meal created for the current date
+    // if no meals exist for the current date, returns null
+    @Nullable Meal getCurrentMeal() throws SQLException;
 
     /* These functions construct objects for all necessary entities that match the query,
      * as well as all other entities referenced by them.

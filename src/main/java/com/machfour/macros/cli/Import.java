@@ -15,7 +15,7 @@ import java.util.List;
 
 import static com.machfour.macros.cli.CliMain.OUT;
 
-class Import extends ModeImpl {
+class Import extends CommandImpl {
     private static final String NAME = "import";
     @Override
     public String name() {

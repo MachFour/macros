@@ -4,7 +4,6 @@ import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
-import com.machfour.macros.util.MealSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -14,7 +13,7 @@ import java.util.Map;
 import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
-class Total extends ModeImpl {
+class Total extends CommandImpl {
     private static final String NAME = "total";
     @Override
     public String name() {
@@ -33,25 +32,25 @@ class Total extends ModeImpl {
         boolean verbose = args.contains("--verbose") || args.contains("-v");
         boolean per100 = args.contains("--per100");
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
-        MealSpec mealSpec = CliUtils.makeMealSpec(args);
+        MealSpec mealSpec = MealSpec.makeMealSpec(args);
         process(mealSpec, db, verbose, per100);
 
     }
 
     static void process(MealSpec mealSpec, MacrosDatabase db, boolean verbose, boolean per100) {
-        if (mealSpec.mealSpecified) {
+        if (mealSpec.mealSpecified()) {
             // total for specific meal
-            CliUtils.processMealSpec(mealSpec, db, false);
-            if (mealSpec.error != null) {
-                OUT.println(mealSpec.error);
+            mealSpec.processMealSpec(db, false);
+            if (mealSpec.error() != null) {
+                OUT.println(mealSpec.error());
                 return;
             }
             OUT.println();
-            MealPrinter.printMeal(mealSpec.createdObject, verbose, OUT);
+            MealPrinter.printMeal(mealSpec.processedObject(), verbose, OUT);
 
         } else {
             try {
-                Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day);
+                Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day());
                 MealPrinter.printMeals(mealsForDay.values(), OUT, verbose, per100, true);
             } catch (SQLException e) {
                 OUT.println("Error retrieving meals: " + e.getMessage());

@@ -25,17 +25,27 @@ public class StringJoiner<E> {
 
     private final Iterator<E> iterator;
 
-    public StringJoiner(Iterator<E> iterator) {
+    public static <E> StringJoiner<E> of(Iterator<E> iterator) {
+        return new StringJoiner<>(iterator);
+    }
+    public static <E> StringJoiner<E> of(Iterable<E> iterable) {
+        return new StringJoiner<>(iterable);
+    }
+    public static <E> StringJoiner<E> of(E element) {
+        return new StringJoiner<>(element);
+    }
+
+    private StringJoiner(Iterator<E> iterator) {
         this.iterator = iterator;
         this.sep = "";
         this.suffix = "";
         this.copies = 1;
         this.stringFunc = Object::toString;
     }
-    public StringJoiner(Iterable<E> iterable) {
+    private StringJoiner(Iterable<E> iterable) {
         this(iterable.iterator());
     }
-    public StringJoiner(E element) {
+    private StringJoiner(E element) {
         this(Collections.singletonList(element));
     }
 

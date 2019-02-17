@@ -35,22 +35,4 @@ public interface Table<M> {
         return getFactory().construct(dataMap, objectSource);
     }
 
-    /*
-       Checks that:
-       * Non null constraints as defined by the columns are upheld
-       If any violations are found, the affected column as well as an enum value describing the violation are recorded
-       in a map, which is returned at the end, after all columns have been processed.
-       Returns a list of columns whose non-null constraints have been violated, or an empty list otherwise
-       Note that if the assertion passes, then dataMap has the correct columns as keys
-     */
-    default Map<Column<M, ?>, ValidationError> validate(ColumnData<M> dataMap) {
-        List<Column<M, ?>> required = columns();
-        Map<Column<M, ?>, ValidationError> badMappings = new HashMap<>(required.size());
-        for (Column<M, ?> col : required) {
-            if (dataMap.get(col) == null && !col.isNullable()) {
-                badMappings.put(col, ValidationError.NON_NULL);
-            }
-        }
-        return badMappings;
-    }
 }

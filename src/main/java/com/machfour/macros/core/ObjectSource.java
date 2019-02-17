@@ -1,5 +1,7 @@
 package com.machfour.macros.core;
 
+import org.jetbrains.annotations.NotNull;
+
 /*
  * Describes how an object was created, which describes its state with respect to the database.
  * In particular, three conditions are relevant:
@@ -56,7 +58,17 @@ public enum ObjectSource {
      * MOD: yes
      * DB: no
      */
-    , COMPUTED ("computed"); // when adding together nutrition data objects
+    , COMPUTED ("computed") // when adding together nutrition data objects
+
+    /*
+     * Describes when an object exists as hardcoded into the business logic
+     * For example, Quantity units, and their corresponding unit servings.
+     * These objects also shouldn't be saved in the DB, as obviously they can be computed from what is in there.
+     * ID: no
+     * MOD: no
+     * DB: no
+     */
+    , INBUILT ("inbuilt");
 
 
     final String name;
@@ -64,8 +76,9 @@ public enum ObjectSource {
     ObjectSource(String name) {
         this.name = name;
     }
+
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return name;
     }
 }

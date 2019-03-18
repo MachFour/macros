@@ -150,13 +150,17 @@ class MealPrinter {
         out.println("============");
         out.println();
         for (Meal m : meals) {
-            printMeal(m, verbose, out);
-            out.println();
-            if (per100) {
-                out.println("== Nutrient total per 100g ==");
-                CliUtils.printPer100g(m.getNutritionTotal(), verbose, out);
-                out.println("=============================");
+            if (m.getFoodPortions().isEmpty()) {
+                out.println("Meal " + m.getName() + " has no recorded data");
+            } else {
+                printMeal(m, verbose, out);
                 out.println();
+                if (per100) {
+                    out.println("== Nutrient total per 100g ==");
+                    CliUtils.printPer100g(m.getNutritionTotal(), verbose, out);
+                    out.println("=============================");
+                    out.println();
+                }
             }
         }
         if (grandTotal) {

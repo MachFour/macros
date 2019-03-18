@@ -1,6 +1,7 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.Function;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -10,11 +11,11 @@ public class ArgParsing {
     private ArgParsing() {}
 
     enum Status {
-        PARSE_OK, NO_FLAG, NO_ARG
+        ARG_FOUND, NOT_FOUND, OPT_ARG_MISSING
     }
 
     // represents result of parsed argument from command line
-    static class Result {
+    protected static class Result {
         private final int index;
         private final String argument;
         private final Status status;
@@ -35,6 +36,7 @@ public class ArgParsing {
         }
 
     }
+
     /*
      * Generic function to parse an argument from a commandline
      * parser must satisfy the following properties:
@@ -42,33 +44,52 @@ public class ArgParsing {
      *     returns non-null for otherwise valid arguments
      *     when called with null, returns a default value
      */
-    static Result parseArgument(List<String> args, String flag) {
+    static <T> T parseArgument(List<String> args, String flag, Function<String, T> parser) {
+        Result r = findArgument(args, flag);
+        return parser.apply(r.argument());
+
+    }
+
+    static DateStamp parseDate(List<String> args, String flag) {
+        return parseArgument(args, flag, ArgParsing::dayStringParse);
+    }
+
+    static Result findArgument(List<String> args, String flag) {
         int detectedIndex = args.indexOf(flag) + 1;
-        String input;
+        String argument;
         int index;
         Status status;
 
         if (detectedIndex == 0) {
             // indexOf returned -1
-            input = null;
+            argument = null;
             index = -1;
-            status = Status.NO_FLAG;
+            status = Status.NOT_FOUND;
         } else if (detectedIndex >= args.size()) {
-            input = null;
+            argument = null;
             index = -1;
-            status = Status.NO_ARG;
+            status = Status.OPT_ARG_MISSING;
         } else {
-            input = args.get(detectedIndex);
+            argument = args.get(detectedIndex);
             index = detectedIndex;
-            status = Status.PARSE_OK;
+            status = Status.ARG_FOUND;
         }
-        return new Result(index, input, status);
+        return new Result(index, argument, status);
     }
-    // just naively assumes that the given argument index is the correct one
-    static Result parseArgument(List<String> args, int argIdx) {
-        assert argIdx >= 0 && argIdx < args.size();
-        String input = args.get(argIdx);
-        return new Result(argIdx, input, Status.PARSE_OK);
+    // just attempts to use the given argument index
+    static Result findArgument(List<String> args, int argIdx) {
+        assert argIdx >= 0;
+        String argument;
+        Status status;
+        if (argIdx < args.size()) {
+            argument = args.get(argIdx);
+            status = Status.ARG_FOUND;
+        } else {
+            // info not provided, so return NOT_FOUND
+            argument = null;
+            status = Status.NOT_FOUND;
+        }
+        return new Result(argIdx, argument, status);
     }
 
     // returns null for invalid, today if flag not found, or otherwise decodes day from argument string

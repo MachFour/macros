@@ -51,7 +51,11 @@ class Total extends CommandImpl {
         } else {
             try {
                 Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day());
-                MealPrinter.printMeals(mealsForDay.values(), OUT, verbose, per100, true);
+                if (mealsForDay.isEmpty()) {
+                    OUT.println("No meals recorded on " + CliUtils.prettyDay(mealSpec.day()));
+                } else {
+                    MealPrinter.printMeals(mealsForDay.values(), OUT, verbose, per100, true);
+                }
             } catch (SQLException e) {
                 OUT.println("Error retrieving meals: " + e.getMessage());
                 OUT.println();

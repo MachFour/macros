@@ -2,14 +2,10 @@ package com.machfour.macros.cli;
 
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
-import com.machfour.macros.objects.Food;
 import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.PrintStream;
-import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
@@ -32,45 +28,22 @@ public class NewMeal extends CommandImpl {
             return;
         }
 
-        /*
-
         // cases: day not specified vs day specified
         // meal exists with that name, or doesn't exist
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
-        String keyword = args.get(1);
-        Map<Long, Food> resultFoods = Collections.emptyMap();
-        try {
-            List<Long> resultIds = db.foodSearch(keyword);
-            if (!resultIds.isEmpty()) {
-                resultFoods = db.getFoodsById(resultIds);
-            }
-        } catch (SQLException e) {
-            OUT.print("SQL exception occurred: ");
-            OUT.println(e.getMessage());
+        //MealSpec mealSpec = MealSpec.makeMealSpec(args);
+        String mealName = args.get(1);
+        MealSpec mealSpec = MealSpec.makeMealSpec(mealName);
+
+        mealSpec.processMealSpec(db, true);
+        if (mealSpec.error() != null) {
+            OUT.println(mealSpec.error());
             return;
         }
-        if (resultFoods.isEmpty()) {
-            OUT.printf("No matches for keyword '%s'\n", keyword);
-        } else {
-            // work out how wide the column should be
-            int maxNameLength = 0;
-            for (Food f : resultFoods.values()) {
-                int nameLength = f.getMediumName().length();
-                if (nameLength > maxNameLength) {
-                    maxNameLength = nameLength;
-                }
-            }
-            String formatStr = "%-" + maxNameLength + "s        %s\n";
-            // horizontal line - extra spaces are for whitespace + index name length
-            String hline = StringJoiner.of("=").copies(maxNameLength+8+14).join();
-            OUT.println("Search results:");
-            OUT.println();
-            OUT.printf(formatStr, "Food name", "index name");
-            OUT.println(hline);
-            for (Food f : resultFoods.values()) {
-                OUT.printf(formatStr, f.getMediumName(), f.getIndexName());
-            }
+        if (mealSpec.created()) {
+            String prettyDay = CliUtils.prettyDay(mealSpec.day());
+            OUT.println(String.format("Created meal '%s' on %s", mealSpec.name(), prettyDay));
         }
-        */
+        //Meal toEdit = mealSpec.processedObject();
     }
 }

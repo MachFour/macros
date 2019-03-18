@@ -3,7 +3,6 @@ package com.machfour.macros.cli;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.Function;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
@@ -12,9 +11,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.cli.ArgParsing.Status.NO_ARG;
-import static com.machfour.macros.cli.ArgParsing.Status.NO_FLAG;
-import static com.machfour.macros.cli.ArgParsing.Status.PARSE_OK;
+import static com.machfour.macros.cli.ArgParsing.Status.OPT_ARG_MISSING;
+import static com.machfour.macros.cli.ArgParsing.Status.ARG_FOUND;
 
 /*
  * Stores information for a meal being input (specified) via text fields,
@@ -45,16 +43,16 @@ class MealSpec {
         if (day == null) {
             error = String.format("Invalid day format: '%s'. ", dayArg.argument());
             error += "Must be a number (e.g. 0 for today, -1 for yesterday), or a date: yyyy-mm-dd";
-        } else if (dayArg.status() == NO_ARG) {
+        } else if (dayArg.status() == OPT_ARG_MISSING) {
             error = "-d option requires an argument: <day>";
         }
         this.day = day;
-        this.daySpecified = (day != null) && dayArg.status() == PARSE_OK;
+        this.daySpecified = (day != null) && dayArg.status() == ARG_FOUND;
 
         String mealName = mealArg.argument();
         this.name = mealName;
-        this.mealSpecified = mealName != null && mealArg.status() == PARSE_OK;
-        if (mealArg.status() == NO_ARG) {
+        this.mealSpecified = mealName != null && mealArg.status() == ARG_FOUND;
+        if (mealArg.status() == OPT_ARG_MISSING) {
             error = "-m option requires an argument: <meal>";
         }
     }
@@ -103,7 +101,6 @@ class MealSpec {
         if (error != null) {
             return;
         }
-        // if adding code here, uncomment the return statement above
     }
 
 
@@ -115,13 +112,18 @@ class MealSpec {
     // If there are no meals recorded for the day, then an error is given.
     @NotNull
     static MealSpec makeMealSpec(List<String> args) {
-        ArgParsing.Result dayArg = ArgParsing.parseArgument(args, "-d");
-        ArgParsing.Result mealArg = ArgParsing.parseArgument(args, "-m");
+        ArgParsing.Result dayArg = ArgParsing.findArgument(args, "-d");
+        ArgParsing.Result mealArg = ArgParsing.findArgument(args, "-m");
         return new MealSpec(dayArg, mealArg);
     }
     @NotNull
     static MealSpec makeMealSpec(String name, DateStamp day) {
         return new MealSpec(name, day);
+    }
+
+    @NotNull
+    static MealSpec makeMealSpec(ArgParsing.Result nameArg, ArgParsing.Result dayArg) {
+        return new MealSpec(nameArg, dayArg);
     }
     @NotNull
     static MealSpec makeMealSpec(String name) {

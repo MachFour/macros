@@ -28,7 +28,10 @@ class Edit extends CommandImpl {
         }
 
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
-        MealSpec mealSpec = MealSpec.makeMealSpec(args);
+        ArgParsing.Result mealNameArg = ArgParsing.findArgument(args, 1);
+        ArgParsing.Result dayArg = ArgParsing.findArgument(args, 2);
+        MealSpec mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg);
+
         mealSpec.processMealSpec(db, true);
         if (mealSpec.error() != null) {
             OUT.println(mealSpec.error());
@@ -58,13 +61,9 @@ class Edit extends CommandImpl {
         while (true) {
             // TODO reload meal
             OUT.println();
-            OUT.println();
             OUT.printf("Editing meal: %s on %s\n", toEdit.getName(), CliUtils.prettyDay(toEdit.getDay()));
             OUT.println();
-            OUT.println("Please choose from one of the following options");
-            printInteractiveHelp(OUT);
-            OUT.println();
-            OUT.print("Type the letter of the action to perform and press enter: ");
+            OUT.print("Action (? for help): ");
             char action = getChar();
             OUT.println();
             switch (action) {
@@ -95,9 +94,12 @@ class Edit extends CommandImpl {
                     showFoodPortions(toEdit);
                     break;
                 case '?':
+                    OUT.println();
+                    OUT.println("Please choose from one of the following options");
                     printInteractiveHelp(OUT);
                     break;
                 case 'x':
+                case 'q':
                 case '\0':
                     return;
                 default:
@@ -124,15 +126,15 @@ class Edit extends CommandImpl {
 
     private static void printInteractiveHelp(PrintStream out) {
         out.println("Actions: ");
-        out.println("a - add a new food portion");
-        out.println("d - delete a food portion");
-        out.println("D - delete the entire meal");
-        out.println("e - edit a food portion");
-        out.println("m - move a food portion to another meal");
-        out.println("n - change the name of the meal");
-        out.println("s - show current food portions");
-        out.println("? - print this help");
-        out.println("x - exit this editor");
+        out.println("a   - add a new food portion");
+        out.println("d   - delete a food portion");
+        out.println("D   - delete the entire meal");
+        out.println("e   - edit a food portion");
+        out.println("m   - move a food portion to another meal");
+        out.println("n   - change the name of the meal");
+        out.println("s   - show current food portions");
+        out.println("?   - print this help");
+        out.println("x/q - exit this editor");
     }
 
     private static void addPortion(Meal toEdit, MacrosDatabase db) {
@@ -225,7 +227,7 @@ class Edit extends CommandImpl {
 
     @Override
     public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s [-m meal] [-d day]\n", PROGNAME, NAME);
+        out.printf("Usage: %s %s [meal [day]]\n", PROGNAME, NAME);
         out.println();
         out.println("Interactive meal editor");
         out.println();

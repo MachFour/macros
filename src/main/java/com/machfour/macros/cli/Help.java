@@ -16,7 +16,7 @@ class Help extends CommandImpl {
     public void printHelp(PrintStream out) {
         out.println("Max's nutrition calculator");
         out.println("Available commands:");
-        for (Command m : CliMain.COMMANDS) {
+        for (Command m : Commands.COMMANDS) {
             if (m.isUserCommand()) {
                 out.println(m.name());
             }
@@ -28,8 +28,8 @@ class Help extends CommandImpl {
     @Override
     public void doAction(List<String> args) {
         // help on a particular action
-        if (args.size() >= 2 && CliMain.CMDS_BY_NAME.containsKey(args.get(1))) {
-            Command forHelp = CliMain.CMDS_BY_NAME.get(args.get(1));
+        if (args.size() >= 2 && Commands.CMDS_BY_NAME.containsKey(args.get(1))) {
+            Command forHelp = Commands.CMDS_BY_NAME.get(args.get(1));
             forHelp.printHelp(OUT);
         } else {
             printHelp(OUT);

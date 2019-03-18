@@ -307,13 +307,22 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         fat = Math.max(fat - satFat, 0);
         // if total energy is missing, fallback to summing over previous energy quantities
         double totalEnergy = amountOf(CALORIES, protein + fat + satFat + carb + sugar + fibre);
+        if (totalEnergy > 0) {
+            proportionMap.put(PROTEIN, protein/totalEnergy*100);
+            proportionMap.put(FAT, fat/totalEnergy*100);
+            proportionMap.put(SATURATED_FAT, satFat/totalEnergy*100);
+            proportionMap.put(CARBOHYDRATE, carb/totalEnergy*100);
+            proportionMap.put(SUGAR, sugar/totalEnergy*100);
+            proportionMap.put(FIBRE, fibre/totalEnergy*100);
+        } else {
+            proportionMap.put(PROTEIN, 0.0);
+            proportionMap.put(FAT, 0.0);
+            proportionMap.put(SATURATED_FAT, 0.0);
+            proportionMap.put(CARBOHYDRATE, 0.0);
+            proportionMap.put(SUGAR, 0.0);
+            proportionMap.put(FIBRE, 0.0);
+        }
 
-        proportionMap.put(PROTEIN, protein/totalEnergy*100);
-        proportionMap.put(FAT, fat/totalEnergy*100);
-        proportionMap.put(SATURATED_FAT, satFat/totalEnergy*100);
-        proportionMap.put(CARBOHYDRATE, carb/totalEnergy*100);
-        proportionMap.put(SUGAR, sugar/totalEnergy*100);
-        proportionMap.put(FIBRE, fibre/totalEnergy*100);
         return proportionMap;
     }
 

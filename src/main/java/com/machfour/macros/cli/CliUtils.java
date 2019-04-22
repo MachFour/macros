@@ -43,6 +43,7 @@ public class CliUtils {
         longerNames.put(SUGAR, "Sugar");
         longerNames.put(FIBRE, "Fibre");
         longerNames.put(SODIUM, "Sodium");
+        longerNames.put(CALCIUM, "Calcm");
         longerNames.put(QUANTITY, "Qty");
 
         prettyNames = new HashMap<>();
@@ -55,6 +56,7 @@ public class CliUtils {
         prettyNames.put(SUGAR, "Sugar");
         prettyNames.put(FIBRE, "Fibre");
         prettyNames.put(SODIUM, "Sodium");
+        prettyNames.put(CALCIUM, "Calcium");
         prettyNames.put(QUANTITY, "Quantity");
         allNutrientsToPrint = Arrays.asList(
                 KILOJOULES
@@ -66,6 +68,7 @@ public class CliUtils {
                 , SUGAR
                 , FIBRE
                 , SODIUM
+                , CALCIUM
         );
     }
 

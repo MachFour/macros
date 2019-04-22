@@ -39,6 +39,7 @@ class MealPrinter {
                 , SUGAR
                 , FIBRE
                 , SODIUM
+                , CALCIUM
         );
     }
 

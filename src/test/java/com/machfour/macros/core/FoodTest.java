@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FoodTest {
     private static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
     private static LinuxDatabase db;
-    private static ColumnData<Food> foodDc;
+    private static ColumnData<Food> foodData;
     private static Food testFood;
 
     @BeforeAll
@@ -39,26 +39,26 @@ class FoodTest {
 
     @BeforeAll
     static void doFood() {
-        foodDc = new ColumnData<>(Schema.FoodTable.instance());
-        foodDc.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
-        foodDc.put(Schema.FoodTable.CREATE_TIME, 0L);
-        foodDc.put(Schema.FoodTable.MODIFY_TIME, 0L);
-        foodDc.put(Schema.FoodTable.INDEX_NAME, "food1");
-        foodDc.put(Schema.FoodTable.BRAND, "Max's");
-        foodDc.put(Schema.FoodTable.VARIETY, "really good");
-        foodDc.put(Schema.FoodTable.NAME, "food");
-        foodDc.put(Schema.FoodTable.VARIETY_AFTER_NAME, false);
-        foodDc.put(Schema.FoodTable.NOTES, "notes");
-        foodDc.put(Schema.FoodTable.CATEGORY, "dairy");
-        foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.getName());
-        foodDc.put(Schema.FoodTable.USDA_INDEX, null);
-        foodDc.put(Schema.FoodTable.NUTTAB_INDEX, null);
-        testFood = Food.factory().construct(foodDc, ObjectSource.IMPORT);
+        foodData = new ColumnData<>(Schema.FoodTable.instance());
+        foodData.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
+        foodData.put(Schema.FoodTable.CREATE_TIME, 0L);
+        foodData.put(Schema.FoodTable.MODIFY_TIME, 0L);
+        foodData.put(Schema.FoodTable.INDEX_NAME, "food1");
+        foodData.put(Schema.FoodTable.BRAND, "Max's");
+        foodData.put(Schema.FoodTable.VARIETY, "really good");
+        foodData.put(Schema.FoodTable.NAME, "food");
+        foodData.put(Schema.FoodTable.VARIETY_AFTER_NAME, false);
+        foodData.put(Schema.FoodTable.NOTES, "notes");
+        foodData.put(Schema.FoodTable.CATEGORY, "dairy");
+        foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.getName());
+        foodData.put(Schema.FoodTable.USDA_INDEX, null);
+        foodData.put(Schema.FoodTable.NUTTAB_INDEX, null);
+        testFood = Food.factory().construct(foodData, ObjectSource.IMPORT);
     }
 
     @Test
     void getFoodFromDb() {
-        ColumnData<Food> modifiedData = foodDc.copy();
+        ColumnData<Food> modifiedData = foodData.copy();
         modifiedData.put(Schema.FoodTable.ID, 50L);
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {
@@ -93,7 +93,7 @@ class FoodTest {
     void saveALotOfFood() {
         List<Food> lotsOfFoods = new ArrayList<>(1000);
         for (long i = 0; i < 1000; i++) {
-            ColumnData<Food> modifiedData = foodDc.copy();
+            ColumnData<Food> modifiedData = foodData.copy();
             modifiedData.put(Schema.FoodTable.ID, i);
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food" + i);
             Food modifiedIndexName = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
@@ -112,7 +112,7 @@ class FoodTest {
 
     @Test
     void saveFoodFromDb() {
-        ColumnData<Food> modifiedData = foodDc.copy();
+        ColumnData<Food> modifiedData = foodData.copy();
         modifiedData.put(Schema.FoodTable.ID, 50L);
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {
@@ -136,7 +136,7 @@ class FoodTest {
 
     @Test
     void testSaveWithId() {
-        ColumnData<Food> modifiedData = foodDc.copy();
+        ColumnData<Food> modifiedData = foodData.copy();
         modifiedData.put(Schema.FoodTable.ID, 500L);
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {

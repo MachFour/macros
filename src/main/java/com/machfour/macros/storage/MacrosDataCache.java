@@ -94,8 +94,18 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public Map<Long, Food> getFoodsById(List<Long> foodIds) throws SQLException {
+    public Map<Long, Food> getFoodsById(Collection<Long> foodIds) throws SQLException {
         return upstream.getFoodsById(foodIds);
+    }
+
+    @Override
+    public Map<String, Food> getFoodsByIndexName(Collection<String> indexNames) throws SQLException {
+        return upstream.getFoodsByIndexName(indexNames);
+    }
+
+    @Override
+    public Map<String, Long> getFoodIdsByIndexName(Collection<String> indexNames) throws SQLException {
+        return upstream.getFoodIdsByIndexName(indexNames);
     }
 
     @Override

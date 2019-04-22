@@ -1,5 +1,7 @@
-package com.machfour.macros.core;
+package com.machfour.macros.core.datatype;
 
+import com.machfour.macros.core.datatype.MacrosType;
+import com.machfour.macros.core.datatype.SqliteType;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 

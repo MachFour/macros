@@ -3,12 +3,10 @@ package com.machfour.macros.storage;
 import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
-import com.machfour.macros.core.MacrosType;
+import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.core.Table;
-import com.machfour.macros.core.Types;
+import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.util.StringJoiner;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package com.machfour.macros.core;
+package com.machfour.macros.core.datatype;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

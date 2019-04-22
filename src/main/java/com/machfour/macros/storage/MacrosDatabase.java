@@ -68,8 +68,14 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     // The collection of keys must not be empty; an assertion error is thrown if so
     protected abstract <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
+    protected abstract <M, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+
     private <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : getRawObjectsByKeysNoEmpty(t, keyCol, keys);
+    }
+
+    private <M, J> Map<J, Long> getIdsFromKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+        return keys.isEmpty() ? Collections.emptyMap() : getIdsByKeysNoEmpty(t, keyCol, keys);
     }
 
     // returns map of all objects in table, by ID
@@ -187,7 +193,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    public Map<Long, Food> getFoodsById(@NotNull List<Long> foodIds) throws SQLException {
+    public Map<Long, Food> getFoodsById(@NotNull Collection<Long> foodIds) throws SQLException {
         Map<Long, Food> foods = getRawObjectsByIds(Schema.FoodTable.instance(), foodIds);
         if (!foods.isEmpty()) {
             Map<Long, Serving> servings = getRawServingsForFoods(foods);
@@ -199,11 +205,17 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return foods;
     }
 
+    @Override
+    public Map<String, Long> getFoodIdsByIndexName(@NotNull Collection<String> indexNames) throws SQLException {
+        return getIdsFromKeys(Food.table(), Schema.FoodTable.INDEX_NAME, indexNames);
+    }
+
     /*
      * Constructs full food objects by their index name
      * Returns a map of index name to food object
      */
-    public Map<String, Food> getFoodsByIndexName(@NotNull List<String> indexNames) throws SQLException {
+    @Override
+    public Map<String, Food> getFoodsByIndexName(@NotNull Collection<String> indexNames) throws SQLException {
         Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
         if (!foods.isEmpty()) {
             // TODO this is kind of inefficient
@@ -364,7 +376,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return getRawObjectByKey(t, t.getIdColumn(), id);
     }
 
-    private <M extends MacrosPersistable> Map<Long, M> getRawObjectsByIds(Table<M> t, List<Long> ids) throws SQLException {
+    private <M extends MacrosPersistable> Map<Long, M> getRawObjectsByIds(Table<M> t, Collection<Long> ids) throws SQLException {
         return getRawObjectsByKeys(t, t.getIdColumn(), ids);
     }
 

@@ -22,7 +22,12 @@ public interface MacrosDataSource {
 
     Food getFoodByIndexName(String indexName) throws SQLException;
 
-    Map<Long, Food> getFoodsById(List<Long> foodIds) throws SQLException;
+    Map<String, Food> getFoodsByIndexName(Collection<String> indexNames) throws SQLException;
+    Map<Long, Food> getFoodsById(Collection<Long> foodIds) throws SQLException;
+
+    // creates a map entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
+    // items in indexNames that do not correspond to a food, will not appear in the output map
+    Map<String, Long> getFoodIdsByIndexName(Collection<String> indexNames) throws SQLException;
 
     Meal getMealById(Long id) throws SQLException;
 

@@ -59,10 +59,6 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         }
     }
 
-    /*
-     * Sets the given column value to (a String representation of) the given value.
-     * value cannot be null; an exception will be thrown if so
-     */
     public <J> void setField(Column<M, J> col, J value) {
         draftData.put(col, value);
         isValidValue.put(col, validateSingle(col).isEmpty());

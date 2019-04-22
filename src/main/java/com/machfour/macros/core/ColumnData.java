@@ -183,11 +183,11 @@ public final class ColumnData<M> {
     }
 
     // will throw exception if the column is not present
-    public <J> void put(@NotNull Column<M, J> col, J data) {
+    public <J> void put(@NotNull Column<M, J> col, J value) {
         assertHasColumn(col);
         assertMutable();
-        this.data[col.index()] = data;
-        hasData[col.index()] = (data != null);
+        data[col.index()] = value;
+        hasData[col.index()] = (value != null);
     }
 
     public boolean hasData(Column<M, ?> col) {

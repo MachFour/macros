@@ -1,5 +1,6 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.core.ObjectSource;
@@ -66,18 +67,23 @@ final class FileParser {
         }
         return specMap;
     }
-    List<Meal> parseFile(String fileName, MacrosDatabase db) throws IOException, SQLException {
-        List<String> fileLines = Files.readAllLines(Paths.get(fileName));
-        // also gets list of index names to retrieve
-        Map<MealSpec, List<FoodPortionSpec>> mealSpecs = createSpecFromLines(fileLines);
-
-        // go through all food index names to retrieve the necessary foods all in one go
-        List<String> foodIndexNames = new ArrayList<>();
-        for (List<FoodPortionSpec> portionSpecs : mealSpecs.values()) {
+    private static Set<String> getAllIndexNames(Collection<List<FoodPortionSpec>> allFpSpecs) {
+        // assume around 8 food portions per list
+        Set<String> foodIndexNames = new HashSet<>(8*allFpSpecs.size());
+        for (List<FoodPortionSpec> portionSpecs : allFpSpecs) {
             for (FoodPortionSpec fps : portionSpecs) {
                 foodIndexNames.add(fps.foodIndexName);
             }
         }
+        return foodIndexNames;
+    }
+    List<Meal> parseFile(String fileName, MacrosDataSource db) throws IOException, SQLException {
+        List<String> fileLines = Files.readAllLines(Paths.get(fileName));
+        // also gets list of index names to retrieve
+        Map<MealSpec, List<FoodPortionSpec>> mealSpecs = createSpecFromLines(fileLines);
+
+        // get all the index names in one place so that we can grab them all at once from the DB
+        Set<String> foodIndexNames = getAllIndexNames(mealSpecs.values());
 
         List<Meal> meals = new ArrayList<>();
 

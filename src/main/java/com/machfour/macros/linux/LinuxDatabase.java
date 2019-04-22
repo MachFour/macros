@@ -168,8 +168,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return resultList;
     }
 
-    // Retrives an object by a key column, and constructs it without any FK object instances.
-    // Returns null if no row in the corresponding table had a key with the given value
+    // Constructs a map of key column value to raw object data (i.e. no object references initialised
+    // Keys that do not exist in the database will not be contained in the output map
+    // The returned map is never null
     @Override
     protected <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
@@ -194,6 +195,33 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             }
         }
         return objects;
+    }
+
+    // Constructs a map of key column value to ID
+    // Keys that do not exist in the database will not be contained in the output map
+    // The returned map is never null
+    @Override
+    protected <M, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+        // if the list of keys is empty, every row will be returned
+        assert !keys.isEmpty() : "List of keys is empty";
+        assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
+        List<Column<M, ?>> keyAndId = Arrays.asList(keyCol, t.getIdColumn()); // select the ID column plus the key
+
+        Map<J, Long> idMap = new HashMap<>(keys.size(), 1);
+        try (Connection c = getConnection();
+             PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, keyAndId, keyCol, keys.size(), false))) {
+            LinuxDatabaseUtils.bindObjects(p, keys);
+            try (ResultSet rs = p.executeQuery()) {
+                for (rs.next(); !rs.isAfterLast(); rs.next()) {
+                    long id = rs.getLong(t.getIdColumn().sqlName());
+                    J key = keyCol.getType().cast(rs.getObject(keyCol.sqlName())); //XXX wow
+                    assert (key != null);
+                    assert (!idMap.containsKey(key)) : "Key " + key + " already in returned map!";
+                    idMap.put(key, id);
+                }
+            }
+        }
+        return idMap;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.machfour.macros.core;
 
+import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.validation.Validation;
 
 import java.util.List;

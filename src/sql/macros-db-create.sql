@@ -303,6 +303,7 @@ CREATE TABLE NutritionData (
     , sodium               REAL DEFAULT NULL
     , salt                 REAL DEFAULT NULL
     , calcium              REAL DEFAULT NULL
+    , iron                 REAL DEFAULT NULL
     , water                REAL DEFAULT NULL
     , alcohol              REAL DEFAULT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0

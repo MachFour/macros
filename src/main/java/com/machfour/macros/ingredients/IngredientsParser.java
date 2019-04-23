@@ -6,9 +6,12 @@ import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.Schema;
+import com.machfour.macros.objects.CompositeFood;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodType;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.validation.SchemaViolation;
+import com.machfour.macros.validation.ValidationError;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.lang.reflect.Type;
@@ -75,24 +78,34 @@ public class IngredientsParser {
         return indexNames;
     }
 
-    static Food processCompositeFoodSpec(CompositeFoodSpec spec, MacrosDataSource dataSource) {
+    static Food processCompositeFoodSpec(CompositeFoodSpec spec, MacrosDataSource dataSource) throws SQLException {
         MacrosBuilder<Food> builder = new MacrosBuilder<>(Food.table());
         builder.setField(Schema.FoodTable.INDEX_NAME, spec.indexName);
         builder.setField(Schema.FoodTable.NAME, spec.name);
         builder.setField(Schema.FoodTable.VARIETY, spec.variety);
         builder.setField(Schema.FoodTable.VARIETY_AFTER_NAME, false);
         builder.setField(Schema.FoodTable.NOTES, spec.notes);
-        builder.setField(Schema.FoodTable.CATEGORY, "Recipes");
+        builder.setField(Schema.FoodTable.CATEGORY, "Recipes"); //XXX
         builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
 
-        // TODO
 
         //spec.ingredients
 
-        Food f = builder.build();
-        f.addIngredient(null);
+        try {
+            CompositeFood composite = (CompositeFood) builder.build(); // Food.factory().construct() will ensure this
+            // TODO remove this dependency!
+            //dataSource.saveObject(composite); // save it
+            //composite = dataSource.getFoodByIndexName(spec.indexName); // ... and recreate it with ID
+            // create the ingredients
 
-        return f;
+            composite.addIngredient(null);
+
+            return composite;
+        } catch (SchemaViolation e1) {
+            throw e1;
+        }
+        // get the ID
+
     }
 
     static List<Food> processParsedCompositeFoods(Collection<CompositeFoodSpec> parseResult, MacrosDataSource ds) throws SQLException {

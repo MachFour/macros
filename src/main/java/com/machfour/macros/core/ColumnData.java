@@ -89,11 +89,8 @@ public final class ColumnData<M> {
     public String toString() {
         StringBuilder str = new StringBuilder("ColumnData<").append(table.name()).append("> [");
         for (Column<M, ?> col: columns) {
-            str.append(col.sqlName());
-            str.append(" = ");
             // TODO replace with Objects.toString() when Android API level can be bumped
-            str.append(String.valueOf(data[col.index()]));
-            str.append(", ");
+            str.append(String.format("%s = %s, ", col.sqlName(), data[col.index()]));
         }
         str.append("]");
         return str.toString();

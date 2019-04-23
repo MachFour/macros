@@ -37,7 +37,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         }
         if (withNotes) {
             String notes = getNotes();
-            if (getNotes() != null && !notes.isEmpty()) {
+            if (notes != null && !notes.isEmpty()) {
                 sb.append(" [").append(notes).append("]");
             }
         }
@@ -92,7 +92,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
     public void setFood(@NotNull Food f) {
         assert food == null && foreignKeyMatches(this, Schema.FoodPortionTable.FOOD_ID, f);
         food = f;
-        nutritionData = f.getNutritionData(getQuantity());
+        nutritionData = f.getNutritionData().rescale(getQuantity(), getQtyUnit());
     }
 
     @NotNull

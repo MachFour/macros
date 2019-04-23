@@ -108,7 +108,7 @@ public class Schema {
             INDEX_NAME = builder("index_name", Types.TEXT, columnIndex++).notNull().inSecondaryKey().unique().build();
             BRAND = builder("brand", Types.TEXT, columnIndex++).build();
             VARIETY = builder("variety", Types.TEXT, columnIndex++).build();
-            VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN, columnIndex++).notNull().build();
+            VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN, columnIndex++).notNull().defaultValue(false).build();
             NAME = builder("name", Types.TEXT, columnIndex++).notNull().build();
             NOTES = builder("notes", Types.TEXT, columnIndex++).build();
             FOOD_TYPE = builder("food_type", Types.TEXT, columnIndex++).notEditable().notNull().defaultValue(FoodType.PRIMARY.getName()).build();
@@ -375,6 +375,7 @@ public class Schema {
         public static final Column<NutritionData, Double> SODIUM;
         public static final Column<NutritionData, Double> SALT;
         public static final Column<NutritionData, Double> CALCIUM;
+        public static final Column<NutritionData, Double> IRON;
         public static final Column<NutritionData, Double> WATER;
         public static final Column<NutritionData, Double> ALCOHOL;
         public static final Column.Fk<NutritionData, Long, Food> FOOD_ID;
@@ -408,6 +409,7 @@ public class Schema {
             SODIUM = builder("sodium", Types.REAL, columnIndex++).build();
             SALT = builder("salt", Types.REAL, columnIndex++).build();
             CALCIUM = builder("calcium", Types.REAL, columnIndex++).build();
+            IRON = builder("iron", Types.REAL, columnIndex++).build();
             WATER = builder("water", Types.REAL, columnIndex++).build();
             ALCOHOL = builder("alcohol", Types.REAL, columnIndex++).build();
             // FOOD_ID doesn't have to be null for computed instances
@@ -442,6 +444,7 @@ public class Schema {
                     , SODIUM
                     , SALT
                     , CALCIUM
+                    , IRON
                     , WATER
                     , ALCOHOL
             ));

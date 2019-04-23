@@ -28,47 +28,20 @@ public class Food extends MacrosEntity<Food> {
     private NutritionData nutritionData;
     private FoodType foodType;
     private FoodCategory foodCategory;
-    private final List<Ingredient> ingredients;
 
-    private Food(ColumnData<Food> dataMap, ObjectSource objectSource) {
+    protected Food(ColumnData<Food> dataMap, ObjectSource objectSource) {
         super(dataMap, objectSource);
         servings = new ArrayList<>();
         foodType = null;
         nutritionData = null;
         foodType = FoodType.fromString(dataMap.get(Schema.FoodTable.FOOD_TYPE));
-        ingredients = (foodType == FoodType.COMPOSITE) ? new ArrayList<>() : null;
         sortableName = makeSortableName();
-    }
-
-    public List<Ingredient> getIngredients() {
-        assert foodType == FoodType.COMPOSITE;
-        return Collections.unmodifiableList(ingredients);
-    }
-
-    public void addIngredient(@NotNull Ingredient i) {
-        assert foodType.equals(FoodType.COMPOSITE)
-                && !ingredients.contains(i)
-                && MacrosEntity.foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
-        ingredients.add(i);
     }
 
     // quantity corresponds to that contained in the Schema.NutritionDataTable.QUANTITY table
     @NotNull
     public NutritionData getNutritionData() {
-        // TODO merge with compositeFood's nutrition data
-        if (foodType == FoodType.COMPOSITE) {
-            List<NutritionData> nutritionComponents = new ArrayList<>(ingredients.size());
-            for (Ingredient i : ingredients) {
-                nutritionComponents.add(i.getNutritionData());
-            }
-            return NutritionData.sum(nutritionComponents);
-        } else {
-            return nutritionData;
-        }
-    }
-
-    public NutritionData getNutritionData(double quantity) {
-        return getNutritionData().rescale(quantity);
+        return nutritionData;
     }
 
     public void setNutritionData(@NotNull NutritionData nd) {
@@ -100,8 +73,17 @@ public class Food extends MacrosEntity<Food> {
     public Factory<Food> getFactory() {
         return factory();
     }
+
+    // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
+    // Hooray for preferring static constructors over new!!!
     public static Factory<Food> factory() {
-        return Food::new;
+        return (dataMap, objectSource) -> {
+            if (FoodType.fromString(dataMap.get(Schema.FoodTable.FOOD_TYPE)).equals(FoodType.COMPOSITE)) {
+                return new CompositeFood(dataMap, objectSource);
+            } else {
+                return new Food(dataMap, objectSource);
+            }
+        };
     }
 
     public void addServing(@NotNull Serving s) {

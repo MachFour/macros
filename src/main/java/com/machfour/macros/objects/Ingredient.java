@@ -87,7 +87,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     public void setIngredientFood(@NotNull Food f) {
         assert ingredientFood == null && foreignKeyMatches(this, Schema.IngredientTable.INGREDIENT_FOOD_ID, f);
         ingredientFood = f;
-        nutritionData = f.getNutritionData(getQuantity());
+        nutritionData = f.getNutritionData().rescale(getQuantity(), getQtyUnit());
     }
 
     @NotNull

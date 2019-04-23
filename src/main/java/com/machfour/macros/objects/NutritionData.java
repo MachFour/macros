@@ -124,6 +124,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         return unitString.get(col);
     }
 
+    // Currently, the result is always converted to grams
     public static NutritionData sum(List<NutritionData> components) {
         double sumQuantity = 0;
 
@@ -160,6 +161,34 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
         return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
+    }
+
+    // Uses data from the secondary object to fill in missing values from the first
+    // Any mismatches are ignored; the primary data is used
+    public static NutritionData combine(NutritionData primary, NutritionData secondary) {
+        // TODO check this logic
+        //if (secondary.getQuantity() != primary.getQuantity()) {
+        //    secondary = secondary.rescale(primary.getQuantity());
+        //}
+        ColumnData<NutritionData> combinedDataMap = primary.copyDataForNew();
+        Map<Column<NutritionData, Double>, Boolean> combinedHasData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
+
+        for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
+            // note: hasCompleteData is a stricter condition than hasData:
+            // hasCompleteData can be false even if there is a non-null value for that column, when the
+            // nutritionData object was produced by summation and there was at least one food with missing data.
+            // for this purpose, we'll only replace the primary data if it was null
+            if (!primary.hasData(col) && secondary.hasData(col)) {
+                combinedDataMap.put(col, secondary.getData(col));
+                // !hasData implies !hasCompleteData, so we use the secondary value
+                combinedHasData.put(col, secondary.hasCompleteData(col));
+            } else {
+                combinedHasData.put(col, primary.hasCompleteData(col));
+            }
+        }
+        combinedDataMap.put(DATA_SOURCE, "Composite data");
+        return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
+
     }
 
     @Nullable
@@ -263,12 +292,14 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
         // if converting between volume and mass quantity units, we need to change the quantity value
         // according to the density.
+        // e.g. per 100mL is the same as per 92g, when the density is 0.92
         double ratio = currentUnit.metricEquivalent() / targetUnit.metricEquivalent();
         if (!currentUnit.isVolumeUnit() && targetUnit.isVolumeUnit()) {
-            ratio *= density;
-        } else if (currentUnit.isVolumeUnit() && !targetUnit.isVolumeUnit()) { // liquid units to solid units
             ratio /= density;
+        } else if (currentUnit.isVolumeUnit() && !targetUnit.isVolumeUnit()) { // liquid units to solid units
+            ratio *= density;
         }
+        // else ratio *= 1.0;
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData = copyDataForNew();
         newData.put(QUANTITY, newQuantity);
@@ -355,10 +386,12 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         return getFood() != null;
     }
 
-    // Sums the nutrition data components, converting them to grams first, if necessary.
+    // For current nutrition values in this object, per given current quantity,
+    // returns a new nutritionData object with the nutrition values rescaled to
+    // correspond to the new quantity, in the same unit
     @NotNull
-    public NutritionData rescale(double quantity) {
-        double conversionRatio = quantity / getQuantity();
+    public NutritionData rescale(double newQuantity) {
+        double conversionRatio = newQuantity / getQuantity();
         ColumnData<NutritionData> newData = copyDataForNew();
         for (Column<NutritionData, Double> c : NUTRIENT_COLUMNS) {
             //if (hasCompleteData(c)) {
@@ -368,6 +401,19 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             }
         }
         return new NutritionData(newData, ObjectSource.COMPUTED);
+    }
+
+
+    // For current nutrition values in this object, per given current quantity,
+    // returns a new nutritionData object with the nutrition values rescaled to
+    // correspond to the new quantity, in the new unit
+    @NotNull
+    public NutritionData rescale(double newQuantity, QtyUnit newUnit) {
+        // default density for rescaling is 1.0
+        double density = getDensity() != null ? getDensity() : 1.0;
+        boolean isDensityGuessed = getDensity() == null;
+        NutritionData convertedUnit = convertQuantityUnit(newUnit, density, isDensityGuessed);
+        return convertedUnit.rescale(newQuantity);
     }
 
     public double getQuantity() {

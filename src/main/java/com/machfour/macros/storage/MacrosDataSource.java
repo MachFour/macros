@@ -50,6 +50,7 @@ public interface MacrosDataSource {
     Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException;
 
     // returns number of objects saved correctly (i.e. 0 or 1)
+    // TODO return the ID of the saved object
     <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
 
     /* These functions save the objects given to them into the database, via INSERT or UPDATE.
@@ -61,6 +62,7 @@ public interface MacrosDataSource {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
+    // TODO return the ID of the inserted objects
     <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException;
     <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException;
 

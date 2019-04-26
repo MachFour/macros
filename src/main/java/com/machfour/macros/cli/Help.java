@@ -14,7 +14,10 @@ class Help extends CommandImpl {
     }
     @Override
     public void printHelp(PrintStream out) {
-        out.println("Max's nutrition calculator");
+        out.println("################################");
+        out.println("## Max's nutrition calculator ##");
+        out.println("################################");
+        out.println();
         out.println("Available commands:");
         for (Command m : Commands.COMMANDS) {
             if (m.isUserCommand()) {

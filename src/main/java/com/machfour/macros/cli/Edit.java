@@ -12,6 +12,8 @@ import com.machfour.macros.util.FoodPortionSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.machfour.macros.cli.CliMain.OUT;
@@ -32,7 +34,7 @@ class Edit extends CommandImpl {
         ArgParsing.Result dayArg = ArgParsing.findArgument(args, 2);
         MealSpec mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg);
 
-        mealSpec.processMealSpec(db, true);
+        mealSpec.process(db, true);
         if (mealSpec.error() != null) {
             OUT.println(mealSpec.error());
             return;
@@ -53,7 +55,7 @@ class Edit extends CommandImpl {
                 return;
             }
         } catch (SQLException e) {
-            // exit
+            OUT.println(e);
             return;
         }
         assert (toEdit.getObjectSource() == ObjectSource.DATABASE) : "Not editing an object from the database";
@@ -143,7 +145,7 @@ class Edit extends CommandImpl {
         String inputString = CliUtils.getStringInput(IN, OUT);
         if (inputString != null && !inputString.isEmpty()) {
             FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(inputString);
-            Portion.process(toEdit, spec, db);
+            Portion.process(toEdit, Collections.singletonList(spec), db);
         }
     }
 

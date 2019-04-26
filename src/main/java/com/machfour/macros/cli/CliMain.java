@@ -13,16 +13,13 @@ public class CliMain {
     static final PrintStream ERR = System.err;
     static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
 
-    private static @NotNull Command parseCommand(String modeString) {
-        Command defaultCommand = Commands.INVALID_COMMAND;
-        if (modeString == null) {
-            return defaultCommand;
-        }
-        String cleanedCmdString = modeString.trim();
-        if (cleanedCmdString.startsWith("--")) {
-            cleanedCmdString = cleanedCmdString.substring(2);
-        }
-        return Commands.CMDS_BY_NAME.getOrDefault(cleanedCmdString, defaultCommand);
+    private static String cleanInput(@NotNull String s) {
+        s = s.trim();
+        return s.startsWith("--") ? s.substring(2) : s;
+    }
+
+    private static @NotNull Command parseCommand(@NotNull String userInput) {
+        return Commands.CMDS_BY_NAME.getOrDefault(cleanInput(userInput), Commands.INVALID_COMMAND);
     }
 
     public static void main(String[] args) {

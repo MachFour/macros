@@ -135,11 +135,18 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         return allValidationErrors;
     }
 
+    /*
+     * If there are no validation errors, attempts to construct the object
+     * using the current data. A copy of the data is used, so that this
+     * Builder object's data may continue to be changed and other objects
+     * created after a successful build.
+     */
     public M build() {
         if (!canConstruct()) {
             throw new IllegalStateException("Field values are not all valid");
         }
-        return objectFactory.construct(draftData, ObjectSource.USER_NEW);
+        ColumnData<M> buildData = draftData.copy();
+        return objectFactory.construct(buildData, ObjectSource.USER_NEW);
     }
 
     public boolean canConstruct() {

@@ -4,6 +4,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -27,42 +28,61 @@ class MealSpec {
     private final boolean mealSpecified;
     private final boolean daySpecified;
     private Meal processedObject;
+
+    // has process() been called?
+    private boolean processed;
     // whether the processedObject was newly created or already existed in the DB
     private boolean created;
     private String error;
 
+    // default values
+    private void defaultValues() {
+        processed = false;
+        created = false;
+        error = null;
+        processedObject = null;
+    }
     private MealSpec(String name, DateStamp day) {
+        defaultValues();
         this.name = name;
         this.day = day;
         this.mealSpecified = (name != null);
         this.daySpecified = (day != null);
     }
 
-    MealSpec(ArgParsing.Result dayArg, ArgParsing.Result mealArg) {
-        DateStamp day = ArgParsing.dayStringParse(dayArg.argument());
+    private MealSpec(@Nullable String name, @Nullable String dayString) {
+        defaultValues();
+        DateStamp day = ArgParsing.dayStringParse(dayString);
         if (day == null) {
-            error = String.format("Invalid day format: '%s'. ", dayArg.argument());
+            error = String.format("Invalid day format: '%s'. ", dayString);
             error += "Must be a number (e.g. 0 for today, -1 for yesterday), or a date: yyyy-mm-dd";
-        } else if (dayArg.status() == OPT_ARG_MISSING) {
-            error = "-d option requires an argument: <day>";
         }
         this.day = day;
-        this.daySpecified = (day != null) && dayArg.status() == ARG_FOUND;
+        this.daySpecified = (day != null) && dayString != null;
 
-        String mealName = mealArg.argument();
-        this.name = mealName;
-        this.mealSpecified = mealName != null && mealArg.status() == ARG_FOUND;
-        if (mealArg.status() == OPT_ARG_MISSING) {
+        this.name = name;
+        this.mealSpecified = name != null;
+    }
+
+    private MealSpec(ArgParsing.Result mealArg, ArgParsing.Result dayArg) {
+        this(mealArg.argument(), dayArg.argument());
+        defaultValues();
+        if (dayArg.status() == OPT_ARG_MISSING) {
+            error = "-d option requires an argument: <day>";
+        } else if (mealArg.status() == OPT_ARG_MISSING) {
             error = "-m option requires an argument: <meal>";
         }
     }
 
 
-    void processMealSpec(MacrosDatabase db, boolean create) {
-        if (error != null) {
+    void process(MacrosDatabase db, boolean create) {
+        if (processed || error != null) {
             // skip processing if there are already errors
             return;
         }
+        processed = true; // only let process() be called once
+        assert day != null;
+
         // cases:
         // no meal specified -> use current meal (exists)
         // no meal specified -> no meal exists
@@ -117,7 +137,8 @@ class MealSpec {
         return new MealSpec(dayArg, mealArg);
     }
     @NotNull
-    static MealSpec makeMealSpec(String name, DateStamp day) {
+    static MealSpec makeMealSpec(@Nullable String name, @Nullable String dayString) {
+        DateStamp day = ArgParsing.dayStringParse(dayString);
         return new MealSpec(name, day);
     }
 
@@ -127,7 +148,12 @@ class MealSpec {
     }
     @NotNull
     static MealSpec makeMealSpec(String name) {
-        return new MealSpec(name, DateStamp.forCurrentDate());
+        return MealSpec.makeMealSpec(name, null);
+    }
+
+    @NotNull
+    static MealSpec makeMealSpec() {
+        return MealSpec.makeMealSpec((String)null);
     }
 
     String name() {

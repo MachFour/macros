@@ -36,6 +36,10 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     @Override
     public Table<Ingredient> getTable() {
+        return table();
+    }
+
+    public static Table<Ingredient> table() {
         return Schema.IngredientTable.instance();
     }
 

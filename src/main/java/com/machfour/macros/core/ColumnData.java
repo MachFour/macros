@@ -58,7 +58,7 @@ public final class ColumnData<M> {
                 && Arrays.deepEquals(data, ((ColumnData) o).data);
     }
 
-    public boolean hasColumns(@NotNull List<Column<M, ?>> cols) {
+    public boolean hasColumns(@NotNull Collection<Column<M, ?>> cols) {
         return getColumns().containsAll(cols);
     }
 
@@ -72,7 +72,7 @@ public final class ColumnData<M> {
         }
         for (Column<M, ?> col: whichCols) {
             // TODO if (!Objects.equals(c1.get(col), c2.get(col))) {
-            if (c1.get(col) != null && c1.get(col).equals(c2.get(col))) {
+            if (c1.get(col) != null && !c1.get(col).equals(c2.get(col))) {
                 return false;
             }
         }
@@ -105,16 +105,12 @@ public final class ColumnData<M> {
         this.hasData = new boolean[arraySize];
         this.table = table;
         this.immutable = false;
+
         HashSet<Column<M, ?>> tempCols = new HashSet<>(cols.size(), 1);
-        // initialise to defaults
-        for (Column<M, ?> col : cols) {
-            // can't use the put() method due to type erasure
-            Object initialData = existing == null ? col.defaultData() : existing.getWithoutAssert(col);
-            data[col.index()] = initialData;
-            hasData[col.index()] = (initialData != null);
-            tempCols.add(col);
-        }
+        tempCols.addAll(cols);
         columns = Collections.unmodifiableSet(tempCols);
+
+        setDefaultData();
         if (existing != null) {
             copyData(existing, this, cols);
         }
@@ -134,6 +130,23 @@ public final class ColumnData<M> {
 
     public boolean isImmutable() {
         return immutable;
+    }
+
+
+    public void setDefaultData() {
+        setDefaultData(columns);
+    }
+
+    public void setDefaultData(Collection<Column<M, ?>> cols) {
+        assert hasColumns(cols);
+        assertMutable();
+        for (Column<M, ?> col : cols) {
+            Object o = col.defaultData();
+            // can't use the put() method due to type erasure
+            data[col.index()] = o;
+            hasData[col.index()] = (o != null);
+        }
+
     }
 
     // columns are the same so there will be no type issues
@@ -163,7 +176,7 @@ public final class ColumnData<M> {
         assert columns.containsAll(cols);
     }
     private void assertMutable() {
-        assert !isImmutable() : "ColumnData is immutable";
+        assert !isImmutable() : "ColumnData has been made immutable";
     }
 
     public Table<M> getTable() {

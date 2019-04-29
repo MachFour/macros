@@ -3,6 +3,7 @@ package com.machfour.macros.core;
 import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -83,15 +84,18 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         return getData(getTable().getIdColumn());
     }
 
+    @NotNull
     public Long getCreateTime() {
         return getData(getTable().getCreateTimeColumn());
     }
 
+    @NotNull
     public Long modifyTime() {
         return getData(getTable().getModifyTimeColumn());
     }
 
     @Override
+    @NotNull
     public ObjectSource getObjectSource() {
         return objectSource;
     }

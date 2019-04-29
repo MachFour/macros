@@ -7,3 +7,4 @@ sample.db
 .idea/workspace.xml
 *.sqlite
 test/
+src/main/java/com/machfour/macros/objects/Measurement.java

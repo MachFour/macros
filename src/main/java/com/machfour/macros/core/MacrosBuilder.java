@@ -6,10 +6,7 @@ import com.machfour.macros.validation.ValidationError;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MacrosBuilder<M extends MacrosPersistable<M>> {
     private final List<Column<M, ?>> settableColumns;
@@ -40,28 +37,27 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         objectFactory = t.getFactory();
         this.editInstance = editInstance;
         settableColumns = table.columns();
-        draftData = new ColumnData<>(t);
         isValidValue = new HashMap<>(settableColumns.size(), 1);
-        resetFields();
+        if (editInstance != null) {
+            draftData = editInstance.getAllData().copy();
+        } else {
+            draftData = new ColumnData<>(t);
+        }
+        recheckValidValues();
     }
 
-    /*
-     * Sets each currently defined field in settableColumns to the value given by
-     * converting the instance to its stringValues representation.
-     * An exception will be thrown if the instance does not contain the required keys
-     */
     private void resetFields() {
         if (editInstance != null) {
             ColumnData.copyData(editInstance.getAllData(), draftData, settableColumns);
+        } else {
+            draftData.setDefaultData(settableColumns);
         }
-        for (Column<M, ?> field : settableColumns) {
-            isValidValue.put(field, validateSingle(field).isEmpty());
-        }
+        recheckValidValues();
     }
 
     public <J> void setField(Column<M, J> col, J value) {
         draftData.put(col, value);
-        isValidValue.put(col, validateSingle(col).isEmpty());
+        recheckValidValues(Collections.singleton(col));
     }
 
     /*
@@ -82,6 +78,17 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         }
         */
         return failedValidations;
+    }
+
+    private void recheckValidValues(Collection<Column<M, ?>> columns) {
+        for (Column<M, ?> field : columns) {
+            isValidValue.put(field, validateSingle(field).isEmpty());
+        }
+    }
+
+    private void recheckValidValues() {
+        recheckValidValues(settableColumns);
+
     }
 
     public void clearField(Column<M, ?> field) {
@@ -135,6 +142,26 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         return allValidationErrors;
     }
 
+    // computes what the data source of the newly build object should be
+    private ObjectSource newObjectSource() {
+        if (editInstance == null) {
+            return ObjectSource.USER_NEW;
+        }
+        ObjectSource editedObjectSource = editInstance.getObjectSource();
+
+        switch (editedObjectSource) {
+            case DATABASE:
+            case DB_EDIT:
+                return ObjectSource.DB_EDIT;
+            case INBUILT:
+                // don't allow creating new inbuilt objects
+                return ObjectSource.COMPUTED;
+            default:
+                return editedObjectSource;
+        }
+
+    }
+
     /*
      * If there are no validation errors, attempts to construct the object
      * using the current data. A copy of the data is used, so that this
@@ -146,7 +173,9 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
             throw new IllegalStateException("Field values are not all valid");
         }
         ColumnData<M> buildData = draftData.copy();
-        return objectFactory.construct(buildData, ObjectSource.USER_NEW);
+        ObjectSource source = newObjectSource();
+
+        return objectFactory.construct(buildData, source);
     }
 
     public boolean canConstruct() {

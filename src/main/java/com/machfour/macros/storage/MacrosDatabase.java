@@ -7,6 +7,7 @@ import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.crypto.Mac;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,22 +19,6 @@ import static com.machfour.macros.core.MacrosUtils.getOrDefault;
 import static com.machfour.macros.storage.DatabaseUtils.toList;
 
 public abstract class MacrosDatabase implements MacrosDataSource {
-    protected static String createStatements(List<String> sqlFileLines) {
-        // steps: remove all comment lines, trim, join, split on semicolon
-        List<String> trimmedAndDecommented = new ArrayList<>(sqlFileLines.size());
-        for (String line : sqlFileLines) {
-            int commentIndex = line.indexOf("--");
-            if (commentIndex != -1) {
-                line = line.substring(0, commentIndex);
-            }
-            line = line.trim();
-            line = line.replaceAll("\\s+", " ");
-            if (line.length() != 0) {
-                trimmedAndDecommented.add(line);
-            }
-        }
-        return StringJoiner.of(trimmedAndDecommented).sep(" ").join();
-    }
 
     // fkColumns by definition contains only the foreign key columns
     protected static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
@@ -53,34 +38,59 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     protected abstract <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable> List<Long> prefixSearch(
-            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException;
 
-    protected abstract <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException;
+    @NotNull
+    protected <M extends MacrosPersistable> List<Long> prefixSearch(
+            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
+        return stringSearch(t, cols, keyword, false, true);
+    }
+
+    @NotNull
+    protected <M extends MacrosPersistable> List<Long> substringSearch(
+            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
+        return stringSearch(t, cols, keyword, true, true);
+    }
+    @NotNull
+    protected <M extends MacrosPersistable> List<Long> exactStringSearch(
+            Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
+        return stringSearch(t, cols, keyword, false, false);
+    }
+
+
+    @NotNull
+    protected abstract <M extends MacrosPersistable> List<Long> stringSearch(
+            Table<M> t, List<Column<M, String>> cols, String keyword, boolean globBefore, boolean globAfter) throws SQLException;
+
+    protected abstract <M extends MacrosPersistable, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException;
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    protected abstract <M, I, J> List<I> selectColumn(
+    protected abstract <M extends MacrosPersistable, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException;
+
+    // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
+    // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
+    public abstract <M extends MacrosPersistable, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException;
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     // The collection of keys must not be empty; an assertion error is thrown if so
-    protected abstract <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+    protected abstract <M extends MacrosPersistable, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t,
+            Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
-    protected abstract <M, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+    protected abstract <M extends MacrosPersistable, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
-    private <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    private <M extends MacrosPersistable, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : getRawObjectsByKeysNoEmpty(t, keyCol, keys);
     }
 
-    private <M, J> Map<J, Long> getIdsFromKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    private <M extends MacrosPersistable, J> Map<J, Long> getIdsFromKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : getIdsByKeysNoEmpty(t, keyCol, keys);
     }
 
     // returns map of all objects in table, by ID
     // TODO make protected
-    public abstract <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
+    public abstract <M extends MacrosPersistable> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
@@ -160,23 +170,46 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
+
+    // Searches Index name, name, variety and brand for prefix, then index name for anywhere
+    // empty list will be returned if keyword is empty string
     @NotNull
-    public List<Long> foodSearch(String keyword) throws SQLException {
+    public Set<Long> foodSearch(@NotNull String keyword) throws SQLException {
         List<Column<Food, String>> columns = Arrays.asList(
               Schema.FoodTable.INDEX_NAME
             , Schema.FoodTable.NAME
             , Schema.FoodTable.VARIETY
             , Schema.FoodTable.BRAND
         );
-        return prefixSearch(Schema.FoodTable.instance(), columns, keyword);
+        // match any column prefix
+        List<Long> prefixResults = prefixSearch(Food.table(), columns, keyword);
+        // or anywhere in index name
+        List<Long> indexResults = substringSearch(Food.table(), toList(Schema.FoodTable.INDEX_NAME), keyword);
+        Set<Long> results = new LinkedHashSet<>(prefixResults.size() + indexResults.size());
+        results.addAll(prefixResults);
+        results.addAll(indexResults);
+
+        return results;
+
     }
 
+    public Map<String, FoodCategory> getAllFoodCategories() throws SQLException {
+        Map<Long, FoodCategory> categoriesById = getAllRawObjects(FoodCategory.table());
+        Map<String, FoodCategory> categoriesByString = new HashMap<>(categoriesById.size());
+        for (FoodCategory c : categoriesById.values()) {
+            categoriesByString.put(c.getName(), c);
+        }
+        return categoriesByString;
+    }
+
+    // The proper way to get all fooods
     public List<Food> getAllFoods() throws SQLException {
-        Map<Long, Serving> allServings = getAllRawObjects(Schema.ServingTable.instance());
-        Map<Long, Food> allFoods = getAllRawObjects(Schema.FoodTable.instance());
-        Map<Long, NutritionData> allNutritionData = getAllRawObjects(Schema.NutritionDataTable.instance());
-        applyServingsToRawFoods(allFoods, allServings);
-        applyNutritionDataToRawFoods(allFoods, allNutritionData);
+        Map<Long, Food> allFoods = getAllRawObjects(Food.table());
+        Map<Long, Serving> allServings = getAllRawObjects(Serving.table());
+        Map<Long, NutritionData> allNutritionData = getAllRawObjects(NutritionData.table());
+        Map<Long, Ingredient> allIngredients = getAllRawObjects(Ingredient.table());
+        Map<String, FoodCategory> allFoodCategories = getAllFoodCategories();
+        processRawFoodMap(allFoods, allServings, allNutritionData, allIngredients, allFoodCategories);
         return new ArrayList<>(allFoods.values());
     }
 
@@ -195,13 +228,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     @Override
     public Map<Long, Food> getFoodsById(@NotNull Collection<Long> foodIds) throws SQLException {
         Map<Long, Food> foods = getRawObjectsByIds(Schema.FoodTable.instance(), foodIds);
-        if (!foods.isEmpty()) {
-            Map<Long, Serving> servings = getRawServingsForFoods(foods);
-            Map<Long, NutritionData> nutritionData = getRawNutritionDataForFoods(foods);
-            applyServingsToRawFoods(foods, servings);
-            applyNutritionDataToRawFoods(foods, nutritionData);
-            // TODO  FoodCategory, Ingredients
-        }
+        processRawFoodMap(foods);
         return foods;
     }
 
@@ -217,18 +244,50 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     @Override
     public Map<String, Food> getFoodsByIndexName(@NotNull Collection<String> indexNames) throws SQLException {
         Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
-        if (!foods.isEmpty()) {
-            // TODO this is kind of inefficient
-            Map<Long, Food> idMap = DatabaseUtils.makeIdMap(foods.values());
-            Map<Long, Serving> servings = getRawServingsForFoods(idMap);
-            Map<Long, NutritionData> nutritionData = getRawNutritionDataForFoods(idMap);
-            applyServingsToRawFoods(idMap, servings);
-            applyNutritionDataToRawFoods(idMap, nutritionData);
-            // TODO  FoodCategory, Ingredients
-        }
+        // TODO this is kind of inefficient
+        Map<Long, Food> idMap = DatabaseUtils.makeIdMap(foods.values());
+        processRawFoodMap(idMap);
         return foods;
     }
 
+    private void processRawFoodMap(Map<Long, Food> foods, Map<Long, Serving> servings,
+            Map<Long, NutritionData> nutritionData, Map<Long, Ingredient> ingredients,
+            Map<String, FoodCategory> categories) {
+
+        applyServingsToRawFoods(foods, servings);
+        applyNutritionDataToRawFoods(foods, nutritionData);
+        applyIngredientsToRawFoods(foods, ingredients);
+        applyFoodCategoriesToRawFoods(foods, categories);
+    }
+    // foodMap is a map of food IDs to the raw (i.e. unlinked) object created from the database
+    private void processRawFoodMap(Map<Long, Food> foodMap) throws SQLException {
+        if (!foodMap.isEmpty()) {
+            //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
+            //Map<Long, NutritionData> nutritionData = getRawNutritionDataForFoods(idMap);
+            Map<Long, Serving> servings = getRawObjectsForParentFk(foodMap, Serving.table(), Schema.ServingTable.FOOD_ID);
+            Map<Long, NutritionData> nutritionData = getRawObjectsForParentFk(foodMap, NutritionData.table(), Schema.NutritionDataTable.FOOD_ID);
+            Map<Long, Ingredient> ingredients = getRawObjectsForParentFk(foodMap, Ingredient.table(), Schema.IngredientTable.COMPOSITE_FOOD_ID);
+            Map<String, FoodCategory> categories = getAllFoodCategories();
+            processRawFoodMap(foodMap, servings, nutritionData, ingredients, categories);
+        }
+    }
+
+    private <M extends MacrosPersistable, N> Map<Long, M> getRawObjectsForParentFk(
+            @NotNull Map<Long, N> parentObjectMap, Table<M> childTable, Column.Fk<M, Long, N> fkCol) throws SQLException {
+        if (parentObjectMap.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Column<M, Long> childIdCol = childTable.getIdColumn();
+        List<Long> ids = selectColumn(childTable, childIdCol, fkCol, parentObjectMap.keySet());
+        if (!ids.isEmpty()) {
+            return getRawObjectsByKeys(childTable, childIdCol, ids);
+        } else {
+            // no objects in the child table refer to any of the parent objects/rows
+            return Collections.emptyMap();
+        }
+    }
+
+    /*
     private Map<Long, Serving> getRawServingsForFoods(@NotNull Map<Long, Food> foodMap) throws SQLException {
         if (foodMap.isEmpty()) {
             return Collections.emptyMap();
@@ -252,6 +311,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
         return getRawObjectsByKeys(Schema.NutritionDataTable.instance(), Schema.NutritionDataTable.ID, ids);
     }
+    */
 
     private void applyServingsToRawFoods(Map<Long, Food> foodMap, Map<Long, Serving> servingMap) {
         for (Serving s : servingMap.values()) {
@@ -277,12 +337,31 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    private <M, I, J> List<I> selectColumn(
+    // note not all foods in the map will be composite
+    private void applyIngredientsToRawFoods(Map<Long, Food> foodMap, Map<Long, Ingredient> ingredientMap) {
+        for (Ingredient i : ingredientMap.values()) {
+            Food f = foodMap.get(i.getCompositeFoodId());
+            assert f instanceof CompositeFood && f.getFoodType() == FoodType.COMPOSITE;
+            CompositeFood cf = (CompositeFood) f;
+            i.setCompositeFood(cf);
+            cf.addIngredient(i);
+        }
+    }
+
+    private void applyFoodCategoriesToRawFoods(Map<Long, Food> foodMap, Map<String, FoodCategory> categories) {
+        for (Food f : foodMap.values()) {
+            String categoryName = f.getData(Schema.FoodTable.CATEGORY);
+            FoodCategory c = categories.get(categoryName);
+            f.setFoodCategory(c);
+        }
+    }
+
+    private <M extends MacrosPersistable, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, J whereValue) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, toList(whereValue), false);
     }
 
-    private <M, I, J> List<I> selectColumn(
+    private <M extends MacrosPersistable, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
@@ -303,13 +382,10 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         // into getFoodsById;
         if (!foodIds.isEmpty()) {
             Map<Long, Food> foodMap = getFoodsById(foodIds);
-
             for (Meal meal : meals.values()) {
                 applyFoodPortionsToRawMeal(meal, foodMap);
             }
         }
-
-
         return meals;
     }
 
@@ -352,10 +428,10 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<Long, Meal> mealsById = getMealsById(mealIds);
         // sort by create time and put in tree map to preserve order
         List<Meal> mealsByCreateTime = new ArrayList<>(mealsById.values());
-        //TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::getCreateTime));
-        // TODO API level: Comparator.comparingLong(Meal::getCreateTime);
+        //TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::createTime));
+        // TODO API level: Comparator.comparingLong(Meal::createTime);
         Collections.sort(mealsByCreateTime, (Meal m1, Meal m2) -> {
-            return Long.compare(m1.getCreateTime(), m2.getCreateTime());
+            return Long.compare(m1.createTime(), m2.createTime());
         });
 
 
@@ -380,7 +456,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return getRawObjectsByKeys(t, t.getIdColumn(), ids);
     }
 
-    private <M, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
+    private <M extends MacrosPersistable, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
         Map<J, M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
         return getOrDefault(returned, key, null);
     }
@@ -394,7 +470,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for natural key column type
-    private <M extends MacrosPersistable<M>, J, N, I> Map<I, J> completeFkIdColHelper(
+    private <M extends MacrosPersistable<M>, J, N extends MacrosPersistable, I> Map<I, J> completeFkIdColHelper(
             Column.Fk<M, J, N> fkColumn, Column<N, I> parentNaturalKeyCol, List<ColumnData<N>> data) throws SQLException {
         assert (parentNaturalKeyCol.isUnique());
         Set<I> uniqueColumnValues = new HashSet<>(data.size());
@@ -405,7 +481,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for parent unique column type
-    private <M extends MacrosPersistable<M>, J, N> List<M> completeFkCol(List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
+    private <M extends MacrosPersistable<M>, J, N extends MacrosPersistable> List<M> completeFkCol(
+            List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
         for (M object : objects) {
@@ -431,20 +508,27 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // only Storage classes should know about these two methods
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ? extends MacrosPersistable> fk) throws SQLException {
         return completeForeignKeys(objects, toList(fk));
     }
 
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
-        List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
-        partiallyCompletedObjects.addAll(objects);
+    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(
+            Collection<M> objects, List<Column.Fk<M, ?, ? extends MacrosPersistable>> which) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         if (objects.isEmpty()) {
+            // return empty list
             return completedObjects;
         }
+
+        // objects without foreign key data yet (mutable copy of first argument)
+        List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
+        partiallyCompletedObjects.addAll(objects);
+
+        // hack to get correct factory type without passing it explicitly as argument
         Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
+
         // cycle through the FK columns.
-        for (Column.Fk<M, ?, ?> fkCol: which) {
+        for (Column.Fk<M, ?, ? extends MacrosPersistable> fkCol: which) {
             partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
         }
         // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT

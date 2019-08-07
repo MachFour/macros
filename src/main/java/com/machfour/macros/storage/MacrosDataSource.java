@@ -11,10 +11,11 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface MacrosDataSource {
 
-    List<Long> foodSearch(String keyword) throws SQLException;
+    Set<Long> foodSearch(String keyword) throws SQLException;
 
     List<Food> getAllFoods() throws SQLException;
 

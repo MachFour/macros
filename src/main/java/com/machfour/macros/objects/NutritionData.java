@@ -235,6 +235,11 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
     }
 
+    @Nullable
+    public String getDataSource() {
+        return getData(DATA_SOURCE);
+    }
+
     // hack for USDA foods
     // subtracts fibre from carbohydrate if necessary to produce a carbohydrate amount
     // If fibre is not present, returns just carbs by diff

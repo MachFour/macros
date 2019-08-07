@@ -71,6 +71,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
 
     public void setCompositeFood(@NotNull Food f) {
         assert (compositeFood == null);
+        assert f instanceof CompositeFood && f.getFoodType() == FoodType.COMPOSITE;
         assert (getCompositeFoodId().equals(f.getId()));
         compositeFood = f;
     }

@@ -302,7 +302,7 @@ public class Schema {
             QUANTITY = builder("quantity", Types.REAL, columnIndex++).notEditable().notNull().build();
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
                     .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
-            SERVING_ID = builder("serving_id", Types.ID, columnIndex++).notNull()
+            SERVING_ID = builder("serving_id", Types.ID, columnIndex++) // nullable
                     .buildFk(ServingTable.ID, ServingTable.instance());
             INSTANCE = new IngredientTable();
         }

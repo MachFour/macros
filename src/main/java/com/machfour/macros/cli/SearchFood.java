@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.OUT;
@@ -39,7 +40,7 @@ class SearchFood extends CommandImpl {
         String keyword = args.get(1);
         Map<Long, Food> resultFoods = Collections.emptyMap();
         try {
-            List<Long> resultIds = db.foodSearch(keyword);
+            Set<Long> resultIds = db.foodSearch(keyword);
             if (!resultIds.isEmpty()) {
                 resultFoods = db.getFoodsById(resultIds);
             }

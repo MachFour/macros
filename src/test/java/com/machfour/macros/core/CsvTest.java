@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +44,8 @@ class CsvTest {
     @Test
     void testCsvReadFoods() {
         Map<String, Food> csvFoods;
-        try {
-            csvFoods = CsvStorage.buildFoodObjectTree(Config.FOOD_CSV_FILENAME);
+        try (Reader foodCsv = new FileReader(Config.FOOD_CSV_FILENAME) ){
+            csvFoods = CsvStorage.buildFoodObjectTree(foodCsv);
             assertNotEquals(0, csvFoods.size(), "CSV read in zero foods!");
             //System.out.println(csvObjects.first.get(0));
         } catch (IOException e) {
@@ -56,8 +56,8 @@ class CsvTest {
     @Test
     void testCsvReadServings() {
         List<Serving> csvServings;
-        try {
-            csvServings = CsvStorage.buildServings(Config.SERVING_CSV_FILENAME);
+        try (Reader servingCsv = new FileReader(Config.SERVING_CSV_FILENAME) ){
+            csvServings = CsvStorage.buildServings(servingCsv);
             assertNotEquals(0, csvServings.size(), "CSV read in zero servings!");
             System.out.println(csvServings.get(0));
         } catch (IOException e) {
@@ -68,8 +68,8 @@ class CsvTest {
     @Test
     void testCsvSaveFoods() {
         Pair<List<Food>, List<NutritionData>> csvObjects;
-        try {
-            CsvStorage.importFoodData(Config.FOOD_CSV_FILENAME, db, true);
+        try (Reader foodCsv = new FileReader(Config.FOOD_CSV_FILENAME) ){
+            CsvStorage.importFoodData(foodCsv, db, true);
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");
@@ -81,8 +81,8 @@ class CsvTest {
     @Test
     void testCsvSaveServings() {
         List<Serving> csvServings;
-        try {
-            CsvStorage.importServings(Config.SERVING_CSV_FILENAME, db, true);
+        try (Reader servingCsv = new FileReader(Config.SERVING_CSV_FILENAME)) {
+            CsvStorage.importServings(servingCsv, db, true);
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");
@@ -94,9 +94,9 @@ class CsvTest {
     @Test
     void testCsvWriteFoods() {
         MacrosDatabase db = LinuxDatabase.getInstance(REAL_DB_LOCATION);
-        try {
+        try (Writer csvOut = new FileWriter(TEST_WRITE_DIR + "/all-food.csv")){
             Map<Long, Food> foods = db.getAllRawObjects(Food.table());
-            CsvStorage.writeObjectsToCsv(Food.table(), TEST_WRITE_DIR + "/all-food.csv", foods.values());
+            CsvStorage.writeObjectsToCsv(Food.table(), csvOut, foods.values());
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");
@@ -108,9 +108,9 @@ class CsvTest {
     @Test
     void testCsvWriteServings() {
         MacrosDatabase db = LinuxDatabase.getInstance(REAL_DB_LOCATION);
-        try {
+        try (Writer csvOut = new FileWriter(TEST_WRITE_DIR + "/all-serving.csv")) {
             Map<Long, Serving> servings = db.getAllRawObjects(Serving.table());
-            CsvStorage.writeObjectsToCsv(Serving.table(), TEST_WRITE_DIR + "/all-serving.csv", servings.values());
+            CsvStorage.writeObjectsToCsv(Serving.table(), csvOut, servings.values());
         } catch (IOException e) {
             e.printStackTrace();
             fail("IOException was thrown");

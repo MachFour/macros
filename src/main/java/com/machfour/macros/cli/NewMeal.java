@@ -3,7 +3,6 @@ package com.machfour.macros.cli;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.storage.MacrosDatabase;
-import com.machfour.macros.util.DateStamp;
 
 import java.io.PrintStream;
 import java.util.List;

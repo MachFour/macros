@@ -58,8 +58,17 @@ class MealPrinter {
         assert (row.size() == widths.size() && row.size() == rightAlign.size());
         for (int i = 0; i < row.size(); ++i) {
             String align = rightAlign.get(i) ? "" : "-";
-            String width = String.valueOf(widths.get(i));
-            out.printf("%" + align + width + "s%s", row.get(i), sep);
+            int width = widths.get(i);
+            String text = row.get(i);
+            // prevent long strings from overrunning the width:
+            // replace "This is a really long string", by
+            //         "This is a really lo.."
+            if (text.length() > width) {
+                int newWidth = Math.max(width - 2, 0);
+                text = text.substring(0, newWidth - 2) + "..";
+            }
+            //String widthStr = String.valueOf(width);
+            out.printf("%" + align + width + "s%s", text, sep);
         }
         out.println();
     }

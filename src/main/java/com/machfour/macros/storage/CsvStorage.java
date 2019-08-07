@@ -10,9 +10,7 @@ import org.supercsv.io.ICsvMapReader;
 import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -20,16 +18,16 @@ public class CsvStorage {
     /*
      * Method for reading CSV files that directly correspond to a table
      */
-    public static <M> List<M> buildObjectsForRestore(Table<M> table, String fileName) throws IOException {
+    public static <M> List<M> buildObjectsForRestore(Table<M> table, Reader csvData) throws IOException {
         Map<String, Column<M, ?>> columnsByName = table.columnsByName();
         List<M> objectList = new ArrayList<>();
         Set<String> unrecognisedStrings = new HashSet<>();
 
-        try (ICsvMapReader mapReader = getMapReader(fileName)) {
+        try (ICsvMapReader mapReader = getMapReader(csvData)) {
             // header columns are used as the keys to the Map
             final String[] header = mapReader.getHeader(true);
             for (String colName : header) {
-                if (!columnsByName.keySet().contains(colName)) {
+                if (!columnsByName.containsKey(colName)) {
                     unrecognisedStrings.add(colName);
                 }
             }
@@ -43,9 +41,9 @@ public class CsvStorage {
         System.out.println("Warning: unknown columns: " + unrecognisedStrings);
         return objectList;
     }
-    public static <M extends MacrosPersistable<M>> void writeObjectsToCsv(Table<M> table, String fileName, Collection<M> objects) throws IOException {
+    public static <M extends MacrosPersistable<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
         final String[] header = table.columnsByName().keySet().toArray(new String[0]);
-        try (ICsvMapWriter mapWriter = getMapWriter(fileName)) {
+        try (ICsvMapWriter mapWriter = getMapWriter(csvOut)) {
             // header columns are used as the keys to the Map
             mapWriter.writeHeader(header);
             // iterate over lines in CSV
@@ -81,18 +79,18 @@ public class CsvStorage {
         return dataMap;
     }
 
-    private static ICsvMapReader getMapReader(String fileName) throws IOException {
+    private static ICsvMapReader getMapReader(Reader r) throws IOException {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-        return new CsvMapReader(new FileReader(fileName), CsvPreference.EXCEL_PREFERENCE);
+        return new CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE);
     }
-    private static ICsvMapWriter getMapWriter(String fileName) throws IOException {
+    private static ICsvMapWriter getMapWriter(Writer w) throws IOException {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-        return new CsvMapWriter(new FileWriter(fileName), CsvPreference.EXCEL_PREFERENCE);
+        return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
-    public static Map<String, Food> buildFoodObjectTree(String foodCsv) throws IOException {
+    public static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
         Map<String, Food> foodMap = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
@@ -115,7 +113,7 @@ public class CsvStorage {
         }
         return foodMap;
     }
-    public static List<Serving> buildServings(String servingCsv) throws IOException {
+    public static List<Serving> buildServings(Reader servingCsv) throws IOException {
         List<Serving> servings = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
             final String[] header = mapReader.getHeader(true);
@@ -131,7 +129,7 @@ public class CsvStorage {
         return servings;
     }
 
-    public static Collection<Food> importFoodData(String foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+    public static Collection<Food> importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
         Map<String, Food> csvFoods = buildFoodObjectTree(foodCsv);
         // collect all of the index names to be imported, and check if they're already in the DB.
         Set<String> newIndexNames = csvFoods.keySet();
@@ -166,7 +164,7 @@ public class CsvStorage {
     }
 
     // TODO detect existing servings
-    public static void importServings(String servingCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+    public static void importServings(Reader servingCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
         List<Serving> csvServings = CsvStorage.buildServings(servingCsv);
         List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
         db.saveObjects(completedServings, ObjectSource.IMPORT);

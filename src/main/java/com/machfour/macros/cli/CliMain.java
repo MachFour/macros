@@ -1,5 +1,6 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.linux.Config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -22,6 +23,22 @@ public class CliMain {
         return Commands.CMDS_BY_NAME.getOrDefault(cleanInput(userInput), Commands.INVALID_COMMAND);
     }
 
+    // XXX hacky - also needs to be an absolute path
+    private static void checkDbLocationOverride(List<String> args) {
+        String flagString = "--db==";
+        Iterator<String> argIt = args.iterator();
+
+        while (argIt.hasNext()) {
+            String s = argIt.next();
+            int dbArg = s.indexOf(flagString);
+            if (dbArg == 0) {
+                Config.DB_LOCATION = s.substring(flagString.length());
+                argIt.remove(); // remove from arguments
+                break;
+            }
+        }
+    }
+
     public static void main(String[] args) {
         //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
 
@@ -29,8 +46,12 @@ public class CliMain {
         System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
         System.setProperty("org.sqlite.lib.name", "libsqlitejdbc.so");
 
-        Command c = args.length == 0 ? Commands.NO_ARGS : parseCommand(args[0]);
+        List<String> argList = new ArrayList<>(Arrays.asList(args)); // make it mutable
+        Command c = argList.isEmpty() ? Commands.NO_ARGS : parseCommand(argList.get(0));
+
+        checkDbLocationOverride(argList);
+
         // command args start from index 1
-        c.doAction(Arrays.asList(args));
+        c.doAction(argList);
     }
 }

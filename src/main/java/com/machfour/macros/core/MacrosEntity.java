@@ -16,6 +16,8 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
     private final ObjectSource objectSource;
+    private final Date createDate;
+    private final Date modifyDate;
     // TODO only really need to map to the Natural key value,
     // but there's no convenient way of enforcing the type relationship except by wrapping it in a ColumnData
     private final Map<Column.Fk<M, ?, ?>, ColumnData<?>> fkNaturalKeyMap;
@@ -34,7 +36,7 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
 
     // NOTE data passed in is made Immutable as a side effect
     protected MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
-        Map<Column<M, ?>, ValidationError> errors = MacrosBuilder.validate(data);
+        Map<Column<M, ?>, List<ValidationError>> errors = MacrosBuilder.validate(data);
         if (!errors.isEmpty()) {
             throw new SchemaViolation(errors);
         }
@@ -43,6 +45,8 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
         this.dataMap.setImmutable();
         this.objectSource = objectSource;
         this.fkNaturalKeyMap = new HashMap<>();
+        this.createDate = new Date(data.get(getTable().getCreateTimeColumn())*1000);
+        this.modifyDate = new Date(data.get(getTable().getModifyTimeColumn())*1000);
         checkObjectSource();
     }
 
@@ -85,13 +89,23 @@ public abstract class MacrosEntity<M extends MacrosPersistable> implements Macro
     }
 
     @NotNull
-    public Long getCreateTime() {
+    public Long createTime() {
         return getData(getTable().getCreateTimeColumn());
     }
 
     @NotNull
     public Long modifyTime() {
         return getData(getTable().getModifyTimeColumn());
+    }
+
+    @NotNull
+    public Date createDate() {
+        return createDate;
+    }
+
+    @NotNull
+    public Date modifyDate() {
+        return modifyDate;
     }
 
     @Override

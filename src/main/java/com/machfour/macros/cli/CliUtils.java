@@ -167,4 +167,9 @@ public class CliUtils {
         // equivalent in octal
         out.println("\033\133\110\033\133\062\112");
     }
+
+    // converts null to blank strings
+    static String deNull(String in) {
+        return in == null ? "" : in;
+    }
 }

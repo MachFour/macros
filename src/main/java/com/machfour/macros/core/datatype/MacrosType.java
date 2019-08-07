@@ -10,6 +10,8 @@ public interface MacrosType<J> {
     J fromRaw(@Nullable Object raw);
     J fromString(@NotNull String stringData);
 
+    // This returns the data in a form that is able to be inserted into a database
+    // for SQLite, this means, for example, that booleans become integers.
     default Object toRaw(J data) {
         return data;
     }
@@ -37,5 +39,6 @@ public interface MacrosType<J> {
     SqliteType sqliteType();
 
     @Override
+    @NotNull
     String toString();
 }

@@ -1,0 +1,18 @@
+
+For parsing by the Android code, each SQL statement must end with a semicolon (as per SQL syntax) AND THEN A BLANK LINE.
+
+So like below --
+
+Statement1;
+
+Statement2;
+
+Multi
+Line
+Statement
+BEGIN NESTED (
+	Statement
+	END;
+);
+
+Statement3;

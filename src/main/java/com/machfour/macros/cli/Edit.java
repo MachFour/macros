@@ -12,7 +12,6 @@ import com.machfour.macros.util.FoodPortionSpec;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

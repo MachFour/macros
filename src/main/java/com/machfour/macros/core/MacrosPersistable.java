@@ -26,7 +26,7 @@ public interface MacrosPersistable<M extends MacrosPersistable> {
     }
 
     @NotNull
-    Long getCreateTime();
+    Long createTime();
 
     @NotNull
     Long modifyTime();

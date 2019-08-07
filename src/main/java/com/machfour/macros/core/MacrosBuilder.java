@@ -104,6 +104,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
        Returns a list of columns whose non-null constraints have been violated, or an empty list otherwise
        Note that if the assertion passes, then dataMap has the correct columns as keys
      */
+    @NotNull
     private static <M, J> List<ValidationError> findErrors(ColumnData<M> data, Column<M, J> col) {
         List<ValidationError> errors = new ArrayList<>();
         if (data.get(col) == null && !col.isNullable()) {
@@ -112,15 +113,14 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         return errors;
     }
 
-    public static <M> Map<Column<M, ?>, ValidationError> validate(ColumnData<M> data) {
+    public static <M> Map<Column<M, ?>, List<ValidationError>> validate(ColumnData<M> data) {
         List<Column<M, ?>> required = data.getTable().columns();
         // TODO should this be a list
-        Map<Column<M, ?>, ValidationError> badMappings = new HashMap<>(required.size());
+        Map<Column<M, ?>, List<ValidationError>> badMappings = new HashMap<>(required.size());
         for (Column<M, ?> col : required) {
             List<ValidationError> errors = findErrors(data, col);
             if (!errors.isEmpty()) {
-                // just add first errors
-                badMappings.put(col, errors.get(0));
+                badMappings.put(col, errors);
             }
         }
         return badMappings;

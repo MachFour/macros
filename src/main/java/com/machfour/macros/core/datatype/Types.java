@@ -18,10 +18,11 @@ public class Types {
     public static final Date DATESTAMP = new Date();
 
     public static class Bool implements MacrosType<Boolean> {
-        @Override
+        @Override @NotNull
         public String toString() {
             return "boolean";
         }
+
         @Override
         public Boolean fromRaw(Object raw) {
             if (raw == null) {
@@ -44,6 +45,14 @@ public class Types {
             return Boolean.class;
         }
         @Override
+        public Object toRaw(Boolean data) {
+            if (data == null) {
+                return null;
+            } else {
+                return data ? 1L : 0L;
+            }
+        }
+        @Override
         public SqliteType sqliteType() {
             return SqliteType.INTEGER;
         }
@@ -51,7 +60,7 @@ public class Types {
     // Boolean type where null means false. This is a hack used to ensure there's only one default serving per food,
     // using a UNIQUE check on (food_id, is_default)
     public static final class NullBool extends Bool {
-        @Override
+        @Override @NotNull
         public String toString() {
             return "null-boolean";
         }
@@ -59,14 +68,14 @@ public class Types {
         public Boolean fromRaw(Object raw) {
             return raw == null ? false : super.fromRaw(raw);
         }
-        @Override
+
         public Boolean fromString(@NotNull String boolString) {
             return boolString.equals("") ? false : super.fromString(boolString);
         }
         @Override
-        // return true if data is true, or null otherwise
+        // return 1 (as long) if data is true, or null otherwise
         public Object toRaw(Boolean data) {
-            return (data != null && data) ? true : null;
+            return (data != null && data) ? 1L : null;
         }
     }
     public static final class Id implements MacrosType<Long> {

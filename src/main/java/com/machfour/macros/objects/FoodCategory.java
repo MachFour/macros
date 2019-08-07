@@ -10,7 +10,7 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
 
     @Override
     public Table<FoodCategory> getTable() {
-        return Schema.FoodCategoryTable.instance();
+        return table();
     }
 
     public String getName() {
@@ -19,6 +19,10 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
 
     public static Factory<FoodCategory> factory() {
         return FoodCategory::new;
+    }
+
+    public static Table<FoodCategory> table() {
+        return Schema.FoodCategoryTable.instance();
     }
     @Override
     public Factory<FoodCategory> getFactory() {

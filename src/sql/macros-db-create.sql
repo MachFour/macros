@@ -5,6 +5,7 @@
 
 -- note that these pragmas need to be set every time a database connection is made
 PRAGMA foreign_keys = ON;
+
 PRAGMA recursive_triggers = ON;
 
 CREATE TABLE QuantityUnit (
@@ -91,6 +92,7 @@ CREATE TABLE Food (
     , CONSTRAINT valid_food_type
         CHECK (food_type IN ("primary", "composite", "usda", "nuttab", "special"))
 );
+
 CREATE UNIQUE INDEX food_index ON Food (index_name);
 
 CREATE TABLE FoodCategory (

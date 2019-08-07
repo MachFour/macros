@@ -38,6 +38,7 @@ INSERT INTO FoodCategory (name) VALUES
     , ('nuts and seeds')
     , ('poultry and eggs')
     , ('preserved or dried foods')
+    , ('recipes')
     , ('sauces, dips and spreads')
     , ('soft drinks')
     , ('soy products')

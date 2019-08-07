@@ -59,7 +59,7 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public List<Long> foodSearch(String keyword) throws SQLException {
+    public Set<Long> foodSearch(String keyword) throws SQLException {
         return upstream.foodSearch(keyword);
     }
 

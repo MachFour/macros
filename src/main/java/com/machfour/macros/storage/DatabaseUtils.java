@@ -6,8 +6,12 @@ import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.Types;
+import com.machfour.macros.util.Function;
 import com.machfour.macros.util.StringJoiner;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.*;
 
 public class DatabaseUtils {
@@ -28,7 +32,7 @@ public class DatabaseUtils {
         String placeholder;
         // for now, DateStamp is the only special one
         if (columnType.equals(Types.DATESTAMP)) {
-            // need the space here in order for the binding to work properly
+            // need the space here in order for the JDBC binding code to work properly
             placeholder = "DATE( ? )";
         } else {
             placeholder = "?";
@@ -36,22 +40,22 @@ public class DatabaseUtils {
         return placeholder;
     }
 
-    // creates SQL placeholders for the given (ordered) list of columns
-    private static <M> String makeInsertPlaceholders(List<Column<M, ?>> columns) {
+    private static <M> String makePlaceholders(List<Column<M, ?>> columns, Function<Column<M, ?>, String> placeholderFormat) {
         List<String> placeholders = new ArrayList<>(columns.size());
         for (Column<M, ?> c : columns) {
-            placeholders.add(getSqlPlaceholder(c.getType()));
+            placeholders.add(placeholderFormat.apply(c));
         }
         return StringJoiner.of(placeholders).sep(", ").join();
+
+    }
+    // creates SQL placeholders for the given (ordered) list of columns
+    private static <M> String makeInsertPlaceholders(List<Column<M, ?>> columns) {
+        return makePlaceholders(columns, (c) -> getSqlPlaceholder(c.getType()));
     }
 
     // creates SQL placeholders for the given (ordered) list of columns
     private static <M> String makeUpdatePlaceholders(List<Column<M, ?>> columns) {
-        List<String> placeholders = new ArrayList<>(columns.size());
-        for (Column<M, ?> c : columns) {
-            placeholders.add(c.sqlName() + " = " + getSqlPlaceholder(c.getType()));
-        }
-        return StringJoiner.of(placeholders).sep(", ").join();
+        return makePlaceholders(columns, (c) -> c.sqlName() + " = " + getSqlPlaceholder(c.getType()));
     }
 
     // " WHERE column1 = ?"
@@ -78,12 +82,12 @@ public class DatabaseUtils {
         }
     }
 
-    public static <M> String deleteTemplate(Table<M> table, Column<M, ?> whereColumn) {
-        return deleteTemplate(table) + makeWhereString(whereColumn, 1);
+    public static <M> String deleteWhereTemplate(Table<M> table, Column<M, ?> whereColumn, int nValues) {
+        return deleteAllTemplate(table) + makeWhereString(whereColumn, nValues);
 
     }
     // delete all!
-    public static <M> String deleteTemplate(Table<M> table) {
+    public static <M> String deleteAllTemplate(Table<M> table) {
         return "DELETE FROM " + table.name();
     }
 
@@ -173,5 +177,54 @@ public class DatabaseUtils {
 
     public static <E> List<E> toList(E e) {
         return Collections.singletonList(e);
+    }
+
+    public static String createStatements(Reader r) throws IOException {
+        return createStatements(r, " ");
+    }
+
+    // Returns a list of strings such that each one is a complete SQL statement in the SQL
+    // file represented by reader r.
+
+    // IMPORTANT DETAIL:
+    // It's not enough to do this just by splitting on semicolons, since there are things
+    // like nested statements with 'END;' and strings may contain semicolons.
+    // So the split token is the semicolon followed by two blank lines, i.e. statements
+    // in the SQL file must be terminated by a semicolon immediately followed by \n\n
+
+    // XXX Possible bug if the newline character is different on different platforms.
+    public static List<String> createSplitStatements(Reader r) throws IOException {
+        String[] splitStatements = createStatements(r, "\n").split(";\n\n");
+        // replace remaining newline characters by spaces and add the semicolon back
+        List<String> statements = new ArrayList<>(splitStatements.length);
+        for (String statement : splitStatements) {
+            statements.add(statement.replaceAll("\n", " ") + ";");
+        }
+        return statements;
+    }
+
+    public static String createStatements(Reader r, String linesep) throws IOException {
+        List<String> trimmedAndDecommented = new ArrayList<>(32);
+        try (BufferedReader reader = new BufferedReader(r)) {
+            // steps: remove all comment lines, trim, join, split on semicolon
+            while (reader.ready()) {
+                String line = reader.readLine();
+                int commentIndex = line.indexOf("--");
+                if (commentIndex == 0) {
+                    // skip comment lines completely
+                    continue;
+                } else if (commentIndex != -1) {
+                    line = line.substring(0, commentIndex);
+                }
+                //line = line.trim();
+                // if line was only space but not completely blank, then ignore
+                // need to keep track of blank lines so Android can separate SQL statements
+                line = line.replaceAll("\\s+", " ");
+                if (!line.equals(" ")) {
+                    trimmedAndDecommented.add(line);
+                }
+            }
+        }
+        return StringJoiner.of(trimmedAndDecommented).sep(linesep).join();
     }
 }

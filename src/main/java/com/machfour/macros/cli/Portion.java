@@ -3,11 +3,9 @@ package com.machfour.macros.cli;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.sun.org.apache.xpath.internal.Arg;
 
 import java.io.PrintStream;
 import java.sql.SQLException;

@@ -6,6 +6,7 @@ import com.machfour.macros.core.*;
 import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.validation.SchemaViolation;
 
 import java.lang.reflect.Type;
 import java.sql.SQLException;
@@ -54,7 +55,7 @@ public class IngredientsParser {
         // create Ingredients Object
 
         if (!ingredientMap.containsKey(spec.indexName)) {
-            // exception: no such food
+            throw new RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName));
         }
 
         Long ingredientId = ingredientMap.get(spec.indexName);
@@ -67,6 +68,11 @@ public class IngredientsParser {
         builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.quantityUnit);
         builder.setField(Schema.IngredientTable.NOTES, spec.notes);
         builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity);
+
+        if (!builder.canConstruct()) {
+            throw new SchemaViolation(builder.findAllErrors());
+            // throw SchemaViolation
+        }
 
         return builder.build();
     }
@@ -92,11 +98,12 @@ public class IngredientsParser {
         builder.setField(Schema.FoodTable.VARIETY, spec.variety);
         builder.setField(Schema.FoodTable.VARIETY_AFTER_NAME, false);
         builder.setField(Schema.FoodTable.NOTES, spec.notes);
-        builder.setField(Schema.FoodTable.CATEGORY, "Recipes"); //TODO
+        builder.setField(Schema.FoodTable.CATEGORY, "recipes"); //TODO
         // setting this means that Food.factory().construct() will create a CompositeFood
         builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
 
         if (!builder.canConstruct()) {
+            throw new SchemaViolation(builder.findAllErrors());
             // throw SchemaViolation
         }
 

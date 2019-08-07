@@ -104,6 +104,11 @@ public class Food extends MacrosEntity<Food> {
         return getData(NUTTAB_INDEX);
     }
 
+    @Nullable
+    public String getNotes() {
+        return getData(NOTES);
+    }
+
 
     @Override
     public boolean equals(Object o) {

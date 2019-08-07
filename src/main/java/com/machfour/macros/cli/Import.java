@@ -8,8 +8,10 @@ import com.machfour.macros.objects.Serving;
 import com.machfour.macros.storage.CsvStorage;
 import com.machfour.macros.storage.MacrosDatabase;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -39,7 +41,9 @@ class Import extends CommandImpl {
         String servingCsvFile = Config.SERVING_CSV_FILENAME;
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
-        try {
+        try (Reader foodCsv = new FileReader(foodCsvFile);
+             Reader servingCsv = new FileReader(servingCsvFile);
+        ) {
             if (doClear) {
                 OUT.println("Clearing existing food and serving data...");
                 db.clearTable(Food.table());
@@ -47,9 +51,9 @@ class Import extends CommandImpl {
                 db.clearTable(Serving.table());
             }
             OUT.println("Importing data into database...");
-            CsvStorage.importFoodData(foodCsvFile, db, false);
+            CsvStorage.importFoodData(foodCsv, db, false);
             OUT.println("Saved foods and nutrition data");
-            CsvStorage.importServings(servingCsvFile, db, false);
+            CsvStorage.importServings(servingCsv, db, false);
             OUT.println("Saved servings");
         } catch (SQLException e1) {
             OUT.println();

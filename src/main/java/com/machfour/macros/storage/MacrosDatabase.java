@@ -3,11 +3,9 @@ package com.machfour.macros.storage;
 import com.machfour.macros.core.*;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.crypto.Mac;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -207,8 +205,9 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<Long, Food> allFoods = getAllRawObjects(Food.table());
         Map<Long, Serving> allServings = getAllRawObjects(Serving.table());
         Map<Long, NutritionData> allNutritionData = getAllRawObjects(NutritionData.table());
-        Map<Long, Ingredient> allIngredients = getAllRawObjects(Ingredient.table());
         Map<String, FoodCategory> allFoodCategories = getAllFoodCategories();
+        Map<Long, Ingredient> allIngredients = getAllRawObjects(Ingredient.table());
+        processRawIngredients(allIngredients);
         processRawFoodMap(allFoods, allServings, allNutritionData, allIngredients, allFoodCategories);
         return new ArrayList<>(allFoods.values());
     }
@@ -227,9 +226,13 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     @Override
     public Map<Long, Food> getFoodsById(@NotNull Collection<Long> foodIds) throws SQLException {
-        Map<Long, Food> foods = getRawObjectsByIds(Schema.FoodTable.instance(), foodIds);
+        Map<Long, Food> foods = getRawObjectsByIds(Food.table(), foodIds);
         processRawFoodMap(foods);
         return foods;
+    }
+
+    public Map<Long, Serving> getServingsById(@NotNull Collection<Long> servingIds) throws SQLException {
+        return getRawObjectsByIds(Serving.table(), servingIds);
     }
 
     @Override
@@ -244,16 +247,45 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     @Override
     public Map<String, Food> getFoodsByIndexName(@NotNull Collection<String> indexNames) throws SQLException {
         Map<String, Food> foods = getRawObjectsByKeys(Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames);
-        // TODO this is kind of inefficient
+        // TODO hmm this is kind of inefficient
         Map<Long, Food> idMap = DatabaseUtils.makeIdMap(foods.values());
         processRawFoodMap(idMap);
         return foods;
     }
 
+    private void processRawIngredients(Map<Long, Ingredient> ingredientMap) throws SQLException {
+        List<Long> foodIds = new ArrayList<>(ingredientMap.size());
+        List<Long> servingIds = new ArrayList<>(ingredientMap.size());
+        for (Ingredient i : ingredientMap.values()) {
+            foodIds.add(i.getIngredientFoodId());
+            if (i.getServingId() != null) {
+                servingIds.add(i.getServingId());
+            }
+        }
+        // XXX make sure this doesn't loop infinitely if two composite foods contain each other as ingredients
+        // (or potentially via a longer chain -- A contains B, B contains C, C contains A)
+        Map<Long, Food> ingredientFoods = getFoodsById(foodIds);
+        Map<Long, Serving> ingredientServings = getServingsById(servingIds);
+
+        for (Ingredient i : ingredientMap.values()) {
+            // QtyUnit setup *first*
+            QtyUnit unit = QtyUnit.fromAbbreviation(i.qtyUnitAbbr());
+            assert (unit != null) : "No quantity unit exists with abbreviation '" + i.qtyUnitAbbr() + "'.";
+            i.setQtyUnit(unit);
+            // applyFoodsToRawIngredients(ingredients, servings
+            Food f = ingredientFoods.get(i.getIngredientFoodId());
+            i.setIngredientFood(f);
+            // applyServingsToRawIngredients(ingredients, servings)
+            if (i.getServingId() != null) {
+                Serving s = ingredientServings.get(i.getServingId());
+                i.setServing(s);
+            }
+        }
+    }
+
     private void processRawFoodMap(Map<Long, Food> foods, Map<Long, Serving> servings,
             Map<Long, NutritionData> nutritionData, Map<Long, Ingredient> ingredients,
             Map<String, FoodCategory> categories) {
-
         applyServingsToRawFoods(foods, servings);
         applyNutritionDataToRawFoods(foods, nutritionData);
         applyIngredientsToRawFoods(foods, ingredients);
@@ -268,6 +300,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             Map<Long, NutritionData> nutritionData = getRawObjectsForParentFk(foodMap, NutritionData.table(), Schema.NutritionDataTable.FOOD_ID);
             Map<Long, Ingredient> ingredients = getRawObjectsForParentFk(foodMap, Ingredient.table(), Schema.IngredientTable.COMPOSITE_FOOD_ID);
             Map<String, FoodCategory> categories = getAllFoodCategories();
+            processRawIngredients(ingredients);
             processRawFoodMap(foodMap, servings, nutritionData, ingredients, categories);
         }
     }
@@ -316,8 +349,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     private void applyServingsToRawFoods(Map<Long, Food> foodMap, Map<Long, Serving> servingMap) {
         for (Serving s : servingMap.values()) {
             // QtyUnit setup
-            QtyUnit unit = QtyUnit.fromAbbreviation(s.getQuantityUnitAbbr());
-            assert (unit != null) : "No quantity unit with the given abbreviation was found";
+            QtyUnit unit = QtyUnit.fromAbbreviation(s.qtyUnitAbbr());
+            assert (unit != null) : "No quantity unit exists with abbreviation '" + s.qtyUnitAbbr() + "'";
             s.setQtyUnit(unit);
             // this query should never fail, due to database constraints
             Food f = foodMap.get(s.getFoodId());

@@ -3,9 +3,7 @@ package com.machfour.macros.cli;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
-import com.machfour.macros.objects.Food;
-import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.objects.Serving;
+import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.PrintStream;
@@ -20,8 +18,8 @@ import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliUtils.deNull;
 
-class ListFood extends CommandImpl {
-    private static final String NAME = "list";
+class ShowFood extends CommandImpl {
+    private static final String NAME = "show";
     @Override
     public String name() {
         return NAME;
@@ -35,7 +33,7 @@ class ListFood extends CommandImpl {
         if (args.size() == 1 || args.contains("--help")) {
             printHelp(OUT);
             if (args.size() == 1) {
-                OUT.println("Please enter the index name of the food to list");
+                OUT.println("Please enter the index name of the food to show");
             }
             return;
         }
@@ -65,7 +63,7 @@ class ListFood extends CommandImpl {
         out.println("============");
         out.println();
         out.printf("Name:          %s\n", f.getMediumName());
-        out.printf("Notes:         %s\n", deNull(f.getNotes()));
+        out.printf("Notes:         %s\n", deNull(f.getNotes(), "(no notes)"));
         out.printf("Category:      %s\n", f.getFoodCategory());
 
         out.println();
@@ -95,21 +93,56 @@ class ListFood extends CommandImpl {
         CliUtils.printNutritionData(nd, true, out);
         out.println();
 
-        out.println("================================");
-        out.println();
-
         /*
          * Servings
          */
-        List<Serving> servings = f.getServings();
+        out.println("================================");
+        out.println();
         out.println("Servings:");
         out.println();
+
+        List<Serving> servings = f.getServings();
         if (!servings.isEmpty()) {
             for (Serving s: servings) {
                 out.printf(" - %s: %.1f%s\n", s.name(), s.quantity(), s.qtyUnit().abbr());
             }
         } else {
-            out.println("No servings recorded for this food");
+            out.println("(No servings recorded)");
         }
+
+        out.println();
+        /*
+         * Ingredients
+         */
+
+        //if (!f.getFoodType().equals(FoodType.COMPOSITE)) {
+        //    return;
+        //}
+        //assert (f instanceof CompositeFood);
+        if (!(f instanceof CompositeFood)) {
+            return;
+        }
+        CompositeFood cf = (CompositeFood) f;
+
+        out.println("================================");
+        out.println();
+        out.println("Ingredients:");
+        out.println();
+        List<Ingredient> ingredients = cf.getIngredients();
+        if (!ingredients.isEmpty()) {
+            for (Ingredient i: ingredients) {
+                Food iFood = i.getIngredientFood();
+                Serving iServing = i.getServing();
+                out.print(" -- ");
+                out.print(MealPrinter.formatQuantity(i.quantity(), i.getQtyUnit(), 7, false));
+                out.printf("  %-" + MealPrinter.nameWidth + "s", iFood.getMediumName());
+                out.printf(" %-8s", iServing != null ? "(" + i.servingCountString() + " " +  iServing.name() + ")" : "");
+                out.println(" --");
+            }
+
+        } else {
+            out.println("(No ingredients recorded (but there probably should be!)");
+        }
+
     }
 }

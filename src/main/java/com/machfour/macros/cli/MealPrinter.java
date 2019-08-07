@@ -16,10 +16,10 @@ import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 class MealPrinter {
     private static final String columnSep = " | ";
-    private static final int nameWidth = 45;
-    private static final int servingWidth = 6;
-    private static final int shortDataWidth = 4;
-    private static final int longDataWidth = 6;
+    static final int nameWidth = 45;
+    static final int servingWidth = 6;
+    static final int shortDataWidth = 4;
+    static final int longDataWidth = 6;
     private static final List<Column<NutritionData, Double>> conciseTableCols;
     private static final List<Column<NutritionData, Double>> verboseTableCols;
 
@@ -73,7 +73,7 @@ class MealPrinter {
         out.println();
     }
 
-    private static String formatDouble(@Nullable Double d, int width) {
+    static String formatDouble(@Nullable Double d, int width) {
         return formatDouble(d, width, false, "");
     }
     private static String formatDouble(@Nullable Double d, boolean verbose) {
@@ -81,6 +81,26 @@ class MealPrinter {
     }
     private static String formatDouble(@Nullable Double d, int width, boolean withDp, @NotNull String forNulls) {
         return d == null ? forNulls : String.format("%" + width + (withDp ? ".1f" : ".0f"), d);
+    }
+
+    static String formatQuantity(@Nullable Double qty, @NotNull QtyUnit unit, int width, boolean alignLeft) {
+        return formatQuantity(qty, unit, width, 2, false, alignLeft, "");
+    }
+    static String formatQuantity(@Nullable Double qty, @NotNull QtyUnit unit, int width, int unitWidth,
+             boolean withDp, boolean alignLeft, @NotNull String forNulls) {
+        if (width - unitWidth < 0) {
+            throw new IllegalArgumentException("unit width is more than width");
+        }
+        if (qty == null) {
+            return forNulls;
+        }
+        String u = unit.abbr();
+        if (alignLeft) {
+            String temp = String.format("%" + (withDp ? ".1f" : ".0f") + "%" + unitWidth + "s", qty, u);
+            return String.format("%-" + width + "s", temp);
+        } else {
+            return String.format("%" + (width-unitWidth) + (withDp ? ".1f" : ".0f") + "%-" + unitWidth + "s", qty, u);
+        }
     }
 
     private static List<String> nutritionDataToRow(String name, NutritionData nd, double qty, QtyUnit unit, boolean verbose)  {

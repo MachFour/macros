@@ -90,7 +90,7 @@ public class CsvStorage {
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
-    public static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
+    static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
         Map<String, Food> foodMap = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
@@ -113,7 +113,7 @@ public class CsvStorage {
         }
         return foodMap;
     }
-    public static List<Serving> buildServings(Reader servingCsv) throws IOException {
+    static List<Serving> buildServings(Reader servingCsv) throws IOException {
         List<Serving> servings = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
             final String[] header = mapReader.getHeader(true);

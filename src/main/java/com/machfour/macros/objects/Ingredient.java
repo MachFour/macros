@@ -61,7 +61,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     @NotNull
-    public String getQuantityUnitAbbr() {
+    public String qtyUnitAbbr() {
         return getData(Schema.IngredientTable.QUANTITY_UNIT);
     }
 
@@ -76,6 +76,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
         compositeFood = f;
     }
 
+    // not null only after setIngredientFood() is called
     public NutritionData getNutritionData() {
         return nutritionData;
     }
@@ -92,7 +93,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     public void setIngredientFood(@NotNull Food f) {
         assert ingredientFood == null && foreignKeyMatches(this, Schema.IngredientTable.INGREDIENT_FOOD_ID, f);
         ingredientFood = f;
-        nutritionData = f.getNutritionData().rescale(getQuantity(), getQtyUnit());
+        nutritionData = f.getNutritionData().rescale(quantity(), getQtyUnit());
     }
 
     @NotNull
@@ -117,7 +118,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     @NotNull
-    public Double getQuantity() {
+    public Double quantity() {
         return getData(Schema.IngredientTable.QUANTITY);
     }
 
@@ -138,7 +139,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     }
 
     public double servingCount() {
-        return (serving != null) ? getQuantity() / serving.quantity() : 0;
+        return (serving != null) ? quantity() / serving.quantity() : 0;
     }
 }
 

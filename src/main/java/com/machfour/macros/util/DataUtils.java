@@ -11,6 +11,7 @@ import java.util.Locale;
  * Created by max on 25/10/17.
  */
 
+// TODO is this class needed?
 public final class DataUtils {
 
     private DataUtils() {

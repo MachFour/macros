@@ -4,7 +4,6 @@ package com.machfour.macros.cli;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.Function;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -170,6 +169,10 @@ public class CliUtils {
 
     // converts null to blank strings
     static String deNull(String in) {
-        return in == null ? "" : in;
+        return deNull(in, "");
+    }
+    // converts null to blank strings, with optional default
+    static String deNull(String in, String ifNull) {
+        return in != null ? in : ifNull;
     }
 }

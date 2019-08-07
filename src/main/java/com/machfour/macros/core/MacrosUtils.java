@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+// TODO are any of these methods used?
 public class MacrosUtils {
 
     private MacrosUtils() {

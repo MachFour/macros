@@ -1,9 +1,6 @@
 package com.machfour.macros.objects;
 
-import com.machfour.macros.core.ColumnData;
-import com.machfour.macros.core.MacrosEntity;
-import com.machfour.macros.core.ObjectSource;
-import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -12,7 +9,9 @@ import java.util.List;
 
 public class CompositeFood extends Food {
 
+    // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
     private NutritionData ingredientNutritionData;
+    private boolean hasOverridingNutritionData;
     private final List<Ingredient> ingredients;
 
     protected CompositeFood(ColumnData<Food> dataMap, ObjectSource objectSource) {
@@ -21,6 +20,7 @@ public class CompositeFood extends Food {
 
         ingredients = new ArrayList<>();
         ingredientNutritionData = null;
+        hasOverridingNutritionData = false;
     }
     // uses data from the ingredients to add to the existing nutrition data
     private NutritionData calculateIngredientsNutritionData() {
@@ -32,9 +32,11 @@ public class CompositeFood extends Food {
     }
 
     // Sets this Composite food's (overriding) nutrition data
+    // TODO call this
     @Override
     public void setNutritionData(@NotNull NutritionData nd) {
         super.setNutritionData(nd);
+        hasOverridingNutritionData = true;
     }
 
     @Override
@@ -43,9 +45,14 @@ public class CompositeFood extends Food {
         if (ingredientNutritionData == null) {
             ingredientNutritionData = calculateIngredientsNutritionData();
         }
-        NutritionData overridingData = super.getNutritionData();
-        // combine missing data from the foods nutrirtionData with
-        return NutritionData.combine(overridingData, ingredientNutritionData);
+
+        if (hasOverridingNutritionData) {
+            // combine missing data from the foods nutrirtionData with
+            NutritionData overridingData = super.getNutritionData();
+            return NutritionData.combine(overridingData, ingredientNutritionData);
+        } else {
+            return ingredientNutritionData;
+        }
     }
 
     public List<Ingredient> getIngredients() {

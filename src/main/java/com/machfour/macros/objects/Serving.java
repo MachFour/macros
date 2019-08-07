@@ -43,7 +43,7 @@ public class Serving extends MacrosEntity<Serving> implements Measurement<Servin
     }
 
     @NotNull
-    public String getQuantityUnitAbbr() {
+    public String qtyUnitAbbr() {
         return getData(Schema.ServingTable.QUANTITY_UNIT);
     }
 

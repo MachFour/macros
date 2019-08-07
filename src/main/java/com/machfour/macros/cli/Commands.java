@@ -17,9 +17,10 @@ public class Commands {
     private static final Command HELP = new Help();
     private static final Command NEWMEAL = new NewMeal();
     private static final Command SEARCH = new SearchFood();
-    private static final Command LISTFOOD = new ListFood();
+    private static final Command SHOWFOOD = new ShowFood();
     private static final Command TOTAL = new Total();
     private static final Command PORTION = new Portion();
+    private static final Command ALLFOODS = new AllFoods();
     private static final Command LISTMEALS = new Meals();
 
     static final Command NO_ARGS = new NoArgs();
@@ -28,13 +29,14 @@ public class Commands {
             EDIT
             , IMPORT
             , INIT
-            , LISTFOOD
+            , SHOWFOOD
             , PORTION
             , NEWMEAL
             , LISTMEALS
             , READ
             , SEARCH
             , TOTAL
+            , ALLFOODS
             , HELP
             , INVALID_COMMAND
             , NO_ARGS

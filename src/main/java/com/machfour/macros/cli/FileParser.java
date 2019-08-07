@@ -1,7 +1,6 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.storage.MacrosDataSource;
-import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.ColumnData;

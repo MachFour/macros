@@ -91,6 +91,8 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
 
     }
 
+    // TODO should it be set to null or default value? Or edit value?
+    // ... i.e. do we really need this method, or just a 'reset to initial/default/original editable instance value'?
     public void clearField(Column<M, ?> field) {
         setField(field, null);
     }
@@ -107,7 +109,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
     @NotNull
     private static <M, J> List<ValidationError> findErrors(ColumnData<M> data, Column<M, J> col) {
         List<ValidationError> errors = new ArrayList<>();
-        if (data.get(col) == null && !col.isNullable()) {
+        if (data.get(col) == null && !col.isNullable() && col.defaultData() == null) {
             errors.add(ValidationError.NON_NULL);
         }
         return errors;

@@ -9,6 +9,11 @@ public class FoodCategory extends MacrosEntity<FoodCategory> {
     }
 
     @Override
+    public String toString() {
+        return getName();
+    }
+
+    @Override
     public Table<FoodCategory> getTable() {
         return table();
     }

@@ -134,31 +134,35 @@ public class IngredientsParser {
         return results;
     }
 
-    private static List<Ingredient> addIdToIngredients(CompositeFood cf) {
-        assert cf.getObjectSource() == ObjectSource.DATABASE;
-        assert cf.getId() != MacrosPersistable.NO_ID;
+    private static List<Ingredient> addCompositeFoodId(List<Ingredient> newIngredients, long id) {
+        List<Ingredient> ingredientsWithId = new ArrayList<>(newIngredients.size());
 
-        List<Ingredient> ingredients = cf.getIngredients();
-        List<Ingredient> newIngredients = new ArrayList<>(ingredients.size());
-
-        for (Ingredient i : ingredients) {
+        for (Ingredient i : newIngredients) {
             MacrosBuilder<Ingredient> builder = new MacrosBuilder<>(i);
-            builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, cf.getId());
-            newIngredients.add(builder.build());
+            builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, id);
+            ingredientsWithId.add(builder.build());
         }
-        return newIngredients;
+        return ingredientsWithId;
     }
 
     // saves a composite food and all its ingredients into the database
     private static void saveCompositeFood(CompositeFood cf, MacrosDataSource ds) throws SQLException {
-
-        // First save the food and then recreate with ID
+        // First save the food and then retrieve it from the database, to get the ID
         ds.saveObject(cf);
-        cf = (CompositeFood) ds.getFoodByIndexName(cf.getIndexName());
-        // So that we can edit the ingredients to have the ID
-        List<Ingredient> newIngredients = addIdToIngredients(cf);
+        long id = ds.getFoodByIndexName(cf.getIndexName()).getId();
+
+        // Now we can edit the ingredients to have the ID
+        // TODO use completeFk function
+        List<Ingredient> newIngredients = addCompositeFoodId(cf.getIngredients(), id);
         // here we go!
         ds.insertObjects(newIngredients, false);
+
+        // TODO nutrition data object to go along with it, if quantity is known
+        //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table());
+        //nData.setField(Schema.NutritionDataTable.DATA_SOURCE, "recipe");
+        //nData.setField(Schema.NutritionDataTable.FOOD_ID, id);
+        //nData.setField(Schema.NutritionDataTable.QUANTITY ,";
+
     }
 
     static void saveCompositeFoods(Collection<CompositeFood> compositeFoods, MacrosDataSource ds) throws SQLException {

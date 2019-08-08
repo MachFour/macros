@@ -211,7 +211,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     @NotNull
-    public String getQuantityUnitAbbr() {
+    public String qtyUnitAbbr() {
         return getData(QUANTITY_UNIT);
     }
 

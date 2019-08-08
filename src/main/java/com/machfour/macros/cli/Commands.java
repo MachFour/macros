@@ -1,5 +1,7 @@
 package com.machfour.macros.cli;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.Map;
  */
 public class Commands {
     static final Map<String, Command> CMDS_BY_NAME;
+    private static final Command ADDRECIPE = new AddRecipe();
     private static final Command IMPORT = new Import();
     private static final Command INIT = new Init();
     private static final Command EDIT = new Edit();
@@ -36,6 +39,7 @@ public class Commands {
             , READ
             , SEARCH
             , TOTAL
+            , ADDRECIPE
             , ALLFOODS
             , HELP
             , INVALID_COMMAND
@@ -57,31 +61,31 @@ public class Commands {
 
     static class InvalidCommand extends CommandImpl {
         private static final String NAME = "_invalidCommand";
-        @Override
-        public String name() {
-            return NAME;
+
+        InvalidCommand() {
+            super(NAME);
         }
+
         @Override
         public void doAction(List<String> args) {
-            CliMain.OUT.printf("Command not recognised: '%s'\n", args.get(0));
-            CliMain.OUT.println();
+            out.printf("Command not recognised: '%s'\n\n", args.get(0));
             NO_ARGS.doAction(Collections.emptyList());
         }
     }
 
     static class NoArgs extends CommandImpl {
         private static final String NAME = "_noArgs";
-        @Override
-        public String name() {
-            return NAME;
+
+        NoArgs() {
+            super(NAME);
         }
 
         @Override
         public void doAction(List<String> args) {
-            CliMain.OUT.println("Please specify one of the following commands:");
+            out.println("Please specify one of the following commands:");
             for (Command m : COMMANDS) {
                 if (m.isUserCommand()) {
-                    CliMain.OUT.println(m.name());
+                    out.println(m.name());
                 }
             }
         }

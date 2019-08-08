@@ -5,9 +5,9 @@ import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.objects.QtyUnit;
+import com.machfour.macros.util.PrintFormatting;
 import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -16,10 +16,6 @@ import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 class MealPrinter {
     private static final String columnSep = " | ";
-    static final int nameWidth = 45;
-    static final int servingWidth = 6;
-    static final int shortDataWidth = 4;
-    static final int longDataWidth = 6;
     private static final List<Column<NutritionData, Double>> conciseTableCols;
     private static final List<Column<NutritionData, Double>> verboseTableCols;
 
@@ -73,36 +69,6 @@ class MealPrinter {
         out.println();
     }
 
-    static String formatDouble(@Nullable Double d, int width) {
-        return formatDouble(d, width, false, "");
-    }
-    private static String formatDouble(@Nullable Double d, boolean verbose) {
-        return formatDouble(d, verbose ? longDataWidth : shortDataWidth, verbose, "");
-    }
-    private static String formatDouble(@Nullable Double d, int width, boolean withDp, @NotNull String forNulls) {
-        return d == null ? forNulls : String.format("%" + width + (withDp ? ".1f" : ".0f"), d);
-    }
-
-    static String formatQuantity(@Nullable Double qty, @NotNull QtyUnit unit, int width, boolean alignLeft) {
-        return formatQuantity(qty, unit, width, 2, false, alignLeft, "");
-    }
-    static String formatQuantity(@Nullable Double qty, @NotNull QtyUnit unit, int width, int unitWidth,
-             boolean withDp, boolean alignLeft, @NotNull String forNulls) {
-        if (width - unitWidth < 0) {
-            throw new IllegalArgumentException("unit width is more than width");
-        }
-        if (qty == null) {
-            return forNulls;
-        }
-        String u = unit.abbr();
-        if (alignLeft) {
-            String temp = String.format("%" + (withDp ? ".1f" : ".0f") + "%" + unitWidth + "s", qty, u);
-            return String.format("%-" + width + "s", temp);
-        } else {
-            return String.format("%" + (width-unitWidth) + (withDp ? ".1f" : ".0f") + "%-" + unitWidth + "s", qty, u);
-        }
-    }
-
     private static List<String> nutritionDataToRow(String name, NutritionData nd, double qty, QtyUnit unit, boolean verbose)  {
         List<Column<NutritionData, Double>> nutrientColumns = verbose ? verboseTableCols : conciseTableCols;
         List<String> row = new ArrayList<>(nutrientColumns.size() + 2);
@@ -111,12 +77,10 @@ class MealPrinter {
         // add nutrients, formatting to be the appropriate width
         for (Column<NutritionData, Double> nutrient : nutrientColumns) {
             Double value = nd.amountOf(nutrient);
-            row.add(formatDouble(value, verbose));
+            row.add(PrintFormatting.formatQuantity(value, verbose));
         }
         // add quantity and unit
-        String qtyStr = formatDouble(qty, servingWidth - 2);
-        String qtyUnitStr = String.format("%-2s", unit.abbr());
-        row.add(qtyStr + qtyUnitStr);
+        row.add(PrintFormatting.formatQuantity(qty, unit, PrintFormatting.servingWidth));
         return row;
     }
 
@@ -130,22 +94,22 @@ class MealPrinter {
         List<Boolean> rightAlign = new ArrayList<>(numCols);
         // first column has meal name (heading) and food names for other rows
         headingRow.add(meal.getName());
-        rowWidths.add(nameWidth);
+        rowWidths.add(PrintFormatting.nameWidth);
         rightAlign.add(false);
         // next columns have names for each nutrient (heading) then corresponding data
         for (Column<NutritionData, Double> col : nutrientCols) {
             if (verbose) {
-                headingRow.add(CliUtils.longerNames.get(col));
-                rowWidths.add(longDataWidth);
+                headingRow.add(PrintFormatting.longerNames.get(col));
+                rowWidths.add(PrintFormatting.longDataWidth);
             } else {
-                headingRow.add(CliUtils.briefNames.get(col));
-                rowWidths.add(shortDataWidth);
+                headingRow.add(PrintFormatting.briefNames.get(col));
+                rowWidths.add(PrintFormatting.shortDataWidth);
             }
             rightAlign.add(true);
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(CliUtils.briefNames.get(QUANTITY));
-        rowWidths.add(servingWidth);
+        headingRow.add(PrintFormatting.briefNames.get(QUANTITY));
+        rowWidths.add(PrintFormatting.servingWidth);
         rightAlign.add(true);
 
         // row separator spans all columns plus each separator, but we discount the space

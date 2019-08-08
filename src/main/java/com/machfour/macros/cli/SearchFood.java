@@ -6,6 +6,7 @@ import com.machfour.macros.objects.Food;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.StringJoiner;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -17,20 +18,18 @@ import static com.machfour.macros.cli.CliMain.OUT;
 
 class SearchFood extends CommandImpl {
     private static final String NAME = "search";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE = String.format("Usage: %s %s <keyword>", PROGNAME, NAME);
+
+    SearchFood() {
+        super(NAME, USAGE);
     }
-    @Override
-    public void printHelp(PrintStream out) {
-        OUT.printf("Usage: %s %s <keyword>\n", PROGNAME, NAME);
-    }
+
     @Override
     public void doAction(List<String> args) {
         if (args.size() == 1 || args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             if (args.size() == 1) {
-                OUT.println("Please enter a search keyword for the food database");
+                out.println("Please enter a search keyword for the food database");
             }
             return;
         }
@@ -44,15 +43,15 @@ class SearchFood extends CommandImpl {
                 resultFoods = db.getFoodsById(resultIds);
             }
         } catch (SQLException e) {
-            OUT.print("SQL exception occurred: ");
-            OUT.println(e.getMessage());
+            out.print("SQL exception occurred: ");
+            out.println(e.getMessage());
             return;
         }
         if (resultFoods.isEmpty()) {
-            OUT.printf("No matches for keyword '%s'\n", keyword);
+            out.printf("No matches for keyword '%s'\n", keyword);
         } else {
-            OUT.println("Search results:");
-            OUT.println();
+            out.println("Search results:");
+            out.println();
             printFoodList(resultFoods.values(), OUT);
         }
     }

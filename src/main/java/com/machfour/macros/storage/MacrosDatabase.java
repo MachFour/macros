@@ -442,6 +442,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             Map<Long, FoodPortion> foodPortions = getRawObjectsByIds(Schema.FoodPortionTable.instance(), foodPortionIds);
             for (FoodPortion fp : foodPortions.values()) {
                 Food portionFood = foodMap.get(fp.getFoodId());
+                assert (portionFood != null);
                 fp.setFood(portionFood);
                 Long servingId = fp.getServingId();
                 if (servingId != null) {
@@ -461,12 +462,9 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<Long, Meal> mealsById = getMealsById(mealIds);
         // sort by create time and put in tree map to preserve order
         List<Meal> mealsByCreateTime = new ArrayList<>(mealsById.values());
-        //TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::createTime));
+        // TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::createTime));
         // TODO API level: Comparator.comparingLong(Meal::createTime);
-        Collections.sort(mealsByCreateTime, (Meal m1, Meal m2) -> {
-            return Long.compare(m1.createTime(), m2.createTime());
-        });
-
+        Collections.sort(mealsByCreateTime, (m1, m2) -> Long.compare(m1.createTime(), m2.createTime()));
 
         Map<String, Meal> mealsByName = new TreeMap<>();
         for (Meal m : mealsById.values()) {

@@ -1,19 +1,21 @@
 package com.machfour.macros.cli;
 
-import java.io.PrintStream;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
 class Help extends CommandImpl {
     private static final String NAME = "help";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE = String.format("%s %s <command>", PROGNAME, NAME);
+
+    Help() {
+        super(NAME, USAGE);
     }
+
     @Override
-    public void printHelp(PrintStream out) {
+    public void printHelp() {
         out.println("################################");
         out.println("## Max's nutrition calculator ##");
         out.println("################################");
@@ -33,9 +35,9 @@ class Help extends CommandImpl {
         // help on a particular action
         if (args.size() >= 2 && Commands.CMDS_BY_NAME.containsKey(args.get(1))) {
             Command forHelp = Commands.CMDS_BY_NAME.get(args.get(1));
-            forHelp.printHelp(OUT);
+            forHelp.printHelp();
         } else {
-            printHelp(OUT);
+            printHelp();
         }
     }
 }

@@ -4,6 +4,8 @@ import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.util.PrintFormatting;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -16,13 +18,10 @@ import static com.machfour.macros.cli.CliMain.PROGNAME;
 
 class Total extends CommandImpl {
     private static final String NAME = "total";
-    @Override
-    public String name() {
-        return NAME;
-    }
-    @Override
-    public void printHelp(PrintStream out) {
-        OUT.printf("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]\n", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", PROGNAME, NAME);
+
+    Total() {
+        super(NAME, USAGE);
     }
 
     private static MealSpec makeMealSpec(List<String> args, boolean isAllMeals) {
@@ -59,7 +58,7 @@ class Total extends CommandImpl {
     @Override
     public void doAction(List<String> args) {
         if (args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             return;
         }
         boolean verbose = args.contains("--verbose") || args.contains("-v");
@@ -77,23 +76,23 @@ class Total extends CommandImpl {
             // total for specific meal
             mealSpec.process(db, false);
             if (mealSpec.error() != null) {
-                OUT.println(mealSpec.error());
+                out.println(mealSpec.error());
                 return;
             }
-            OUT.println();
+            out.println();
             MealPrinter.printMeal(mealSpec.processedObject(), verbose, OUT);
 
         } else {
             try {
                 Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day());
                 if (mealsForDay.isEmpty()) {
-                    OUT.println("No meals recorded on " + CliUtils.prettyDay(mealSpec.day()));
+                    out.println("No meals recorded on " + PrintFormatting.prettyDay(mealSpec.day()));
                 } else {
                     MealPrinter.printMeals(mealsForDay.values(), OUT, verbose, per100, true);
                 }
             } catch (SQLException e) {
-                OUT.println("Error retrieving meals: " + e.getMessage());
-                OUT.println();
+                out.println("Error retrieving meals: " + e.getMessage());
+                out.println();
             }
         }
     }

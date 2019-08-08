@@ -3,6 +3,8 @@ package com.machfour.macros.cli;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.util.PrintFormatting;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -11,20 +13,17 @@ import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
 public class NewMeal extends CommandImpl {
-
     private static final String NAME = "newmeal";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE = String.format("Usage: %s %s <meal name> [<day>]", PROGNAME, NAME);
+
+    NewMeal() {
+        super(NAME, USAGE);
     }
-    @Override
-    public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s <meal name> [<day>]\n", PROGNAME, NAME);
-    }
+
     @Override
     public void doAction(List<String> args) {
         if (args.size() == 1 || args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             return;
         }
 
@@ -39,12 +38,12 @@ public class NewMeal extends CommandImpl {
         mealSpec.process(db, true);
 
         if (mealSpec.error() != null) {
-            OUT.println(mealSpec.error());
+            out.println(mealSpec.error());
             return;
         }
         if (mealSpec.created()) {
-            String prettyDay = CliUtils.prettyDay(mealSpec.day());
-            OUT.println(String.format("Created meal '%s' on %s", mealSpec.name(), prettyDay));
+            String prettyDay = PrintFormatting.prettyDay(mealSpec.day());
+            out.println(String.format("Created meal '%s' on %s", mealSpec.name(), prettyDay));
         }
         //Meal toEdit = mealSpec.processedObject();
     }

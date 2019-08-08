@@ -6,6 +6,8 @@ import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
+import com.machfour.macros.util.PrintFormatting;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -17,18 +19,17 @@ import static com.machfour.macros.cli.CliMain.PROGNAME;
 
 class Portion extends CommandImpl {
     private static final String NAME = "portion";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE =
+            String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", PROGNAME, NAME);
+
+    Portion() {
+        super(NAME, USAGE);
     }
-    @Override
-    public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]\n", PROGNAME, NAME);
-    }
+
     @Override
     public void doAction(List<String> args) {
         if (args.size() == 1 || args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             return;
         }
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
@@ -57,16 +58,16 @@ class Portion extends CommandImpl {
             case 0:
                 assert false : "'-s' is where the command name should be!";
             default:
-                OUT.println("There can only be at most two arguments before '-s'");
+                out.println("There can only be at most two arguments before '-s'");
                 return;
         }
 
         if (!mealSpec.mealSpecified()) {
-            OUT.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), CliUtils.prettyDay(mealSpec.day()));
+            out.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), PrintFormatting.prettyDay(mealSpec.day()));
         }
         mealSpec.process(db, true);
         if (mealSpec.error() != null) {
-            OUT.println(mealSpec.error());
+            out.println(mealSpec.error());
             return;
         }
 
@@ -82,7 +83,7 @@ class Portion extends CommandImpl {
 
     static void process(Meal toAddTo, List<FoodPortionSpec> specs, MacrosDatabase db) {
         if (specs.isEmpty()) {
-            OUT.println("No food portions specified, nothing to do");
+            out.println("No food portions specified, nothing to do");
             return;
         }
 
@@ -93,16 +94,16 @@ class Portion extends CommandImpl {
         try {
             f = db.getFoodByIndexName(spec.foodIndexName);
         } catch (SQLException e) {
-            OUT.println("Could not retrieve food. Reason: " + e.getMessage());
+            out.println("Could not retrieve food. Reason: " + e.getMessage());
             return;
         }
         if (f == null) {
-            OUT.printf("Unrecognised food with index name '%s'\n", spec.foodIndexName);
+            out.printf("Unrecognised food with index name '%s'\n", spec.foodIndexName);
             return;
         }
         FileParser.processFpSpec(spec, toAddTo, f);
         if (spec.error != null) {
-            OUT.println(spec.error);
+            out.println(spec.error);
             return;
         }
         assert (spec.createdObject != null) : "No object created but no error message either";
@@ -111,10 +112,10 @@ class Portion extends CommandImpl {
         try {
             db.saveFoodPortions(toAddTo);
         } catch (SQLException e) {
-            OUT.println("Error saving food portion. Reason: " + e.getMessage());
+            out.println("Error saving food portion. Reason: " + e.getMessage());
             return;
         }
-        OUT.println();
+        out.println();
         MealPrinter.printMeal(toAddTo, false, OUT);
 
     }

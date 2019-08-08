@@ -9,6 +9,8 @@ import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
+import com.machfour.macros.util.PrintFormatting;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -20,11 +22,16 @@ import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.IN;
 
 class Edit extends CommandImpl {
-    private final String NAME = "edit";
+    private static final String NAME = "edit";
+    private static final String USAGE = String.format("Usage: %s %s [meal [day]]\n", PROGNAME, NAME);
+
+    Edit() {
+        super(NAME, USAGE);
+    }
     @Override
     public void doAction(List<String> args) {
         if (args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             return;
         }
 
@@ -35,12 +42,12 @@ class Edit extends CommandImpl {
 
         mealSpec.process(db, true);
         if (mealSpec.error() != null) {
-            OUT.println(mealSpec.error());
+            out.println(mealSpec.error());
             return;
         }
         if (mealSpec.created()) {
             String createMsg = String.format("Created meal '%s' on %s", mealSpec.name(), mealSpec.day());
-            OUT.println(createMsg);
+            out.println(createMsg);
         }
         Meal toEdit = mealSpec.processedObject();
         startEditor(db, toEdit.getId());
@@ -54,26 +61,26 @@ class Edit extends CommandImpl {
                 return;
             }
         } catch (SQLException e) {
-            OUT.println(e);
+            out.println(e);
             return;
         }
         assert (toEdit.getObjectSource() == ObjectSource.DATABASE) : "Not editing an object from the database";
 
         while (true) {
             // TODO reload meal
-            OUT.println();
-            OUT.printf("Editing meal: %s on %s\n", toEdit.getName(), CliUtils.prettyDay(toEdit.getDay()));
-            OUT.println();
-            OUT.print("Action (? for help): ");
+            out.println();
+            out.printf("Editing meal: %s on %s\n", toEdit.getName(), PrintFormatting.prettyDay(toEdit.getDay()));
+            out.println();
+            out.print("Action (? for help): ");
             char action = getChar();
-            OUT.println();
+            out.println();
             switch (action) {
                 case 'a':
                     addPortion(toEdit, db);
                     break;
                 case 'd':
                     deleteFoodPortion(toEdit, db);
-                    OUT.println("WARNING: meal is not reloaded");
+                    out.println("WARNING: meal is not reloaded");
                     break;
                 case 'D':
                     deleteMeal(toEdit, db);
@@ -81,31 +88,31 @@ class Edit extends CommandImpl {
                     break;
                 case 'e':
                     editFoodPortion(toEdit, db);
-                    OUT.println("WARNING: meal is not reloaded");
+                    out.println("WARNING: meal is not reloaded");
                     break;
                 case 'm':
-                    OUT.println("Meal");
-                    OUT.println("Not implemented yet, sorry!");
+                    out.println("Meal");
+                    out.println("Not implemented yet, sorry!");
                     break;
                 case 'n':
                     renameMeal();
-                    OUT.println("WARNING: meal is not reloaded");
+                    out.println("WARNING: meal is not reloaded");
                     break;
                 case 's':
                     showFoodPortions(toEdit);
                     break;
                 case '?':
-                    OUT.println();
-                    OUT.println("Please choose from one of the following options");
-                    printInteractiveHelp(OUT);
+                    out.println();
+                    out.println("Please choose from one of the following options");
+                    out.println(interactiveHelpString());
                     break;
                 case 'x':
                 case 'q':
                 case '\0':
                     return;
                 default:
-                    OUT.printf("Unrecognised action: '%c'\n", action);
-                    OUT.println();
+                    out.printf("Unrecognised action: '%c'\n", action);
+                    out.println();
 
             }
         }
@@ -120,26 +127,21 @@ class Edit extends CommandImpl {
         }
     }
 
-    @Override
-    public String name() {
-        return NAME;
-    }
-
-    private static void printInteractiveHelp(PrintStream out) {
-        out.println("Actions: ");
-        out.println("a   - add a new food portion");
-        out.println("d   - delete a food portion");
-        out.println("D   - delete the entire meal");
-        out.println("e   - edit a food portion");
-        out.println("m   - move a food portion to another meal");
-        out.println("n   - change the name of the meal");
-        out.println("s   - show current food portions");
-        out.println("?   - print this help");
-        out.println("x/q - exit this editor");
+    private static String interactiveHelpString() {
+        return "Actions:"
+            + "\n" + "a   - add a new food portion"
+            + "\n" + "d   - delete a food portion"
+            + "\n" + "D   - delete the entire meal"
+            + "\n" + "e   - edit a food portion"
+            + "\n" + "m   - move a food portion to another meal"
+            + "\n" + "n   - change the name of the meal"
+            + "\n" + "s   - show current food portions"
+            + "\n" + "?   - print this help"
+            + "\n" + "x/q - exit this editor";
     }
 
     private static void addPortion(Meal toEdit, MacrosDatabase db) {
-        OUT.println("Please enter the portion information (see help for how to specify a food portion)");
+        out.println("Please enter the portion information (see help for how to specify a food portion)");
         // copy from portion
         String inputString = CliUtils.getStringInput(IN, OUT);
         if (inputString != null && !inputString.isEmpty()) {
@@ -149,58 +151,58 @@ class Edit extends CommandImpl {
     }
 
     private static void showFoodPortions(Meal toEdit) {
-        OUT.println("Food portions:");
+        out.println("Food portions:");
         List<FoodPortion> foodPortions = toEdit.getFoodPortions();
         for (int i = 0; i < foodPortions.size(); ++i) {
             FoodPortion fp = foodPortions.get(i);
-            OUT.printf("%d: %s\n", i, fp.prettyFormat(true));
+            out.printf("%d: %s\n", i, fp.prettyFormat(true));
         }
-        OUT.println();
+        out.println();
     }
     private static void deleteMeal(Meal toDelete, MacrosDatabase db) {
-        OUT.print("Delete meal");
-        OUT.print("Are you sure? [y/N] ");
+        out.print("Delete meal");
+        out.print("Are you sure? [y/N] ");
         if (getChar() == 'y' | getChar() == 'Y') {
             try {
                 db.deleteObject(toDelete);
             } catch (SQLException e) {
-                OUT.println("Error deleting meal: " + e.getMessage());
+                out.println("Error deleting meal: " + e.getMessage());
             }
         }
     }
     private static void deleteFoodPortion(Meal toEdit, MacrosDatabase db) {
-        OUT.println("Delete food portion");
+        out.println("Delete food portion");
         showFoodPortions(toEdit);
-        OUT.print("Enter the number of the food portion to delete and press enter: ");
+        out.print("Enter the number of the food portion to delete and press enter: ");
         List<FoodPortion> portions = toEdit.getFoodPortions();
         Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
         if (n == null) {
-            OUT.println("Invalid number");
+            out.println("Invalid number");
             return;
         }
         try {
             db.deleteObject(portions.get(n));
         } catch (SQLException e3) {
-            OUT.println("Error deleting the food portion: " + e3.getMessage());
+            out.println("Error deleting the food portion: " + e3.getMessage());
             return;
         }
-        OUT.println("Deleted the food portion");
-        OUT.println();
+        out.println("Deleted the food portion");
+        out.println();
     }
     private static void editFoodPortion(Meal m, MacrosDatabase db) {
-        OUT.println("Edit food portion");
+        out.println("Edit food portion");
         showFoodPortions(m);
-        OUT.print("Enter the number of the food portion to edit and press enter: ");
+        out.print("Enter the number of the food portion to edit and press enter: ");
         List<FoodPortion> portions = m.getFoodPortions();
         Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
         if (n == null) {
-            OUT.println("Invalid number");
+            out.println("Invalid number");
             return;
         }
-        OUT.print("Enter a new quantity (in the same unit) and press enter: ");
+        out.print("Enter a new quantity (in the same unit) and press enter: ");
         Double newQty = CliUtils.getDoubleInput(IN, OUT);
         if (newQty == null) {
-            OUT.println("Invalid quantity");
+            out.println("Invalid quantity");
             return;
         }
 
@@ -209,30 +211,29 @@ class Edit extends CommandImpl {
             newData.put(Schema.FoodPortionTable.QUANTITY, newQty);
             db.saveObject(FoodPortion.factory().construct(newData, ObjectSource.DB_EDIT));
         } catch (SQLException e3) {
-            OUT.println("Error modifying the food portion: " + e3.getMessage());
+            out.println("Error modifying the food portion: " + e3.getMessage());
             return;
         }
-        OUT.println("Successfully saved the food portion");
-        OUT.println();
+        out.println("Successfully saved the food portion");
+        out.println();
     }
 
     private static void renameMeal() {
-        OUT.println("Rename meal");
-        OUT.print("Type a new name and press enter: ");
+        out.println("Rename meal");
+        out.print("Type a new name and press enter: ");
         String newName = CliUtils.getStringInput(IN, OUT);
         if (newName == null) {
             return;
         }
-        OUT.println("The new name is: " + newName);
+        out.println("The new name is: " + newName);
     }
 
-    @Override
-    public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s [meal [day]]\n", PROGNAME, NAME);
-        out.println();
+    public void printHelp() {
+        out.println(USAGE);
         out.println("Interactive meal editor");
         out.println();
-        printInteractiveHelp(out);
+        out.println();
+        out.println(interactiveHelpString());
         out.println();
         out.println("Food portions can be entered in one of the following forms:");
         out.println("1. <food index name>, <quantity>[quantity unit]");
@@ -240,5 +241,4 @@ class Edit extends CommandImpl {
         out.println("3. <food index name> (this means 1 of the default serving)");
         out.println("(<> denotes a mandatory argument and [] denotes an optional argument)");
     }
-
 }

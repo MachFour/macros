@@ -4,6 +4,7 @@ import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -18,23 +19,21 @@ import static com.machfour.macros.cli.CliMain.ERR;
 
 class Read extends CommandImpl {
     private static final String NAME = "read";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--print100]", PROGNAME, NAME);
+
+    Read() {
+        super(NAME, USAGE);
     }
-    @Override
-    public void printHelp(PrintStream out) {
-        out.printf("Usage: %s %s <file> [-v | --verbose] [--print100]\n", PROGNAME, NAME);
-    }
+
     @Override
     public void doAction(List<String> args) {
         if (args.size() < 2) {
-            printHelp(OUT);
-            OUT.println();
-            OUT.println("Please specify a file to read");
+            printHelp();
+            out.println();
+            out.println("Please specify a file to read");
             return;
         } else if (args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             return;
         }
         String filename = args.get(1);
@@ -56,10 +55,10 @@ class Read extends CommandImpl {
         MealPrinter.printMeals(meals, OUT, verbose, per100, true);
         Map<String, String> errors = fileParser.getErrorLines();
         if (!errors.isEmpty()) {
-            OUT.println();
-            OUT.println("Warning: the following lines were skipped");
+            out.println();
+            out.println("Warning: the following lines were skipped");
             for (Map.Entry<String, String> line : errors.entrySet()) {
-                OUT.printf("'%s' - %s\n", line.getKey(), line.getValue());
+                out.printf("'%s' - %s\n", line.getKey(), line.getValue());
             }
         }
     }

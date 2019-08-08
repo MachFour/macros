@@ -5,6 +5,7 @@ import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.util.PrintFormatting;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -16,24 +17,22 @@ import java.util.TimeZone;
 
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliUtils.deNull;
+import static com.machfour.macros.util.PrintFormatting.deNull;
 
 class ShowFood extends CommandImpl {
     private static final String NAME = "show";
-    @Override
-    public String name() {
-        return NAME;
+    private static final String USAGE = String.format("Usage: %s %s <index_name>", PROGNAME, NAME);
+
+    ShowFood() {
+        super(NAME, USAGE);
     }
-    @Override
-    public void printHelp(PrintStream out) {
-        OUT.printf("Usage: %s %s <index_name>\n", PROGNAME, NAME);
-    }
+
     @Override
     public void doAction(List<String> args) {
         if (args.size() == 1 || args.contains("--help")) {
-            printHelp(OUT);
+            printHelp();
             if (args.size() == 1) {
-                OUT.println("Please enter the index name of the food to show");
+                out.println("Please enter the index name of the food to show");
             }
             return;
         }
@@ -43,11 +42,11 @@ class ShowFood extends CommandImpl {
         try {
             foodToList = db.getFoodByIndexName(indexName);
         } catch (SQLException e) {
-            OUT.print("SQL exception occurred: ");
-            OUT.println(e.getErrorCode());
+            out.print("SQL exception occurred: ");
+            out.println(e.getErrorCode());
         }
         if (foodToList == null) {
-            OUT.printf("No food found with index name %s\n", indexName);
+            out.printf("No food found with index name %s\n", indexName);
             return;
         }
 
@@ -78,7 +77,7 @@ class ShowFood extends CommandImpl {
          * Nutrition data
          */
         NutritionData nd = f.getNutritionData();
-        String unit = nd.qtyUnit().abbr();
+        String unit = nd.qtyUnitAbbr();
         out.printf("Nutrition data (source: %s)\n", nd.getData(Schema.NutritionDataTable.DATA_SOURCE));
         out.println();
 
@@ -115,13 +114,11 @@ class ShowFood extends CommandImpl {
          * Ingredients
          */
 
-        //if (!f.getFoodType().equals(FoodType.COMPOSITE)) {
-        //    return;
-        //}
-        //assert (f instanceof CompositeFood);
-        if (!(f instanceof CompositeFood)) {
+        if (!f.getFoodType().equals(FoodType.COMPOSITE)) {
             return;
         }
+        assert (f instanceof CompositeFood);
+
         CompositeFood cf = (CompositeFood) f;
 
         out.println("================================");
@@ -133,16 +130,15 @@ class ShowFood extends CommandImpl {
             for (Ingredient i: ingredients) {
                 Food iFood = i.getIngredientFood();
                 Serving iServing = i.getServing();
-                out.print(" -- ");
-                out.print(MealPrinter.formatQuantity(i.quantity(), i.getQtyUnit(), 7, false));
-                out.printf("  %-" + MealPrinter.nameWidth + "s", iFood.getMediumName());
+                out.print(" | ");
+                out.print(PrintFormatting.formatQuantity(i.quantity(), i.getQtyUnit(), PrintFormatting.servingWidth));
+                out.printf("  %-" + PrintFormatting.nameWidth + "s", iFood.getMediumName());
                 out.printf(" %-8s", iServing != null ? "(" + i.servingCountString() + " " +  iServing.name() + ")" : "");
-                out.println(" --");
+                out.println(" |");
             }
 
         } else {
             out.println("(No ingredients recorded (but there probably should be!)");
         }
-
     }
 }

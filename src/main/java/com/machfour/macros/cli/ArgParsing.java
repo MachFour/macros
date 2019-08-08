@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 // Utility class for argument parsing
-public class ArgParsing {
+class ArgParsing {
     private ArgParsing() {}
 
     enum Status {
@@ -15,7 +15,7 @@ public class ArgParsing {
     }
 
     // represents result of parsed argument from command line
-    protected static class Result {
+    static class Result {
         private final int index;
         private final String argument;
         private final Status status;
@@ -44,7 +44,7 @@ public class ArgParsing {
      *     returns non-null for otherwise valid arguments
      *     when called with null, returns a default value
      */
-    static <T> T parseArgument(List<String> args, String flag, Function<String, T> parser) {
+    private static <T> T parseArgument(List<String> args, String flag, Function<String, T> parser) {
         Result r = findArgument(args, flag);
         return parser.apply(r.argument());
 

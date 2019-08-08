@@ -3,6 +3,7 @@ package com.machfour.macros.cli;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.util.PrintFormatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.machfour.macros.cli.ArgParsing.Status.OPT_ARG_MISSING;
-import static com.machfour.macros.cli.ArgParsing.Status.ARG_FOUND;
 
 /*
  * Stores information for a meal being input (specified) via text fields,
@@ -100,7 +100,7 @@ class MealSpec {
                 // use most recently modified meal today
                 processedObject = Collections.max(mealsForDay.values(), Comparator.comparingLong(Meal::modifyTime));
             } else {
-                error = "No meals recorded on " + CliUtils.prettyDay(day);
+                error = "No meals recorded on " + PrintFormatting.prettyDay(day);
             }
         } else if (mealsForDay.containsKey(name)) {
             processedObject = mealsForDay.get(name);
@@ -115,7 +115,7 @@ class MealSpec {
             }
         } else {
             // meal doesn't exist and not allowed to create new meal
-            error = String.format("No meal with name '%s' found on %s", name, CliUtils.prettyDay(day));
+            error = String.format("No meal with name '%s' found on %s", name, PrintFormatting.prettyDay(day));
         }
         assert (error != null || processedObject != null) : "No error message but no created object";
         if (error != null) {

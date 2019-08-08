@@ -6,9 +6,13 @@ import com.machfour.macros.core.*;
 import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.util.StringJoiner;
 import com.machfour.macros.validation.SchemaViolation;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -36,15 +40,20 @@ public class IngredientsParser {
      *
      */
 
-    static Collection<CompositeFoodSpec> deserialiseIngredientsJson(String json) {
-        GsonBuilder builder = new GsonBuilder();
+    static Collection<CompositeFoodSpec> deserialiseIngredientsJson(Reader json) throws IOException {
+        // this creates an anonymous subclass of typetoken?
+        final Type collectionType = new TypeToken<Collection<CompositeFoodSpec>>(){}.getType();
+        final GsonBuilder builder = new GsonBuilder();
         // if PointAdapter didn't check for nulls in its read/write methods, you should instead use
         // builder.registerTypeAdapter(Point.class, new PointAdapter().nullSafe());
         builder.registerTypeAdapter(CompositeFoodSpec.class, new CompositeFoodAdapter().nullSafe());
-        Gson gson = builder.create();
-        // this creates an anonymous subclass of typetoken?
-        Type collectionType = new TypeToken<Collection<CompositeFoodSpec>>(){}.getType();
-        return gson.fromJson(json, collectionType);
+
+        final Gson parser = builder.create();
+        try {
+            return parser.fromJson(json, collectionType);
+        } catch (JsonIOException e) {
+            throw new IOException(e);
+        }
     }
 
     static Ingredient processIngredientSpec(IngredientSpec spec, Food composite, Map<String, Long> ingredientMap) {
@@ -171,5 +180,20 @@ public class IngredientsParser {
         for (CompositeFood cf : compositeFoods) {
             saveCompositeFood(cf, ds);
         }
+    }
+
+    // returns list of index names of foods that were created
+    public static List<String> importRecipes(Reader json, MacrosDataSource ds) throws SQLException, IOException {
+        Collection<CompositeFoodSpec> ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(json);
+        Collection<CompositeFood> unsavedFoods = IngredientsParser.createCompositeFoods(ingredientSpecs, ds);
+        IngredientsParser.saveCompositeFoods(unsavedFoods, ds);
+
+        List<String> indexNames = new ArrayList(unsavedFoods.size());
+        // TODO is there a problem if the index names clash? Probably not, since an exception will be thrown
+        for (CompositeFood cf : unsavedFoods) {
+            indexNames.add(cf.getIndexName());
+        }
+
+        return indexNames;
     }
 }

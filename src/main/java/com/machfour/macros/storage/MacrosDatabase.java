@@ -30,9 +30,15 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // caller-managed connection, useful to reduce number of calls to DB
-    // caller needs to call closeConnection() after
+    // caller needs to call closeConnection() after. Use with begin and end transaction
     public abstract void openConnection() throws SQLException;
     public abstract void closeConnection() throws SQLException;
+
+    // By default, database functions will autocommit.
+    // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
+    public abstract void beginTransaction() throws SQLException;
+    public abstract void endTransaction() throws SQLException;
+
 
     protected abstract <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException;
 
@@ -268,10 +274,6 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Map<Long, Serving> ingredientServings = getServingsById(servingIds);
 
         for (Ingredient i : ingredientMap.values()) {
-            // QtyUnit setup *first*
-            QtyUnit unit = QtyUnit.fromAbbreviation(i.qtyUnitAbbr());
-            assert (unit != null) : "No quantity unit exists with abbreviation '" + i.qtyUnitAbbr() + "'.";
-            i.setQtyUnit(unit);
             // applyFoodsToRawIngredients(ingredients, servings
             Food f = ingredientFoods.get(i.getIngredientFoodId());
             i.setIngredientFood(f);

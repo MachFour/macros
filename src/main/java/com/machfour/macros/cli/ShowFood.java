@@ -6,6 +6,7 @@ import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.PrintFormatting;
+import com.machfour.macros.util.StringJoiner;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -53,23 +54,25 @@ class ShowFood extends CommandImpl {
         printFood(foodToList, OUT);
     }
 
-    public static void printFood(Food f, PrintStream out) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    public static void printFoodSummary(Food f, PrintStream out) {
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getDefault());
-
-        out.println("============");
-        out.println(" Food Data  ");
-        out.println("============");
-        out.println();
         out.printf("Name:          %s\n", f.getMediumName());
         out.printf("Notes:         %s\n", deNull(f.getNotes(), "(no notes)"));
         out.printf("Category:      %s\n", f.getFoodCategory());
-
         out.println();
         out.printf("Type:          %s\n", f.getFoodType().getName());
         out.printf("Created on:    %s\n", dateFormat.format(f.createDate()));
         out.printf("Last modified: %s\n", dateFormat.format(f.modifyDate()));
+    }
+
+    public static void printFood(Food f, PrintStream out) {
+        out.println("============");
+        out.println(" Food Data  ");
+        out.println("============");
         out.println();
+        out.println();
+        printFoodSummary(f, out);
 
         out.println("================================");
         out.println();
@@ -127,18 +130,12 @@ class ShowFood extends CommandImpl {
         out.println();
         List<Ingredient> ingredients = cf.getIngredients();
         if (!ingredients.isEmpty()) {
-            for (Ingredient i: ingredients) {
-                Food iFood = i.getIngredientFood();
-                Serving iServing = i.getServing();
-                out.print(" | ");
-                out.print(PrintFormatting.formatQuantity(i.quantity(), i.getQtyUnit(), PrintFormatting.servingWidth));
-                out.printf("  %-" + PrintFormatting.nameWidth + "s", iFood.getMediumName());
-                out.printf(" %-8s", iServing != null ? "(" + i.servingCountString() + " " +  iServing.name() + ")" : "");
-                out.println(" |");
-            }
-
+            CliUtils.printIngredients(ingredients, out);
+            out.println();
         } else {
             out.println("(No ingredients recorded (but there probably should be!)");
         }
+        out.println("================================");
+        out.println();
     }
 }

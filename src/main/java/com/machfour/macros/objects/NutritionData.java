@@ -72,6 +72,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     // only NUTRIENT_COLUMNS are present in this map
     private final Map<Column<NutritionData, Double>, Boolean> completeData;
     // measured in grams, per specified quantity
+    @NotNull
     private final QtyUnit qtyUnit;
     private Food food;
 
@@ -88,7 +89,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         boolean hasEnergy = completeData.get(CALORIES) || completeData.get(KILOJOULES);
         completeData.put(CALORIES, hasEnergy);
         completeData.put(KILOJOULES, hasEnergy);
-        qtyUnit = QtyUnit.fromAbbreviation(dataMap.get(QUANTITY_UNIT));
+        qtyUnit = QtyUnit.fromAbbreviation(dataMap.get(QUANTITY_UNIT), true);
     }
 
     public static Table<NutritionData> table() {

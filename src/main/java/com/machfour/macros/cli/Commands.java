@@ -1,7 +1,5 @@
 package com.machfour.macros.cli;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +10,8 @@ import java.util.Map;
  */
 public class Commands {
     static final Map<String, Command> CMDS_BY_NAME;
-    private static final Command ADDRECIPE = new AddRecipe();
+    private static final Command RECIPES = new Recipes();
+    private static final Command DELETEFOOD = new DeleteFood();
     private static final Command IMPORT = new Import();
     private static final Command INIT = new Init();
     private static final Command EDIT = new Edit();
@@ -33,13 +32,14 @@ public class Commands {
             , IMPORT
             , INIT
             , SHOWFOOD
+            , DELETEFOOD
             , PORTION
             , NEWMEAL
             , LISTMEALS
             , READ
             , SEARCH
             , TOTAL
-            , ADDRECIPE
+            , RECIPES
             , ALLFOODS
             , HELP
             , INVALID_COMMAND

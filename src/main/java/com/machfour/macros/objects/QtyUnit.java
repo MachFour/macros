@@ -45,8 +45,12 @@ public class QtyUnit extends MacrosEntity<QtyUnit> implements Measurement<QtyUni
         INBUILT = Arrays.asList(GRAMS, MILLIGRAMS, MILLILITRES);
     }
 
-    private static QtyUnit fromAbbreviation(String abbreviation, boolean throwIfNotFound) {
+    /*
+     * Case insensitive matching of abbreviation
+     */
+    public static QtyUnit fromAbbreviation(String abbreviation, boolean throwIfNotFound) {
         QtyUnit found = null;
+        abbreviation = abbreviation.toLowerCase();
         for (QtyUnit q : INBUILT) {
             if (q.abbr().equals(abbreviation)) {
                 found = q;

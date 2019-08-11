@@ -14,6 +14,14 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MacrosDataSource {
+    // Used to create a persistent connection that lasts across calls to the DB.
+    // Caller MUST call closeConnection in a finally block
+    void openConnection() throws SQLException;
+    void closeConnection() throws SQLException;
+    // By default, database functions will autocommit.
+    // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
+    void beginTransaction() throws SQLException;
+    void endTransaction() throws SQLException;
 
     Set<Long> foodSearch(String keyword) throws SQLException;
 

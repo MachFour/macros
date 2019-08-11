@@ -3,6 +3,7 @@ package com.machfour.macros.cli;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.PrintStream;
 
 abstract class CommandImpl implements Command {
@@ -13,6 +14,7 @@ abstract class CommandImpl implements Command {
     private final String usage;
 
     protected static PrintStream out = CliMain.OUT;
+    protected static BufferedReader in = CliMain.IN;
 
     protected CommandImpl(@NotNull String name) {
         this(name, null);
@@ -24,6 +26,10 @@ abstract class CommandImpl implements Command {
 
     protected void setPrintStream(@NotNull PrintStream newOut) {
         out = newOut;
+    }
+
+    protected void setInput(@NotNull BufferedReader newIn) {
+        in = newIn;
     }
 
     @Override @NotNull

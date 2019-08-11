@@ -1,6 +1,8 @@
 #!/bin/sh
 
 unset _JAVA_OPTIONS
-CLASSPATH="/home/max/devel/macros-java/out/production/macros-java/:/home/max/devel/macros-java/lib/super-csv-2.4.0.jar:/home/max/devel/macros-java/lib/sqlite-jdbc-3.23.1.jar"
+DEVEL_DIR="/home/max/devel/macros-java"
+LIB_DIR="${DEVEL_DIR}/lib"
+CLASSPATH="${DEVEL_DIR}/out/production/macros-java/:${LIB_DIR}/super-csv-2.4.0.jar:${LIB_DIR}/sqlite-jdbc-3.23.1.jar:${LIB_DIR}/gson-2.8.5.jar"
 PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
 java -enableassertions -cp "$CLASSPATH" com.machfour.macros.cli.CliMain "$@"

@@ -3,16 +3,13 @@ package com.machfour.macros.ingredients;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.machfour.macros.core.*;
-import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDataSource;
-import com.machfour.macros.util.StringJoiner;
 import com.machfour.macros.validation.SchemaViolation;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -56,7 +53,7 @@ public class IngredientsParser {
         }
     }
 
-    static Ingredient processIngredientSpec(IngredientSpec spec, Food composite, Map<String, Long> ingredientMap) {
+    private static Ingredient processIngredientSpec(IngredientSpec spec, Food composite, Map<String, Long> ingredientMap) {
         // get food from index name
         // get quantity
         // get quantity unit
@@ -140,6 +137,17 @@ public class IngredientsParser {
         for (CompositeFoodSpec spec : parseResult) {
             results.add(processCompositeFoodSpec(spec, indexNameMap));
         }
+
+        Map<Long, Food> ingredientFoods = ds.getFoodsById(indexNameMap.values());
+
+        // go through and create object links so that we can have a proper object tree without having to save to DB first
+        for (CompositeFood cf : results) {
+            for (Ingredient i : cf.getIngredients()) {
+                i.setCompositeFood(cf);
+                i.setIngredientFood(ingredientFoods.get(i.getIngredientFoodId()));
+            }
+        }
+
         return results;
     }
 
@@ -156,44 +164,44 @@ public class IngredientsParser {
 
     // saves a composite food and all its ingredients into the database
     private static void saveCompositeFood(CompositeFood cf, MacrosDataSource ds) throws SQLException {
-        // First save the food and then retrieve it from the database, to get the ID
-        ds.saveObject(cf);
-        long id = ds.getFoodByIndexName(cf.getIndexName()).getId();
+        try {
+            ds.openConnection();
+            // If inserting ingredients fails, we want to be able to roll back the whole thing.
+            ds.beginTransaction();
 
-        // Now we can edit the ingredients to have the ID
-        // TODO use completeFk function
-        List<Ingredient> newIngredients = addCompositeFoodId(cf.getIngredients(), id);
-        // here we go!
-        ds.insertObjects(newIngredients, false);
+            // First save the food and then retrieve it from the database, to get the ID
+            ds.saveObject(cf);
+            long id = ds.getFoodByIndexName(cf.getIndexName()).getId();
 
-        // TODO nutrition data object to go along with it, if quantity is known
-        //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table());
-        //nData.setField(Schema.NutritionDataTable.DATA_SOURCE, "recipe");
-        //nData.setField(Schema.NutritionDataTable.FOOD_ID, id);
-        //nData.setField(Schema.NutritionDataTable.QUANTITY ,";
+            // Now we can edit the ingredients to have the ID
+            // TODO use completeFk function
+            List<Ingredient> newIngredients = addCompositeFoodId(cf.getIngredients(), id);
+            // here we go!
+            ds.insertObjects(newIngredients, false);
 
+            // TODO nutrition data object to go along with it, if quantity is known
+            //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table());
+            //nData.setField(Schema.NutritionDataTable.DATA_SOURCE, "recipe");
+            //nData.setField(Schema.NutritionDataTable.FOOD_ID, id);
+            //nData.setField(Schema.NutritionDataTable.QUANTITY ,";
+
+            ds.endTransaction();
+        } finally {
+            ds.closeConnection();
+        }
     }
 
-    static void saveCompositeFoods(Collection<CompositeFood> compositeFoods, MacrosDataSource ds) throws SQLException {
+    // returns list of index names of foods that were created
+    public static List<CompositeFood> readRecipes(Reader json, MacrosDataSource ds) throws SQLException, IOException {
+        Collection<CompositeFoodSpec> ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(json);
+        return IngredientsParser.createCompositeFoods(ingredientSpecs, ds);
+    }
+
+    public static void saveRecipes(Collection<CompositeFood> compositeFoods, MacrosDataSource ds) throws SQLException {
         // TODO save all the composite foods and recreate them in one go
         // Then, save the ingredients at the same time.
         for (CompositeFood cf : compositeFoods) {
             saveCompositeFood(cf, ds);
         }
-    }
-
-    // returns list of index names of foods that were created
-    public static List<String> importRecipes(Reader json, MacrosDataSource ds) throws SQLException, IOException {
-        Collection<CompositeFoodSpec> ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(json);
-        Collection<CompositeFood> unsavedFoods = IngredientsParser.createCompositeFoods(ingredientSpecs, ds);
-        IngredientsParser.saveCompositeFoods(unsavedFoods, ds);
-
-        List<String> indexNames = new ArrayList(unsavedFoods.size());
-        // TODO is there a problem if the index names clash? Probably not, since an exception will be thrown
-        for (CompositeFood cf : unsavedFoods) {
-            indexNames.add(cf.getIndexName());
-        }
-
-        return indexNames;
     }
 }

@@ -45,6 +45,25 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
+    public void beginTransaction() throws SQLException {
+        upstream.beginTransaction();
+    }
+
+    @Override
+    public void endTransaction() throws SQLException {
+        upstream.endTransaction();
+    }
+    @Override
+    public void openConnection() throws SQLException {
+        upstream.openConnection();
+    }
+
+    @Override
+    public void closeConnection() throws SQLException {
+        upstream.closeConnection();
+    }
+
+    @Override
     public <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException {
         onDbWrite(object);
         return upstream.deleteObject(object);

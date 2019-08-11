@@ -25,7 +25,7 @@ public class CliMain {
 
     // XXX hacky - also needs to be an absolute path
     private static void checkDbLocationOverride(List<String> args) {
-        String flagString = "--db==";
+        String flagString = "--db=";
         Iterator<String> argIt = args.iterator();
 
         while (argIt.hasNext()) {

@@ -10,16 +10,12 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
 import com.machfour.macros.util.PrintFormatting;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
-import static com.machfour.macros.cli.CliMain.IN;
 
 class Edit extends CommandImpl {
     private static final String NAME = "edit";
@@ -72,7 +68,7 @@ class Edit extends CommandImpl {
             out.printf("Editing meal: %s on %s\n", toEdit.getName(), PrintFormatting.prettyDay(toEdit.getDay()));
             out.println();
             out.print("Action (? for help): ");
-            char action = getChar();
+            char action = CliUtils.getChar(in, out);
             out.println();
             switch (action) {
                 case 'a':
@@ -118,15 +114,6 @@ class Edit extends CommandImpl {
         }
     }
 
-    private static char getChar() {
-        String input = CliUtils.getStringInput(IN, OUT);
-        if (input == null || input.isEmpty()) {
-            return '\0';
-        } else {
-            return input.charAt(0);
-        }
-    }
-
     private static String interactiveHelpString() {
         return "Actions:"
             + "\n" + "a   - add a new food portion"
@@ -143,7 +130,7 @@ class Edit extends CommandImpl {
     private static void addPortion(Meal toEdit, MacrosDatabase db) {
         out.println("Please enter the portion information (see help for how to specify a food portion)");
         // copy from portion
-        String inputString = CliUtils.getStringInput(IN, OUT);
+        String inputString = CliUtils.getStringInput(in, out);
         if (inputString != null && !inputString.isEmpty()) {
             FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(inputString);
             Portion.process(toEdit, Collections.singletonList(spec), db);
@@ -162,7 +149,7 @@ class Edit extends CommandImpl {
     private static void deleteMeal(Meal toDelete, MacrosDatabase db) {
         out.print("Delete meal");
         out.print("Are you sure? [y/N] ");
-        if (getChar() == 'y' | getChar() == 'Y') {
+        if (CliUtils.getChar(in, out) == 'y' | CliUtils.getChar(in, out) == 'Y') {
             try {
                 db.deleteObject(toDelete);
             } catch (SQLException e) {
@@ -175,7 +162,7 @@ class Edit extends CommandImpl {
         showFoodPortions(toEdit);
         out.print("Enter the number of the food portion to delete and press enter: ");
         List<FoodPortion> portions = toEdit.getFoodPortions();
-        Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
+        Integer n = CliUtils.getIntegerInput(in, out, 0, portions.size()-1);
         if (n == null) {
             out.println("Invalid number");
             return;
@@ -194,13 +181,13 @@ class Edit extends CommandImpl {
         showFoodPortions(m);
         out.print("Enter the number of the food portion to edit and press enter: ");
         List<FoodPortion> portions = m.getFoodPortions();
-        Integer n = CliUtils.getIntegerInput(IN, OUT, 0, portions.size()-1);
+        Integer n = CliUtils.getIntegerInput(in, out, 0, portions.size()-1);
         if (n == null) {
             out.println("Invalid number");
             return;
         }
         out.print("Enter a new quantity (in the same unit) and press enter: ");
-        Double newQty = CliUtils.getDoubleInput(IN, OUT);
+        Double newQty = CliUtils.getDoubleInput(in, out);
         if (newQty == null) {
             out.println("Invalid quantity");
             return;
@@ -221,7 +208,7 @@ class Edit extends CommandImpl {
     private static void renameMeal() {
         out.println("Rename meal");
         out.print("Type a new name and press enter: ");
-        String newName = CliUtils.getStringInput(IN, OUT);
+        String newName = CliUtils.getStringInput(in, out);
         if (newName == null) {
             return;
         }

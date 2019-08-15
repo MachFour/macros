@@ -1,8 +1,5 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.validation.ValidationError;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

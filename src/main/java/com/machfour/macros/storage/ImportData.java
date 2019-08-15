@@ -12,11 +12,19 @@ import java.util.Map;
 // is the wrong type for the actual column
 // Present use case: storing food index names instead of IDs when importing
 public class ImportData<M> extends ColumnData<M> {
-    final Map<Column<M, ?>, String> extraData;
+    private final Map<Column<M, ?>, String> extraData;
 
     public ImportData(Table<M> table) {
         super(table);
         this.extraData = new HashMap<>();
+    }
+
+    public void putExtraData(Column<M, ?> col, String value) {
+        extraData.put(col, value);
+    }
+
+    public String getExtraData(Column<M, ?> col) {
+        return extraData.get(col);
     }
 
 }

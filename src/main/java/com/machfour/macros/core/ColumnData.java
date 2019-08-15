@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
-public class ColumnData<M> {
+public class ColumnData<M>  {
     // internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     private final Table<M> table;

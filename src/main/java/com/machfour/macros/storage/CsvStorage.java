@@ -89,15 +89,15 @@ public class CsvStorage {
     }
 
     // Returns map of food index name to parsed food and nutrition columnData objects
-    private static Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv) throws IOException {
-        Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> data = new HashMap<>();
+    private static List<Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv) throws IOException {
+        List<Pair<ImportData<Food>, ImportData<NutritionData>>> data = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ImportData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
                 ImportData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
-                data.put(foodData.get(Schema.FoodTable.INDEX_NAME), new Pair<>(foodData, ndData));
+                data.add(new Pair<>(foodData, ndData));
             }
         }
         return data;
@@ -112,10 +112,18 @@ public class CsvStorage {
             while ((csvRow = mapReader.read(header)) != null) {
                 // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
                 ImportData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
-                data.add(ingredientData);
                 String compositeFoodIndexName = csvRow.get("recipe_index_name");
                 String ingredientFoodIndexName = csvRow.get("ingredient_index_name");
-                // TODO what now???? :(((
+                ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
+                ingredientData.putExtraData(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientFoodIndexName);
+                // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
+                if (data.containsKey(compositeFoodIndexName)) {
+                    data.get(compositeFoodIndexName).add(ingredientData);
+                } else {
+                    List<ImportData<Ingredient>> recipeIngredients = new ArrayList<>();
+                    recipeIngredients.add(ingredientData);
+                    data.put(compositeFoodIndexName, recipeIngredients);
+                }
             }
         }
         return data;
@@ -127,9 +135,8 @@ public class CsvStorage {
     //
     static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Reader ingredientsCsv) throws IOException {
         Map<String, CompositeFood> foodMap = new HashMap<>();
-        Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> recipeData = getFoodData(recipeCsv);
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
-        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : recipeData.values()) {
+        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(recipeCsv)) {
             ImportData<Food> foodData = rowData.first;
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
@@ -142,18 +149,23 @@ public class CsvStorage {
             foodMap.put(f.getIndexName(), (CompositeFood)f);
         }
 
-        for (ImportData<Ingredient> ingredientImportData : getIngredientData(ingredientsCsv).values()) {
-            Ingredient i = Ingredient.factory().construct(ingredientImportData, ObjectSource.IMPORT);
-            CompositeFood recipe = foodMap.get(i.)
 
+        for (Map.Entry<String, List<ImportData<Ingredient>>> ingredientsByRecipe : getIngredientData(ingredientsCsv).entrySet()) {
+            CompositeFood recipeFood = foodMap.get(ingredientsByRecipe.getKey());
+            for (ImportData<Ingredient> ingredientData : ingredientsByRecipe.getValue()) {
+                Ingredient i = Ingredient.factory().construct(ingredientData, ObjectSource.IMPORT);
+                i.setCompositeFood(recipeFood);
+                // TODO need database access in order to get the nutrition data for the ingredients?>?>?
+            }
         }
+        return null;
     }
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
     static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
         Map<String, Food> foodMap = new HashMap<>();
-        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv).values()) {
+        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
             ImportData<Food> foodData = rowData.first;
             ImportData<NutritionData> ndData = rowData.second;
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);

@@ -16,11 +16,11 @@ import java.util.List;
 
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
-public class Recipes extends CommandImpl {
-    private static final String NAME = "recipes";
+public class Recipe extends CommandImpl {
+    private static final String NAME = "recipe";
     private static final String USAGE = String.format("Usage: %s %s <recipes.json>", PROGNAME, NAME);
 
-    public Recipes() {
+    public Recipe() {
         super(NAME, USAGE);
     }
 

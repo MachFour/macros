@@ -14,7 +14,7 @@ import java.util.List;
 import static com.machfour.macros.cli.CliMain.PROGNAME;
 
 public class DeleteFood extends CommandImpl {
-    private static final String NAME = "deletefoods";
+    private static final String NAME = "deletefood";
     private static final String USAGE = String.format("Usage: %s %s <index name 1> [<index name 2>] [...]", PROGNAME, NAME);
 
     public DeleteFood() {

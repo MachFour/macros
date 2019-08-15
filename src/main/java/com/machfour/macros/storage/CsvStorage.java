@@ -1,9 +1,8 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.objects.Food;
-import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.objects.Serving;
+import com.machfour.macros.objects.*;
+import com.machfour.macros.util.Pair;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapReader;
@@ -13,6 +12,7 @@ import org.supercsv.prefs.CsvPreference;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class CsvStorage {
     /*
@@ -34,7 +34,7 @@ public class CsvStorage {
             // iterate over lines in CSV
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
-                ColumnData<M> data = extractData(csvRow, table);
+                ImportData<M> data = extractData(csvRow, table);
                 objectList.add(table.getFactory().construct(data, ObjectSource.RESTORE));
             }
         }
@@ -54,11 +54,11 @@ public class CsvStorage {
         }
     }
 
-    // don't edit keyset!
-    private static <M> ColumnData<M> extractData(Map<String, String> csvRow, Table<M> table) {
+    // don't edit csvRow keyset!
+    private static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) {
         Set<String> relevantCols = new HashSet<>(csvRow.keySet());
         relevantCols.retainAll(table.columnsByName().keySet());
-        ColumnData<M> data = new ColumnData<>(table);
+        ImportData<M> data = new ImportData<>(table);
         for (String colName: relevantCols) {
             String value = csvRow.get(colName);
             Column<M, ?> col = table.columnForName(colName);
@@ -79,49 +79,105 @@ public class CsvStorage {
         return dataMap;
     }
 
-    private static ICsvMapReader getMapReader(Reader r) throws IOException {
+    private static ICsvMapReader getMapReader(Reader r) {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
         return new CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE);
     }
-    private static ICsvMapWriter getMapWriter(Writer w) throws IOException {
+    private static ICsvMapWriter getMapWriter(Writer w) {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
+    }
+
+    // Returns map of food index name to parsed food and nutrition columnData objects
+    private static Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv) throws IOException {
+        Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> data = new HashMap<>();
+        try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
+            final String[] header = mapReader.getHeader(true);
+            Map<String, String> csvRow;
+            while ((csvRow = mapReader.read(header)) != null) {
+                ImportData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
+                ImportData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
+                data.put(foodData.get(Schema.FoodTable.INDEX_NAME), new Pair<>(foodData, ndData));
+            }
+        }
+        return data;
+    }
+
+    // map from composite food index name to list of ingredients
+    private static Map<String, List<ImportData<Ingredient>>> getIngredientData(Reader ingredientCsv) throws IOException {
+        Map<String, List<ImportData<Ingredient>>> data = new HashMap<>();
+        try (ICsvMapReader mapReader = getMapReader(ingredientCsv)) {
+            final String[] header = mapReader.getHeader(true);
+            Map<String, String> csvRow;
+            while ((csvRow = mapReader.read(header)) != null) {
+                // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
+                ImportData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
+                data.add(ingredientData);
+                String compositeFoodIndexName = csvRow.get("recipe_index_name");
+                String ingredientFoodIndexName = csvRow.get("ingredient_index_name");
+                // TODO what now???? :(((
+            }
+        }
+        return data;
+
+    }
+
+    // creates Composite food objects with ingredients lists (all with no IDs), but the ingredients are raw
+    // (don't have linked food objects of their own)
+    //
+    static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Reader ingredientsCsv) throws IOException {
+        Map<String, CompositeFood> foodMap = new HashMap<>();
+        Map<String, Pair<ImportData<Food>, ImportData<NutritionData>>> recipeData = getFoodData(recipeCsv);
+        // nutrition data may not be complete, so we can't create it yet. Just create the foods
+        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : recipeData.values()) {
+            ImportData<Food> foodData = rowData.first;
+            foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
+            Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
+            assert f instanceof CompositeFood;
+
+            if (foodMap.containsKey(f.getIndexName())) {
+                // TODO make this nicer
+                throw new RuntimeException("Imported recipes contained duplicate index name: " + f.getIndexName());
+            }
+            foodMap.put(f.getIndexName(), (CompositeFood)f);
+        }
+
+        for (ImportData<Ingredient> ingredientImportData : getIngredientData(ingredientsCsv).values()) {
+            Ingredient i = Ingredient.factory().construct(ingredientImportData, ObjectSource.IMPORT);
+            CompositeFood recipe = foodMap.get(i.)
+
+        }
     }
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
     static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
         Map<String, Food> foodMap = new HashMap<>();
-        try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
-            final String[] header = mapReader.getHeader(true);
-            Map<String, String> csvRow;
-            while ((csvRow = mapReader.read(header)) != null) {
-                ColumnData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
-                Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
-
-                ColumnData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
-                NutritionData nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
-
-                f.setNutritionData(nd); //without pairs, needed to recover nutrition data from return value
-                nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, f);
-                if (foodMap.containsKey(f.getIndexName())) {
-                    // TODO make this nicer
-                    throw new RuntimeException("Imported foods contained two foods with the same index name: " + f.getIndexName());
-                }
-                foodMap.put(f.getIndexName(), f);
+        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv).values()) {
+            ImportData<Food> foodData = rowData.first;
+            ImportData<NutritionData> ndData = rowData.second;
+            Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
+            NutritionData nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
+            f.setNutritionData(nd); //without pairs, needed to recover nutrition data from return value
+            nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, f);
+            if (foodMap.containsKey(f.getIndexName())) {
+                // TODO make this nicer
+                throw new RuntimeException("Imported foods contained duplicate index name: " + f.getIndexName());
             }
+            foodMap.put(f.getIndexName(), f);
         }
         return foodMap;
     }
+
     static List<Serving> buildServings(Reader servingCsv) throws IOException {
         List<Serving> servings = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
-                ColumnData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
-                Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
+                ImportData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
                 String foodIndexName = csvRow.get(Schema.FoodTable.INDEX_NAME.sqlName());
+                Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
                 s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, foodIndexName);
                 servings.add(s);
             }

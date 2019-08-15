@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
-public final class ColumnData<M> {
+public class ColumnData<M> {
     // internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     private final Table<M> table;
@@ -17,7 +17,7 @@ public final class ColumnData<M> {
 
     private boolean immutable;
 
-    public <J> void putFromNullableString(Column<M, J> col, @Nullable String data) {
+    public final <J> void putFromNullableString(Column<M, J> col, @Nullable String data) {
         // also catch empty whitespace with trim()
         if (data == null || data.trim().equals("")) {
             putFromRaw(col, null);
@@ -28,24 +28,24 @@ public final class ColumnData<M> {
 
     // null represented by empty string
     @NotNull
-    public <J> String getAsString(Column<M, J> col) {
+    public final <J> String getAsString(Column<M, J> col) {
         return col.getType().toRawString(get(col));
     }
     // null represented by "NULL"
     @NotNull
-    public <J> String getAsSqlString(Column<M, J> col) {
+    public final <J> String getAsSqlString(Column<M, J> col) {
         return col.getType().toSqlString(get(col));
     }
 
-    public <J> void putFromString(Column<M, J> col, @NotNull String data) {
+    public final <J> void putFromString(Column<M, J> col, @NotNull String data) {
         put(col, col.getType().fromString(data));
     }
 
-    public <J> Object getAsRaw(Column<M, J> col) {
+    public final <J> Object getAsRaw(Column<M, J> col) {
         return col.getType().toRaw(get(col));
     }
 
-    public <J> void putFromRaw(Column<M, J> col, Object data) {
+    public final <J> void putFromRaw(Column<M, J> col, Object data) {
         put(col, col.getType().fromRaw(data));
     }
 
@@ -58,11 +58,11 @@ public final class ColumnData<M> {
                 && Arrays.deepEquals(data, ((ColumnData) o).data);
     }
 
-    public boolean hasColumns(@NotNull Collection<Column<M, ?>> cols) {
+    public final boolean hasColumns(@NotNull Collection<Column<M, ?>> cols) {
         return getColumns().containsAll(cols);
     }
 
-    public Set<Column<M, ?>> getColumns() {
+    public final Set<Column<M, ?>> getColumns() {
         return columns;
     }
 
@@ -116,7 +116,7 @@ public final class ColumnData<M> {
         }
     }
 
-    public void setImmutable() {
+    final void setImmutable() {
         this.immutable = true;
     }
 
@@ -128,16 +128,16 @@ public final class ColumnData<M> {
         this(t, t.columns(), null);
     }
 
-    public boolean isImmutable() {
+    public final boolean isImmutable() {
         return immutable;
     }
 
 
-    public void setDefaultData() {
+    public final void setDefaultData() {
         setDefaultData(columns);
     }
 
-    public void setDefaultData(Collection<Column<M, ?>> cols) {
+    public final void setDefaultData(Collection<Column<M, ?>> cols) {
         assert hasColumns(cols);
         assertMutable();
         for (Column<M, ?> col : cols) {
@@ -184,7 +184,7 @@ public final class ColumnData<M> {
     }
 
     // the type of the data is ensured at time of adding it to this columnData object.
-    public <J> J get(@NotNull Column<M, J> col) {
+    public final <J> J get(@NotNull Column<M, J> col) {
         assertHasColumn(col);
         return getWithoutAssert(col);
     }
@@ -193,14 +193,15 @@ public final class ColumnData<M> {
     }
 
     // will throw exception if the column is not present
-    public <J> void put(@NotNull Column<M, J> col, J value) {
+    // No validation is performed on the value
+    public final <J> void put(@NotNull Column<M, J> col, J value) {
         assertHasColumn(col);
         assertMutable();
         data[col.index()] = value;
         hasData[col.index()] = (value != null);
     }
 
-    public boolean hasData(Column<M, ?> col) {
+    public final boolean hasData(Column<M, ?> col) {
         assertHasColumn(col);
         return hasData[col.index()];
     }

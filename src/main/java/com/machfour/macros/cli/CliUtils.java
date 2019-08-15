@@ -59,22 +59,51 @@ public class CliUtils {
         }
     }
 
+    /*
+     * Fixed width string format, left aligned
+     */
+    static String strFmtL(int n) {
+        return "%-" + n + "s";
+    }
+    /*
+     * Fixed width string format
+     */
+    static String strFmt(int n) {
+        return "%" + n + "s";
+    }
+
+    /*
+     * Fixed width string format
+     */
+    static String strFmt(int n, boolean leftAlign) {
+        return "%" + (leftAlign ? "-" : "") + n + "s";
+    }
+
+    /*
+     * Ingredients printing parameters
+     */
+    private static final int quantityWidth = 10;
+    private static final int notesWidth = 25;
+    private static final int nameWidth = PrintFormatting.nameWidth;
+    private static final String start = " | ";
+    private static final String sep = "  ";
+    private static final String end = " |\n";
+    private static final String lineFormat = start + strFmtL(nameWidth) + sep + strFmt(quantityWidth) + sep + strFmtL(notesWidth) + end;
+    private static final int lineLength = nameWidth + notesWidth + quantityWidth + 2*sep.length() + start.length() + end.length() - 2;
+    private static final String hLine = " " + StringJoiner.of("-").copies(lineLength).join();
+
     static void printIngredients(List<Ingredient> ingredients, PrintStream out) {
-        int quantityWidth = 10;
-        String lineFormat = " | %-" + PrintFormatting.nameWidth + "s %-25s %" + quantityWidth + "s |\n";
-        // 2 + 2 + 20 + 2 = 31
-        String hLine = " " + StringJoiner.of("-").copies(PrintFormatting.nameWidth + 31 + quantityWidth).join();
         // XXX use printLine(text, widths), etc function
-        out.printf(lineFormat, "Name", "Notes", "Quantity");
+        out.printf(lineFormat, "Name", "Quantity", "Notes");
         out.println(hLine);
         for (Ingredient i: ingredients) {
             // format:  <name>          (<notes>)     <quantity/serving>
             Food iFood = i.getIngredientFood();
             String notes = i.getNotes();
             String name = iFood.getMediumName();
-            String noteString = (notes != null ? "(" + notes + ")" : "");
+            String noteString = (notes != null) ? notes : "";
             String quantityString = PrintFormatting.formatQuantity(i.quantity(), i.qtyUnit(), quantityWidth);
-            out.printf(lineFormat, name, noteString, quantityString);
+            out.printf(lineFormat, name, quantityString, noteString);
             // TODO replace quantity with serving if specified
             //Serving iServing = i.getServing();
             //out.printf(" %-8s", iServing != null ? "(" + i.servingCountString() + " " +  iServing.name() + ")" : "");

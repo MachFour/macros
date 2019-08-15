@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class Commands {
     static final Map<String, Command> CMDS_BY_NAME;
-    private static final Command RECIPES = new Recipes();
+    private static final Command RECIPES = new Recipe();
     private static final Command DELETEFOOD = new DeleteFood();
     private static final Command IMPORT = new Import();
     private static final Command INIT = new Init();

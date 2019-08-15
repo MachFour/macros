@@ -412,7 +412,7 @@ public class Schema {
             IRON = builder("iron", Types.REAL, columnIndex++).build();
             WATER = builder("water", Types.REAL, columnIndex++).build();
             ALCOHOL = builder("alcohol", Types.REAL, columnIndex++).build();
-            // FOOD_ID doesn't have to be null for computed instances
+            // FOOD_ID can be null for computed instances
             FOOD_ID = builder("food_id", Types.ID, columnIndex++).notEditable().defaultValue(NO_ID).inSecondaryKey().unique()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()

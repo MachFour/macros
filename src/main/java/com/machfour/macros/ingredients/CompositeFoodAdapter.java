@@ -59,7 +59,7 @@ class CompositeFoodAdapter extends TypeAdapter<CompositeFoodSpec> {
         }
         reader.endObject();
         CompositeFoodSpec spec = new CompositeFoodSpec(indexName, name, variety, notes);
-        spec.ingredients.addAll(ingredients);
+        spec.addIngredients(ingredients);
         return spec;
     }
 }

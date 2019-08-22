@@ -87,7 +87,7 @@ public class IngredientsParser {
         // say there are an average of 4 ingredients per composite food
         Set<String> indexNames = new HashSet<>(4 * allSpecs.size());
         for (CompositeFoodSpec cSpec : allSpecs) {
-            for (IngredientSpec iSpec : cSpec.ingredients) {
+            for (IngredientSpec iSpec : cSpec.getIngredients()) {
                 indexNames.add(iSpec.indexName);
             }
         }
@@ -115,7 +115,7 @@ public class IngredientsParser {
 
         CompositeFood composite = (CompositeFood) builder.build();
         // create the ingredients
-        for (IngredientSpec iSpec : spec.ingredients) {
+        for (IngredientSpec iSpec : spec.getIngredients()) {
             // TODO remember that composite has no id!!
             Ingredient i = processIngredientSpec(iSpec, composite, indexNameMap);
             composite.addIngredient(i);

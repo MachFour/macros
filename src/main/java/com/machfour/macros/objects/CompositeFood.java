@@ -41,13 +41,25 @@ public class CompositeFood extends Food {
 
     @Override
     @NotNull
+
+    /*
+     * TODO save the result of this into the database
+     *
+     */
+    /*
+      NOTE: combined density is estimated using a weighted sum of the densities of the components.
+      This is obviously inaccurate if any item does not have the density recorded,
+      HOWEVER ALSO, density of foods will more often than not change during preparation
+      (e.g dry ingredients absorbing moisture).
+      So really, it probably doesn't make sense to propagate the combined ingredients density value
+     */
     public NutritionData getNutritionData() {
         if (ingredientNutritionData == null) {
             ingredientNutritionData = calculateIngredientsNutritionData();
         }
 
         if (hasOverridingNutritionData) {
-            // combine missing data from the foods nutrirtionData with
+            // combine missing data from the foods nutritionData with the overriding data
             NutritionData overridingData = super.getNutritionData();
             return NutritionData.combine(overridingData, ingredientNutritionData);
         } else {

@@ -84,6 +84,12 @@ class ShowFood extends CommandImpl {
         out.printf("Nutrition data (source: %s)\n", nd.getData(Schema.NutritionDataTable.DATA_SOURCE));
         out.println();
 
+        if (nd.getDensity() != null) {
+            // width copied from printFoodSummary()
+            out.printf("Density:       %.2f (g/ml)\n", nd.getDensity());
+            out.println();
+        }
+
         // if entered not per 100g, print both original amount and per 100 g
         if (nd.getQuantity() != 100) {
             out.printf("Per %.0f%s:\n", nd.getQuantity(), unit);

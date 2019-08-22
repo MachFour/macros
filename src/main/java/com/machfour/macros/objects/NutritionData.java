@@ -125,9 +125,15 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         return unitString.get(col);
     }
 
-    // Currently, the result is always converted to grams
+    /*
+      Result is always converted to grams.
+     */
     public static NutritionData sum(List<NutritionData> components) {
+        return sum(components, false);
+    }
+    public static NutritionData sum(List<NutritionData> components, boolean combineDensities) {
         double sumQuantity = 0;
+        double unnormalisedDensity = 0; // need to divide by sumQuantity at the end
 
         Map<Column<NutritionData, Double>, Double> sumData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
         Map<Column<NutritionData, Double>, Boolean> combinedHasData = new HashMap<>(NUTRIENT_COLUMNS.size(), 1);
@@ -137,11 +143,18 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         }
         for (NutritionData nd : components) {
             NutritionData ndToSum = nd.convertToGramsIfNecessary();
-            sumQuantity += ndToSum.getQuantity();
-            if (!ndToSum.hasCompleteData(QUANTITY)) {
+            double quantity = ndToSum.getQuantity();
+            double density = 1.0; // default guess
+            if (ndToSum.getDensity() == null || !ndToSum.hasCompleteData(QUANTITY)) {
                 // means we guessed the density
                 combinedHasData.put(QUANTITY, false);
+            } else {
+                density = ndToSum.getDensity();
             }
+            sumQuantity += quantity;
+            // gradually calculate overall density via weighted sum of densities
+            unnormalisedDensity += density*quantity;
+
             for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
                 // total has correct data for a field if and only if each component does
                 // if the current component has no data for a field, we add nothing to the total,
@@ -157,10 +170,18 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             combinedDataMap.put(col, sumData.get(col));
         }
+        double combinedDensity = unnormalisedDensity/sumQuantity;
+        if (combineDensities) {
+            combinedDataMap.put(DENSITY, combinedDensity);
+        } else {
+            combinedDataMap.put(DENSITY, null);
+        }
         combinedDataMap.put(QUANTITY, sumQuantity);
         combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.abbr());
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
+
+        // TODO add food if all of the ingredients were the same food?
         return new NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData);
     }
 
@@ -310,6 +331,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         ColumnData<NutritionData> newData = copyDataForNew();
         newData.put(QUANTITY, newQuantity);
         newData.put(QUANTITY_UNIT, targetUnit.abbr());
+        newData.put(DENSITY, density);
         // all other data remains the same
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(completeData);
         if (isDensityGuessed) {
@@ -374,7 +396,8 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             // then convert to grams, guessing density if required
             double density;
             boolean guessedDensity;
-            if (hasFood() && getDensity() != null) {
+            // TODO why do we need to check hasFood()?
+            if (/*hasFood() && */ getDensity() != null) {
                 density = getDensity();
                 guessedDensity = false;
             } else {
@@ -406,7 +429,11 @@ public class NutritionData extends MacrosEntity<NutritionData> {
                 newData.put(c, amountOf(c) * conversionRatio);
             }
         }
-        return new NutritionData(newData, ObjectSource.COMPUTED);
+        NutritionData rescaled = new NutritionData(newData, ObjectSource.COMPUTED);
+        if (hasFood()) {
+            rescaled.setFood(getFood());
+        }
+        return rescaled;
     }
 
 

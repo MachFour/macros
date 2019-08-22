@@ -109,7 +109,6 @@ public class Food extends MacrosEntity<Food> {
         return getData(NOTES);
     }
 
-
     @Override
     public boolean equals(Object o) {
         return o instanceof Food && super.equals(o);

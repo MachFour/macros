@@ -33,12 +33,12 @@ public class CliUtils {
     private CliUtils () {}
 
 
-    static void printPer100g(NutritionData nd, boolean verbose, PrintStream out) {
+    public static void printPer100g(NutritionData nd, boolean verbose, PrintStream out) {
         printNutritionData(nd.rescale(100), verbose, out);
     }
 
     // TODO use methods from PrintFormatting here?
-    static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
+    public static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
         String lineFormat = "%15s: %4.0f %s";
         for (Column<NutritionData, Double> col: allNutrientsToPrint) {
             Double value = nd.amountOf(col, 0.0);
@@ -51,7 +51,7 @@ public class CliUtils {
         }
     }
 
-    static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
+    public static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
         out.println("Energy proportions (approx.)");
         Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
         for (Column<NutritionData, Double> col: proportionMap.keySet()) {

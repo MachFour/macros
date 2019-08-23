@@ -173,14 +173,14 @@ public class MacrosDataCache implements MacrosDataSource {
 
 
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
         return upstream.updateObjects(objects);
     }
     @Override
-    public <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosPersistable<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }

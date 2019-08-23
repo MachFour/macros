@@ -12,6 +12,9 @@ public class Config {
     public static final String DEFAULT_DB_LOCATION = "/home/max/devel/macros-java/macros.sqlite";
     public static final String FOOD_CSV_FILENAME = "/home/max/devel/macros/macros-data/foods.csv";
     public static final String SERVING_CSV_FILENAME = "/home/max/devel/macros/macros-data/servings.csv";
+    public static final String RECIPE_CSV_FILENAME = "/home/max/devel/macros/macros-data/recipes.csv";
+    public static final String INGREDIENTS_CSV_FILENAME = "/home/max/devel/macros/macros-data/ingredients.csv";
+
     public static final String CSV_OUTPUT_DIR = "/home/max/devel/macros-java/csv-out";
 
     public static String DB_LOCATION = DEFAULT_DB_LOCATION;

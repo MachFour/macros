@@ -14,6 +14,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static com.machfour.macros.core.MacrosPersistable.NO_ID;
+import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
+import static com.machfour.macros.core.Schema.NutritionDataTable.QUANTITY;
+
 public class CsvStorage {
     /*
      * Method for reading CSV files that directly correspond to a table
@@ -104,27 +108,42 @@ public class CsvStorage {
     }
 
     // map from composite food index name to list of ingredients
-    private static Map<String, List<ImportData<Ingredient>>> getIngredientData(Reader ingredientCsv) throws IOException {
-        Map<String, List<ImportData<Ingredient>>> data = new HashMap<>();
+    // XXX adding the db to get ingredient food objects looks ugly
+    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDatabase db) throws IOException, SQLException {
+        Map<String, List<Ingredient>> data = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(ingredientCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
                 ImportData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
-                String compositeFoodIndexName = csvRow.get("recipe_index_name");
-                String ingredientFoodIndexName = csvRow.get("ingredient_index_name");
-                ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
-                ingredientData.putExtraData(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientFoodIndexName);
+
+                String compositeIndexName = csvRow.get("recipe_index_name");
+                String ingredientIndexName = csvRow.get("ingredient_index_name");
+                // TODO error handling
+                Food ingredientFood = db.getFoodByIndexName(ingredientIndexName);
+                if (ingredientFood == null) {
+                    throw new RuntimeException("No ingredient exists with index name: " + ingredientIndexName);
+                }
+
+                ingredientData.put(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientFood.getId());
+
+                Ingredient i = Ingredient.factory().construct(ingredientData, ObjectSource.IMPORT);
+                //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
+                i.setFkParentNaturalKey(Schema.IngredientTable.COMPOSITE_FOOD_ID, INDEX_NAME, compositeIndexName);
+                i.setIngredientFood(ingredientFood);
+
                 // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
-                if (data.containsKey(compositeFoodIndexName)) {
-                    data.get(compositeFoodIndexName).add(ingredientData);
+                if (data.containsKey(compositeIndexName)) {
+                    data.get(compositeIndexName).add(i);
                 } else {
-                    List<ImportData<Ingredient>> recipeIngredients = new ArrayList<>();
-                    recipeIngredients.add(ingredientData);
-                    data.put(compositeFoodIndexName, recipeIngredients);
+                    List<Ingredient> recipeIngredients = new ArrayList<>();
+                    recipeIngredients.add(i);
+                    data.put(compositeIndexName, recipeIngredients);
                 }
             }
+        } catch (SQLException e) {
+            throw e; // throw new CSVImportException(csvData)
         }
         return data;
 
@@ -133,11 +152,14 @@ public class CsvStorage {
     // creates Composite food objects with ingredients lists (all with no IDs), but the ingredients are raw
     // (don't have linked food objects of their own)
     //
-    static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Reader ingredientsCsv) throws IOException {
+    static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Map<String, List<Ingredient>> ingredients) throws IOException {
         Map<String, CompositeFood> foodMap = new HashMap<>();
+        Map<String, ImportData<NutritionData>> ndMap = new HashMap<>();
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(recipeCsv)) {
             ImportData<Food> foodData = rowData.first;
+            ImportData<NutritionData> ndData = rowData.second;
+
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
             assert f instanceof CompositeFood;
@@ -147,18 +169,28 @@ public class CsvStorage {
                 throw new RuntimeException("Imported recipes contained duplicate index name: " + f.getIndexName());
             }
             foodMap.put(f.getIndexName(), (CompositeFood)f);
+            ndMap.put(f.getIndexName(), ndData);
         }
 
-
-        for (Map.Entry<String, List<ImportData<Ingredient>>> ingredientsByRecipe : getIngredientData(ingredientsCsv).entrySet()) {
+        for (Map.Entry<String, List<Ingredient>> ingredientsByRecipe : ingredients.entrySet()) {
             CompositeFood recipeFood = foodMap.get(ingredientsByRecipe.getKey());
-            for (ImportData<Ingredient> ingredientData : ingredientsByRecipe.getValue()) {
-                Ingredient i = Ingredient.factory().construct(ingredientData, ObjectSource.IMPORT);
+            for (Ingredient i: ingredientsByRecipe.getValue()) {
                 i.setCompositeFood(recipeFood);
-                // TODO need database access in order to get the nutrition data for the ingredients?>?>?
+                recipeFood.addIngredient(i);
             }
         }
-        return null;
+        // now we can finally create the nutrition data
+
+        for (CompositeFood cf : foodMap.values()) {
+            ImportData<NutritionData> csvNutritionData = ndMap.get(cf.getIndexName());
+            if (csvNutritionData.hasData(Schema.NutritionDataTable.QUANTITY)) {
+                // assume that there is overriding data
+                NutritionData overridingData = NutritionData.factory().construct(csvNutritionData, ObjectSource.IMPORT);
+                cf.setNutritionData(overridingData);
+                // calling cf.getNutritionData will now correctly give all the values
+            }
+        }
+        return foodMap;
     }
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
@@ -170,8 +202,7 @@ public class CsvStorage {
             ImportData<NutritionData> ndData = rowData.second;
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
             NutritionData nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
-            f.setNutritionData(nd); //without pairs, needed to recover nutrition data from return value
-            nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, f);
+            f.setNutritionData(nd); // without pairs, needed to recover nutrition data from return value
             if (foodMap.containsKey(f.getIndexName())) {
                 // TODO make this nicer
                 throw new RuntimeException("Imported foods contained duplicate index name: " + f.getIndexName());
@@ -188,20 +219,28 @@ public class CsvStorage {
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ImportData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
-                String foodIndexName = csvRow.get(Schema.FoodTable.INDEX_NAME.sqlName());
+                String foodIndexName = csvRow.get(INDEX_NAME.sqlName());
                 Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
-                s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, foodIndexName);
+                // TODO move next line to be run immediately before saving
+                s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, INDEX_NAME, foodIndexName);
                 servings.add(s);
             }
         }
         return servings;
     }
 
-    public static Collection<Food> importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
-        Map<String, Food> csvFoods = buildFoodObjectTree(foodCsv);
+    private static Set<String> findDuplicateIndexNames(Collection<String> indexNames, MacrosDatabase db) throws SQLException {
+        List<String> duplicateList = db.selectColumn(Food.table(), INDEX_NAME, INDEX_NAME, indexNames, false);
+        Set<String> duplicates = new HashSet<>(duplicateList.size());
+        duplicates.addAll(duplicateList);
+        return duplicates;
+    }
+
+    // foods maps from index name to food object. Food object must have nutrition data attached by way of getNutritionData()
+    private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDatabase db) throws SQLException {
         // collect all of the index names to be imported, and check if they're already in the DB.
-        Set<String> newIndexNames = csvFoods.keySet();
-        List<String> existingIndexNames = db.selectColumn(Food.table(), Schema.FoodTable.INDEX_NAME, Schema.FoodTable.INDEX_NAME, newIndexNames, false);
+        Set<String> newIndexNames = foods.keySet();
+        Set<String> existingIndexNames = findDuplicateIndexNames(newIndexNames, db);
         /*
         if (allowOverwrite) {
             Map<String, Food> overwriteFoods = new HashMap<>();
@@ -216,8 +255,11 @@ public class CsvStorage {
         newIndexNames.removeAll(existingIndexNames);
         // get out the nutrition data
         Map<String, NutritionData> ndObjects = new HashMap<>(newIndexNames.size(), 1);
-        for (Food f : csvFoods.values()) {
-            ndObjects.put(f.getIndexName(), f.getNutritionData());
+        for (Food f : foods.values()) {
+            NutritionData nd = f.getNutritionData();
+            // link it to the food so that the DB can create the correct foreign key entries
+            nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, INDEX_NAME, f);
+            ndObjects.put(f.getIndexName(), nd);
         }
         if (!existingIndexNames.isEmpty()) {
             System.out.println("The following foods will be imported; others had index names already present in the database:");
@@ -225,10 +267,14 @@ public class CsvStorage {
                 System.out.println(indexName);
             }
         }
-        db.saveObjects(csvFoods.values(), ObjectSource.IMPORT);
+        db.saveObjects(foods.values(), ObjectSource.IMPORT);
         List<NutritionData> completedNd = db.completeForeignKeys(ndObjects.values(), Schema.NutritionDataTable.FOOD_ID);
         db.saveObjects(completedNd, ObjectSource.IMPORT);
-        return csvFoods.values();
+    }
+
+    public static void importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+        Map<String, Food> csvFoods = buildFoodObjectTree(foodCsv);
+        saveImportedFoods(csvFoods, db);
     }
 
     // TODO detect existing servings
@@ -236,6 +282,24 @@ public class CsvStorage {
         List<Serving> csvServings = CsvStorage.buildServings(servingCsv);
         List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
         db.saveObjects(completedServings, ObjectSource.IMPORT);
+    }
+
+    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDatabase db) throws IOException, SQLException {
+        Map<String, List<Ingredient>> ingredientsByRecipe = makeIngredients(ingredientCsv, db);
+        Map<String, CompositeFood> csvRecipes = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe);
+        Set<String> duplicateRecipes = findDuplicateIndexNames(csvRecipes.keySet(), db);
+        // todo remove the extra duplicate check from inside this function
+        saveImportedFoods(csvRecipes, db);
+
+        // add all the ingredients for non-duplicated recipes to one big list, then save them all
+        List<Ingredient> allIngredients = new ArrayList<>(3*ingredientsByRecipe.size()); // assume 3 ingredients per recipe on average
+        duplicateRecipes.removeAll(ingredientsByRecipe.keySet());
+        for (List<Ingredient> recipeIngredients : ingredientsByRecipe.values()) {
+            allIngredients.addAll(recipeIngredients);
+        }
+
+        List<Ingredient> completedIngredients = db.completeForeignKeys(allIngredients, Schema.IngredientTable.COMPOSITE_FOOD_ID);
+        db.saveObjects(completedIngredients, ObjectSource.IMPORT);
     }
 
 }

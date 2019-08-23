@@ -8,3 +8,4 @@ sample.db
 *.sqlite
 test/
 src/main/java/com/machfour/macros/objects/Measurement.java
+.attach_pid*

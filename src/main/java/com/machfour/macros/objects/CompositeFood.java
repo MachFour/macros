@@ -28,7 +28,8 @@ public class CompositeFood extends Food {
         for (Ingredient i : ingredients) {
             nutritionComponents.add(i.getNutritionData());
         }
-        return NutritionData.sum(nutritionComponents);
+        // don't combine densities of the foods
+        return NutritionData.sum(nutritionComponents, false);
     }
 
     // Sets this Composite food's (overriding) nutrition data

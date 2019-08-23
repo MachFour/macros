@@ -22,7 +22,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     protected static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
         boolean idsPresent = true;
         for (Column.Fk<M, ?, ?> fkCol : object.getTable().fkColumns()) {
-            if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn())) {
+            // if the FK refers to an ID column and it's not nullable, make sure there's a value
+            if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn()) && !fkCol.isNullable()) {
                 idsPresent &= object.hasData(fkCol) && !object.getData(fkCol).equals(MacrosPersistable.NO_ID);
             }
         }
@@ -99,7 +100,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
     // Note that if the id is not found in the database, nothing will be inserted
-    public abstract <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException;
+    public abstract <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException;
 
@@ -494,7 +495,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return getOrDefault(returned, key, null);
     }
 
-    public <M extends MacrosPersistable<M>> int insertObjects(Collection<M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosPersistable<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
         List<ColumnData<M>> objectData = new ArrayList<>(objects.size());
         for (M object: objects)  {
             objectData.add(object.getAllData());
@@ -519,7 +520,9 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         List<M> completedObjects = new ArrayList<>(objects.size());
         List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
         for (M object : objects) {
-            assert object.getObjectSource() == ObjectSource.IMPORT : "Object is not from import";
+            // needs to be either imported data, or computed, for Recipe nutrition data
+            assert (object.getObjectSource() == ObjectSource.IMPORT) ||
+                    (object.getObjectSource() == ObjectSource.COMPUTED) : "Object is not from import or computed";
             assert !object.getFkNaturalKeyMap().isEmpty() : "Object has no FK data maps";
             ColumnData<N> objectNkData = object.getFkParentNaturalKey(fkCol);
             assert objectNkData != null : "Natural key data was null";
@@ -548,26 +551,23 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     <M extends MacrosPersistable<M>> List<M> completeForeignKeys(
             Collection<M> objects, List<Column.Fk<M, ?, ? extends MacrosPersistable>> which) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
-        if (objects.isEmpty()) {
-            // return empty list
-            return completedObjects;
-        }
+        if (!objects.isEmpty()) {
+            // objects without foreign key data yet (mutable copy of first argument)
+            List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
+            partiallyCompletedObjects.addAll(objects);
 
-        // objects without foreign key data yet (mutable copy of first argument)
-        List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
-        partiallyCompletedObjects.addAll(objects);
+            // hack to get correct factory type without passing it explicitly as argument
+            Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
 
-        // hack to get correct factory type without passing it explicitly as argument
-        Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
-
-        // cycle through the FK columns.
-        for (Column.Fk<M, ?, ? extends MacrosPersistable> fkCol: which) {
-            partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
-        }
-        // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT
-        for (M object : partiallyCompletedObjects) {
-            assert fkIdsPresent(object);
-            completedObjects.add(factory.construct(object.getAllData(), object.getObjectSource()));
+            // cycle through the FK columns.
+            for (Column.Fk<M, ?, ? extends MacrosPersistable> fkCol: which) {
+                partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
+            }
+            // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT
+            for (M object : partiallyCompletedObjects) {
+                assert fkIdsPresent(object);
+                completedObjects.add(factory.construct(object.getAllData(), object.getObjectSource()));
+            }
         }
         return completedObjects;
     }
@@ -585,7 +585,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public <M extends MacrosPersistable<M>> int saveObjects(Collection<M> objects, ObjectSource objectSource) throws SQLException {
+    public <M extends MacrosPersistable<M>> int saveObjects(Collection<? extends M> objects, ObjectSource objectSource) throws SQLException {
         switch (objectSource) {
             case IMPORT:
                 // TODO have overwrite mode; split import into new insert and updates

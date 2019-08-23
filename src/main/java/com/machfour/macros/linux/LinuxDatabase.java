@@ -345,7 +345,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     // Note that if the id is not found in the database, nothing will be inserted
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(Collection<M> objects) throws SQLException {
+    public <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
         if (objects.isEmpty()) {
             return 0;
         }

@@ -296,9 +296,9 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumn(columnIndex++);
             NOTES = builder("notes", Types.TEXT, columnIndex++).build();
             COMPOSITE_FOOD_ID = builder("composite_food_id", Types.ID, columnIndex++).notEditable().notNull()
-                    .buildFk(FoodTable.ID, FoodTable.instance());
+                    .defaultValue(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
             INGREDIENT_FOOD_ID = builder("ingredient_food_id", Types.ID, columnIndex++).notEditable().notNull()
-                    .buildFk(FoodTable.ID, FoodTable.instance());
+                    .defaultValue(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY = builder("quantity", Types.REAL, columnIndex++).notEditable().notNull().build();
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT, columnIndex++).notEditable().notNull()
                     .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());

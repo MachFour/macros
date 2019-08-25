@@ -9,7 +9,9 @@ import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.FoodPortionSpec;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -17,7 +19,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-final class FileParser {
+public final class FileParser {
     private static final Pattern mealPattern = Pattern.compile("\\[(?<mealdesc>.*)]");
     private static final String quantityRegex = "(?<qty>-?[0-9]+(?:.[0-9]+)?)";
     private static final String unitRegex = "(?<unit>[a-zA-Z]+)?";
@@ -26,12 +28,12 @@ final class FileParser {
 
     private final Map<String, String> errorLines;
 
-    FileParser() {
+    public FileParser() {
         // use LinkedHashMap to maintain insertion order
         errorLines = new LinkedHashMap<>();
     }
 
-    Map<String, String> getErrorLines() {
+    public Map<String, String> getErrorLines() {
         return Collections.unmodifiableMap(errorLines);
     }
 
@@ -76,8 +78,21 @@ final class FileParser {
         }
         return foodIndexNames;
     }
-    List<Meal> parseFile(String fileName, MacrosDataSource db) throws IOException, SQLException {
-        List<String> fileLines = Files.readAllLines(Paths.get(fileName));
+
+    // like Files.readAllLines() but for a reader input.
+    // Make sure to close the reader afterwards
+    private static List<String> readAllLines(Reader in) throws IOException {
+        List<String> allLines = new ArrayList<>();
+        BufferedReader r = new BufferedReader(in);
+        for (String s = r.readLine(); s != null; s = r.readLine()) {
+            allLines.add(s);
+        }
+        return allLines;
+
+    }
+    // make sure to close the reader afterwards
+    public List<Meal> parseFile(Reader fileReader, MacrosDataSource db) throws IOException, SQLException {
+        List<String> fileLines = readAllLines(fileReader);
         // also gets list of index names to retrieve
         Map<MealSpec, List<FoodPortionSpec>> mealSpecs = createSpecFromLines(fileLines);
 

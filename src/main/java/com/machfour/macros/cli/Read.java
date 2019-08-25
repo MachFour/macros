@@ -3,11 +3,14 @@ package com.machfour.macros.cli;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +44,11 @@ class Read extends CommandImpl {
         boolean per100 = args.contains("--per100");
 
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+
         FileParser fileParser = new FileParser();
         List<Meal> meals;
-        try {
-            meals = fileParser.parseFile(filename, db);
+        try (Reader r = new FileReader(filename)) {
+            meals = fileParser.parseFile(r, db);
         } catch (IOException e1) {
             ERR.println("IO exception occurred: " + e1.getMessage());
             return;
@@ -63,3 +67,4 @@ class Read extends CommandImpl {
         }
     }
 }
+

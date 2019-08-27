@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.datatype.Types;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
@@ -469,6 +470,20 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         } else {
             return getData(col);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean hasData(@NotNull Column<NutritionData, ?> col) {
+        if (col.getType().equals(Types.REAL)) {
+            // ColumnType of REAL ensures the cast will work
+            Column<NutritionData, Double> doubleCol = (Column<NutritionData, Double>) col;
+            if (NUTRIENT_COLUMNS.contains(doubleCol)) {
+                return amountOf(doubleCol) != null;
+            }
+        }
+        // fall back to just checking the columnData
+        return super.hasData(col);
     }
 
     public double amountOf(Column<NutritionData, Double> col, double defaultValue) {

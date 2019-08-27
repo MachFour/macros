@@ -17,12 +17,12 @@ public class Meal extends MacrosEntity<Meal> {
         foodPortions = new ArrayList<>();
     }
 
-    public static NutritionData sumNutritionTotals(Collection<Meal> meals) {
-        List<NutritionData> nutritionTotals = new ArrayList<>(meals.size());
+    public static NutritionData sumNutritionData(Collection<Meal> meals) {
+        List<NutritionData> totalPerMeal = new ArrayList<>(meals.size());
         for (Meal m : meals) {
-            nutritionTotals.add(m.getNutritionTotal());
+            totalPerMeal.add(m.getNutritionTotal());
         }
-        return NutritionData.sum(nutritionTotals);
+        return NutritionData.sum(totalPerMeal);
     }
 
     public static Factory<Meal> factory() {

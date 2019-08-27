@@ -121,17 +121,17 @@ public class Food extends MacrosEntity<Food> {
 
     @NotNull
     public String getShortName() {
-        return prettyFormat(false, false, false);
+        return prettyFormat(false, false, false, false);
     }
 
     @NotNull
     public String getLongName() {
-        return prettyFormat(true, true, false);
+        return prettyFormat(true, true, true, false);
     }
 
     @NotNull
     public String getMediumName() {
-        return prettyFormat(true, false, false);
+        return prettyFormat(true, true, false, false);
     }
 
     @NotNull
@@ -141,7 +141,7 @@ public class Food extends MacrosEntity<Food> {
 
     @NotNull
     private String makeSortableName() {
-        return prettyFormat(true, true, true);
+        return prettyFormat(true, true, true, true);
     }
     public String getSortableName() {
         return sortableName;
@@ -151,7 +151,7 @@ public class Food extends MacrosEntity<Food> {
         return getData(Schema.FoodTable.CATEGORY);
     }
 
-    private String prettyFormat(boolean withBrand, boolean withNotes, boolean sortable) {
+    private String prettyFormat(boolean withBrand, boolean withVariety, boolean withNotes, boolean sortable) {
         StringBuilder prettyName = new StringBuilder(getDescriptionData(Schema.FoodTable.NAME));
 
         String variety = getDescriptionData(Schema.FoodTable.VARIETY);
@@ -165,7 +165,7 @@ public class Food extends MacrosEntity<Food> {
                 prettyName.append(", ").append(variety);
             }
         } else {
-            if (hasDescriptionData(Schema.FoodTable.VARIETY)) {
+            if (withVariety && hasDescriptionData(Schema.FoodTable.VARIETY)) {
                 if (getData(Schema.FoodTable.VARIETY_AFTER_NAME)) {
                     prettyName.append(" ").append(variety);
                 } else {

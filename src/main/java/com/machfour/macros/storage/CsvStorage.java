@@ -92,6 +92,16 @@ public class CsvStorage {
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
+    private static boolean allValuesEmpty(Map<String, String> csvRow) {
+        boolean result = true;
+        for (String s : csvRow.values()) {
+            if (s != null && !s.isEmpty()) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
     // Returns map of food index name to parsed food and nutrition columnData objects
     private static List<Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv) throws IOException {
         List<Pair<ImportData<Food>, ImportData<NutritionData>>> data = new ArrayList<>();
@@ -99,6 +109,9 @@ public class CsvStorage {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
+                if (allValuesEmpty(csvRow)) {
+                    continue; // it's a blank row
+                }
                 ImportData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
                 ImportData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
                 data.add(new Pair<>(foodData, ndData));
@@ -115,6 +128,9 @@ public class CsvStorage {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
+                if (allValuesEmpty(csvRow)) {
+                    continue; // it's a blank row
+                }
                 // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
                 ImportData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
 

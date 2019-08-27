@@ -41,7 +41,7 @@ class Import extends CommandImpl {
             return;
         }
         boolean doClear = args.contains("--clear");
-        boolean doRecipes = args.contains("--recipes");
+        boolean noRecipes = args.contains("--norecipes");
         boolean noFoodsServings = args.contains("--nofoods");
 
         String foodCsvFile = Config.FOOD_CSV_FILENAME;
@@ -77,7 +77,7 @@ class Import extends CommandImpl {
                 }
             }
 
-            if (doRecipes) {
+            if (!noRecipes) {
                 try (Reader recipeCsv = new FileReader(recipeCsvFile);
                      Reader ingredientsCsv = new FileReader(ingredientsCsvFile)) {
                     out.println("Importing recipes and ingredients into database...");

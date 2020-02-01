@@ -54,7 +54,7 @@ public class PrintFormatting {
         prettyNames.put(FAT, "Fat");
         prettyNames.put(SATURATED_FAT, "Saturated Fat");
         prettyNames.put(CARBOHYDRATE, "Carbohydrate");
-        prettyNames.put(SUGAR, "Sugar");
+        prettyNames.put(SUGAR, "Sugars");
         prettyNames.put(FIBRE, "Fibre");
         prettyNames.put(SODIUM, "Sodium");
         prettyNames.put(CALCIUM, "Calcium");
@@ -93,16 +93,19 @@ public class PrintFormatting {
         return formatQuantity(qty, null, width);
     }
     public static String formatQuantity(@Nullable Double qty, @Nullable QtyUnit unit, int width) {
-        return formatQuantity(qty, unit, width, 2, false, false, "");
+        return formatQuantity(qty, unit, width, 0, false, false, "");
     }
     private static String formatQuantity(@Nullable Double qty, @Nullable QtyUnit unit, int width, int unitWidth,
                                  boolean withDp, boolean alignLeft, @NotNull String forNullQty) {
         if (qty == null) {
             return forNullQty;
-        } else if (width <= 0) {
-            throw new IllegalArgumentException("Must have width > 0");
-        } else if (unit != null && (unitWidth <= 0 || width - unitWidth <= 0)) {
-            throw new IllegalArgumentException("Must have width > unitWidth > 0");
+        }
+
+        if (unit != null && unitWidth <= 0) {
+            unitWidth = unit.abbr().length();
+        }
+        if (width > 0 && width - unitWidth <= 0) {
+            throw new IllegalArgumentException("If width != 0, must have width > unitWidth > 0");
         }
         Formatter f = new Formatter(Locale.getDefault());
         if (alignLeft) {
@@ -110,9 +113,9 @@ public class PrintFormatting {
             if (unit != null) {
                 f.format("%" + unitWidth + "s", qty, unit.abbr());
             }
-            return String.format("%-" + width + "s", f.toString());
+            return width > 0 ? String.format("%-" + width + "s", f.toString()) : f.toString();
         } else {
-            f.format("%" + (width-unitWidth) + (withDp ? ".1f" : ".0f"), qty);
+            f.format("%" + ((width > 0) ? (width-unitWidth) : "") + (withDp ? ".1f" : ".0f"), qty);
             if (unit != null) {
                 f.format("%-" + unitWidth + "s", unit.abbr());
             }
@@ -121,8 +124,24 @@ public class PrintFormatting {
     }
 
     // Converts the given data field into a string. Adds an asterisk if the data is missing.
-    public static String formatNutrnData(NutritionData nd, Column<NutritionData, Double> field) {
+    // Returns null if the input nutrition data is null
+    public static String formatNutrnData(@Nullable NutritionData nd, Column<NutritionData, Double> field) {
+        return formatNutrnData(nd, field, false);
+    }
+
+    public static String formatNutrnData(@Nullable NutritionData nd, Column<NutritionData, Double> field, boolean withUnit) {
+        if (nd == null) {
+            return null;
+        }
         boolean missing = !nd.hasCompleteData(field);
-        return formatQuantity(nd.amountOf(field), false) + (missing ? "*" : "");
+        if (!withUnit) {
+            return formatQuantity(nd.amountOf(field), false) + (missing ? "*" : "");
+        } else {
+            QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitForNutrient(field));
+            // TODO make getUnit return an actual QtyUnit object
+            return formatQuantity(nd.amountOf(field), unit, 0);
+
+        }
+
     }
 }

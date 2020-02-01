@@ -68,12 +68,12 @@ public class Recipe extends CommandImpl {
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.getQuantity() != 100) {
                 out.printf("Per %.0f%s:\n", nd.getQuantity(), unit);
-                CliUtils.printNutritionData(nd, true, out);
+                CliUtils.printNutritionData(nd, false, out);
                 out.println();
                 nd = nd.rescale(100);
             }
             out.printf("Per %.0f%s:\n", nd.getQuantity(), unit); // should now be 100
-            CliUtils.printNutritionData(nd, true, out);
+            CliUtils.printNutritionData(nd, false, out);
             out.println();
             out.println("================================================");
             out.println();

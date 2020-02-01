@@ -351,6 +351,14 @@ public class Schema {
     }
 
     public final static class NutritionDataTable extends BaseTable<NutritionData> {
+        /*
+         * When adding new columns here (or to any other table), remember to put
+         *  - the field declaration (obviously)
+         *  - the static initialiser using the builder (won't compile if you don't do this)
+         *  - add it to the list of columns in the Table object's constructor
+         *
+         * And additionally, for NutritionData, add to NutritionData.NUTRIENT_COLUMNS if appropriate
+         */
         public static final Column<NutritionData, Long> ID;
         public static final Column<NutritionData, Long> CREATE_TIME;
         public static final Column<NutritionData, Long> MODIFY_TIME;
@@ -374,6 +382,7 @@ public class Schema {
         public static final Column<NutritionData, Double> FIBRE;
         public static final Column<NutritionData, Double> SODIUM;
         public static final Column<NutritionData, Double> SALT;
+        public static final Column<NutritionData, Double> POTASSIUM;
         public static final Column<NutritionData, Double> CALCIUM;
         public static final Column<NutritionData, Double> IRON;
         public static final Column<NutritionData, Double> WATER;
@@ -408,6 +417,7 @@ public class Schema {
             FIBRE = builder("fibre", Types.REAL, columnIndex++).build();
             SODIUM = builder("sodium", Types.REAL, columnIndex++).build();
             SALT = builder("salt", Types.REAL, columnIndex++).build();
+            POTASSIUM = builder("potassium", Types.REAL, columnIndex++).build();
             CALCIUM = builder("calcium", Types.REAL, columnIndex++).build();
             IRON = builder("iron", Types.REAL, columnIndex++).build();
             WATER = builder("water", Types.REAL, columnIndex++).build();
@@ -442,6 +452,7 @@ public class Schema {
                     , OMEGA_6_FAT
                     , FIBRE
                     , SODIUM
+                    , POTASSIUM
                     , SALT
                     , CALCIUM
                     , IRON

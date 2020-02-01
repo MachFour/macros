@@ -28,6 +28,7 @@ INSERT INTO FoodCategory (name) VALUES
     , ('chocolate')
     , ('condiments')
     , ('dairy')
+    , ('desserts')
     , ('fish')
     , ('fruit and vegetables')
     , ('grains')

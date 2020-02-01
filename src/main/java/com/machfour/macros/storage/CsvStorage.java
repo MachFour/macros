@@ -3,6 +3,7 @@ package com.machfour.macros.storage;
 import com.machfour.macros.core.*;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.util.Pair;
+import com.machfour.macros.validation.SchemaViolation;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapReader;
@@ -14,9 +15,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
-import static com.machfour.macros.core.MacrosPersistable.NO_ID;
 import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
-import static com.machfour.macros.core.Schema.NutritionDataTable.QUANTITY;
 
 public class CsvStorage {
     /*
@@ -92,10 +91,12 @@ public class CsvStorage {
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
+    // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
     private static boolean allValuesEmpty(Map<String, String> csvRow) {
         boolean result = true;
         for (String s : csvRow.values()) {
-            if (s != null && !s.isEmpty()) {
+
+            if (s != null && !s.trim().isEmpty()) {
                 result = false;
                 break;
             }
@@ -203,7 +204,7 @@ public class CsvStorage {
                 // assume that there is overriding data
                 NutritionData overridingData = NutritionData.factory().construct(csvNutritionData, ObjectSource.IMPORT);
                 cf.setNutritionData(overridingData);
-                // calling cf.getNutritionData will now correctly give all the values
+                // calling cf.getnData will now correctly give all the values
             }
         }
         return foodMap;
@@ -216,8 +217,24 @@ public class CsvStorage {
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
             ImportData<Food> foodData = rowData.first;
             ImportData<NutritionData> ndData = rowData.second;
-            Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
-            NutritionData nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
+            Food f;
+            NutritionData nd;
+            try {
+                f = Food.factory().construct(foodData, ObjectSource.IMPORT);
+            } catch (SchemaViolation e) {
+                // TODO make this nicer
+                throw new RuntimeException("Schema violation detected in food: " + e.getMessage() +
+                        "\nData:\n" + foodData.toString());
+                //continue;
+            }
+            try {
+                nd = NutritionData.factory().construct(ndData, ObjectSource.IMPORT);
+            } catch (SchemaViolation e) {
+                // TODO make this nicer
+                throw new RuntimeException("Schema violation detected in nutrition data: " + e.getMessage() +
+                        "\nData:\n" + foodData.toString());
+                //continue;
+            }
             f.setNutritionData(nd); // without pairs, needed to recover nutrition data from return value
             if (foodMap.containsKey(f.getIndexName())) {
                 // TODO make this nicer
@@ -252,7 +269,7 @@ public class CsvStorage {
         return duplicates;
     }
 
-    // foods maps from index name to food object. Food object must have nutrition data attached by way of getNutritionData()
+    // foods maps from index name to food object. Food object must have nutrition data attached by way of getnData()
     private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDatabase db) throws SQLException {
         // collect all of the index names to be imported, and check if they're already in the DB.
         Set<String> newIndexNames = foods.keySet();

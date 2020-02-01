@@ -298,7 +298,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     private void processRawFoodMap(Map<Long, Food> foodMap) throws SQLException {
         if (!foodMap.isEmpty()) {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
-            //Map<Long, NutritionData> nutritionData = getRawNutritionDataForFoods(idMap);
+            //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
             Map<Long, Serving> servings = getRawObjectsForParentFk(foodMap, Serving.table(), Schema.ServingTable.FOOD_ID);
             Map<Long, NutritionData> nutritionData = getRawObjectsForParentFk(foodMap, NutritionData.table(), Schema.NutritionDataTable.FOOD_ID);
             Map<Long, Ingredient> ingredients = getRawObjectsForParentFk(foodMap, Ingredient.table(), Schema.IngredientTable.COMPOSITE_FOOD_ID);

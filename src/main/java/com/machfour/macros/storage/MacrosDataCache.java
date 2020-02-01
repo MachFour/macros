@@ -90,7 +90,7 @@ public class MacrosDataCache implements MacrosDataSource {
 
     @Override
     public List<Food> getAllFoods() throws SQLException {
-        if (allFoodsNeedsRefresh) {
+        if (foodCache.isEmpty() || allFoodsNeedsRefresh) {
             List<Food> allFoods = upstream.getAllFoods();
             foodCache.clear();
             for (Food f : allFoods) {

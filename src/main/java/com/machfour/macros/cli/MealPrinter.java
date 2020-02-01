@@ -15,7 +15,7 @@ import java.util.*;
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 class MealPrinter {
-    private static final String columnSep = " | ";
+    private static final String columnSep = "   ";
     private static final List<Column<NutritionData, Double>> conciseTableCols;
     private static final List<Column<NutritionData, Double>> verboseTableCols;
 

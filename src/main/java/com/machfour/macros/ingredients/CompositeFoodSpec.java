@@ -1,7 +1,6 @@
 package com.machfour.macros.ingredients;
 
 import com.machfour.macros.core.MacrosUtils;
-import com.machfour.macros.objects.Ingredient;
 import com.machfour.macros.util.StringJoiner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,8 +25,8 @@ class CompositeFoodSpec {
         this.indexName = indexName;
         this.name = name;
         ingredients = new ArrayList<>();
-        this.variety = MacrosUtils.nullableString(variety); // empty string -> null data
-        this.notes = MacrosUtils.nullableString(notes); // empty string -> null data
+        this.variety = MacrosUtils.emptyStringToNull(variety); // empty string -> null data
+        this.notes = MacrosUtils.emptyStringToNull(notes); // empty string -> null data
     }
 
     void addIngredients(Collection<IngredientSpec> ingredientSpecs) {

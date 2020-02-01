@@ -1,11 +1,13 @@
 package com.machfour.macros.core;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 // TODO are any of these methods used?
 public class MacrosUtils {
@@ -102,7 +104,7 @@ public class MacrosUtils {
         return b ? true : null;
     }
 
-    public static String nullableString(String value) {
+    public static String emptyStringToNull(String value) {
         return "".equals(value) ? null : value;
     }
 
@@ -128,4 +130,5 @@ public class MacrosUtils {
     public static <K, V> V getOrDefault(@NotNull Map<K, V> map, K key, V defaultValue) {
         return map.containsKey(key) ? map.get(key) : defaultValue;
     }
+
 }

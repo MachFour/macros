@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CompositeFood extends Food {
@@ -60,7 +61,7 @@ public class CompositeFood extends Food {
         }
 
         if (hasOverridingNutritionData) {
-            // combine missing data from the foods nutritionData with the overriding data
+            // combine missing data from the foods nData with the overriding data
             NutritionData overridingData = super.getNutritionData();
             return NutritionData.combine(overridingData, ingredientNutritionData);
         } else {
@@ -76,6 +77,10 @@ public class CompositeFood extends Food {
         assert !ingredients.contains(i)
                 && MacrosEntity.foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
         ingredients.add(i);
+        // sort by ID ~> attempt to keep same order as entered by user or imported
+        // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients
+        // TODO API level on android for list.sort()
+        Collections.sort(ingredients, (i1, i2) -> Long.compare(i1.getId(), i2.getId()));
     }
 
 }

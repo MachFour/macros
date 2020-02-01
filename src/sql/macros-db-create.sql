@@ -304,6 +304,7 @@ CREATE TABLE NutritionData (
     , fibre                REAL DEFAULT NULL
     , sodium               REAL DEFAULT NULL
     , salt                 REAL DEFAULT NULL
+    , potassium            REAL DEFAULT NULL
     , calcium              REAL DEFAULT NULL
     , iron                 REAL DEFAULT NULL
     , water                REAL DEFAULT NULL

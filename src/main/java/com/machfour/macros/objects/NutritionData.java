@@ -40,7 +40,9 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         , OMEGA_6_FAT
         , FIBRE
         , SODIUM
+        , POTASSIUM
         , CALCIUM
+        , IRON
         , SALT
         , WATER
         , ALCOHOL
@@ -105,7 +107,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         return factory();
     }
 
-    // allows keeping track of missing data when different nutritionData instances are added up
+    // allows keeping track of missing data when different nData instances are added up
     private NutritionData(ColumnData<NutritionData> dataMap, ObjectSource objectSource,
                           Map<Column<NutritionData, Double>, Boolean> completeData) {
         this(dataMap, objectSource);
@@ -199,7 +201,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
-            // nutritionData object was produced by summation and there was at least one food with missing data.
+            // nData object was produced by summation and there was at least one food with missing data.
             // for this purpose, we'll only replace the primary data if it was null
             if (!primary.hasData(col) && secondary.hasData(col)) {
                 combinedDataMap.put(col, secondary.getData(col));
@@ -281,6 +283,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     public boolean hasCompleteData(Column<NutritionData, Double> col) {
+        assert completeData.containsKey(col);
         return completeData.get(col);
     }
 
@@ -417,7 +420,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     // For current nutrition values in this object, per given current quantity,
-    // returns a new nutritionData object with the nutrition values rescaled to
+    // returns a new nData object with the nutrition values rescaled to
     // correspond to the new quantity, in the same unit
     @NotNull
     public NutritionData rescale(double newQuantity) {
@@ -439,7 +442,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
 
 
     // For current nutrition values in this object, per given current quantity,
-    // returns a new nutritionData object with the nutrition values rescaled to
+    // returns a new nData object with the nutrition values rescaled to
     // correspond to the new quantity, in the new unit
     @NotNull
     public NutritionData rescale(double newQuantity, QtyUnit newUnit) {

@@ -21,7 +21,7 @@ import static com.machfour.macros.storage.DatabaseUtils.toList;
 
 class Import extends CommandImpl {
     private static final String NAME = "import";
-    private static final String USAGE = String.format("%s %s", PROGNAME, NAME);
+    private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", PROGNAME, NAME);
 
     Import() {
         super(NAME, USAGE);
@@ -32,6 +32,11 @@ class Import extends CommandImpl {
         out.println("Imports CSV data (foods and servings) into the database.");
         out.println("Only foods with index names not already in the database will be imported.");
         out.println("However, it will try to import all servings, and so will fail if duplicate servings exist.");
+        out.println("Options:");
+        out.println("  --clear       removes existing data before import");
+        out.println("  --nofoods     prevents import of food and serving data (and clearing if --clear is used)");
+        out.println("  --norecipes   prevents import of recipe data (and clearing if --clear is used)");
+
     }
 
     @Override
@@ -59,10 +64,12 @@ class Import extends CommandImpl {
                     db.clearTable(Serving.table());
                     db.clearTable(NutritionData.table());
                     db.clearTable(Food.table());
-                } else {
+                } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...");
                     db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.getName()));
                     db.clearTable(Ingredient.table());
+                } else {
+                    out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used");
                 }
             }
             if (!noFoodsServings) {

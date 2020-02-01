@@ -337,6 +337,11 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 c.commit();
                 c.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            String newMessage = e.getMessage() + "\n" +
+                    "thrown by insertObjectData() on table " + table.name() + " and object data:\n"
+                    + objectData.get(saved).toString();
+            throw new SQLException(newMessage, e.getCause());
         } finally {
             closeIfNecessary(c);
         }

@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -37,6 +38,11 @@ class ShowFood extends CommandImpl {
             }
             return;
         }
+        boolean verbose = false;
+        if (args.contains("-v") || args.contains("--verbose")) {
+            verbose = true;
+        }
+
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
         String indexName = args.get(1);
         Food foodToList = null;
@@ -51,7 +57,7 @@ class ShowFood extends CommandImpl {
             return;
         }
 
-        printFood(foodToList, OUT);
+        printFood(foodToList, verbose, OUT);
     }
 
     public static void printFoodSummary(Food f, PrintStream out) {
@@ -66,7 +72,7 @@ class ShowFood extends CommandImpl {
         out.printf("Last modified: %s\n", dateFormat.format(f.modifyDate()));
     }
 
-    public static void printFood(Food f, PrintStream out) {
+    public static void printFood(Food f, boolean verbose, PrintStream out) {
         out.println("============");
         out.println(" Food Data  ");
         out.println("============");
@@ -93,12 +99,12 @@ class ShowFood extends CommandImpl {
         // if entered not per 100g, print both original amount and per 100 g
         if (nd.getQuantity() != 100) {
             out.printf("Per %.0f%s:\n", nd.getQuantity(), unit);
-            CliUtils.printNutritionData(nd, true, out);
+            CliUtils.printNutritionData(nd, verbose, out);
             out.println();
             nd = nd.rescale(100);
         }
         out.printf("Per %.0f%s:\n", nd.getQuantity(), unit); // should now be 100
-        CliUtils.printNutritionData(nd, true, out);
+        CliUtils.printNutritionData(nd, verbose, out);
         out.println();
 
         /*

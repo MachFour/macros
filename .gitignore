@@ -2,6 +2,7 @@ jdbc/
 out/
 lib-download/
 lib/
+linux-build/
 
 sample.db
 .idea/workspace.xml

@@ -1,15 +1,19 @@
 package com.machfour.macros.util;
 
 import com.machfour.macros.core.Column;
+import com.machfour.macros.core.Schema;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.objects.QtyUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
@@ -142,6 +146,31 @@ public class PrintFormatting {
             return formatQuantity(nd.amountOf(field), unit, 0);
 
         }
+    }
 
+    // list of field that should be formatted without a decimal place (because the values are
+    // typically large (in the default/metric unit)
+    // TODO use unit instaed of checking the exact column
+    private static final Set<Column<NutritionData, Double>> fieldsWithoutDp = new HashSet<>(Arrays.asList(
+            CALORIES, KILOJOULES, OMEGA_3_FAT, OMEGA_6_FAT, IRON, POTASSIUM, SODIUM, CALCIUM
+    ));
+
+    // for formatting nutrition data in food details
+    public static String foodDetailsFormat(@Nullable NutritionData nd, Column<NutritionData, Double> field) {
+        if (nd == null) {
+            return null;
+        }
+        QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitForNutrient(field));
+        // TODO make getUnit return an actual QtyUnit object
+        int width;
+        boolean needsDpFlag;
+        if (!fieldsWithoutDp.contains(field)) {
+            width = 12;
+            needsDpFlag = true;
+        } else {
+            width = 10;
+            needsDpFlag = false;
+        }
+        return formatQuantity(nd.amountOf(field), unit, width, 4, needsDpFlag, false, "");
     }
 }

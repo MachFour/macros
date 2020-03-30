@@ -66,6 +66,7 @@ class Import extends CommandImpl {
                     db.clearTable(Food.table());
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...");
+                    // have to clear nutrition data first
                     db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.getName()));
                     db.clearTable(Ingredient.table());
                 } else {

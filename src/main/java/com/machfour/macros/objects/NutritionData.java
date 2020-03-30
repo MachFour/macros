@@ -55,14 +55,17 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             CALORIES, KILOJOULES
     );
 
+    private static final Set<Column<NutritionData, Double>> MILLIGRAMS_COLS = new HashSet<>(
+            Arrays.asList(SODIUM, CALCIUM, POTASSIUM, IRON, OMEGA_3_FAT, OMEGA_6_FAT));
+
     private static final Map<Column<NutritionData, Double>, String> unitString;
     static {
         unitString = new HashMap<>(NUTRIENT_COLUMNS.size());
         for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
-            if (col.equals(SODIUM) || col.equals(CALCIUM) || col.equals(OMEGA_3_FAT) || col.equals(OMEGA_6_FAT)) {
+            if (MILLIGRAMS_COLS.contains(col)) {
                 NutritionData.unitString.put(col, "mg");
             } else if (col.equals(CALORIES)) {
-                NutritionData.unitString.put(col, "cal");
+                NutritionData.unitString.put(col, "kcal");
             } else if (col.equals(KILOJOULES)) {
                 NutritionData.unitString.put(col, "kj");
             } else {

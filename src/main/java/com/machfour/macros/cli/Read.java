@@ -22,7 +22,7 @@ import static com.machfour.macros.cli.CliMain.ERR;
 
 class Read extends CommandImpl {
     private static final String NAME = "read";
-    private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--print100]", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--per100]", PROGNAME, NAME);
 
     Read() {
         super(NAME, USAGE);

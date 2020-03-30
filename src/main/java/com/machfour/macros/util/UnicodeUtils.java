@@ -1,8 +1,11 @@
 
+package com.machfour.macros.util;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Collection;
 
+import static java.lang.Character.PARAGRAPH_SEPARATOR;
 import static java.lang.Character.UnicodeBlock;
 
 public class UnicodeUtils {
@@ -75,20 +78,32 @@ public class UnicodeUtils {
             || isFullWidthChar(codepoint);
     }
 
+    // length function for nullable string
+    private static int length(String s) {
+        return s == null ? 0 : s.length();
+    }
+
     // Computes the number of monospace characters taken by string s,
     // taking into account double-space characters from Chinese, Japanese and Korean.
     public static int displayLength(String s) {
-        if (s == null) {
+        int len = length(s);
+        if (len == 0) {
+            // felt like optimising, might delete later
             return 0;
         }
-        // assume characters have width 1 by default,
+        // Assume characters have width 1 by default,
         // just add 1 for double spaced
-        int length = s.length();
-        for (int i = s.length() - 1; i >= 0; i--) {
+        return len + countDoubleWidthChars(s);
+    }
+
+    public static int countDoubleWidthChars(String s) {
+        int count = 0;
+        // if s is null, length(s) is 0, so the loop will be skipped
+        for (int i = length(s) - 1; i >= 0; i--) {
             if (isDoubleSpaceChar(s.codePointAt(i))) {
-                length++;
+                count++;
             }
         }
-        return length;
+        return count;
     }
 }

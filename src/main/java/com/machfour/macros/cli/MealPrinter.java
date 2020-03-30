@@ -7,6 +7,7 @@ import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.objects.QtyUnit;
 import com.machfour.macros.util.PrintFormatting;
 import com.machfour.macros.util.StringJoiner;
+import com.machfour.macros.util.UnicodeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -56,11 +57,21 @@ class MealPrinter {
             String align = rightAlign.get(i) ? "" : "-";
             int width = widths.get(i);
             String text = row.get(i);
+            // fullwidth characters are printed as two characters in a terminal, so we should reduce width by the
+            // number of fullwidth characters in the string
+            int numDoubleWidthChars = UnicodeUtils.countDoubleWidthChars(text);
+
+            // displayed length of text appears to be length() + numDoubleWidthChars characters long.
+            // Equivalently, we can reduce width by this amount, to get the printing right
+            width = Math.max(width - numDoubleWidthChars, 0);
+
+
             // prevent long strings from overrunning the width:
-            // replace "This is a really long string", by
-            //         "This is a really lo.."
+            // replace "This is a really long string"
+            // with    "This is a really lo.."
             if (text.length() > width) {
                 int newWidth = Math.max(width - 2, 0);
+                // TODO with double width chars, this may reduce by too much
                 text = text.substring(0, newWidth - 2) + "..";
             }
             //String widthStr = String.valueOf(width);

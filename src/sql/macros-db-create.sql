@@ -316,7 +316,7 @@ CREATE TABLE NutritionData (
         FOREIGN KEY (food_id)
         REFERENCES Food (id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
     , CONSTRAINT quantity_positive
         CHECK (quantity > 0)
     , CONSTRAINT valid_unit

@@ -126,6 +126,11 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     @NotNull
+    public static String getUnitStringForNutrient(Column<NutritionData, Double> col) {
+        assert NUTRIENT_COLUMNS.contains(col);
+        return unitString.get(col);
+    }
+    @NotNull
     public static String getUnitForNutrient(Column<NutritionData, Double> col) {
         assert NUTRIENT_COLUMNS.contains(col);
         return unitString.get(col);

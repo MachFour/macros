@@ -2,6 +2,7 @@ package com.machfour.macros.cli;
 
 
 import com.machfour.macros.core.Column;
+import com.machfour.macros.names.EnglishColumnNames;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Ingredient;
 import com.machfour.macros.objects.NutritionData;
@@ -42,8 +43,8 @@ public class CliUtils {
         String lineFormat = verbose ? "%15s: %6.1f %-2s" : "%15s: %4.0f %-2s";
         for (Column<NutritionData, Double> col: allNutrientsToPrint) {
             Double value = nd.amountOf(col, 0.0);
-            String unit = NutritionData.getUnitForNutrient(col);
-            out.print(String.format(lineFormat, PrintFormatting.prettyNames.get(col), value, unit));
+            String unit = NutritionData.getUnitStringForNutrient(col);
+            out.print(String.format(lineFormat, EnglishColumnNames.prettyNames.get(col), value, unit));
             if (!nd.hasCompleteData(col)) {
                 // mark incomplete
                 out.print(" (*)");
@@ -57,7 +58,7 @@ public class CliUtils {
         Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
         for (Column<NutritionData, Double> col: proportionMap.keySet()) {
             String fmt = verbose ? "%15s: %5.1f%%\n" : "%15s: %4.0f %%\n";
-            out.printf(fmt, PrintFormatting.prettyNames.get(col), proportionMap.get(col));
+            out.printf(fmt, EnglishColumnNames.prettyNames.get(col), proportionMap.get(col));
         }
     }
 

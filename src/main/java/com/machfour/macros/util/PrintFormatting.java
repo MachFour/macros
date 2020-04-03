@@ -1,9 +1,13 @@
 package com.machfour.macros.util;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.core.Schema;
+import com.machfour.macros.names.DefaultNutritionDataStrings;
+import com.machfour.macros.names.EnglishColumnNames;
+import com.machfour.macros.names.NutritionDataStrings;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.objects.QtyUnit;
+import com.machfour.macros.objects.Unit;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +16,6 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
@@ -24,49 +27,16 @@ public class PrintFormatting {
     public static final int shortDataWidth = 4;
     public static final int longDataWidth = 6;
 
-    // shortest name for each nutrient printed in default mode
-    public static final Map<Column<NutritionData, Double>, String> briefNames;
-    // longer name for nutrients printed in verbose mode
-    public static final Map<Column<NutritionData, Double>, String> longerNames;
-    // full name for each nutrient
-    public static final Map<Column<NutritionData, Double>, String> prettyNames;
+    private final NutritionDataStrings nutritionDataStrings;
 
-    static {
-        briefNames = new HashMap<>();
-        briefNames.put(CALORIES, "Cals");
-        briefNames.put(PROTEIN, "Prot");
-        briefNames.put(FAT, "Fat");
-        briefNames.put(CARBOHYDRATE, "Carb");
-        briefNames.put(QUANTITY, "Qty");
-
-        longerNames = new HashMap<>();
-        longerNames.put(CALORIES, "Cals");
-        longerNames.put(PROTEIN, "Protæn");
-        longerNames.put(FAT, "Fat");
-        longerNames.put(SATURATED_FAT, "SatFat");
-        longerNames.put(CARBOHYDRATE, "Carbs");
-        longerNames.put(SUGAR, "Sugar");
-        longerNames.put(FIBRE, "Fibre");
-        longerNames.put(SODIUM, "Sodium");
-        longerNames.put(CALCIUM, "Ca");
-        longerNames.put(QUANTITY, "Qty");
-
-        prettyNames = new HashMap<>();
-        prettyNames.put(KILOJOULES, "Kilojoules");
-        prettyNames.put(CALORIES, "Calories");
-        prettyNames.put(PROTEIN, "Protein");
-        prettyNames.put(FAT, "Fat");
-        prettyNames.put(SATURATED_FAT, "Saturated Fat");
-        prettyNames.put(CARBOHYDRATE, "Carbohydrate");
-        prettyNames.put(SUGAR, "Sugars");
-        prettyNames.put(FIBRE, "Fibre");
-        prettyNames.put(SODIUM, "Sodium");
-        prettyNames.put(CALCIUM, "Calcium");
-        prettyNames.put(QUANTITY, "Quantity");
+    private PrintFormatting(@NotNull NutritionDataStrings supplier) {
+        this.nutritionDataStrings = supplier;
     }
 
-    private PrintFormatting() {}
-
+    private static final PrintFormatting DEFAULT_INSTANCE;
+    static {
+        DEFAULT_INSTANCE = new PrintFormatting(DefaultNutritionDataStrings.getInstance());
+    }
 
     public static String prettyDay(@NotNull DateStamp day) {
         StringBuilder prettyStr = new StringBuilder(day.toString());
@@ -96,10 +66,10 @@ public class PrintFormatting {
     public static String formatQuantity(@Nullable Double qty, int width) {
         return formatQuantity(qty, null, width);
     }
-    public static String formatQuantity(@Nullable Double qty, @Nullable QtyUnit unit, int width) {
+    public static String formatQuantity(@Nullable Double qty, @Nullable Unit unit, int width) {
         return formatQuantity(qty, unit, width, 0, false, false, "");
     }
-    private static String formatQuantity(@Nullable Double qty, @Nullable QtyUnit unit, int width, int unitWidth,
+    private static String formatQuantity(@Nullable Double qty, @Nullable Unit unit, int width, int unitWidth,
                                  boolean withDp, boolean alignLeft, @NotNull String forNullQty) {
         if (qty == null) {
             return forNullQty;
@@ -141,8 +111,9 @@ public class PrintFormatting {
         if (!withUnit) {
             return formatQuantity(nd.amountOf(field), false) + (missing ? "*" : "");
         } else {
-            QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitForNutrient(field));
-            // TODO make getUnit return an actual QtyUnit object
+            //QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitStringForNutrient(field));
+            // TODO
+            Unit unit = DEFAULT_INSTANCE.nutritionDataStrings.getUnit(field);
             return formatQuantity(nd.amountOf(field), unit, 0);
 
         }
@@ -150,18 +121,18 @@ public class PrintFormatting {
 
     // list of field that should be formatted without a decimal place (because the values are
     // typically large (in the default/metric unit)
-    // TODO use unit instaed of checking the exact column
+    // TODO use unit instead of checking the exact column
     private static final Set<Column<NutritionData, Double>> fieldsWithoutDp = new HashSet<>(Arrays.asList(
             CALORIES, KILOJOULES, OMEGA_3_FAT, OMEGA_6_FAT, IRON, POTASSIUM, SODIUM, CALCIUM
     ));
 
     // for formatting nutrition data in food details
-    public static String foodDetailsFormat(@Nullable NutritionData nd, Column<NutritionData, Double> field) {
+    public static String foodDetailsFormat(@Nullable NutritionData nd, Column<NutritionData, Double> field,
+                                           @NotNull NutritionDataStrings ndStrings) {
         if (nd == null) {
             return null;
         }
-        QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitForNutrient(field));
-        // TODO make getUnit return an actual QtyUnit object
+        Unit unit = ndStrings.getUnit(field);
         int width;
         boolean needsDpFlag;
         if (!fieldsWithoutDp.contains(field)) {

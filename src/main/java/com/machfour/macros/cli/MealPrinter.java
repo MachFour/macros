@@ -1,6 +1,7 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.core.Column;
+import com.machfour.macros.names.EnglishColumnNames;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.objects.NutritionData;
@@ -110,16 +111,16 @@ class MealPrinter {
         // next columns have names for each nutrient (heading) then corresponding data
         for (Column<NutritionData, Double> col : nutrientCols) {
             if (verbose) {
-                headingRow.add(PrintFormatting.longerNames.get(col));
+                headingRow.add(EnglishColumnNames.longerNames.get(col));
                 rowWidths.add(PrintFormatting.longDataWidth);
             } else {
-                headingRow.add(PrintFormatting.briefNames.get(col));
+                headingRow.add(EnglishColumnNames.briefNames.get(col));
                 rowWidths.add(PrintFormatting.shortDataWidth);
             }
             rightAlign.add(true);
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(PrintFormatting.briefNames.get(QUANTITY));
+        headingRow.add(EnglishColumnNames.briefNames.get(QUANTITY));
         rowWidths.add(PrintFormatting.servingWidth);
         rightAlign.add(true);
 

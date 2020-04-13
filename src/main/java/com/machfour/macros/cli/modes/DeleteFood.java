@@ -1,6 +1,7 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
-import com.machfour.macros.core.MacrosBuilder;
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
 public class DeleteFood extends CommandImpl {
     private static final String NAME = "deletefood";

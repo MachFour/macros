@@ -13,5 +13,5 @@ public interface ColumnUnits {
     Unit getUnit(@NotNull Column<NutritionData, Double> col);
 
     @NotNull
-    Collection<Column<NutritionData, Double>> availableColumns();
+    Collection<Column<NutritionData, Double>> columnsWithUnits();
 }

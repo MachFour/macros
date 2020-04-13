@@ -1,5 +1,7 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.ArgParsing;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
@@ -14,13 +16,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
 public class Meals extends CommandImpl {
     private static final String NAME = "meals";
     private static final String USAGE = String.format("Usage: %s %s [day]", PROGNAME, NAME);
 
-    Meals() {
+    public Meals() {
         super(NAME, USAGE);
     }
 

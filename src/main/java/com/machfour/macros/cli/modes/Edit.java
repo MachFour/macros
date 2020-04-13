@@ -1,5 +1,10 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.ArgParsing;
+import com.machfour.macros.cli.utils.CliUtils;
+import com.machfour.macros.cli.utils.FileParser;
+import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.Schema;
@@ -15,13 +20,13 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class Edit extends CommandImpl {
+public class Edit extends CommandImpl {
     private static final String NAME = "edit";
     private static final String USAGE = String.format("Usage: %s %s [meal [day]]\n", PROGNAME, NAME);
 
-    Edit() {
+    public Edit() {
         super(NAME, USAGE);
     }
     @Override
@@ -31,12 +36,14 @@ class Edit extends CommandImpl {
             return;
         }
 
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
         ArgParsing.Result mealNameArg = ArgParsing.findArgument(args, 1);
         ArgParsing.Result dayArg = ArgParsing.findArgument(args, 2);
-        MealSpec mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg);
 
+        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+
+        MealSpec mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg);
         mealSpec.process(db, true);
+
         if (mealSpec.error() != null) {
             out.println(mealSpec.error());
             return;

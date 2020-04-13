@@ -1,5 +1,7 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.ingredients.IngredientsParser;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
@@ -14,7 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
 public class Recipe extends CommandImpl {
     private static final String NAME = "recipe";

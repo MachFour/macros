@@ -1,3 +1,4 @@
+aot/
 jdbc/
 out/
 lib-download/
@@ -10,3 +11,4 @@ sample.db
 test/
 src/main/java/com/machfour/macros/objects/Measurement.java
 .attach_pid*
+*.so

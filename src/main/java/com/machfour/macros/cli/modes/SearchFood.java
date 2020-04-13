@@ -1,26 +1,24 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.StringJoiner;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
-import static com.machfour.macros.cli.CliMain.OUT;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
 
-class SearchFood extends CommandImpl {
+public class SearchFood extends CommandImpl {
     private static final String NAME = "search";
     private static final String USAGE = String.format("Usage: %s %s <keyword>", PROGNAME, NAME);
 
-    SearchFood() {
+    public SearchFood() {
         super(NAME, USAGE);
     }
 
@@ -52,7 +50,7 @@ class SearchFood extends CommandImpl {
         } else {
             out.println("Search results:");
             out.println();
-            printFoodList(resultFoods.values(), OUT);
+            printFoodList(resultFoods.values(), out);
         }
     }
 

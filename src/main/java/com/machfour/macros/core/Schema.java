@@ -23,15 +23,15 @@ public class Schema {
     }
 
     private static <M> Column<M, Long> idColumn(int index) {
-        return builder(ID_COLUMN_NAME, Types.ID, index).defaultValue(NO_ID).notNull().unique().build();
+        return builder(ID_COLUMN_NAME, Types.ID, index).defaultValue(NO_ID).notNull().unique().notEditable().build();
     }
 
     private static <M> Column<M, Long> createTimeColumn(int index) {
-        return builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).build();
+        return builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).notEditable().build();
     }
 
     private static <M> Column<M, Long> modifyTimeColumn(int index) {
-        return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).build();
+        return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP, index).defaultValue(0L).notEditable().build();
     }
 
     private static <J> ColumnImpl.Builder<J> builder(String name, MacrosType<J> type, int index) {

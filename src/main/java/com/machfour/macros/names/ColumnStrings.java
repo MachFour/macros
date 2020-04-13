@@ -8,13 +8,17 @@ import org.jetbrains.annotations.NotNull;
 
 /*
  * Interface to provide dynamic names and units (and hence strings) for Nutrition data columns
+ * Combines interfaces ColumnNamer, ColumnUnits, UnitNames
  */
-public interface NutritionDataStrings {
+public interface ColumnStrings extends ColumnNamer, UnitNamer, ColumnUnits {
     @NotNull
     Unit getUnit(@NotNull Column<NutritionData, Double> col);
 
     @NotNull
-    String getName(Column<NutritionData, Double> col);
+    String getNutrientName(Column<NutritionData, Double> col);
+
+    @NotNull
+    String getName(Column<?, ?> col);
 
     @NotNull
     String getUnitName(Column<NutritionData, Double> col);

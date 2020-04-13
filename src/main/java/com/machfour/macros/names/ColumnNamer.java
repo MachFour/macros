@@ -13,8 +13,8 @@ import java.util.Collection;
 
 public interface ColumnNamer {
     @NotNull
-    String getName(Column<NutritionData, Double> col);
+    String getNutrientName(Column<NutritionData, Double> col);
 
     @NotNull
-    Collection<Column<NutritionData, Double>> availableColumns();
+    String getName(Column<?, ?> col);
 }

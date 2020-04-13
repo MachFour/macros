@@ -1,16 +1,18 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
-import org.jetbrains.annotations.NotNull;
+import com.machfour.macros.cli.Command;
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.Commands;
 
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class Help extends CommandImpl {
+public class Help extends CommandImpl {
     private static final String NAME = "help";
     private static final String USAGE = String.format("%s %s <command>", PROGNAME, NAME);
 
-    Help() {
+    public Help() {
         super(NAME, USAGE);
     }
 

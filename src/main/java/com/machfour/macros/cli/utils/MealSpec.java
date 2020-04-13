@@ -1,4 +1,4 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
@@ -13,14 +13,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.cli.ArgParsing.Status.OPT_ARG_MISSING;
+import static com.machfour.macros.cli.utils.ArgParsing.Status.OPT_ARG_MISSING;
 
 /*
  * Stores information for a meal being input (specified) via text fields,
  * and implements default behaviour for retrieving the meal when not
  * all fields are fully specified
  */
-class MealSpec {
+public class MealSpec {
 
     private final String name;
     private final DateStamp day;
@@ -75,7 +75,7 @@ class MealSpec {
     }
 
 
-    void process(MacrosDatabase db, boolean create) {
+    public void process(MacrosDatabase db, boolean create) {
         if (processed || error != null) {
             // skip processing if there are already errors
             return;
@@ -131,56 +131,56 @@ class MealSpec {
     // If -d is omitted then the current day is used.
     // If there are no meals recorded for the day, then an error is given.
     @NotNull
-    static MealSpec makeMealSpec(List<String> args) {
+    public static MealSpec makeMealSpec(List<String> args) {
         ArgParsing.Result dayArg = ArgParsing.findArgument(args, "-d");
         ArgParsing.Result mealArg = ArgParsing.findArgument(args, "-m");
         return new MealSpec(dayArg, mealArg);
     }
     @NotNull
-    static MealSpec makeMealSpec(@Nullable String name, @Nullable String dayString) {
+    public static MealSpec makeMealSpec(@Nullable String name, @Nullable String dayString) {
         DateStamp day = ArgParsing.dayStringParse(dayString);
         return new MealSpec(name, day);
     }
 
     @NotNull
-    static MealSpec makeMealSpec(ArgParsing.Result nameArg, ArgParsing.Result dayArg) {
+    public static MealSpec makeMealSpec(ArgParsing.Result nameArg, ArgParsing.Result dayArg) {
         return new MealSpec(nameArg, dayArg);
     }
     @NotNull
-    static MealSpec makeMealSpec(String name) {
+    public static MealSpec makeMealSpec(String name) {
         return MealSpec.makeMealSpec(name, null);
     }
 
     @NotNull
-    static MealSpec makeMealSpec() {
+    public static MealSpec makeMealSpec() {
         return MealSpec.makeMealSpec((String)null);
     }
 
-    String name() {
+    public String name() {
         return name;
     }
 
-    DateStamp day() {
+    public DateStamp day() {
         return day;
     }
 
-    boolean mealSpecified() {
+    public boolean mealSpecified() {
         return mealSpecified;
     }
 
-    boolean daySpecified() {
+    public boolean daySpecified() {
         return daySpecified;
     }
 
-    Meal processedObject() {
+    public Meal processedObject() {
         return processedObject;
     }
 
-    boolean created() {
+    public boolean created() {
         return created;
     }
 
-    String error() {
+    public String error() {
         return error;
     }
 }

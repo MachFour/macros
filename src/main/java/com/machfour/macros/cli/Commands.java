@@ -1,5 +1,7 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.cli.modes.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +11,10 @@ import java.util.Map;
  * Helper class that holds static instances of all the other commands
  */
 public class Commands {
-    static final Map<String, Command> CMDS_BY_NAME;
+    public static final Map<String, Command> CMDS_BY_NAME;
+
     private static final Command RECIPES = new Recipe();
+    private static final Command ADDFOOD = new AddFood();
     private static final Command DELETEFOOD = new DeleteFood();
     private static final Command IMPORT = new Import();
     private static final Command INIT = new Init();
@@ -27,11 +31,12 @@ public class Commands {
 
     static final Command NO_ARGS = new NoArgs();
     static final Command INVALID_COMMAND = new InvalidCommand();
-    static final Command[] COMMANDS = {
-            EDIT
+    public static final Command[] COMMANDS = {
+              EDIT
             , IMPORT
             , INIT
             , SHOWFOOD
+            , ADDFOOD
             , DELETEFOOD
             , PORTION
             , NEWMEAL
@@ -47,11 +52,12 @@ public class Commands {
     };
 
     static {
-        CMDS_BY_NAME = new HashMap<>();
-        for (Command m : Commands.COMMANDS) {
-            assert !Commands.CMDS_BY_NAME.containsKey(m.name()): "Two commands have the same name";
-            Commands.CMDS_BY_NAME.put(m.name(), m);
+        Map<String, Command> _cmdsByName = new HashMap<>();
+        for (Command m : COMMANDS) {
+            assert !_cmdsByName.containsKey(m.name()): "Two commands have the same name";
+            _cmdsByName.put(m.name(), m);
         }
+        CMDS_BY_NAME = Collections.unmodifiableMap(_cmdsByName);
     }
 
 

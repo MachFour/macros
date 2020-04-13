@@ -1,12 +1,14 @@
 package com.machfour.macros.cli;
 
+import com.machfour.macros.cli.CliMain;
+import com.machfour.macros.cli.Command;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.PrintStream;
 
-abstract class CommandImpl implements Command {
+public abstract class CommandImpl implements Command {
 
     @NotNull
     private final String name;
@@ -42,6 +44,9 @@ abstract class CommandImpl implements Command {
         return (usage != null) ? usage : String.format("No help available for mode '%s'", name());
     }
 
+    /*
+     * Subclasses should override this to provide more detailed help than just the usage string
+     */
     public void printHelp() {
         out.println(usage());
     }

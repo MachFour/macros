@@ -3,6 +3,38 @@
 unset _JAVA_OPTIONS
 DEVEL_DIR="/home/max/devel/macros-java"
 LIB_DIR="${DEVEL_DIR}/lib"
-CLASSPATH="${DEVEL_DIR}/out/production/macros-java/:${LIB_DIR}/super-csv-2.4.0.jar:${LIB_DIR}/sqlite-jdbc-3.23.1.jar:${LIB_DIR}/gson-2.8.5.jar"
-PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
-java -enableassertions -cp "$CLASSPATH" com.machfour.macros.cli.CliMain "$@"
+CLASSPATH="${DEVEL_DIR}/out/production/macros-java/"
+
+declare -a LIBRARIES
+# these are .jar files located in lib dir that must be included
+LIBRARIES=(
+	'super-csv-2.4.0',
+	'sqlite-jdbc-3.23.1'
+	'gson-2.8.5'
+	'lanterna-3.1.0-alpha1'
+	)
+for lib in ${LIBRARIES[@]}; do
+	CLASSPATH+=":${LIB_DIR}/${lib}.jar"
+done
+
+#PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
+MAINCLASS=com.machfour.macros.cli.CliMain
+
+# AOT things
+#"-XX:+PrintAOT"
+#java -XX:AOTLibrary=${DEVEL_DIR}/macros.so:${DEVEL_DIR}/macros-libs.so -enableassertions -cp "$CLASSPATH" ${MAINCLASS} "$@"
+
+# show class loading timing:
+# -verbose:class 
+
+# log touched methods for use with AOT
+#     -XX:+UnlockDiagnosticVMOptions \
+#     -XX:+LogTouchedMethods \
+#     -XX:+PrintTouchedMethodsAtExit 
+
+java -enableassertions -cp ${CLASSPATH} \
+	 -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
+	 ${MAINCLASS} "$@"
+
+
+

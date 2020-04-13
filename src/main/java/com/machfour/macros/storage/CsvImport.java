@@ -5,9 +5,7 @@ import com.machfour.macros.objects.*;
 import com.machfour.macros.util.Pair;
 import com.machfour.macros.validation.SchemaViolation;
 import org.supercsv.io.CsvMapReader;
-import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapReader;
-import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
 
 import java.io.*;
@@ -17,7 +15,7 @@ import java.util.List;
 
 import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
-public class CsvStorage {
+public class CsvImport {
     /*
      * Method for reading CSV files that directly correspond to a table
      */
@@ -44,18 +42,6 @@ public class CsvStorage {
         System.out.println("Warning: unknown columns: " + unrecognisedStrings);
         return objectList;
     }
-    public static <M extends MacrosPersistable<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
-        final String[] header = table.columnsByName().keySet().toArray(new String[0]);
-        try (ICsvMapWriter mapWriter = getMapWriter(csvOut)) {
-            // header columns are used as the keys to the Map
-            mapWriter.writeHeader(header);
-            // iterate over lines in CSV
-            for (M object : objects) {
-                Map<String, String> dataStrings = prepareDataForExport(object.getAllData());
-                mapWriter.write(dataStrings, header);
-            }
-        }
-    }
 
     // don't edit csvRow keyset!
     private static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) {
@@ -71,24 +57,9 @@ public class CsvStorage {
         return data;
     }
 
-    // don't edit keyset!
-    private static <M> Map<String, String> prepareDataForExport(ColumnData<M> data) {
-        Map<String, String> dataMap = new HashMap<>();
-        for (Map.Entry<String, Column<M, ?>> entry: data.getTable().columnsByName().entrySet()) {
-            // null data gets mapped to empty string
-            String value = data.getAsString(entry.getValue());
-            dataMap.put(entry.getKey(), value);
-        }
-        return dataMap;
-    }
-
     private static ICsvMapReader getMapReader(Reader r) {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
         return new CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE);
-    }
-    private static ICsvMapWriter getMapWriter(Writer w) {
-        // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-        return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
     // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
@@ -312,7 +283,7 @@ public class CsvStorage {
 
     // TODO detect existing servings
     public static void importServings(Reader servingCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
-        List<Serving> csvServings = CsvStorage.buildServings(servingCsv);
+        List<Serving> csvServings = CsvImport.buildServings(servingCsv);
         List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
         db.saveObjects(completedServings, ObjectSource.IMPORT);
     }

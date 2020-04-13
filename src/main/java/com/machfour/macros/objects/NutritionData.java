@@ -27,25 +27,25 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         , KILOJOULES
         , CALORIES
         , PROTEIN
-        , CARBOHYDRATE
-        , CARBOHYDRATE_BY_DIFF
-        , SUGAR
-        , SUGAR_ALCOHOL
-        , STARCH
         , FAT
         , SATURATED_FAT
+        , CARBOHYDRATE
+        , SUGAR
+        , FIBRE
+        , SODIUM
+        , CALCIUM
+        , POTASSIUM
+        , IRON
         , MONOUNSATURATED_FAT
         , POLYUNSATURATED_FAT
         , OMEGA_3_FAT
         , OMEGA_6_FAT
-        , FIBRE
-        , SODIUM
-        , POTASSIUM
-        , CALCIUM
-        , IRON
-        , SALT
+        , CARBOHYDRATE_BY_DIFF
         , WATER
+        , STARCH
+        , SALT
         , ALCOHOL
+        , SUGAR_ALCOHOL
     );
 
     /*
@@ -123,17 +123,6 @@ public class NutritionData extends MacrosEntity<NutritionData> {
                 assert (this.completeData.get(c));
             }
         }
-    }
-
-    @NotNull
-    public static String getUnitStringForNutrient(Column<NutritionData, Double> col) {
-        assert NUTRIENT_COLUMNS.contains(col);
-        return unitString.get(col);
-    }
-    @NotNull
-    public static String getUnitForNutrient(Column<NutritionData, Double> col) {
-        assert NUTRIENT_COLUMNS.contains(col);
-        return unitString.get(col);
     }
 
     /*

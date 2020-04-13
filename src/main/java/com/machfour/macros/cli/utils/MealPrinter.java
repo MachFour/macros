@@ -1,4 +1,4 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.core.Column;
 import com.machfour.macros.names.EnglishColumnNames;
@@ -16,7 +16,7 @@ import java.util.*;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
-class MealPrinter {
+public class MealPrinter {
     private static final String columnSep = "   ";
     private static final List<Column<NutritionData, Double>> conciseTableCols;
     private static final List<Column<NutritionData, Double>> verboseTableCols;
@@ -72,7 +72,7 @@ class MealPrinter {
             // with    "This is a really lo.."
             if (text.length() > width) {
                 int newWidth = Math.max(width - 2, 0);
-                // TODO with double width chars, this may reduce by too much
+                // TODO this may reduce by too much, with double width chars
                 text = text.substring(0, newWidth - 2) + "..";
             }
             //String widthStr = String.valueOf(width);
@@ -96,7 +96,7 @@ class MealPrinter {
         return row;
     }
 
-    static void printMeal(@NotNull Meal meal, boolean verbose, @NotNull PrintStream out) {
+    public static void printMeal(@NotNull Meal meal, boolean verbose, @NotNull PrintStream out) {
         List<Column<NutritionData, Double>> nutrientCols = verbose ? verboseTableCols : conciseTableCols;
         //Columns: first the food name, then one for each nutrient, then quantity/serving
         int numCols = 1 + nutrientCols.size() + 1;
@@ -111,16 +111,16 @@ class MealPrinter {
         // next columns have names for each nutrient (heading) then corresponding data
         for (Column<NutritionData, Double> col : nutrientCols) {
             if (verbose) {
-                headingRow.add(EnglishColumnNames.longerNames.get(col));
+                headingRow.add(EnglishColumnNames.longerNutrientNames.get(col));
                 rowWidths.add(PrintFormatting.longDataWidth);
             } else {
-                headingRow.add(EnglishColumnNames.briefNames.get(col));
+                headingRow.add(EnglishColumnNames.briefNutrientNames.get(col));
                 rowWidths.add(PrintFormatting.shortDataWidth);
             }
             rightAlign.add(true);
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(EnglishColumnNames.briefNames.get(QUANTITY));
+        headingRow.add(EnglishColumnNames.briefNutrientNames.get(QUANTITY));
         rowWidths.add(PrintFormatting.servingWidth);
         rightAlign.add(true);
 
@@ -150,7 +150,7 @@ class MealPrinter {
         printRow(totalRow, rowWidths, rightAlign, columnSep, out);
     }
 
-    static void printMeals(Collection<Meal> meals, PrintStream out, boolean verbose, boolean per100, boolean grandTotal) {
+    public static void printMeals(Collection<Meal> meals, PrintStream out, boolean verbose, boolean per100, boolean grandTotal) {
         out.println("============");
         out.println("Meal totals:");
         out.println("============");
@@ -184,7 +184,7 @@ class MealPrinter {
         }
     }
 
-    static void printMeals(Collection<Meal> meals, PrintStream out) {
+    public static void printMeals(Collection<Meal> meals, PrintStream out) {
         printMeals(meals, out, false, false, true);
     }
 }

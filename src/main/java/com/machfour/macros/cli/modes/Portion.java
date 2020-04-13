@@ -1,5 +1,9 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.FileParser;
+import com.machfour.macros.cli.utils.MealPrinter;
+import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
@@ -7,22 +11,19 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FoodPortionSpec;
 import com.machfour.macros.util.PrintFormatting;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class Portion extends CommandImpl {
+public class Portion extends CommandImpl {
     private static final String NAME = "portion";
     private static final String USAGE =
             String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", PROGNAME, NAME);
 
-    Portion() {
+    public Portion() {
         super(NAME, USAGE);
     }
 
@@ -116,7 +117,7 @@ class Portion extends CommandImpl {
             return;
         }
         out.println();
-        MealPrinter.printMeal(toAddTo, false, OUT);
+        MealPrinter.printMeal(toAddTo, false, out);
 
     }
 }

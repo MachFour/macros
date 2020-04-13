@@ -1,26 +1,29 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.MealPrinter;
+import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.PrintFormatting;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class Total extends CommandImpl {
+/*
+ * Prints out totals for all DB recorded meals in a day
+ */
+public class Total extends CommandImpl {
     private static final String NAME = "total";
     private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", PROGNAME, NAME);
 
-    Total() {
+    public Total() {
         super(NAME, USAGE);
     }
 
@@ -80,7 +83,7 @@ class Total extends CommandImpl {
                 return;
             }
             out.println();
-            MealPrinter.printMeal(mealSpec.processedObject(), verbose, OUT);
+            MealPrinter.printMeal(mealSpec.processedObject(), verbose, out);
 
         } else {
             try {
@@ -88,7 +91,7 @@ class Total extends CommandImpl {
                 if (mealsForDay.isEmpty()) {
                     out.println("No meals recorded on " + PrintFormatting.prettyDay(mealSpec.day()));
                 } else {
-                    MealPrinter.printMeals(mealsForDay.values(), OUT, verbose, per100, true);
+                    MealPrinter.printMeals(mealsForDay.values(), out, verbose, per100, true);
                 }
             } catch (SQLException e) {
                 out.println("Error retrieving meals: " + e.getMessage());

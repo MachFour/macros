@@ -1,6 +1,6 @@
 package com.machfour.macros.names;
 
-public class DefaultNutritionDataStrings extends NutritionDataStringsImpl {
+public class DefaultColumnStrings extends ColumnStringsImpl {
     private static UnitNamer makeUnitNamer() {
         return EnglishUnitNames.getInstance();
     }
@@ -15,14 +15,14 @@ public class DefaultNutritionDataStrings extends NutritionDataStringsImpl {
     /*
      * Singleton pattern
      */
-    private DefaultNutritionDataStrings() {
+    private DefaultColumnStrings() {
         super(makeColumnNamer(), makeColumnUnits(), makeUnitNamer());
     }
 
-    private static DefaultNutritionDataStrings INSTANCE;
-    public static DefaultNutritionDataStrings getInstance() {
+    private static DefaultColumnStrings INSTANCE;
+    public static DefaultColumnStrings getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new DefaultNutritionDataStrings();
+            INSTANCE = new DefaultColumnStrings();
         }
         return INSTANCE;
     }

@@ -80,7 +80,7 @@ public class DefaultColumnUnits implements ColumnUnits {
     }
     @NotNull
     @Override
-    public Collection<Column<NutritionData, Double>> availableColumns() {
+    public Collection<Column<NutritionData, Double>> columnsWithUnits() {
         return Collections.unmodifiableCollection(UNIT_MAP.keySet());
     }
 }

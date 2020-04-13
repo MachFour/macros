@@ -1,29 +1,27 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
-import com.machfour.macros.storage.CsvStorage;
+import com.machfour.macros.storage.CsvImport;
 import com.machfour.macros.storage.MacrosDatabase;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 import static com.machfour.macros.storage.DatabaseUtils.toList;
 
-class Import extends CommandImpl {
+public class Import extends CommandImpl {
     private static final String NAME = "import";
     private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", PROGNAME, NAME);
 
-    Import() {
+    public Import() {
         super(NAME, USAGE);
     }
 
@@ -49,10 +47,10 @@ class Import extends CommandImpl {
         boolean noRecipes = args.contains("--norecipes");
         boolean noFoodsServings = args.contains("--nofoods");
 
-        String foodCsvFile = Config.FOOD_CSV_FILENAME;
-        String servingCsvFile = Config.SERVING_CSV_FILENAME;
-        String recipeCsvFile = Config.RECIPE_CSV_FILENAME;
-        String ingredientsCsvFile = Config.INGREDIENTS_CSV_FILENAME;
+        String foodCsvFile = Config.FOOD_CSV_PATH;
+        String servingCsvFile = Config.SERVING_CSV_PATH;
+        String recipeCsvFile = Config.RECIPE_CSV_PATH;
+        String ingredientsCsvFile = Config.INGREDIENTS_CSV_PATH;
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
         try {
@@ -77,9 +75,9 @@ class Import extends CommandImpl {
                 try (Reader foodCsv = new FileReader(foodCsvFile);
                      Reader servingCsv = new FileReader(servingCsvFile)) {
                     out.println("Importing foods and nutrition data into database...");
-                    CsvStorage.importFoodData(foodCsv, db, false);
+                    CsvImport.importFoodData(foodCsv, db, false);
                     out.println("Saved foods and nutrition data");
-                    CsvStorage.importServings(servingCsv, db, false);
+                    CsvImport.importServings(servingCsv, db, false);
                     out.println("Saved servings");
                     out.println();
                 }
@@ -89,7 +87,7 @@ class Import extends CommandImpl {
                 try (Reader recipeCsv = new FileReader(recipeCsvFile);
                      Reader ingredientsCsv = new FileReader(ingredientsCsvFile)) {
                     out.println("Importing recipes and ingredients into database...");
-                    CsvStorage.importRecipes(recipeCsv, ingredientsCsv, db);
+                    CsvImport.importRecipes(recipeCsv, ingredientsCsv, db);
                     out.println("Saved recipes and ingredients");
                     out.println();
                 }

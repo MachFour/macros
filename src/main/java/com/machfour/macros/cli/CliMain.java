@@ -4,15 +4,15 @@ import com.machfour.macros.linux.Config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.*;
 
 public class CliMain {
-    static final String PROGNAME = "macros";
     static final PrintStream OUT = System.out;
-    static final PrintStream ERR = System.err;
-    static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
+    public static final PrintStream ERR = System.err;
+    public static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
 
     private static String cleanInput(@NotNull String s) {
         s = s.trim();
@@ -40,7 +40,10 @@ public class CliMain {
     }
 
     public static void main(String[] args) {
+        //System.out.println("Started program");
+        // to insert a pause (until user presses Enter)
         //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
+
 
         // tell the SQLite JDBC driver where I've put the library. Otherwise it auto-extracts each time
         System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
@@ -52,6 +55,7 @@ public class CliMain {
         checkDbLocationOverride(argList);
 
         // command args start from index 1
-        c.doAction(argList);
+        int retcode = c.doActionWithExitCode(argList);
+        System.exit(retcode);
     }
 }

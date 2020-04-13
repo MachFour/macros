@@ -1,30 +1,29 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.FileParser;
+import com.machfour.macros.cli.utils.MealPrinter;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
-import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 import static com.machfour.macros.cli.CliMain.ERR;
 
 
-class Read extends CommandImpl {
+public class Read extends CommandImpl {
     private static final String NAME = "read";
     private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--per100]", PROGNAME, NAME);
 
-    Read() {
+    public Read() {
         super(NAME, USAGE);
     }
 
@@ -45,6 +44,7 @@ class Read extends CommandImpl {
 
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
+
         FileParser fileParser = new FileParser();
         List<Meal> meals;
         try (Reader r = new FileReader(filename)) {
@@ -56,7 +56,7 @@ class Read extends CommandImpl {
             ERR.println("SQL exception occurred: " + e2.getMessage());
             return;
         }
-        MealPrinter.printMeals(meals, OUT, verbose, per100, true);
+        MealPrinter.printMeals(meals, out, verbose, per100, true);
         Map<String, String> errors = fileParser.getErrorLines();
         if (!errors.isEmpty()) {
             out.println();

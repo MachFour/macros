@@ -89,9 +89,16 @@ public class QtyUnit extends MacrosEntity<QtyUnit> implements Measurement<QtyUni
         return String.format("%s (%s)", name(), abbr());
     }
 
-    public static @Nullable QtyUnit fromAbbreviation(String abbreviation) {
+    @Nullable
+    public static  QtyUnit fromAbbreviationNoThrow(String abbreviation) {
         return fromAbbreviation(abbreviation, false);
     }
+
+    @NotNull
+    public static QtyUnit fromAbbreviation(String abbreviation) {
+        return fromAbbreviation(abbreviation, true);
+    }
+
 
     public static @Nullable QtyUnit fromId(long id) {
         return fromId(id, false);

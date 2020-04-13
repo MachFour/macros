@@ -1,31 +1,29 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.MacrosDatabase;
-import com.machfour.macros.util.PrintFormatting;
-import com.machfour.macros.util.StringJoiner;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
-import static com.machfour.macros.cli.CliMain.OUT;
+import static com.machfour.macros.linux.Config.PROGNAME;
 import static com.machfour.macros.util.PrintFormatting.deNull;
 
-class ShowFood extends CommandImpl {
+public class ShowFood extends CommandImpl {
     private static final String NAME = "show";
     private static final String USAGE = String.format("Usage: %s %s <index_name>", PROGNAME, NAME);
 
-    ShowFood() {
+    public ShowFood() {
         super(NAME, USAGE);
     }
 
@@ -57,7 +55,7 @@ class ShowFood extends CommandImpl {
             return;
         }
 
-        printFood(foodToList, verbose, OUT);
+        printFood(foodToList, verbose, out);
     }
 
     public static void printFoodSummary(Food f, PrintStream out) {

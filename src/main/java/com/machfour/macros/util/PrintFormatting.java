@@ -1,11 +1,9 @@
 package com.machfour.macros.util;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.names.DefaultNutritionDataStrings;
-import com.machfour.macros.names.EnglishColumnNames;
-import com.machfour.macros.names.NutritionDataStrings;
+import com.machfour.macros.names.ColumnStrings;
+import com.machfour.macros.names.DefaultColumnStrings;
 import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.objects.QtyUnit;
 import com.machfour.macros.objects.Unit;
 
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -27,15 +24,15 @@ public class PrintFormatting {
     public static final int shortDataWidth = 4;
     public static final int longDataWidth = 6;
 
-    private final NutritionDataStrings nutritionDataStrings;
+    private final ColumnStrings nutritionDataStrings;
 
-    private PrintFormatting(@NotNull NutritionDataStrings supplier) {
+    private PrintFormatting(@NotNull ColumnStrings supplier) {
         this.nutritionDataStrings = supplier;
     }
 
     private static final PrintFormatting DEFAULT_INSTANCE;
     static {
-        DEFAULT_INSTANCE = new PrintFormatting(DefaultNutritionDataStrings.getInstance());
+        DEFAULT_INSTANCE = new PrintFormatting(DefaultColumnStrings.getInstance());
     }
 
     public static String prettyDay(@NotNull DateStamp day) {
@@ -128,7 +125,7 @@ public class PrintFormatting {
 
     // for formatting nutrition data in food details
     public static String foodDetailsFormat(@Nullable NutritionData nd, Column<NutritionData, Double> field,
-                                           @NotNull NutritionDataStrings ndStrings) {
+                                           @NotNull ColumnStrings ndStrings) {
         if (nd == null) {
             return null;
         }

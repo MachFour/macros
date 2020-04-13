@@ -1,4 +1,4 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.objects.*;
@@ -12,8 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -131,7 +129,7 @@ public final class FileParser {
         return meals;
     }
 
-    static void processFpSpec(@NotNull FoodPortionSpec fps, @NotNull Meal m, @NotNull Food f) {
+    public static void processFpSpec(@NotNull FoodPortionSpec fps, @NotNull Meal m, @NotNull Food f) {
         assert (f.getIndexName().equals(fps.foodIndexName)) : "Food does not match index name of spec";
         Serving s = null;
         double quantity;
@@ -194,7 +192,7 @@ public final class FileParser {
     // (default serving assumed, error if no default serving registered)
 
     // returns null if there was an error during parsing (not a DB error)
-    static FoodPortionSpec makefoodPortionSpecFromLine(String line) {
+    public static FoodPortionSpec makefoodPortionSpecFromLine(String line) {
         // if you don't specify an array length limit, it won't match empty strings between commas
         String[] tokens = line.split(",", 4);
         for (int i = 0; i < tokens.length; ++i) {
@@ -229,7 +227,7 @@ public final class FileParser {
                 if (unitString == null) {
                     spec.unit = QtyUnit.GRAMS;
                 } else {
-                    spec.unit = QtyUnit.fromAbbreviation(unitString);
+                    spec.unit = QtyUnit.fromAbbreviationNoThrow(unitString);
                     if (spec.unit == null) {
                         // invalid unit
                         spec.error = "unrecognised unit";

@@ -1,4 +1,4 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.Function;
@@ -7,31 +7,33 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 // Utility class for argument parsing
-class ArgParsing {
+public class ArgParsing {
     private ArgParsing() {}
 
-    enum Status {
-        ARG_FOUND, NOT_FOUND, OPT_ARG_MISSING
+    public enum Status {
+        ARG_FOUND, // arg was found either by index or after flag
+        NOT_FOUND, // arg not found by index (out of range) or flag not present
+        OPT_ARG_MISSING // flag found but no corresponding argument (out of range)
     }
 
     // represents result of parsed argument from command line
-    static class Result {
+    public static class Result {
         private final int index;
         private final String argument;
         private final Status status;
 
-        Result(int index, String argument, Status status) {
+        private Result(int index, String argument, Status status) {
             this.index = index;
             this.argument = argument;
             this.status = status;
         }
-        Status status() {
+        public Status status() {
             return status;
         }
-        int index() {
+        public int index() {
             return index;
         }
-        String argument() {
+        public String argument() {
             return argument;
         }
 
@@ -50,11 +52,11 @@ class ArgParsing {
 
     }
 
-    static DateStamp parseDate(List<String> args, String flag) {
+    public static DateStamp parseDate(List<String> args, String flag) {
         return parseArgument(args, flag, ArgParsing::dayStringParse);
     }
 
-    static Result findArgument(List<String> args, String flag) {
+    public static Result findArgument(List<String> args, String flag) {
         int detectedIndex = args.indexOf(flag) + 1;
         String argument;
         int index;
@@ -77,7 +79,7 @@ class ArgParsing {
         return new Result(index, argument, status);
     }
     // just attempts to use the given argument index
-    static Result findArgument(List<String> args, int argIdx) {
+    public static Result findArgument(List<String> args, int argIdx) {
         assert argIdx >= 0;
         String argument;
         Status status;
@@ -94,7 +96,7 @@ class ArgParsing {
 
     // returns null for invalid, today if flag not found, or otherwise decodes day from argument string
     @Nullable
-    static DateStamp dayStringParse(@Nullable String dayString) {
+    public static DateStamp dayStringParse(@Nullable String dayString) {
         // default values
         if (dayString == null) {
             return DateStamp.forCurrentDate();

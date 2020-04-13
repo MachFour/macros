@@ -1,22 +1,22 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.cli.utils.ArgParsing;
+import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.PrintFormatting;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.PrintStream;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
 public class NewMeal extends CommandImpl {
     private static final String NAME = "newmeal";
     private static final String USAGE = String.format("Usage: %s %s <meal name> [<day>]", PROGNAME, NAME);
 
-    NewMeal() {
+    public NewMeal() {
         super(NAME, USAGE);
     }
 

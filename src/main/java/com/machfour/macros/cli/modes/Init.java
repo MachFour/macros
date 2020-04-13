@@ -1,22 +1,20 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.OUT;
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class Init extends CommandImpl {
+public class Init extends CommandImpl {
     private static final String NAME = "init";
     private static final String USAGE = String.format("%s %s", PROGNAME, NAME);
 
-    Init() {
+    public Init() {
         super(NAME, USAGE);
     }
 

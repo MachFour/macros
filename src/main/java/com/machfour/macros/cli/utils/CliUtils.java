@@ -1,7 +1,10 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.utils;
 
 
 import com.machfour.macros.core.Column;
+import com.machfour.macros.names.ColumnNamer;
+import com.machfour.macros.names.ColumnUnits;
+import com.machfour.macros.names.DefaultColumnUnits;
 import com.machfour.macros.names.EnglishColumnNames;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Ingredient;
@@ -40,11 +43,16 @@ public class CliUtils {
 
     // TODO use methods from PrintFormatting here?
     public static void printNutritionData(NutritionData nd, boolean verbose, PrintStream out) {
+        // TODO pass in ColumnUnits and ColumnNamer
+        ColumnNamer colNamer = EnglishColumnNames.getInstance();
+        ColumnUnits colUnits = DefaultColumnUnits.getInstance();
+        // TODO get these lengths from ColumnNamer
         String lineFormat = verbose ? "%15s: %6.1f %-2s" : "%15s: %4.0f %-2s";
         for (Column<NutritionData, Double> col: allNutrientsToPrint) {
             Double value = nd.amountOf(col, 0.0);
-            String unit = NutritionData.getUnitStringForNutrient(col);
-            out.print(String.format(lineFormat, EnglishColumnNames.prettyNames.get(col), value, unit));
+            String unitStr = colUnits.getUnit(col).abbr();
+            String colName = colNamer.getNutrientName(col);
+            out.print(String.format(lineFormat, colName, value, unitStr));
             if (!nd.hasCompleteData(col)) {
                 // mark incomplete
                 out.print(" (*)");
@@ -54,11 +62,14 @@ public class CliUtils {
     }
 
     public static void printEnergyProportions(NutritionData nd, boolean verbose, PrintStream out) {
+        // TODO pass in ColumnUnits and ColumnNamer
+        ColumnNamer colNamer = EnglishColumnNames.getInstance();
         out.println("Energy proportions (approx.)");
+        // TODO get these lengths from ColumnNamer / ColumnUnits
         Map<Column<NutritionData, Double>, Double> proportionMap = nd.makeEnergyProportionsMap();
+        String fmt = verbose ? "%15s: %5.1f%%\n" : "%15s: %4.0f %%\n";
         for (Column<NutritionData, Double> col: proportionMap.keySet()) {
-            String fmt = verbose ? "%15s: %5.1f%%\n" : "%15s: %4.0f %%\n";
-            out.printf(fmt, EnglishColumnNames.prettyNames.get(col), proportionMap.get(col));
+            out.printf(fmt, colNamer.getNutrientName(col), proportionMap.get(col));
         }
     }
 
@@ -95,7 +106,7 @@ public class CliUtils {
     private static final int lineLength = nameWidth + notesWidth + quantityWidth + 2*sep.length() + start.length() + end.length() - 2;
     private static final String hLine = " " + StringJoiner.of("-").copies(lineLength).join();
 
-    static void printIngredients(List<Ingredient> ingredients, PrintStream out) {
+    public static void printIngredients(List<Ingredient> ingredients, PrintStream out) {
         // XXX use printLine(text, widths), etc function
         out.printf(lineFormat, "Name", "Quantity", "Notes");
         out.println(hLine);
@@ -116,7 +127,7 @@ public class CliUtils {
 
     // command line inputs
     // returns null if there was an error or input was invalid
-    static @Nullable Integer getIntegerInput(BufferedReader in, PrintStream out, int min, int max) {
+    public static @Nullable Integer getIntegerInput(BufferedReader in, PrintStream out, int min, int max) {
         String input = getStringInput(in, out);
         if (input == null) {
             return null;
@@ -134,7 +145,7 @@ public class CliUtils {
 
     // command line inputs
     // returns null if there was an error or input was invalid
-    static @Nullable Double getDoubleInput(BufferedReader in, PrintStream out) {
+    public static @Nullable Double getDoubleInput(BufferedReader in, PrintStream out) {
         String input = getStringInput(in, out);
         if (input == null) {
             return null;
@@ -152,26 +163,28 @@ public class CliUtils {
         return null;
     }
 
-    static @Nullable String getStringInput(BufferedReader in, PrintStream out) {
+    @Nullable
+    public static String getStringInput(BufferedReader in, PrintStream out) {
+        String input = null;
         try {
-            String input = in.readLine();
-            if (input != null) {
-                return input.trim();
-            }
+            input = in.readLine();
         } catch (IOException e) {
             out.println("Error reading input: " + e.getMessage());
         }
-        return null;
+        if (input != null) {
+            input = input.trim();
+        }
+        return input;
     }
 
-    static void clearTerminal(PrintStream out) {
+    public static void clearTerminal(PrintStream out) {
         // this is what /usr/bin/clear outputs on my terminal
         //out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a");
         // equivalent in octal
         out.println("\033\133\110\033\133\062\112");
     }
 
-    static char getChar(BufferedReader in, PrintStream out) {
+    public static char getChar(BufferedReader in, PrintStream out) {
         String input = getStringInput(in, out);
         if (input == null || input.isEmpty()) {
             return '\0';

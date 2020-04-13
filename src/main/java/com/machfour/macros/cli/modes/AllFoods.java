@@ -1,22 +1,22 @@
-package com.machfour.macros.cli;
+package com.machfour.macros.cli.modes;
 
+import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.storage.MacrosDatabase;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.cli.CliMain.PROGNAME;
+import static com.machfour.macros.linux.Config.PROGNAME;
 
-class AllFoods extends CommandImpl {
+public class AllFoods extends CommandImpl {
     private static final String NAME = "allfoods";
     private static final String USAGE = String.format("Usage: %s %s\n", PROGNAME, NAME);
 
-    AllFoods() {
+    public AllFoods() {
         super(NAME, USAGE);
     }
 

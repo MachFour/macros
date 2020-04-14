@@ -60,6 +60,11 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         recheckValidValues(Collections.singleton(col));
     }
 
+    @Nullable
+    public <J> J getField(Column<M, J> col) {
+        return draftData.get(col);
+    }
+
     /*
      * Validates the given field according to its currently set value.
      * Returns a list containing identifiers of each failing com.machfour.macros.validation test for the given field,
@@ -182,7 +187,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
 
     public boolean canConstruct() {
         boolean canConstruct = true;
-        for (Column s : settableColumns) {
+        for (Column<M, ?> s : settableColumns) {
             if (!isValidValue.get(s)) {
                 canConstruct = false;
             }

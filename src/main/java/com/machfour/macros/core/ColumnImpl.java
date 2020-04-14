@@ -10,7 +10,6 @@ import java.util.List;
 
 public final class ColumnImpl<M, J> implements Column<M, J> {
     private final String name;
-    private final int index;
     private final boolean editable;
     private final boolean nullable;
     private final boolean inSecondaryKey;
@@ -19,12 +18,14 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
     private final MacrosType<J> type;
     private final Supplier<J> defaultValue;
 
+    private int index; // to be set later, when added to Table
+
     private ColumnImpl(String name, MacrosType<J> type, /*Table<M> table, */ @NotNull Supplier<J> defaultValue,
-            int index, boolean editable, boolean nullable, boolean inSecondaryKey, boolean unique) {
+            /*int index,*/ boolean editable, boolean nullable, boolean inSecondaryKey, boolean unique) {
         this.name = name;
         this.type = type;
         //this.table = table;
-        this.index = index;
+        this.index = -1; // unset
         this.editable = editable;
         this.nullable = nullable;
         this.inSecondaryKey = inSecondaryKey;
@@ -44,6 +45,17 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
     public int index() {
         return index;
     }
+    @Override
+    public void setIndex(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException("Index cannot be negative");
+        }
+        if (this.index == -1) {
+            this.index = index;
+        }
+    }
+
+
     @Override
     public String toString() {
         return name;
@@ -104,6 +116,11 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
             return child.index();
         }
         @Override
+        public void setIndex(int index) {
+            child.setIndex(index);
+        }
+
+        @Override
         public boolean isUserEditable() {
             return child.isUserEditable();
         }
@@ -147,11 +164,10 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
         private boolean unique;
         private Supplier<J> defaultValue;
 
-        public Builder(String name, MacrosType<J> type, int index) {
-            assert (name != null && index >= 0);
+        public Builder(String name, MacrosType<J> type) {
+            assert (name != null);
             this.name = name;
             this.type = type;
-            this.index = index;
             this.editable = true;
             this.nullable = true;
             this.inSecondaryKey = false;
@@ -180,7 +196,7 @@ public final class ColumnImpl<M, J> implements Column<M, J> {
             return this;
         }
         public <M> Column<M, J> build() {
-            return new ColumnImpl<>(name, type, defaultValue, index, editable, nullable, inSecondaryKey, unique);
+            return new ColumnImpl<>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique);
         }
         public <M, N> Column.Fk<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
             return new Fk<>(build(), parent, parentTable);

@@ -17,6 +17,7 @@ public class Commands {
     private static final Command ADDFOOD = new AddFood();
     private static final Command DELETEFOOD = new DeleteFood();
     private static final Command IMPORT = new Import();
+    private static final Command EXPORT = new Export();
     private static final Command INIT = new Init();
     private static final Command EDIT = new Edit();
     private static final Command READ = new Read();
@@ -32,21 +33,23 @@ public class Commands {
     static final Command NO_ARGS = new NoArgs();
     static final Command INVALID_COMMAND = new InvalidCommand();
     public static final Command[] COMMANDS = {
-              EDIT
-            , IMPORT
-            , INIT
+              HELP
+            , EDIT
+            , LISTMEALS
             , SHOWFOOD
             , ADDFOOD
             , DELETEFOOD
             , PORTION
             , NEWMEAL
-            , LISTMEALS
             , READ
             , SEARCH
             , TOTAL
             , RECIPES
             , ALLFOODS
-            , HELP
+            , IMPORT
+            , EXPORT
+            , INIT
+              // hidden ones - command name is prepended with underscore
             , INVALID_COMMAND
             , NO_ARGS
     };

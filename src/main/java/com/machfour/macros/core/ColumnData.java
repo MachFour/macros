@@ -184,10 +184,13 @@ public class ColumnData<M>  {
     }
 
     // the type of the data is ensured at time of adding it to this columnData object.
+    @Nullable
     public final <J> J get(@NotNull Column<M, J> col) {
         assertHasColumn(col);
         return getWithoutAssert(col);
     }
+
+    @Nullable
     private <J> J getWithoutAssert(@NotNull Column<M, J> col) {
         return col.getType().cast(data[col.index()]);
     }

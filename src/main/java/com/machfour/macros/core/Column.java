@@ -22,8 +22,12 @@ public interface Column<M, J> {
     J defaultData();
     MacrosType<J> getType();
 
-    // index used to store and look up data in the ColumnMap. Not necessarily the order in the DB
+    // unique index of column, giving its order.
     int index();
+
+    // to be used once to initialise the index. Future calls will throw exceptions.
+    void setIndex(int index);
+
     // whether the column should be shown to and editable by users
     boolean isUserEditable();
     // whether the column is allowed to be saved into the DB as null
@@ -34,6 +38,7 @@ public interface Column<M, J> {
     // Also, not all tables may have a secondary key.
     boolean inSecondaryKey();
 
+    // is SQL UNIQUE column
     boolean isUnique();
 
     List<Validation> getValidations();

@@ -94,7 +94,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // returns map of all objects in table, by ID
-    // TODO make protected
+    // TODO make protected -- but it's useful for CSV export
     public abstract <M extends MacrosPersistable> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;

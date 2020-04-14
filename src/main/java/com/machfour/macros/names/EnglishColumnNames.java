@@ -1,10 +1,13 @@
 package com.machfour.macros.names;
 
 import com.machfour.macros.core.Column;
+import com.machfour.macros.core.Schema;
 import com.machfour.macros.core.Schema.FoodTable;
+import com.machfour.macros.core.Schema.NutritionDataTable;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 
+import com.machfour.macros.objects.QtyUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -77,6 +80,7 @@ public class EnglishColumnNames implements ColumnNamer {
 
     static {
         columnNames = new HashMap<>();
+        // Food Table
         columnNames.put(FoodTable.ID, "ID");
         columnNames.put(FoodTable.CREATE_TIME, "Creation time");
         columnNames.put(FoodTable.MODIFY_TIME, "Last modified");
@@ -90,6 +94,16 @@ public class EnglishColumnNames implements ColumnNamer {
         columnNames.put(FoodTable.USDA_INDEX, "USDA DB index");
         columnNames.put(FoodTable.NUTTAB_INDEX, "NUTTAB DB index");
         columnNames.put(FoodTable.CATEGORY, "Category");
+
+        // NutritionData Table
+        columnNames.put(NutritionDataTable.ID, "ID");
+        columnNames.put(NutritionDataTable.CREATE_TIME, "Creation time");
+        columnNames.put(NutritionDataTable.MODIFY_TIME, "Last modified");
+        columnNames.put(NutritionDataTable.DATA_SOURCE, "Data source");
+        columnNames.put(NutritionDataTable.DENSITY, "Density");
+        columnNames.put(NutritionDataTable.FOOD_ID, "Food ID");
+        columnNames.put(NutritionDataTable.QUANTITY_UNIT, "Quantity Unit");
+        columnNames.putAll(prettyNutrientNames);
     }
 
     //Singleton pattern

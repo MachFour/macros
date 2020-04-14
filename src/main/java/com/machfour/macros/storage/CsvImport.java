@@ -131,7 +131,7 @@ public class CsvImport {
                 }
             }
         } catch (SQLException e) {
-            throw e; // throw new CSVImportException(csvData)
+            throw e; // TODO throw new CSVImportException(csvData)
         }
         return data;
 

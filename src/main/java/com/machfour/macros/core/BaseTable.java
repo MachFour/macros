@@ -37,8 +37,10 @@ public abstract class BaseTable<M> implements Table<M> {
         List<Column<M, ?>> secondaryKeyCols = new ArrayList<>(2);
         List<Column.Fk<M, ?, ?>> fkColumns = new ArrayList<>(2);
 
+        int index = 0;
         for (Column<M, ?> c : cols) {
             columnsByName.put(c.sqlName(), c);
+            c.setIndex(index);
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
@@ -48,6 +50,7 @@ public abstract class BaseTable<M> implements Table<M> {
                 naturalKeyColumn = c;
             }
             checkAndAddFk(fkColumns, c);
+            index++;
         }
         this.columnsByName = Collections.unmodifiableMap(columnsByName);
         this.secondaryKeyCols = Collections.unmodifiableList(secondaryKeyCols);

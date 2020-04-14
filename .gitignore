@@ -1,11 +1,12 @@
 aot/
+csv-out/
 jdbc/
-out/
 lib-download/
 lib/
 linux-build/
+out/
 
-sample.db
+*.db
 .idea/workspace.xml
 *.sqlite
 test/

@@ -8,7 +8,7 @@ CLASSPATH="${DEVEL_DIR}/out/production/macros-java/"
 declare -a LIBRARIES
 # these are .jar files located in lib dir that must be included
 LIBRARIES=(
-	'super-csv-2.4.0',
+	'super-csv-2.4.0'
 	'sqlite-jdbc-3.23.1'
 	'gson-2.8.5'
 	'lanterna-3.1.0-alpha1'
@@ -35,6 +35,3 @@ MAINCLASS=com.machfour.macros.cli.CliMain
 java -enableassertions -cp ${CLASSPATH} \
 	 -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
 	 ${MAINCLASS} "$@"
-
-
-

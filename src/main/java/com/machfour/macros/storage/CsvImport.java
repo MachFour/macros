@@ -141,8 +141,9 @@ public class CsvImport {
     // (don't have linked food objects of their own)
     //
     static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Map<String, List<Ingredient>> ingredients) throws IOException {
-        Map<String, CompositeFood> foodMap = new HashMap<>();
-        Map<String, ImportData<NutritionData>> ndMap = new HashMap<>();
+        // preserve insertion order
+        Map<String, CompositeFood> foodMap = new LinkedHashMap<>();
+        Map<String, ImportData<NutritionData>> ndMap = new LinkedHashMap<>();
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(recipeCsv)) {
             ImportData<Food> foodData = rowData.first;
@@ -184,7 +185,8 @@ public class CsvImport {
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
     static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
-        Map<String, Food> foodMap = new HashMap<>();
+        // preserve insertion order
+        Map<String, Food> foodMap = new LinkedHashMap<>();
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
             ImportData<Food> foodData = rowData.first;
             ImportData<NutritionData> ndData = rowData.second;
@@ -258,7 +260,7 @@ public class CsvImport {
         // remove entries corresponding to existing foods; this actually modifies the original map
         newIndexNames.removeAll(existingIndexNames);
         // get out the nutrition data
-        Map<String, NutritionData> ndObjects = new HashMap<>(newIndexNames.size(), 1);
+        Map<String, NutritionData> ndObjects = new LinkedHashMap<>(newIndexNames.size(), 1);
         for (Food f : foods.values()) {
             NutritionData nd = f.getNutritionData();
             // link it to the food so that the DB can create the correct foreign key entries

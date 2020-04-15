@@ -26,7 +26,7 @@ public class MacrosDataCache implements MacrosDataSource {
 
     private MacrosDataCache(MacrosDataSource upstream) {
         this.upstream = upstream;
-        mealCache = new HashMap<>(100);
+        mealCache = new LinkedHashMap<>(100);
         foodCache = new LinkedHashMap<>(100);
         allFoodsCache = new ArrayList<>(100);
         allFoodsNeedsRefresh = true;
@@ -140,7 +140,7 @@ public class MacrosDataCache implements MacrosDataSource {
     @Override
     public Map<Long, Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
         List<Long> unCachedIds = new ArrayList<>(mealIds.size());
-        Map<Long, Meal> mealsToReturn = new HashMap<>(mealIds.size(), 1);
+        Map<Long, Meal> mealsToReturn = new LinkedHashMap<>(mealIds.size(), 1);
         for (Long id : mealIds) {
             if (mealCache.containsKey(id)) {
                 mealsToReturn.put(id, mealCache.get(id));

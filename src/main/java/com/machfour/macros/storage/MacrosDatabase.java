@@ -200,7 +200,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     public Map<String, FoodCategory> getAllFoodCategories() throws SQLException {
         Map<Long, FoodCategory> categoriesById = getAllRawObjects(FoodCategory.table());
-        Map<String, FoodCategory> categoriesByString = new HashMap<>(categoriesById.size());
+        Map<String, FoodCategory> categoriesByString = new LinkedHashMap<>(categoriesById.size());
         for (FoodCategory c : categoriesById.values()) {
             categoriesByString.put(c.getName(), c);
         }

@@ -3,6 +3,10 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.Ingredient;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.objects.Serving;
 import com.machfour.macros.storage.CsvExport;
 import com.machfour.macros.storage.MacrosDatabase;
 
@@ -54,13 +58,13 @@ public class Export extends CommandImpl {
              Writer servingCsv = new FileWriter(servingCsvFile);
              Writer ingredientsCsv = new FileWriter(ingredientsCsvFile)) {
                 out.println("Exporting foods...");
-                CsvExport.exportFoods(foodCsv, db);
+                CsvExport.exportTable(Food.table(), foodCsv, db);
                 out.println("Exporting nutrition data...");
-                CsvExport.exportNutritionData(nutritionDataCsv, db);
+                CsvExport.exportTable(NutritionData.table(), nutritionDataCsv, db);
                 out.println("Exporting servings...");
-                CsvExport.exportServings(servingCsv, db);
+                CsvExport.exportTable(Serving.table(), servingCsv, db);
                 out.println("Exporting ingredients...");
-                CsvExport.exportIngredients(ingredientsCsv, db);
+                CsvExport.exportTable(Ingredient.table(), ingredientsCsv, db);
         } catch (SQLException e1) {
             out.println();
             out.println("SQL Exception occurred: " + e1.getMessage());

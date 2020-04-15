@@ -179,7 +179,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     @Override
     protected <M extends MacrosPersistable, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn,
             Column<M, J> valueColumn, Set<I> keys) throws SQLException {
-        Map<I, J> resultMap = new HashMap<>(keys.size(), 1);
+        Map<I, J> resultMap = new LinkedHashMap<>(keys.size(), 1);
         // for batch queries
         //List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
         List<Column<M, ?>> selectColumns = Collections.singletonList(valueColumn);
@@ -235,7 +235,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
-        Map<J, M> objects = new HashMap<>(keys.size(), 1);
+        Map<J, M> objects = new LinkedHashMap<>(keys.size(), 1);
         Connection c = getConnection();
         try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
             LinuxDatabaseUtils.bindObjects(p, keys);
@@ -269,7 +269,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
         List<Column<M, ?>> keyAndId = Arrays.asList(keyCol, t.getIdColumn()); // select the ID column plus the key
 
-        Map<J, Long> idMap = new HashMap<>(keys.size(), 1);
+        Map<J, Long> idMap = new LinkedHashMap<>(keys.size(), 1);
         Connection c = getConnection();
         try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, keyAndId, keyCol, keys.size(), false))) {
             LinuxDatabaseUtils.bindObjects(p, keys);
@@ -292,7 +292,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // returns a map of objects by ID
     // TODO make protected
     public <M extends MacrosPersistable> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
-        Map<Long, M> objects = new HashMap<>();
+        Map<Long, M> objects = new LinkedHashMap<>();
         Connection c = getConnection();
         try (ResultSet rs = c.createStatement().executeQuery("SELECT * FROM " + t.name())) {
             for (rs.next(); !rs.isAfterLast(); rs.next()) {
@@ -420,7 +420,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     @Override
     protected <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
         Column<M, Long> idCol = table.getIdColumn();
-        Map<Long, Boolean> idMap = new HashMap<>(ids.size(), 1);
+        Map<Long, Boolean> idMap = new LinkedHashMap<>(ids.size(), 1);
         Connection c = getConnection();
         try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(table, idCol, idCol, ids.size()))) {
             LinuxDatabaseUtils.bindObjects(p, ids);

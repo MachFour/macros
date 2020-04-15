@@ -32,8 +32,8 @@ public abstract class BaseTable<M> implements Table<M> {
         columns = Collections.unmodifiableList(cols);
 
         Column<M, ?> naturalKeyColumn = null;
-        // make name map and secondary key cols list
-        Map<String, Column<M, ?>> columnsByName = new HashMap<>(cols.size(), 1);
+        // make name map and secondary key cols list. Linked hash map keeps insertion order
+        Map<String, Column<M, ?>> columnsByName = new LinkedHashMap<>(cols.size(), 1);
         List<Column<M, ?>> secondaryKeyCols = new ArrayList<>(2);
         List<Column.Fk<M, ?, ?>> fkColumns = new ArrayList<>(2);
 

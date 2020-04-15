@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.PrintStream;
+import java.security.cert.CertificateRevokedException;
+import java.util.List;
 
 public abstract class CommandImpl implements Command {
 
@@ -15,23 +17,28 @@ public abstract class CommandImpl implements Command {
     @Nullable
     private final String usage;
 
-    protected static PrintStream out = CliMain.OUT;
-    protected static BufferedReader in = CliMain.IN;
+    protected final PrintStream out;
+    protected final PrintStream err;
+    protected final BufferedReader in;
 
     protected CommandImpl(@NotNull String name) {
         this(name, null);
     }
     protected CommandImpl(@NotNull String name, @Nullable String usage) {
+        this(name, usage, CliMain.OUT, CliMain.ERR, CliMain.IN);
+    }
+
+    private CommandImpl(@NotNull String name, @Nullable String usage, PrintStream out, PrintStream err, BufferedReader in) {
         this.name = name;
         this.usage = usage;
+        this.out = out;
+        this.err = err;
+        this.in = in;
     }
 
-    protected void setPrintStream(@NotNull PrintStream newOut) {
-        out = newOut;
-    }
-
-    protected void setInput(@NotNull BufferedReader newIn) {
-        in = newIn;
+    // can be overridden
+    public void doActionNoExitCode(List<String> args) {
+        doAction(args);
     }
 
     @Override @NotNull

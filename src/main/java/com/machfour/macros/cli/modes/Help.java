@@ -23,7 +23,7 @@ public class Help extends CommandImpl {
         out.println("################################");
         out.println();
         out.println("Available commands:");
-        for (Command m : Commands.COMMANDS) {
+        for (Command m : Commands.getCommands()) {
             if (m.isUserCommand()) {
                 out.println(m.name());
             }
@@ -33,13 +33,15 @@ public class Help extends CommandImpl {
     }
 
     @Override
-    public void doAction(List<String> args) {
+    public int doAction(List<String> args) {
         // help on a particular action
-        if (args.size() >= 2 && Commands.CMDS_BY_NAME.containsKey(args.get(1))) {
-            Command forHelp = Commands.CMDS_BY_NAME.get(args.get(1));
+        Command forHelp = args.size() >= 2 ? Commands.getCommandByName(args.get(1)) : null;
+        if (forHelp != null) {
             forHelp.printHelp();
         } else {
+            // either no command specified or no command with given name
             printHelp();
         }
+        return 0;
     }
 }

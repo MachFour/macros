@@ -33,7 +33,7 @@ public class Config {
     public static final String RECIPE_CSV_PATH = FileUtils.joinPath(DATA_DIR, RECIPE_CSV_NAME);
     public static final String INGREDIENTS_CSV_PATH = FileUtils.joinPath(DATA_DIR, INGREDIENTS_CSV_NAME);
 
-    public static final String CSV_OUTPUT_DIR = "/home/max/devel/macros-java/csv-out";
+    public static final String DEFAULT_CSV_OUTPUT_DIR = "/home/max/devel/macros-java/csv-out";
 
     public static String DB_LOCATION = FileUtils.joinPath(DB_DIR, DB_NAME);
 

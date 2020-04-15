@@ -59,10 +59,10 @@ public class Total extends CommandImpl {
         return MealSpec.makeMealSpec(mealName, dayString);
     }
     @Override
-    public void doAction(List<String> args) {
+    public int doAction(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
-            return;
+            return 0;
         }
         boolean verbose = args.contains("--verbose") || args.contains("-v");
         boolean per100 = args.contains("--per100");
@@ -70,17 +70,17 @@ public class Total extends CommandImpl {
 
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
         MealSpec spec = makeMealSpec(args, allMeals);
-        process(spec, db, allMeals, verbose, per100);
+        return process(spec, db, allMeals, verbose, per100);
 
     }
 
-    static void process(MealSpec mealSpec, MacrosDatabase db, boolean allMeals, boolean verbose, boolean per100) {
+    int process(MealSpec mealSpec, MacrosDatabase db, boolean allMeals, boolean verbose, boolean per100) {
         if (!allMeals) {
             // total for specific meal
             mealSpec.process(db, false);
             if (mealSpec.error() != null) {
-                out.println(mealSpec.error());
-                return;
+                err.println(mealSpec.error());
+                return 1;
             }
             out.println();
             MealPrinter.printMeal(mealSpec.processedObject(), verbose, out);
@@ -94,10 +94,11 @@ public class Total extends CommandImpl {
                     MealPrinter.printMeals(mealsForDay.values(), out, verbose, per100, true);
                 }
             } catch (SQLException e) {
-                out.println("Error retrieving meals: " + e.getMessage());
                 out.println();
+                err.println("Error retrieving meals: " + e.getMessage());
             }
         }
+        return 0;
     }
 
 }

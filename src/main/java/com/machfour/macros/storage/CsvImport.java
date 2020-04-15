@@ -16,35 +16,8 @@ import java.util.List;
 import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
 public class CsvImport {
-    /*
-     * Method for reading CSV files that directly correspond to a table
-     */
-    public static <M> List<M> buildObjectsForRestore(Table<M> table, Reader csvData) throws IOException {
-        Map<String, Column<M, ?>> columnsByName = table.columnsByName();
-        List<M> objectList = new ArrayList<>();
-        Set<String> unrecognisedStrings = new HashSet<>();
-
-        try (ICsvMapReader mapReader = getMapReader(csvData)) {
-            // header columns are used as the keys to the Map
-            final String[] header = mapReader.getHeader(true);
-            for (String colName : header) {
-                if (!columnsByName.containsKey(colName)) {
-                    unrecognisedStrings.add(colName);
-                }
-            }
-            // iterate over lines in CSV
-            Map<String, String> csvRow;
-            while ((csvRow = mapReader.read(header)) != null) {
-                ImportData<M> data = extractData(csvRow, table);
-                objectList.add(table.getFactory().construct(data, ObjectSource.RESTORE));
-            }
-        }
-        System.out.println("Warning: unknown columns: " + unrecognisedStrings);
-        return objectList;
-    }
-
     // don't edit csvRow keyset!
-    private static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) {
+    static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) {
         Set<String> relevantCols = new HashSet<>(csvRow.keySet());
         relevantCols.retainAll(table.columnsByName().keySet());
         ImportData<M> data = new ImportData<>(table);
@@ -57,7 +30,7 @@ public class CsvImport {
         return data;
     }
 
-    private static ICsvMapReader getMapReader(Reader r) {
+    static ICsvMapReader getMapReader(Reader r) {
         // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
         return new CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE);
     }

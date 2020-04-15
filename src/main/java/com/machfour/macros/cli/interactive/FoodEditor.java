@@ -1,4 +1,4 @@
-package com.machfour.macros.cli.utils;
+package com.machfour.macros.cli.interactive;
 
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyType;

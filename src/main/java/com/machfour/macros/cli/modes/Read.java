@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.machfour.macros.linux.Config.PROGNAME;
-import static com.machfour.macros.cli.CliMain.ERR;
 
 
 public class Read extends CommandImpl {
@@ -28,7 +27,7 @@ public class Read extends CommandImpl {
     }
 
     @Override
-    public void doAction(List<String> args) {
+    public void doActionNoExitCode(List<String> args) {
         if (args.size() < 2) {
             printHelp();
             out.println();
@@ -50,10 +49,10 @@ public class Read extends CommandImpl {
         try (Reader r = new FileReader(filename)) {
             meals = fileParser.parseFile(r, db);
         } catch (IOException e1) {
-            ERR.println("IO exception occurred: " + e1.getMessage());
+            err.println("IO exception occurred: " + e1.getMessage());
             return;
         } catch (SQLException e2) {
-            ERR.println("SQL exception occurred: " + e2.getMessage());
+            err.println("SQL exception occurred: " + e2.getMessage());
             return;
         }
         MealPrinter.printMeals(meals, out, verbose, per100, true);

@@ -1,8 +1,6 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
-import com.machfour.macros.objects.*;
-import com.machfour.macros.util.FileUtils;
 import org.supercsv.io.CsvMapWriter;
 import org.supercsv.io.ICsvMapWriter;
 import org.supercsv.prefs.CsvPreference;
@@ -42,14 +40,12 @@ public class CsvExport {
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
-    public static <M extends MacrosPersistable<M>> void exportTable(Table<M> t, String outDir, MacrosDatabase db) throws SQLException, IOException {
+    public static <M extends MacrosPersistable<M>> void exportTable(Table<M> t, Writer outCsv, MacrosDatabase db) throws SQLException, IOException {
         // TODO do we need to get raw objects? This method should probably be protected...
         Map<Long, M> rawObjectMap = db.getAllRawObjects(t);
         List<M> allRawObjects = new ArrayList<>(rawObjectMap.values());
         // Collections.sort(allRawFoods, Comparator.comparingLong(MacrosPersistable::getId));
-        try (Writer outCsv = new FileWriter(FileUtils.joinPath(outDir,  t.name() + ".csv"))) {
-            writeObjectsToCsv(t, outCsv, allRawObjects);
-        }
+        writeObjectsToCsv(t, outCsv, allRawObjects);
     }
 }
 

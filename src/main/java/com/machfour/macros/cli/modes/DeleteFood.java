@@ -22,7 +22,7 @@ public class DeleteFood extends CommandImpl {
         super(NAME, USAGE);
     }
 
-    public void doAction(List<String> args) {
+    public void doActionNoExitCode(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
             return;

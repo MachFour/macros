@@ -4,24 +4,14 @@ import com.machfour.macros.linux.Config;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.*;
 
 public class CliMain {
     static final PrintStream OUT = System.out;
-    public static final PrintStream ERR = System.err;
-    public static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
-
-    private static String cleanInput(@NotNull String s) {
-        s = s.trim();
-        return s.startsWith("--") ? s.substring(2) : s;
-    }
-
-    private static @NotNull Command parseCommand(@NotNull String userInput) {
-        return Commands.CMDS_BY_NAME.getOrDefault(cleanInput(userInput), Commands.INVALID_COMMAND);
-    }
+    static final PrintStream ERR = System.err;
+    static final BufferedReader IN = new BufferedReader(new InputStreamReader(System.in));
 
     // XXX hacky - also needs to be an absolute path
     private static void checkDbLocationOverride(List<String> args) {
@@ -40,22 +30,22 @@ public class CliMain {
     }
 
     public static void main(String[] args) {
-        //System.out.println("Started program");
-        // to insert a pause (until user presses Enter)
+        // To insert a pause (until user presses Enter):
         //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
-
 
         // tell the SQLite JDBC driver where I've put the library. Otherwise it auto-extracts each time
         System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
         System.setProperty("org.sqlite.lib.name", "libsqlitejdbc.so");
 
+        assert args.length == 0 || args[0] != null;
+
+        Command c = args.length == 0 ? Commands.noArgsCommand() : Commands.parseCommand(args[0]);
         List<String> argList = new ArrayList<>(Arrays.asList(args)); // make it mutable
-        Command c = argList.isEmpty() ? Commands.NO_ARGS : parseCommand(argList.get(0));
 
         checkDbLocationOverride(argList);
 
         // command args start from index 1
-        int retcode = c.doActionWithExitCode(argList);
+        int retcode = c.doAction(argList);
         System.exit(retcode);
     }
 }

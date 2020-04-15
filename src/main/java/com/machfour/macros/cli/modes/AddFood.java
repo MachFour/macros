@@ -2,7 +2,7 @@ package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.ArgParsing;
-import com.machfour.macros.cli.utils.FoodEditor;
+import com.machfour.macros.cli.interactive.FoodEditor;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
@@ -34,13 +34,13 @@ public class AddFood extends CommandImpl {
     }
 
     @Override
-    public void doAction(List<String> args) {
+    public void doActionNoExitCode(List<String> args) {
         out.println("doAction() is deprecated, using doActionWithExitCode() instead");
-        doActionWithExitCode(args);
+        doAction(args);
     }
 
     @Override
-    public int doActionWithExitCode(List<String> args) {
+    public int doAction(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
             return -1;

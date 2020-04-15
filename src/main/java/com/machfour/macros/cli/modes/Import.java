@@ -27,7 +27,7 @@ public class Import extends CommandImpl {
 
     @Override
     public void printHelp() {
-        out.println("Imports CSV data (foods and servings) into the database.");
+        out.println("Imports CSV data for foods, servings, recipes and ingredients into the database.");
         out.println("Only foods with index names not already in the database will be imported.");
         out.println("However, it will try to import all servings, and so will fail if duplicate servings exist.");
         out.println("Options:");
@@ -38,10 +38,10 @@ public class Import extends CommandImpl {
     }
 
     @Override
-    public void doAction(List<String> args) {
+    public int doAction(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
-            return;
+            return 0;
         }
         boolean doClear = args.contains("--clear");
         boolean noRecipes = args.contains("--norecipes");
@@ -96,14 +96,15 @@ public class Import extends CommandImpl {
             out.println();
             out.println("SQL Exception occurred: " + e1.getMessage());
             out.println("Please check the format of the CSV files");
-            return;
+            return 1;
         } catch (IOException e2) {
             out.println();
             out.println("IO exception occurred: " + e2.getMessage());
-            return;
+            return 1;
         }
 
         out.println();
         out.println("Import completed successfully");
+        return 0;
     }
 }

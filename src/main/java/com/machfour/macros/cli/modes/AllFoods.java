@@ -21,7 +21,7 @@ public class AllFoods extends CommandImpl {
     }
 
     @Override
-    public void doAction(java.util.List<String> args) {
+    public void doActionNoExitCode(java.util.List<String> args) {
         if (args.contains("--help")) {
             printHelp();
             return;

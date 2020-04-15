@@ -29,11 +29,12 @@ public class Edit extends CommandImpl {
     public Edit() {
         super(NAME, USAGE);
     }
+
     @Override
-    public void doAction(List<String> args) {
+    public int doAction(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
-            return;
+            return 0;
         }
 
         ArgParsing.Result mealNameArg = ArgParsing.findArgument(args, 1);
@@ -45,28 +46,26 @@ public class Edit extends CommandImpl {
         mealSpec.process(db, true);
 
         if (mealSpec.error() != null) {
-            out.println(mealSpec.error());
-            return;
+            err.println(mealSpec.error());
+            return 1;
         }
         if (mealSpec.created()) {
             String createMsg = String.format("Created meal '%s' on %s", mealSpec.name(), mealSpec.day());
             out.println(createMsg);
         }
         Meal toEdit = mealSpec.processedObject();
-        startEditor(db, toEdit.getId());
+        return startEditor(db, toEdit.getId());
     }
 
-    private static void startEditor(MacrosDatabase db, long mealId) {
+    private int startEditor(MacrosDatabase db, long mealId) {
         Meal toEdit;
         try {
             toEdit = db.getMealById(mealId);
-            if (toEdit == null) {
-                return;
-            }
         } catch (SQLException e) {
-            out.println(e);
-            return;
+            err.println(e);
+            return 1;
         }
+        assert toEdit != null: "Could not re-retrieve meal with id given by processed MealSpec";
         assert (toEdit.getObjectSource() == ObjectSource.DATABASE) : "Not editing an object from the database";
 
         while (true) {
@@ -112,7 +111,7 @@ public class Edit extends CommandImpl {
                 case 'x':
                 case 'q':
                 case '\0':
-                    return;
+                    return 0;
                 default:
                     out.printf("Unrecognised action: '%c'\n", action);
                     out.println();
@@ -134,17 +133,17 @@ public class Edit extends CommandImpl {
             + "\n" + "x/q - exit this editor";
     }
 
-    private static void addPortion(Meal toEdit, MacrosDatabase db) {
+    private void addPortion(Meal toEdit, MacrosDatabase db) {
         out.println("Please enter the portion information (see help for how to specify a food portion)");
         // copy from portion
         String inputString = CliUtils.getStringInput(in, out);
         if (inputString != null && !inputString.isEmpty()) {
             FoodPortionSpec spec = FileParser.makefoodPortionSpecFromLine(inputString);
-            Portion.process(toEdit, Collections.singletonList(spec), db);
+            Portion.process(toEdit, Collections.singletonList(spec), db, out, err);
         }
     }
 
-    private static void showFoodPortions(Meal toEdit) {
+    private void showFoodPortions(Meal toEdit) {
         out.println("Food portions:");
         List<FoodPortion> foodPortions = toEdit.getFoodPortions();
         for (int i = 0; i < foodPortions.size(); ++i) {
@@ -153,7 +152,7 @@ public class Edit extends CommandImpl {
         }
         out.println();
     }
-    private static void deleteMeal(Meal toDelete, MacrosDatabase db) {
+    private void deleteMeal(Meal toDelete, MacrosDatabase db) {
         out.print("Delete meal");
         out.print("Are you sure? [y/N] ");
         if (CliUtils.getChar(in, out) == 'y' | CliUtils.getChar(in, out) == 'Y') {
@@ -164,7 +163,7 @@ public class Edit extends CommandImpl {
             }
         }
     }
-    private static void deleteFoodPortion(Meal toEdit, MacrosDatabase db) {
+    private void deleteFoodPortion(Meal toEdit, MacrosDatabase db) {
         out.println("Delete food portion");
         showFoodPortions(toEdit);
         out.print("Enter the number of the food portion to delete and press enter: ");
@@ -183,7 +182,7 @@ public class Edit extends CommandImpl {
         out.println("Deleted the food portion");
         out.println();
     }
-    private static void editFoodPortion(Meal m, MacrosDatabase db) {
+    private void editFoodPortion(Meal m, MacrosDatabase db) {
         out.println("Edit food portion");
         showFoodPortions(m);
         out.print("Enter the number of the food portion to edit and press enter: ");
@@ -212,7 +211,7 @@ public class Edit extends CommandImpl {
         out.println();
     }
 
-    private static void renameMeal() {
+    private void renameMeal() {
         out.println("Rename meal");
         out.print("Type a new name and press enter: ");
         String newName = CliUtils.getStringInput(in, out);

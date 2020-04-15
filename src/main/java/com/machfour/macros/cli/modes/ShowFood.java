@@ -28,7 +28,7 @@ public class ShowFood extends CommandImpl {
     }
 
     @Override
-    public void doAction(List<String> args) {
+    public void doActionNoExitCode(List<String> args) {
         if (args.size() == 1 || args.contains("--help")) {
             printHelp();
             if (args.size() == 1) {

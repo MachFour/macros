@@ -53,7 +53,7 @@ public class ColumnData<M>  {
     public boolean equals(Object o) {
         return o instanceof ColumnData
                 && table.equals(((ColumnData) o).table)
-                // this should be implied by the equality below
+                // this second equality should be implied by the equality below
                 //&& hasData.equals(((ColumnData) o).hasData)
                 && Arrays.deepEquals(data, ((ColumnData) o).data);
     }
@@ -72,7 +72,9 @@ public class ColumnData<M>  {
         }
         for (Column<M, ?> col: whichCols) {
             // TODO if (!Objects.equals(c1.get(col), c2.get(col))) {
-            if (c1.get(col) != null && !c1.get(col).equals(c2.get(col))) {
+            Object c1Data = c1.get(col);
+            Object c2Data = c2.get(col);
+            if (c1Data != null && !c1Data.equals(c2Data)) {
                 return false;
             }
         }

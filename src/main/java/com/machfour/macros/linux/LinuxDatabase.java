@@ -117,7 +117,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         try (Statement s = c.createStatement();
              Reader init = new FileReader(Config.INIT_SQL);
              Reader trig = new FileReader(Config.TRIG_SQL);
-             Reader data = new FileReader(Config.DATA_SQL);
+             Reader data = new FileReader(Config.DATA_SQL)
             ) {
 
             String createSchemaSql = DatabaseUtils.createStatements(init);
@@ -135,7 +135,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         }
     }
     @Override
-    protected <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException {
+    protected <M> int deleteById(Long id, Table<M> t) throws SQLException {
         Connection c = getConnection();
         try (PreparedStatement s = c.prepareStatement(DatabaseUtils.deleteWhereTemplate(t, t.getIdColumn(), 1))) {
             LinuxDatabaseUtils.bindObjects(s, toList(id));
@@ -147,13 +147,13 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     }
 
-    @Override
-    @NotNull
 
     /*
      * Returns empty list for either blank keyword or column list
      */
-    protected <M extends MacrosPersistable> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols,
+    @Override
+    @NotNull
+    protected <M> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols,
             @NotNull String keyword, boolean globBefore, boolean globAfter) throws SQLException {
         List<Long> resultList = new ArrayList<>(0);
         if (!keyword.isEmpty() && !cols.isEmpty()) {
@@ -177,7 +177,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosPersistable, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn,
+    protected <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn,
             Column<M, J> valueColumn, Set<I> keys) throws SQLException {
         Map<I, J> resultMap = new LinkedHashMap<>(keys.size(), 1);
         // for batch queries
@@ -208,7 +208,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Override
-    protected <M extends MacrosPersistable, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selectColumn,
+    protected <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selectColumn,
             Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException {
         List<I> resultList = new ArrayList<>(0);
         Connection c = getConnection();
@@ -230,8 +230,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null
     @Override
-    protected <M extends MacrosPersistable, J> Map<J, M> getRawObjectsByKeysNoEmpty(
-            Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    protected <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
@@ -262,7 +261,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null
     @Override
-    protected <M extends MacrosPersistable, J> Map<J, Long> getIdsByKeysNoEmpty(
+    protected <M, J> Map<J, Long> getIdsByKeysNoEmpty(
             Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
@@ -291,7 +290,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     @Override
     // returns a map of objects by ID
     // TODO make protected
-    public <M extends MacrosPersistable> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
+    public <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
         Map<Long, M> objects = new LinkedHashMap<>();
         Connection c = getConnection();
         try (ResultSet rs = c.createStatement().executeQuery("SELECT * FROM " + t.name())) {
@@ -377,7 +376,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    public <M extends MacrosPersistable> int clearTable(Table<M> t) throws SQLException {
+    public <M> int clearTable(Table<M> t) throws SQLException {
         int removed;
         Connection c = getConnection();
         try (PreparedStatement p = c.prepareStatement(DatabaseUtils.deleteAllTemplate(t))) {
@@ -389,7 +388,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    public <M extends MacrosPersistable, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
+    public <M, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
         int removed;
         Connection c = getConnection();
         try (PreparedStatement p = c.prepareStatement(DatabaseUtils.deleteWhereTemplate(t, whereColumn, whereValues.size()))) {

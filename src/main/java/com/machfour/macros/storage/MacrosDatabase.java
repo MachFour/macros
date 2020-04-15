@@ -41,61 +41,61 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     public abstract void endTransaction() throws SQLException;
 
 
-    protected abstract <M extends MacrosPersistable> int deleteById(Long id, Table<M> t) throws SQLException;
+    protected abstract <M> int deleteById(Long id, Table<M> t) throws SQLException;
 
 
     @NotNull
-    protected <M extends MacrosPersistable> List<Long> prefixSearch(
+    protected <M> List<Long> prefixSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
         return stringSearch(t, cols, keyword, false, true);
     }
 
     @NotNull
-    protected <M extends MacrosPersistable> List<Long> substringSearch(
+    protected <M> List<Long> substringSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
         return stringSearch(t, cols, keyword, true, true);
     }
     @NotNull
-    protected <M extends MacrosPersistable> List<Long> exactStringSearch(
+    protected <M> List<Long> exactStringSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword) throws SQLException {
         return stringSearch(t, cols, keyword, false, false);
     }
 
 
     @NotNull
-    protected abstract <M extends MacrosPersistable> List<Long> stringSearch(
+    protected abstract <M> List<Long> stringSearch(
             Table<M> t, List<Column<M, String>> cols, String keyword, boolean globBefore, boolean globAfter) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException;
+    protected abstract <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException;
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    protected abstract <M extends MacrosPersistable, I, J> List<I> selectColumn(
+    protected abstract <M, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException;
 
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    public abstract <M extends MacrosPersistable, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException;
+    public abstract <M, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException;
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     // The collection of keys must not be empty; an assertion error is thrown if so
-    protected abstract <M extends MacrosPersistable, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t,
+    protected abstract <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t,
             Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
+    protected abstract <M, J> Map<J, Long> getIdsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException;
 
-    private <M extends MacrosPersistable, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    private <M, J> Map<J, M> getRawObjectsByKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : getRawObjectsByKeysNoEmpty(t, keyCol, keys);
     }
 
-    private <M extends MacrosPersistable, J> Map<J, Long> getIdsFromKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    private <M, J> Map<J, Long> getIdsFromKeys(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : getIdsByKeysNoEmpty(t, keyCol, keys);
     }
 
     // returns map of all objects in table, by ID
     // TODO make protected -- but it's useful for CSV export
-    public abstract <M extends MacrosPersistable> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
+    public abstract <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
 
     protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
@@ -106,7 +106,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     protected abstract <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException;
 
-    public abstract <M extends MacrosPersistable> int clearTable(Table<M> t) throws SQLException;
+    public abstract <M> int clearTable(Table<M> t) throws SQLException;
 
     public boolean deleteIfExists(String dbFile) throws IOException {
         Path dbPath = Paths.get(dbFile);
@@ -308,7 +308,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    private <M extends MacrosPersistable, N> Map<Long, M> getRawObjectsForParentFk(
+    private <M, N> Map<Long, M> getRawObjectsForParentFk(
             @NotNull Map<Long, N> parentObjectMap, Table<M> childTable, Column.Fk<M, Long, N> fkCol) throws SQLException {
         if (parentObjectMap.isEmpty()) {
             return Collections.emptyMap();
@@ -392,12 +392,12 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    private <M extends MacrosPersistable, I, J> List<I> selectColumn(
+    private <M, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, J whereValue) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, toList(whereValue), false);
     }
 
-    private <M extends MacrosPersistable, I, J> List<I> selectColumn(
+    private <M, I, J> List<I> selectColumn(
             Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
         return selectColumn(t, selectColumn, whereColumn, whereValues, false);
     }
@@ -482,15 +482,15 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
     }
 
-    private <M extends MacrosPersistable> M getRawObjectById(Table<M> t, Long id) throws SQLException {
+    private <M> M getRawObjectById(Table<M> t, Long id) throws SQLException {
         return getRawObjectByKey(t, t.getIdColumn(), id);
     }
 
-    private <M extends MacrosPersistable> Map<Long, M> getRawObjectsByIds(Table<M> t, Collection<Long> ids) throws SQLException {
+    private <M> Map<Long, M> getRawObjectsByIds(Table<M> t, Collection<Long> ids) throws SQLException {
         return getRawObjectsByKeys(t, t.getIdColumn(), ids);
     }
 
-    private <M extends MacrosPersistable, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
+    private <M, J> M getRawObjectByKey(Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
         Map<J, M> returned = getRawObjectsByKeys(t, keyCol, Collections.singletonList(key));
         return getOrDefault(returned, key, null);
     }
@@ -504,7 +504,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for natural key column type
-    private <M extends MacrosPersistable<M>, J, N extends MacrosPersistable, I> Map<I, J> completeFkIdColHelper(
+    private <M extends MacrosPersistable<M>, J, N, I> Map<I, J> completeFkIdColHelper(
             Column.Fk<M, J, N> fkColumn, Column<N, I> parentNaturalKeyCol, List<ColumnData<N>> data) throws SQLException {
         assert (parentNaturalKeyCol.isUnique());
         Set<I> uniqueColumnValues = new HashSet<>(data.size());
@@ -515,7 +515,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for parent unique column type
-    private <M extends MacrosPersistable<M>, J, N extends MacrosPersistable> List<M> completeFkCol(
+    private <M extends MacrosPersistable<M>, J, N> List<M> completeFkCol(
             List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
@@ -544,12 +544,12 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // only Storage classes should know about these two methods
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ? extends MacrosPersistable> fk) throws SQLException {
+    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
         return completeForeignKeys(objects, toList(fk));
     }
 
     <M extends MacrosPersistable<M>> List<M> completeForeignKeys(
-            Collection<M> objects, List<Column.Fk<M, ?, ? extends MacrosPersistable>> which) throws SQLException {
+            Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         if (!objects.isEmpty()) {
             // objects without foreign key data yet (mutable copy of first argument)
@@ -560,7 +560,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
 
             // cycle through the FK columns.
-            for (Column.Fk<M, ?, ? extends MacrosPersistable> fkCol: which) {
+            for (Column.Fk<M, ?, ?> fkCol: which) {
                 partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
             }
             // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT

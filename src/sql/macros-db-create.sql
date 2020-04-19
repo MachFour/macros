@@ -72,8 +72,8 @@ CREATE TABLE Food (
     , name                 TEXT NOT NULL
     , variety_after_name   INTEGER NOT NULL DEFAULT 0
     , notes                TEXT DEFAULT NULL
-    , category             TEXT NOT NULL DEFAULT "uncategorised"
-    , food_type            TEXT NOT NULL DEFAULT "primary"
+    , category             TEXT NOT NULL DEFAULT 'uncategorised'
+    , food_type            TEXT NOT NULL DEFAULT 'primary'
     -- miscellaneous metadata
     , usda_index           INTEGER DEFAULT NULL
     , nuttab_index         TEXT DEFAULT NULL
@@ -90,7 +90,7 @@ CREATE TABLE Food (
     , CONSTRAINT zero_one
         CHECK (variety_after_name IN (0, 1))
     , CONSTRAINT valid_food_type
-        CHECK (food_type IN ("primary", "composite", "usda", "nuttab", "special"))
+        CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
 );
 
 CREATE UNIQUE INDEX food_index ON Food (index_name);

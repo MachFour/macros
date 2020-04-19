@@ -1,7 +1,6 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.linux.Config;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,9 +32,9 @@ public class CliMain {
         // To insert a pause (until user presses Enter):
         //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
 
-        // tell the SQLite JDBC driver where I've put the library. Otherwise it auto-extracts each time
-        System.setProperty("org.sqlite.lib.path", "/home/max/devel/macros-java/lib");
-        System.setProperty("org.sqlite.lib.name", "libsqlitejdbc.so");
+        // give the SQLite JDBC driver an extracted version of the native lib, otherwise it auto-extracts each time
+        System.setProperty("org.sqlite.lib.path", Config.SQLITE_NATIVE_LIB_DIR);
+        System.setProperty("org.sqlite.lib.name", Config.SQLITE_NATIVE_LIB_NAME);
 
         assert args.length == 0 || args[0] != null;
 

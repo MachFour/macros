@@ -1,5 +1,6 @@
 package com.machfour.macros.core;
 
+import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.validation.Validation;
 import com.machfour.macros.validation.ValidationError;
 
@@ -55,9 +56,13 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         recheckValidValues();
     }
 
-    public <J> void setField(Column<M, J> col, J value) {
+    public <J> void setField(Column<M, J> col, @Nullable J value) {
         draftData.put(col, value);
         recheckValidValues(Collections.singleton(col));
+    }
+
+    public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) {
+        setField(col, col.getType().fromString(value));
     }
 
     @Nullable
@@ -137,7 +142,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
      * of those failing tests.
      */
     public Map<Column<M, ?>, List<ValidationError>> findAllErrors() {
-        Map<Column<M, ?>, List<ValidationError>> allValidationErrors = new HashMap<>(settableColumns.size(), 1);
+        Map<Column<M, ?>, List<ValidationError>> allValidationErrors = new LinkedHashMap<>(settableColumns.size(), 1);
 
         for (Column<M, ?> field : settableColumns) {
             List<ValidationError> fieldErrors = validateSingle(field);

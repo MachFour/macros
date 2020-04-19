@@ -6,8 +6,8 @@ public class FileUtils {
     private FileUtils() {
     }
 
-    public static String joinPath(String dir, String filename) {
-        return dir + File.separator + filename;
+    public static String joinPath(String basePath, String suffix) {
+        return basePath + File.separator + suffix;
     }
 
 }

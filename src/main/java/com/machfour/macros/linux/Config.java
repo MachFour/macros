@@ -7,10 +7,15 @@ import java.io.File;
 public class Config {
 
     private Config() {}
+    private static final String PROJECT_DIR = "/home/max/devel/macros-java";
+    private static final String LIB_DIR = FileUtils.joinPath(PROJECT_DIR, "lib");
 
-    private static final String SQL_DIR = "/home/max/devel/macros-java/src/sql";
+    public static final String SQLITE_NATIVE_LIB_DIR = LIB_DIR;
+    public static final String SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so";
+
+    private static final String SQL_DIR = FileUtils.joinPath(PROJECT_DIR, "src/sql");
     private static final String DATA_DIR = "/home/max/devel/macros/macros-data";
-    private static final String DB_DIR = "/home/max/devel/macros-java";
+    private static final String DB_DIR = PROJECT_DIR;
 
 
     public static final String INIT_SQL_NAME = "macros-db-create.sql";
@@ -33,7 +38,7 @@ public class Config {
     public static final String RECIPE_CSV_PATH = FileUtils.joinPath(DATA_DIR, RECIPE_CSV_NAME);
     public static final String INGREDIENTS_CSV_PATH = FileUtils.joinPath(DATA_DIR, INGREDIENTS_CSV_NAME);
 
-    public static final String DEFAULT_CSV_OUTPUT_DIR = "/home/max/devel/macros-java/csv-out";
+    public static final String DEFAULT_CSV_OUTPUT_DIR = FileUtils.joinPath(PROJECT_DIR,"csv-out");
 
     public static String DB_LOCATION = FileUtils.joinPath(DB_DIR, DB_NAME);
 

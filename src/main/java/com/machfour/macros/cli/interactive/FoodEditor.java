@@ -7,6 +7,7 @@ import com.googlecode.lanterna.terminal.TerminalFactory;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.MacrosPersistable;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.names.*;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
@@ -185,11 +186,18 @@ public class FoodEditor {
             // save and validate
             if (isEditingNutritionData()) {
                 Column<NutritionData, ?> col = (Column<NutritionData, ?>)columnForColumnIndex(currentField);
-                nDataBuilder.setFieldFromString(col, editingValue.toString());
-
+                try {
+                    nDataBuilder.setFieldFromString(col, editingValue.toString());
+                } catch (TypeCastException e) {
+                    // TODO
+                }
             } else {
                 Column<Food, ?> col = (Column<Food, ?>)columnForColumnIndex(currentField);
-                foodBuilder.setFieldFromString(col, editingValue.toString());
+                try {
+                    foodBuilder.setFieldFromString(col, editingValue.toString());
+                } catch (TypeCastException e) {
+                    // TODO
+                }
             }
             // move to next field
             resetEditingValue();

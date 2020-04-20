@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.core.Table;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
@@ -12,6 +13,7 @@ import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FileUtils;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class Restore extends CommandImpl {
     }
 
     private <M extends MacrosPersistable<M>> void restoreTable(MacrosDatabase db, String exportDir, Table<M> t)
-            throws SQLException, IOException {
+            throws SQLException, IOException, TypeCastException {
         out.println("Restoring " + t.name() + " table...");
         String csvPath = FileUtils.joinPath(exportDir, t.name() + ".csv");
         try (Reader csvData = new FileReader(csvPath)) {
@@ -63,7 +65,7 @@ public class Restore extends CommandImpl {
             restoreTable(db, csvDir, Ingredient.table());
             restoreTable(db, csvDir, Meal.table());
             restoreTable(db, csvDir, FoodPortion.table());
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | TypeCastException e) {
             out.println();
             err.printf("Exception occurred (%s). Message: %s\n", e.getClass(), e.getMessage());
             return 1;

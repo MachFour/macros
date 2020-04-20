@@ -1,7 +1,7 @@
 package com.machfour.macros.names;
 
 import com.machfour.macros.objects.EnergyUnit;
-import com.machfour.macros.objects.QtyUnit;
+import com.machfour.macros.objects.QtyUnits;
 import com.machfour.macros.objects.Unit;
 
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +13,9 @@ import java.util.List;
 public class EnglishUnitNames implements UnitNamer {
 
     private static final List<Unit> AVAILABLE_UNITS = Collections.unmodifiableList(Arrays.asList(
-          QtyUnit.GRAMS
-        , QtyUnit.MILLIGRAMS
-        , QtyUnit.MILLILITRES
+          QtyUnits.GRAMS
+        , QtyUnits.MILLIGRAMS
+        , QtyUnits.MILLILITRES
         , EnergyUnit.KILOJOULES
         , EnergyUnit.CALORIES
     ));

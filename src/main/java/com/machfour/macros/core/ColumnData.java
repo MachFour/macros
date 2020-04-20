@@ -1,8 +1,10 @@
 package com.machfour.macros.core;
 
+import com.machfour.macros.core.datatype.TypeCastException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
@@ -17,7 +19,7 @@ public class ColumnData<M>  {
 
     private boolean immutable;
 
-    public final <J> void putFromNullableString(Column<M, J> col, @Nullable String data) {
+    public final <J> void putFromNullableString(Column<M, J> col, @Nullable String data) throws TypeCastException {
         // also catch empty whitespace with trim()
         if (data == null || data.trim().equals("")) {
             putFromRaw(col, null);
@@ -37,7 +39,7 @@ public class ColumnData<M>  {
         return col.getType().toSqlString(get(col));
     }
 
-    public final <J> void putFromString(Column<M, J> col, @NotNull String data) {
+    public final <J> void putFromString(Column<M, J> col, @NotNull String data) throws TypeCastException {
         put(col, col.getType().fromString(data));
     }
 
@@ -45,17 +47,19 @@ public class ColumnData<M>  {
         return col.getType().toRaw(get(col));
     }
 
-    public final <J> void putFromRaw(Column<M, J> col, Object data) {
+    public final <J> void putFromRaw(Column<M, J> col, Object data) throws TypeCastException {
         put(col, col.getType().fromRaw(data));
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ColumnData
-                && table.equals(((ColumnData) o).table)
-                // this second equality should be implied by the equality below
-                //&& hasData.equals(((ColumnData) o).hasData)
-                && Arrays.deepEquals(data, ((ColumnData) o).data);
+        if (!(o instanceof ColumnData<?>)) {
+            return false;
+        }
+        ColumnData<?> otherCd = (ColumnData<?>) o;
+        return table.equals(otherCd.table) && Arrays.deepEquals(data, otherCd.data);
+        // the following equality should be implied by the latter one above:
+        // hasData.equals(((ColumnData) o).hasData)
     }
 
     public final boolean hasColumns(@NotNull Collection<Column<M, ?>> cols) {

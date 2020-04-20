@@ -1,6 +1,7 @@
 package com.machfour.macros.linux;
 
 import com.machfour.macros.core.*;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.storage.DatabaseUtils;
@@ -192,9 +193,14 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 try (ResultSet rs = p.executeQuery()) {
                     for (rs.next(); !rs.isAfterLast(); rs.next()) {
                         //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
-                        J value = valueColumn.getType().fromRaw(rs.getObject(valueColumn.sqlName()));
-                        assert !resultMap.containsKey(key) : "Two rows in the DB contained the same data in the key column!";
-                        resultMap.put(key, value);
+                        Object rawValue = rs.getObject(valueColumn.sqlName());
+                        try {
+                            J value = valueColumn.getType().fromRaw(rawValue);
+                            assert !resultMap.containsKey(key) : "Two rows in the DB contained the same data in the key column!";
+                            resultMap.put(key, value);
+                        } catch (TypeCastException e) {
+                            rethrowAsSqlException(rawValue, valueColumn);
+                        }
                     }
                 }
                 p.clearParameters();
@@ -203,6 +209,11 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             closeIfNecessary(c);
         }
         return resultMap;
+    }
+
+    private static <M, J> void rethrowAsSqlException(Object value, Column<M, J> col) throws SQLException {
+        throw new SQLException(String.format("Could not convert value '%s' for column %s.%s (type %s)",
+                value, col.getTable(), col.sqlName(), col.getType()));
     }
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
@@ -217,13 +228,29 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
                     Object resultValue = rs.getObject(selectColumn.sqlName());
-                    resultList.add(selectColumn.getType().fromRaw(resultValue));
+                    try {
+                        resultList.add(selectColumn.getType().fromRaw(resultValue));
+                    } catch (TypeCastException e) {
+                        rethrowAsSqlException(resultValue, selectColumn);
+                    }
                 }
             }
         } finally {
             closeIfNecessary(c);
         }
         return resultList;
+    }
+
+    private static <M> void fillColumnData(ColumnData<M> data, ResultSet rs) throws SQLException {
+        Collection<Column<M, ?>> columns = data.getTable().columns();
+        for (Column<M, ?> col : columns) {
+            Object rawValue = rs.getObject(col.sqlName());
+            try {
+                data.putFromRaw(col, rawValue);
+            } catch (TypeCastException e) {
+                rethrowAsSqlException(rawValue, col);
+            }
+        }
     }
 
     // Constructs a map of key column value to raw object data (i.e. no object references initialised
@@ -241,9 +268,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
                     ColumnData<M> data = new ColumnData<>(t);
-                    for (Column<M, ?> col : t.columns()) {
-                        data.putFromRaw(col, rs.getObject(col.sqlName()));
-                    }
+                    fillColumnData(data, rs);
                     J key = data.get(keyCol);
                     assert (key != null);
                     assert (!objects.containsKey(key)) : "Key " + key + " already in returned objects map!";
@@ -296,9 +321,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         try (ResultSet rs = c.createStatement().executeQuery("SELECT * FROM " + t.name())) {
             for (rs.next(); !rs.isAfterLast(); rs.next()) {
                 ColumnData<M> data = new ColumnData<>(t);
-                for (Column<M, ?> col : t.columns()) {
-                    data.putFromRaw(col, rs.getObject(col.sqlName()));
-                }
+                fillColumnData(data, rs);
                 Long id = data.get(t.getIdColumn());
                 assert (!objects.containsKey(id)) : "ID " + id + " already in returned objects map!";
                 M newObject = t.getFactory().construct(data, ObjectSource.DATABASE);

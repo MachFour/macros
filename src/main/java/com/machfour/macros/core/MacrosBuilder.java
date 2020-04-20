@@ -1,6 +1,7 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.core.datatype.MacrosType;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.validation.Validation;
 import com.machfour.macros.validation.ValidationError;
 
@@ -61,7 +62,7 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
         recheckValidValues(Collections.singleton(col));
     }
 
-    public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) {
+    public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) throws TypeCastException {
         setField(col, col.getType().fromString(value));
     }
 

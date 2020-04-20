@@ -4,7 +4,7 @@ import com.machfour.macros.validation.ValidationError;
 
 import java.util.*;
 
-public abstract class BaseTable<M> implements Table<M> {
+abstract class BaseTable<M> implements Table<M> {
     private final String name;
     private final Factory<M> factory;
     private final List<Column<M, ?>> columns;
@@ -17,19 +17,22 @@ public abstract class BaseTable<M> implements Table<M> {
     private final Column<M, ?> naturalKeyColumn;
 
     BaseTable(String name, Factory<M> factory,
-            Column<M, Long> id, Column<M, Long> createTime, Column<M, Long> modTime, List<Column<M, ?>> otherCols) {
+              Column<M, Long> id,
+              Column<M, Long> createTime,
+              Column<M, Long> modTime,
+              List<Column<M, ?>> otherCols) {
         this.name = name;
         this.factory = factory;
-        idColumn = id;
-        createTimeColumn = createTime;
-        modifyTimeColumn = modTime;
+        this.idColumn = id;
+        this.createTimeColumn = createTime;
+        this.modifyTimeColumn = modTime;
 
         List<Column<M, ?>> cols = new ArrayList<>(otherCols.size() + 3);
         cols.add(id);
         cols.add(createTime);
         cols.add(modTime);
         cols.addAll(otherCols);
-        columns = Collections.unmodifiableList(cols);
+        this.columns = Collections.unmodifiableList(cols);
 
         Column<M, ?> naturalKeyColumn = null;
         // make name map and secondary key cols list. Linked hash map keeps insertion order
@@ -39,8 +42,9 @@ public abstract class BaseTable<M> implements Table<M> {
 
         int index = 0;
         for (Column<M, ?> c : cols) {
+            setColIndexAndTable(c, index);
+
             columnsByName.put(c.sqlName(), c);
-            c.setIndex(index);
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
@@ -66,6 +70,15 @@ public abstract class BaseTable<M> implements Table<M> {
             Column.Fk<M, ?, ?> fk = (Column.Fk<M, ?, ?>) c;
             fkCols.add(fk);
         }
+    }
+
+    // This package only uses ColumnImpl objects so we're good
+    @SuppressWarnings("unchecked")
+    private void setColIndexAndTable(Column<M, ?> c, int index) {
+        assert c instanceof ColumnImpl;
+        ColumnImpl<M, ?> impl = (ColumnImpl<M, ?>) c;
+        impl.setIndex(index);
+        impl.setTable(this);
     }
 
 
@@ -101,7 +114,6 @@ public abstract class BaseTable<M> implements Table<M> {
     public Column<M, ?> getNaturalKeyColumn() {
         return naturalKeyColumn;
     }
-
     @Override
     public Map<String, Column<M, ?>> columnsByName() {
         return columnsByName;

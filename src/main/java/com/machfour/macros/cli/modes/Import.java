@@ -2,6 +2,7 @@ package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
@@ -94,12 +95,16 @@ public class Import extends CommandImpl {
             }
         } catch (SQLException e1) {
             out.println();
-            out.println("SQL Exception occurred: " + e1.getMessage());
-            out.println("Please check the format of the CSV files");
+            err.println("SQL Exception occurred: " + e1.getMessage());
             return 1;
         } catch (IOException e2) {
             out.println();
-            out.println("IO exception occurred: " + e2.getMessage());
+            err.println("IO exception occurred: " + e2.getMessage());
+            return 1;
+        } catch (TypeCastException e3) {
+            out.println();
+            err.println("Type cast exception occurred: " + e3.getMessage());
+            err.println("Please check the format of the CSV files");
             return 1;
         }
 

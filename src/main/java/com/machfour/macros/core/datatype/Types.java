@@ -1,7 +1,5 @@
 package com.machfour.macros.core.datatype;
 
-import com.machfour.macros.core.datatype.MacrosType;
-import com.machfour.macros.core.datatype.SqliteType;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +22,7 @@ public class Types {
         }
 
         @Override
-        public Boolean fromRaw(Object raw) {
+        public Boolean fromRaw(Object raw) throws TypeCastException {
             if (raw == null) {
                 return null;
             }
@@ -35,10 +33,22 @@ public class Types {
             }
         }
         @Override
-        public Boolean fromString(@NotNull String boolString) {
-            return boolString.equalsIgnoreCase("true")
-                || boolString.equalsIgnoreCase("yes")
-                || boolString.equals("1");
+        // TODO internationalisation...
+        public Boolean fromString(@NotNull String boolString) throws TypeCastException {
+            boolean truthy = boolString.equalsIgnoreCase("true")
+                    || boolString.equalsIgnoreCase("yes")
+                    || boolString.equalsIgnoreCase("y")
+                    || boolString.equals("1");
+            boolean falsey = boolString.equalsIgnoreCase("false")
+                    || boolString.equalsIgnoreCase("no")
+                    || boolString.equalsIgnoreCase("n")
+                    || boolString.equals("0");
+            assert !(truthy && falsey); // can't be both (bad programming)
+            if (!truthy && !falsey) { // if neither then it's a user problem
+                throw new TypeCastException("Cannot convert string '" + boolString + "' to boolean");
+            } else {
+                return truthy;
+            }
         }
         @Override
         public Class<Boolean> javaClass() {
@@ -65,11 +75,11 @@ public class Types {
             return "null-boolean";
         }
         @Override
-        public Boolean fromRaw(Object raw) {
+        public Boolean fromRaw(Object raw) throws TypeCastException {
             return raw == null ? false : super.fromRaw(raw);
         }
 
-        public Boolean fromString(@NotNull String boolString) {
+        public Boolean fromString(@NotNull String boolString) throws TypeCastException {
             return boolString.equals("") ? false : super.fromString(boolString);
         }
         @Override
@@ -80,15 +90,15 @@ public class Types {
     }
     public static final class Id implements MacrosType<Long> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "id";
         }
         @Override
-        public Long fromString(@NotNull String stringData) {
+        public Long fromString(@NotNull String stringData) throws TypeCastException {
             return stringToLong(stringData);
         }
         @Override
-        public Long fromRaw(Object data) {
+        public Long fromRaw(Object data) throws TypeCastException {
             return objectToLong(data);
         }
         @Override
@@ -103,15 +113,15 @@ public class Types {
 
     public static final class Int implements MacrosType<Long> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "integer";
         }
         @Override
-        public Long fromRaw(Object data) {
+        public Long fromRaw(Object data) throws TypeCastException {
             return objectToLong(data);
         }
         @Override
-        public Long fromString(@NotNull String stringData) {
+        public Long fromString(@NotNull String stringData) throws TypeCastException {
             return stringToLong(stringData);
         }
         @Override
@@ -126,7 +136,7 @@ public class Types {
 
     public static final class Real implements MacrosType<Double> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "real";
         }
         @Override
@@ -159,7 +169,7 @@ public class Types {
 
     public static final class Text implements MacrosType<String> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "text";
         }
         @Override
@@ -183,15 +193,15 @@ public class Types {
 
     public static final class Time implements MacrosType<Long> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "time";
         }
         @Override
-        public Long fromRaw(Object data) {
+        public Long fromRaw(Object data) throws TypeCastException {
             return objectToLong(data);
         }
         @Override
-        public Long fromString(@NotNull String stringData) {
+        public Long fromString(@NotNull String stringData) throws TypeCastException {
             return stringToLong(stringData);
         }
         @Override
@@ -206,7 +216,7 @@ public class Types {
 
     public static final class Date implements MacrosType<DateStamp> {
         @Override
-        public String toString() {
+        public @NotNull String toString() {
             return "date";
         }
         // convert from string
@@ -231,15 +241,15 @@ public class Types {
         }
     }
 
-    private static Long stringToLong(@NotNull String longString) {
+    private static Long stringToLong(@NotNull String longString) throws TypeCastException {
         try {
             return Long.parseLong(longString);
         } catch (NumberFormatException e) {
-            throw new ClassCastException("Cannot convert string '" + longString + "' to Long");
+            throw new TypeCastException("Cannot convert string '" + longString + "' to Long");
         }
     }
 
-    private static Long objectToLong(Object data) {
+    private static Long objectToLong(Object data) throws TypeCastException {
         Long converted;
         if (data == null) {
             converted = null;

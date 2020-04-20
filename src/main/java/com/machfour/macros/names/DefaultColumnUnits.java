@@ -1,10 +1,7 @@
 package com.machfour.macros.names;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.objects.EnergyUnit;
-import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.objects.QtyUnit;
-import com.machfour.macros.objects.Unit;
+import com.machfour.macros.objects.*;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,13 +40,13 @@ public class DefaultColumnUnits implements ColumnUnits {
         // add all the columns and units
         for (Column<NutritionData, Double> col : NutritionData.NUTRIENT_COLUMNS) {
             if (MILLIGRAMS_COLS.contains(col)) {
-                unitMap.put(col, QtyUnit.MILLIGRAMS);
+                unitMap.put(col, QtyUnits.MILLIGRAMS);
             } else if (col.equals(CALORIES)) {
                 unitMap.put(col, EnergyUnit.CALORIES);
             } else if (col.equals(KILOJOULES)) {
                 unitMap.put(col, EnergyUnit.KILOJOULES);
             } else {
-                unitMap.put(col, QtyUnit.GRAMS);
+                unitMap.put(col, QtyUnits.GRAMS);
             }
         }
         UNIT_MAP = Collections.unmodifiableMap(unitMap);

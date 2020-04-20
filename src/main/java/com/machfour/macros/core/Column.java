@@ -22,11 +22,10 @@ public interface Column<M, J> {
     J defaultData();
     MacrosType<J> getType();
 
+    Table<M> getTable();
+
     // unique index of column, giving its order.
     int index();
-
-    // to be used once to initialise the index. Future calls will throw exceptions.
-    void setIndex(int index);
 
     // whether the column should be shown to and editable by users
     boolean isUserEditable();

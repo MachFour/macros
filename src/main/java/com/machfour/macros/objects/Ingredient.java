@@ -21,7 +21,7 @@ public class Ingredient extends MacrosEntity<Ingredient> {
     private Ingredient(ColumnData<Ingredient> data, ObjectSource objectSource) {
         super(data, objectSource);
         serving = null;
-        qtyUnit = QtyUnit.fromAbbreviation(data.get(Schema.IngredientTable.QUANTITY_UNIT), true);
+        qtyUnit = QtyUnits.fromAbbreviation(data.get(Schema.IngredientTable.QUANTITY_UNIT), true);
         compositeFood = null;
         ingredientFood = null;
 

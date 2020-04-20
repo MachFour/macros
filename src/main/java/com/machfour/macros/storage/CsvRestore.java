@@ -4,6 +4,7 @@ import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.Table;
+import com.machfour.macros.core.datatype.TypeCastException;
 import org.supercsv.io.ICsvMapReader;
 
 import java.io.IOException;
@@ -18,7 +19,8 @@ public class CsvRestore {
      * Method for reading CSV files that directly correspond to a table
      * 'out' is for printing error messages
      */
-    public static <M> List<M> buildObjectsForRestore(Table<M> table, Reader csvData, PrintStream out) throws IOException {
+    public static <M> List<M> buildObjectsForRestore(Table<M> table, Reader csvData, PrintStream out)
+            throws IOException, TypeCastException {
         Map<String, Column<M, ?>> columnsByName = table.columnsByName();
         List<M> objectList = new ArrayList<>();
         Set<String> unrecognisedStrings = new HashSet<>();
@@ -44,7 +46,7 @@ public class CsvRestore {
 
 
     public static <M extends MacrosPersistable<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDatabase db, PrintStream out)
-            throws SQLException, IOException {
+            throws SQLException, IOException, TypeCastException {
         List<M> objects = buildObjectsForRestore(t, csvData, out);
         db.saveObjects(objects, ObjectSource.RESTORE);
     }

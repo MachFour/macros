@@ -23,7 +23,7 @@ public class FoodPortion extends MacrosEntity<FoodPortion> {
         food = null;
         meal = null;
         nutritionData = null;
-        qtyUnit = QtyUnit.fromAbbreviationNoThrow(data.get(Schema.FoodPortionTable.QUANTITY_UNIT));
+        qtyUnit = QtyUnits.fromAbbreviationNoThrow(data.get(Schema.FoodPortionTable.QUANTITY_UNIT));
     }
 
     public String prettyFormat(boolean withNotes) {

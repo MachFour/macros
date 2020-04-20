@@ -20,15 +20,15 @@ public class Schema {
     }
 
     private static <M> Column<M, Long> idColumn() {
-        return builder(ID_COLUMN_NAME, Types.ID).defaultValue(NO_ID).notNull().unique().notEditable().build();
+        return builder(ID_COLUMN_NAME, Types.ID).defaultsTo(NO_ID).notNull().unique().notEditable().build();
     }
 
     private static <M> Column<M, Long> createTimeColumn() {
-        return builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultValue(0L).notEditable().build();
+        return builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().build();
     }
 
     private static <M> Column<M, Long> modifyTimeColumn() {
-        return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultValue(0L).notEditable().build();
+        return builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().build();
     }
 
     private static <J> ColumnImpl.Builder<J> builder(String name, MacrosType<J> type) {
@@ -60,8 +60,11 @@ public class Schema {
             ABBREVIATION = builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().build();
             IS_VOLUME_UNIT = builder("is_volume_unit", Types.BOOLEAN).notNull().build();
             METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL).notNull().build();
+            INSTANCE = new QtyUnitTable();
         }
         private QtyUnitTable() {
+            // QtyUnit.factory() causes initialisation of QtyUnit, which depends on this class.
+            // So the columns are initialised as a side effect of calling this function.
             super(TABLE_NAME, QtyUnit.factory(), ID, CREATE_TIME, MODIFY_TIME, Arrays.asList(
                     NAME
                     , ABBREVIATION
@@ -70,11 +73,6 @@ public class Schema {
             ));
         }
         public static QtyUnitTable instance() {
-            // avoid circular references with static initialisers, caused as the QtyUnit class
-            // uses static initialisation of the built in units
-            if (INSTANCE == null) {
-                INSTANCE = new QtyUnitTable();
-            }
             return INSTANCE;
         }
     }
@@ -103,10 +101,10 @@ public class Schema {
             INDEX_NAME = builder("index_name", Types.TEXT).notNull().inSecondaryKey().unique().build();
             BRAND = builder("brand", Types.TEXT).build();
             VARIETY = builder("variety", Types.TEXT).build();
-            VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN).notNull().defaultValue(false).build();
+            VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN).notNull().defaultsTo(false).build();
             NAME = builder("name", Types.TEXT).notNull().build();
             NOTES = builder("notes", Types.TEXT).build();
-            FOOD_TYPE = builder("food_type", Types.TEXT).notEditable().notNull().defaultValue(FoodType.PRIMARY.getName()).build();
+            FOOD_TYPE = builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.getName()).build();
             USDA_INDEX = builder("usda_index", Types.INTEGER).notEditable().build();
             NUTTAB_INDEX = builder("nuttab_index", Types.TEXT).notEditable().build();
             CATEGORY = builder("category", Types.TEXT).notEditable().notNull()
@@ -150,8 +148,8 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumn();
             NAME = builder("name", Types.TEXT).notNull().build();
             QUANTITY = builder("quantity", Types.REAL).notNull().build();
-            IS_DEFAULT = builder("is_default", Types.NULLBOOLEAN).notNull().defaultValue(false).build();
-            FOOD_ID = builder("food_id", Types.ID).notEditable().notNull().defaultValue(NO_ID)
+            IS_DEFAULT = builder("is_default", Types.NULLBOOLEAN).notNull().defaultsTo(false).build();
+            FOOD_ID = builder("food_id", Types.ID).notEditable().notNull().defaultsTo(NO_ID)
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull()
                     .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
@@ -286,9 +284,9 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumn();
             NOTES = builder("notes", Types.TEXT).build();
             COMPOSITE_FOOD_ID = builder("composite_food_id", Types.ID).notEditable().notNull()
-                    .defaultValue(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
+                    .defaultsTo(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
             INGREDIENT_FOOD_ID = builder("ingredient_food_id", Types.ID).notEditable().notNull()
-                    .defaultValue(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
+                    .defaultsTo(NO_ID).buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY = builder("quantity", Types.REAL).notEditable().notNull().build();
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notEditable().notNull()
                     .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());
@@ -386,7 +384,7 @@ public class Schema {
             CREATE_TIME = createTimeColumn();
             MODIFY_TIME = modifyTimeColumn();
             DATA_SOURCE = builder("data_source", Types.TEXT).build();
-            QUANTITY = builder("quantity", Types.REAL).notNull().defaultValue(100.0).build();
+            QUANTITY = builder("quantity", Types.REAL).notNull().defaultsTo(100.0).build();
             DENSITY = builder("density", Types.REAL).build();
             KILOJOULES = builder("kilojoules", Types.REAL).build();
             CALORIES = builder("calories", Types.REAL).build();
@@ -411,7 +409,7 @@ public class Schema {
             WATER = builder("water", Types.REAL).build();
             ALCOHOL = builder("alcohol", Types.REAL).build();
             // FOOD_ID can be null for computed instances
-            FOOD_ID = builder("food_id", Types.ID).notEditable().defaultValue(NO_ID).inSecondaryKey().unique()
+            FOOD_ID = builder("food_id", Types.ID).notEditable().defaultsTo(NO_ID).inSecondaryKey().unique()
                     .buildFk(FoodTable.ID, FoodTable.instance());
             QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull()
                     .buildFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance());

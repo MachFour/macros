@@ -7,8 +7,8 @@ public interface MacrosType<J> {
 
     // These methods perform type-specific conversion is necessary
     // if raw is null then null will be returned
-    J fromRaw(@Nullable Object raw);
-    J fromString(@NotNull String stringData);
+    J fromRaw(@Nullable Object raw) throws TypeCastException;
+    J fromString(@NotNull String stringData) throws TypeCastException;
 
     // This returns the data in a form that is able to be inserted into a database
     // for SQLite, this means, for example, that booleans become integers.

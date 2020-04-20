@@ -95,7 +95,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
         boolean hasEnergy = completeData.get(CALORIES) || completeData.get(KILOJOULES);
         completeData.put(CALORIES, hasEnergy);
         completeData.put(KILOJOULES, hasEnergy);
-        qtyUnit = QtyUnit.fromAbbreviation(dataMap.get(QUANTITY_UNIT), true);
+        qtyUnit = QtyUnits.fromAbbreviation(dataMap.get(QUANTITY_UNIT), true);
     }
 
     public static Table<NutritionData> table() {
@@ -177,7 +177,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
             combinedDataMap.put(DENSITY, null);
         }
         combinedDataMap.put(QUANTITY, sumQuantity);
-        combinedDataMap.put(QUANTITY_UNIT, QtyUnit.GRAMS.abbr());
+        combinedDataMap.put(QUANTITY_UNIT, QtyUnits.GRAMS.abbr());
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
 
@@ -393,7 +393,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
     }
 
     private NutritionData convertToGramsIfNecessary() {
-        if (!qtyUnit().equals(QtyUnit.GRAMS)) {
+        if (!qtyUnit().equals(QtyUnits.GRAMS)) {
             // then convert to grams, guessing density if required
             double density;
             boolean guessedDensity;
@@ -406,7 +406,7 @@ public class NutritionData extends MacrosEntity<NutritionData> {
                 guessedDensity = true;
 
             }
-            return convertQuantityUnit(QtyUnit.GRAMS, density, guessedDensity);
+            return convertQuantityUnit(QtyUnits.GRAMS, density, guessedDensity);
         } else {
             return this;
         }

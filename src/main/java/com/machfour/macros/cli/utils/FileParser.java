@@ -225,9 +225,9 @@ public final class FileParser {
                 }
                 String unitString = quantityMatch.group("unit");
                 if (unitString == null) {
-                    spec.unit = QtyUnit.GRAMS;
+                    spec.unit = QtyUnits.GRAMS;
                 } else {
-                    spec.unit = QtyUnit.fromAbbreviationNoThrow(unitString);
+                    spec.unit = QtyUnits.fromAbbreviationNoThrow(unitString);
                     if (spec.unit == null) {
                         // invalid unit
                         spec.error = "unrecognised unit";

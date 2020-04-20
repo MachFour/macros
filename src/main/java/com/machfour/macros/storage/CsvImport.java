@@ -1,6 +1,7 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.*;
+import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.util.Pair;
 import com.machfour.macros.validation.SchemaViolation;
@@ -17,7 +18,7 @@ import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
 public class CsvImport {
     // don't edit csvRow keyset!
-    static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) {
+    static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) throws TypeCastException {
         Set<String> relevantCols = new HashSet<>(csvRow.keySet());
         relevantCols.retainAll(table.columnsByName().keySet());
         ImportData<M> data = new ImportData<>(table);
@@ -48,7 +49,8 @@ public class CsvImport {
         return result;
     }
     // Returns map of food index name to parsed food and nutrition columnData objects
-    private static List<Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv) throws IOException {
+    private static List<Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv)
+            throws IOException, TypeCastException {
         List<Pair<ImportData<Food>, ImportData<NutritionData>>> data = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
@@ -67,7 +69,8 @@ public class CsvImport {
 
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
-    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDatabase db) throws IOException, SQLException {
+    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDatabase db)
+            throws IOException, SQLException, TypeCastException {
         Map<String, List<Ingredient>> data = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(ingredientCsv)) {
             final String[] header = mapReader.getHeader(true);
@@ -113,7 +116,8 @@ public class CsvImport {
     // creates Composite food objects with ingredients lists (all with no IDs), but the ingredients are raw
     // (don't have linked food objects of their own)
     //
-    static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Map<String, List<Ingredient>> ingredients) throws IOException {
+    static Map<String, CompositeFood> buildCompositeFoodObjectTree(Reader recipeCsv, Map<String, List<Ingredient>> ingredients)
+            throws IOException, TypeCastException {
         // preserve insertion order
         Map<String, CompositeFood> foodMap = new LinkedHashMap<>();
         Map<String, ImportData<NutritionData>> ndMap = new LinkedHashMap<>();
@@ -157,7 +161,7 @@ public class CsvImport {
 
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
-    static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException {
+    static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException, TypeCastException {
         // preserve insertion order
         Map<String, Food> foodMap = new LinkedHashMap<>();
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
@@ -191,13 +195,13 @@ public class CsvImport {
         return foodMap;
     }
 
-    static List<Serving> buildServings(Reader servingCsv) throws IOException {
+    static List<Serving> buildServings(Reader servingCsv) throws IOException, TypeCastException {
         List<Serving> servings = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(servingCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
-                ImportData<Serving> servingData = extractData(csvRow, Schema.ServingTable.instance());
+                ImportData<Serving> servingData = extractData(csvRow, Serving.table());
                 String foodIndexName = csvRow.get(INDEX_NAME.sqlName());
                 Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
                 // TODO move next line to be run immediately before saving
@@ -251,19 +255,22 @@ public class CsvImport {
         db.saveObjects(completedNd, ObjectSource.IMPORT);
     }
 
-    public static void importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+    public static void importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite)
+            throws IOException, SQLException, TypeCastException {
         Map<String, Food> csvFoods = buildFoodObjectTree(foodCsv);
         saveImportedFoods(csvFoods, db);
     }
 
     // TODO detect existing servings
-    public static void importServings(Reader servingCsv, MacrosDatabase db, boolean allowOverwrite) throws IOException, SQLException {
+    public static void importServings(Reader servingCsv, MacrosDatabase db, boolean allowOverwrite)
+            throws IOException, SQLException, TypeCastException {
         List<Serving> csvServings = CsvImport.buildServings(servingCsv);
         List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
         db.saveObjects(completedServings, ObjectSource.IMPORT);
     }
 
-    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDatabase db) throws IOException, SQLException {
+    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDatabase db)
+            throws IOException, SQLException, TypeCastException {
         Map<String, List<Ingredient>> ingredientsByRecipe = makeIngredients(ingredientCsv, db);
         Map<String, CompositeFood> csvRecipes = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe);
         Set<String> duplicateRecipes = findDuplicateIndexNames(csvRecipes.keySet(), db);

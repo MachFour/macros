@@ -1,7 +1,7 @@
 package com.machfour.macros.storage;
 
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.core.MacrosPersistable;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.util.DateStamp;
 
@@ -60,7 +60,7 @@ public interface MacrosDataSource {
 
     // returns number of objects saved correctly (i.e. 0 or 1)
     // TODO return the ID of the saved object
-    <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException;
+    <M extends MacrosEntity<M>> int saveObject(M object) throws SQLException;
 
     /* These functions save the objects given to them into the database, via INSERT or UPDATE.
      * The caller should ensure that objects with an id of null correspond to new entries
@@ -72,12 +72,12 @@ public interface MacrosDataSource {
     // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
     // TODO return the ID of the inserted objects
-    <M extends MacrosPersistable<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException;
-    <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
+    <M extends MacrosEntity<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException;
+    <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
 
-    <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException;
+    <M extends MacrosEntity<M>> int deleteObject(M object) throws SQLException;
 
-    <M extends MacrosPersistable<M>> int deleteObjects(List<M> objects) throws SQLException;
+    <M extends MacrosEntity<M>> int deleteObjects(List<M> objects) throws SQLException;
 
     /*
      * FoodTable search done by substring matching the searchString against any of the given columns

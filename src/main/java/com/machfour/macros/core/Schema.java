@@ -8,7 +8,7 @@ import com.machfour.macros.util.DateStamp;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static com.machfour.macros.core.MacrosPersistable.NO_ID;
+import static com.machfour.macros.core.MacrosEntity.NO_ID;
 
 public class Schema {
 

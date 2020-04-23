@@ -334,7 +334,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
+    protected <M extends MacrosEntity<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
         if (objectData.isEmpty()) {
             return 0;
         }
@@ -372,7 +372,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     // Note that if the id is not found in the database, nothing will be inserted
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
+    public <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
         if (objects.isEmpty()) {
             return 0;
         }
@@ -424,7 +424,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
+    protected <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
         String idCol = table.getIdColumn().sqlName();
         String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name() + " WHERE " + idCol + " = " + id;
         boolean exists;
@@ -440,7 +440,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
+    protected <M extends MacrosEntity<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
         Column<M, Long> idCol = table.getIdColumn();
         Map<Long, Boolean> idMap = new LinkedHashMap<>(ids.size(), 1);
         Connection c = getConnection();

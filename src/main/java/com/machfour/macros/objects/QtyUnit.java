@@ -8,7 +8,7 @@ import static com.machfour.macros.core.Schema.QtyUnitTable.*;
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
-public class QtyUnit extends MacrosEntity<QtyUnit> implements Measurement<QtyUnit>, Unit {
+public class QtyUnit extends MacrosEntityImpl<QtyUnit> implements Measurement<QtyUnit>, Unit {
 
     public static Factory<QtyUnit> factory() {
         return QtyUnit::new;

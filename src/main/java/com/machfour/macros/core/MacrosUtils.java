@@ -1,13 +1,11 @@
 package com.machfour.macros.core;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 // TODO are any of these methods used?
 public class MacrosUtils {
@@ -80,7 +78,7 @@ public class MacrosUtils {
     }
 
     public static long idFromString(String value) {
-        return "".equals(value) ? MacrosPersistable.NO_ID : Long.valueOf(value);
+        return "".equals(value) ? MacrosEntity.NO_ID : Long.valueOf(value);
     }
 
     public static long getCurrentTimeStamp() {
@@ -89,11 +87,11 @@ public class MacrosUtils {
     }
 
     public static String idToString(long id) {
-        return id == MacrosPersistable.NO_ID ? "" : Long.toString(id);
+        return id == MacrosEntity.NO_ID ? "" : Long.toString(id);
     }
 
     public static long unboxNullableID(Long nullableId) {
-        return nullableId == null ? MacrosPersistable.NO_ID : nullableId;
+        return nullableId == null ? MacrosEntity.NO_ID : nullableId;
     }
 
     public static boolean unboxNullableBoolean(Boolean nullableBoolean) {

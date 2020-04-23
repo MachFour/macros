@@ -1,202 +1,56 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.validation.SchemaViolation;
-import com.machfour.macros.validation.ValidationError;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Map;
+
+import static java.lang.Double.NaN;
 
 /**
- * parent class for all macros persistable objects
+ * Defines common methods for each object to be persisted
  */
 
-public abstract class MacrosEntity<M extends MacrosPersistable> implements MacrosPersistable<M> {
-    private final ColumnData<M> dataMap;
-    // whether this object was created from a database instance or whether it was created by the
-    // application (e.g. by a 'new object' action initiated by the user)
-    private final ObjectSource objectSource;
-    private final Date createDate;
-    private final Date modifyDate;
-    // TODO only really need to map to the Natural key value,
-    // but there's no convenient way of enforcing the type relationship except by wrapping it in a ColumnData
-    private final Map<Column.Fk<M, ?, ?>, ColumnData<?>> fkNaturalKeyMap;
+public interface MacrosEntity<M extends MacrosEntity> {
 
-    @Override
-    public Map<Column.Fk<M, ?, ?>, ColumnData<?>> getFkNaturalKeyMap() {
-        return Collections.unmodifiableMap(fkNaturalKeyMap);
-    }
+    long NO_ID = -100;
+    // special ID for the 'null' serving of just grams / mL
+    long UNIT_SERVING = -101;
+    long NO_DATE = -99;
+    double UNSET = NaN;
 
-    @Override
-    public void copyFkNaturalKeyMap(MacrosPersistable<M> from) {
-        for (Column.Fk<M, ?, ?> fkCol : from.getFkNaturalKeyMap().keySet()) {
-            fkNaturalKeyMap.put(fkCol, from.getFkParentNaturalKey(fkCol));
-        }
-    }
-
-    // NOTE data passed in is made Immutable as a side effect
-    protected MacrosEntity(ColumnData<M> data, ObjectSource objectSource) {
-        Map<Column<M, ?>, List<ValidationError>> errors = MacrosBuilder.validate(data);
-        if (!errors.isEmpty()) {
-            throw new SchemaViolation(errors);
-        }
-        //this.dataMap = new ColumnData<>(data);
-        this.dataMap = data;
-        this.dataMap.setImmutable();
-        this.objectSource = objectSource;
-        this.fkNaturalKeyMap = new HashMap<>();
-        this.createDate = new Date(data.get(getTable().getCreateTimeColumn())*1000);
-        this.modifyDate = new Date(data.get(getTable().getModifyTimeColumn())*1000);
-        checkObjectSource();
-    }
-
-    // ensures that the presence of the ID is consistent with the semantics of the objectSource
-    // see ObjectSource class for more documentation
-    private void checkObjectSource() {
-        switch (objectSource) {
-            case IMPORT:
-            case USER_NEW:
-            case COMPUTED:
-                assert !hasId() : "Object should not have an ID";
-                break;
-            case DB_EDIT:
-            case RESTORE:
-            case DATABASE:
-            case INBUILT:
-                assert hasId() : "Object should have an ID";
-                break;
-            default:
-                assert false : "Unrecognised objectSource: " + objectSource;
-        }
-
-    }
-    // this also works for import (without IDs) because both columns are NO_ID
-    protected static <M extends MacrosPersistable<M>, J, N extends MacrosPersistable<N>> boolean foreignKeyMatches(
-            MacrosEntity<M> childObj, Column.Fk<M, J, N> childCol, MacrosEntity<N> parentObj) {
-        J childData = childObj.getData(childCol);
-        J parentData = parentObj.getData(childCol.getParentColumn());
-        return MacrosUtils.objectsEquals(childData, parentData);
-    }
-    /*
-    // used by child classes to create default instance
-    protected MacrosEntity() {
-        this(MacrosPersistable.NO_ID, getCurrentTimeStamp(), getCurrentTimeStamp(), false);
-    }
-    */
     @NotNull
-    public Long getId() {
-        return getData(getTable().getIdColumn());
+    Long getId();
+
+    default boolean hasId() {
+        return getId() != NO_ID;
     }
 
     @NotNull
-    public Long createTime() {
-        return getData(getTable().getCreateTimeColumn());
-    }
+    Long createTime();
 
     @NotNull
-    public Long modifyTime() {
-        return getData(getTable().getModifyTimeColumn());
-    }
+    Long modifyTime();
 
     @NotNull
-    public Date createDate() {
-        return createDate;
-    }
+    ObjectSource getObjectSource();
 
-    @NotNull
-    public Date modifyDate() {
-        return modifyDate;
-    }
+    // Used to get data by column objects
+    <J> J getData(Column<M, J> c);
 
-    @Override
-    @NotNull
-    public ObjectSource getObjectSource() {
-        return objectSource;
-    }
+    boolean hasData(Column<M, ?> c);
 
-    @Override
-    public int hashCode() {
-        //return getAllData().hashCode() + getObjectSource().ordinal();
-        return getAllData().hashCode();
-    }
+    // Creates a mapping of column objects to their values for this instance
+    ColumnData<M> getAllData(boolean readOnly);
+    // equivalent to getAllData(true)
+    ColumnData<M> getAllData();
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof MacrosEntity
-            //&& isFromDb == ((MacrosEntity) o).isFromDb
-            && dataMap.equals(((MacrosEntity) o).dataMap);
-    }
+    Table<M> getTable();
+    Factory<M> getFactory();
 
-    public boolean equalsWithoutMetadata(MacrosPersistable<M> o) {
-        if (o == null) {
-            return false;
-        }
-        List<Column<M, ?>> columnsToCheck = new ArrayList<>(getTable().columns());
-        columnsToCheck.remove(getTable().getIdColumn());
-        columnsToCheck.remove(getTable().getCreateTimeColumn());
-        columnsToCheck.remove(getTable().getModifyTimeColumn());
-        return ColumnData.columnsAreEqual(dataMap, o.getAllData(), columnsToCheck);
-    }
-
-    @Override
-    public <J> J getData(Column<M, J> c) {
-        J data = dataMap.get(c);
-        assert c.isNullable() || data != null : "null data retrieved from not-nullable column";
-        return data;
-    }
-
-    @Override
-    public boolean hasData(Column<M, ?> c) {
-        return dataMap.hasData(c);
-    }
-
-    // returns immutable copy of data map
-    @Override
-    public ColumnData<M> getAllData() {
-        return getAllData(true);
-    }
-    @Override
-    public ColumnData<M> getAllData(boolean readOnly) {
-        if (readOnly) {
-            return dataMap;
-        } else {
-            return dataMap.copy();
-        }
-    }
-
-    @Override
-    public abstract Table<M> getTable();
-    @Override
-    public abstract Factory<M> getFactory();
-
-
-    // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
-    // shares the same parameter as the wildcard being captured.
-    @Override
-    public <N extends MacrosPersistable<N>, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> fkCol, Column<N, J> parentNaturalKey, N parent) {
-        setFkParentNaturalKey(fkCol, parentNaturalKey, parent.getData(parentNaturalKey));
-    }
-
-    // ... or when only the relevant column data is available, but then it's only limited to single-column secondary keys
-    @Override
-    public <N, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> col, Column<N, J> parentNaturalKey, J data) {
-        assert parentNaturalKey.isUnique();
-        List<Column<N, ?>> parentKeyColAsList = Collections.singletonList(parentNaturalKey);
-        ColumnData<N> parentSecondaryKey = new ColumnData<>(col.getParentTable(), parentKeyColAsList);
-        parentSecondaryKey.put(parentNaturalKey, data);
-        fkNaturalKeyMap.put(col, parentSecondaryKey);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <N> ColumnData<N> getFkParentNaturalKey(Column.Fk<M, ?, N> fkCol) {
-        // Generics ensure that the table types match
-        assert getFkNaturalKeyMap().containsKey(fkCol) : "No FK parent data for column: " + fkCol;
-        return (ColumnData<N>) getFkNaturalKeyMap().get(fkCol);
-    }
-
-    @Override
-    public String toString() {
-        return getTable().name() + " object, objectSource: " + objectSource + ", data: " + dataMap.toString();
-    }
+    // ... Alternative methods that can be used with unique columns
+    <N extends MacrosEntity<N>, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> fkCol, Column<N, J> parentNaturalKey, N parent);
+    <N, J> void setFkParentNaturalKey(Column.Fk<M, ?, N> fkCol, Column<N, J> parentNaturalKey, J data);
+    <N> ColumnData<N> getFkParentNaturalKey(Column.Fk<M, ?, N> fkCol);
+    Map<Column.Fk<M, ?, ?>, ?> getFkNaturalKeyMap();
+    void copyFkNaturalKeyMap(MacrosEntity<M> from);
 }

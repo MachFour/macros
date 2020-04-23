@@ -2,7 +2,7 @@ package com.machfour.macros.objects;
 
 import com.machfour.macros.core.*;
 
-public class FoodCategory extends MacrosEntity<FoodCategory> {
+public class FoodCategory extends MacrosEntityImpl<FoodCategory> {
 
     public FoodCategory(ColumnData<FoodCategory> data, ObjectSource objectSource) {
         super(data, objectSource);

@@ -4,7 +4,7 @@ import com.machfour.macros.core.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FoodPortion extends MacrosEntity<FoodPortion> {
+public class FoodPortion extends MacrosEntityImpl<FoodPortion> {
 
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.

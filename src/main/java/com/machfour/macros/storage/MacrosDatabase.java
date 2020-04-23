@@ -19,12 +19,12 @@ import static com.machfour.macros.storage.DatabaseUtils.toList;
 public abstract class MacrosDatabase implements MacrosDataSource {
 
     // fkColumns by definition contains only the foreign key columns
-    protected static <M extends MacrosPersistable<M>> boolean fkIdsPresent(M object) {
+    protected static <M extends MacrosEntity<M>> boolean fkIdsPresent(M object) {
         boolean idsPresent = true;
         for (Column.Fk<M, ?, ?> fkCol : object.getTable().fkColumns()) {
             // if the FK refers to an ID column and it's not nullable, make sure there's a value
             if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn()) && !fkCol.isNullable()) {
-                idsPresent &= object.hasData(fkCol) && !object.getData(fkCol).equals(MacrosPersistable.NO_ID);
+                idsPresent &= object.hasData(fkCol) && !object.getData(fkCol).equals(MacrosEntity.NO_ID);
             }
         }
         return idsPresent;
@@ -97,14 +97,14 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     // TODO make protected -- but it's useful for CSV export
     public abstract <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
+    protected abstract <M extends MacrosEntity<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException;
 
     // Note that if the id is not found in the database, nothing will be inserted
-    public abstract <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
+    public abstract <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException;
+    protected abstract <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException;
 
-    protected abstract <M extends MacrosPersistable<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException;
+    protected abstract <M extends MacrosEntity<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException;
 
     public abstract <M> int clearTable(Table<M> t) throws SQLException;
 
@@ -118,12 +118,12 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public <M extends MacrosPersistable<M>> int deleteObject(@NotNull M o) throws SQLException {
+    public <M extends MacrosEntity<M>> int deleteObject(@NotNull M o) throws SQLException {
         return deleteById(o.getId(), o.getTable());
     }
 
     // TODO make this the general one
-    public <M extends MacrosPersistable<M>> int deleteObjects(@NotNull List<M> objects) throws SQLException {
+    public <M extends MacrosEntity<M>> int deleteObjects(@NotNull List<M> objects) throws SQLException {
         int deleted = 0;
         if (!objects.isEmpty()) {
             Table<M> t = objects.get(0).getTable();
@@ -495,7 +495,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return getOrDefault(returned, key, null);
     }
 
-    public <M extends MacrosPersistable<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosEntity<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
         List<ColumnData<M>> objectData = new ArrayList<>(objects.size());
         for (M object: objects)  {
             objectData.add(object.getAllData());
@@ -504,7 +504,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for natural key column type
-    private <M extends MacrosPersistable<M>, J, N, I> Map<I, J> completeFkIdColHelper(
+    private <M extends MacrosEntity<M>, J, N, I> Map<I, J> completeFkIdColHelper(
             Column.Fk<M, J, N> fkColumn, Column<N, I> parentNaturalKeyCol, List<ColumnData<N>> data) throws SQLException {
         assert (parentNaturalKeyCol.isUnique());
         Set<I> uniqueColumnValues = new HashSet<>(data.size());
@@ -515,7 +515,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for parent unique column type
-    private <M extends MacrosPersistable<M>, J, N> List<M> completeFkCol(
+    private <M extends MacrosEntity<M>, J, N> List<M> completeFkCol(
             List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
@@ -544,11 +544,11 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // only Storage classes should know about these two methods
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+    <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
         return completeForeignKeys(objects, toList(fk));
     }
 
-    <M extends MacrosPersistable<M>> List<M> completeForeignKeys(
+    <M extends MacrosEntity<M>> List<M> completeForeignKeys(
             Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         if (!objects.isEmpty()) {
@@ -572,8 +572,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return completedObjects;
     }
 
-    private <M extends MacrosPersistable<M>> boolean isInDatabase(@NotNull M o) throws SQLException {
-        if (o.getId() != MacrosPersistable.NO_ID) {
+    private <M extends MacrosEntity<M>> boolean isInDatabase(@NotNull M o) throws SQLException {
+        if (o.getId() != MacrosEntity.NO_ID) {
             return idExistsInTable(o.getTable(), o.getId());
         } else {
             List<Column<M, ?>> secondaryKey = o.getTable().getSecondaryKeyCols();
@@ -585,7 +585,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public <M extends MacrosPersistable<M>> int saveObjects(Collection<? extends M> objects, ObjectSource objectSource) throws SQLException {
+    public <M extends MacrosEntity<M>> int saveObjects(Collection<? extends M> objects, ObjectSource objectSource) throws SQLException {
         switch (objectSource) {
             case IMPORT:
                 // TODO have overwrite mode; split import into new insert and updates
@@ -610,7 +610,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
-    public <M extends MacrosPersistable<M>> int saveObject(@NotNull M o) throws SQLException {
+    public <M extends MacrosEntity<M>> int saveObject(@NotNull M o) throws SQLException {
         return saveObjects(toList(o), o.getObjectSource());
     }
 }

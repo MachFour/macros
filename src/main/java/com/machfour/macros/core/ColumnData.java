@@ -30,7 +30,7 @@ public class ColumnData<M>  {
 
     // null represented by empty string
     @NotNull
-    public final <J> String getAsString(Column<M, J> col) {
+    public final <J> String getAsRawString(Column<M, J> col) {
         return col.getType().toRawString(get(col));
     }
     // null represented by "NULL"

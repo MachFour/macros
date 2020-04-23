@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.List;
 
 public class CsvExport {
-    static <M extends MacrosPersistable<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
+    static <M extends MacrosEntity<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
         final String[] header = table.columnsByName().keySet().toArray(new String[0]);
         try (ICsvMapWriter mapWriter = getMapWriter(csvOut)) {
             // header columns are used as the keys to the Map
@@ -29,7 +29,7 @@ public class CsvExport {
         Map<String, String> dataMap = new LinkedHashMap<>(); // preserve column index order
         for (Column<M, ?> col: data.getTable().columns()) {
             // null data gets mapped to empty string
-            String value = data.getAsString(col);
+            String value = data.getAsRawString(col);
             dataMap.put(col.sqlName(), value);
         }
         return dataMap;
@@ -40,7 +40,7 @@ public class CsvExport {
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
-    public static <M extends MacrosPersistable<M>> void exportTable(Table<M> t, Writer outCsv, MacrosDatabase db) throws SQLException, IOException {
+    public static <M extends MacrosEntity<M>> void exportTable(Table<M> t, Writer outCsv, MacrosDatabase db) throws SQLException, IOException {
         // TODO do we need to get raw objects? This method should probably be protected...
         Map<Long, M> rawObjectMap = db.getAllRawObjects(t);
         List<M> allRawObjects = new ArrayList<>(rawObjectMap.values());

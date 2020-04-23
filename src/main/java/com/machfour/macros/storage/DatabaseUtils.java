@@ -1,6 +1,6 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.MacrosPersistable;
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
 import com.machfour.macros.core.datatype.MacrosType;
@@ -166,7 +166,7 @@ public class DatabaseUtils {
         return array;
     }
 
-    static <M extends MacrosPersistable> Map<Long, M> makeIdMap(Collection<M> objects) {
+    static <M extends MacrosEntity> Map<Long, M> makeIdMap(Collection<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);
         for (M m : objects) {
             assert !idMap.containsKey(m.getId()) : "Two objects had the same ID";

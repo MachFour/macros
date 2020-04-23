@@ -1,8 +1,6 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.core.datatype.TypeCastException;
-import com.machfour.macros.validation.Validation;
 import com.machfour.macros.validation.ValidationError;
 
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class MacrosBuilder<M extends MacrosPersistable<M>> {
+public class MacrosBuilder<M extends MacrosEntity<M>> {
     private final List<Column<M, ?>> settableColumns;
     private final Table<M> table;
     private final Factory<M> objectFactory;
@@ -69,6 +67,13 @@ public class MacrosBuilder<M extends MacrosPersistable<M>> {
     @Nullable
     public <J> J getField(Column<M, J> col) {
         return draftData.get(col);
+    }
+
+    @NotNull
+    // null data represented as blank strings
+    public <J> String getFieldAsString(Column<M, J> col) {
+        J data = getField(col);
+        return data == null ? "" : data.toString();
     }
 
     /*

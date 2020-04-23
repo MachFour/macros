@@ -12,7 +12,7 @@ import com.machfour.macros.core.datatype.Types;
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
 
 // immutable class storing nutrition data for a food or meal
-public class NutritionData extends MacrosEntity<NutritionData> {
+public class NutritionData extends MacrosEntityImpl<NutritionData> {
 
     private static final double CAL_TO_KJ_FACTOR = 4.186;
     private static final double CALS_PER_G_PROTEIN = 17/CAL_TO_KJ_FACTOR;

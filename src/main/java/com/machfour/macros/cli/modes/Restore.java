@@ -1,19 +1,17 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
-import com.machfour.macros.core.MacrosPersistable;
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
-import com.machfour.macros.storage.CsvExport;
 import com.machfour.macros.storage.CsvRestore;
 import com.machfour.macros.storage.MacrosDatabase;
 import com.machfour.macros.util.FileUtils;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -33,7 +31,7 @@ public class Restore extends CommandImpl {
         out.println("Warning: this will overwrite all data in the database!");
     }
 
-    private <M extends MacrosPersistable<M>> void restoreTable(MacrosDatabase db, String exportDir, Table<M> t)
+    private <M extends MacrosEntity<M>> void restoreTable(MacrosDatabase db, String exportDir, Table<M> t)
             throws SQLException, IOException, TypeCastException {
         out.println("Restoring " + t.name() + " table...");
         String csvPath = FileUtils.joinPath(exportDir, t.name() + ".csv");

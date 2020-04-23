@@ -3,7 +3,7 @@ package com.machfour.macros.objects;
 import com.machfour.macros.core.*;
 import org.jetbrains.annotations.NotNull;
 
-public class Serving extends MacrosEntity<Serving> implements Measurement<Serving> {
+public class Serving extends MacrosEntityImpl<Serving> implements Measurement<Serving> {
 
     private Food food;
     private QtyUnit qtyUnit;

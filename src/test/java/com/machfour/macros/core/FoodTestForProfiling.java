@@ -35,7 +35,7 @@ class FoodTestForProfiling {
 
     private static void doFood() {
         foodDc = new ColumnData<>(Schema.FoodTable.instance());
-        foodDc.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
+        foodDc.put(Schema.FoodTable.ID, MacrosEntity.NO_ID);
         foodDc.put(Schema.FoodTable.CREATE_TIME, 0L);
         foodDc.put(Schema.FoodTable.MODIFY_TIME, 0L);
         foodDc.put(Schema.FoodTable.INDEX_NAME, "food1");

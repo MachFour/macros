@@ -2,7 +2,7 @@ package com.machfour.macros.objects;
 
 import com.machfour.macros.core.*;
 
-public class AttrMapping extends MacrosEntity<AttrMapping> {
+public class AttrMapping extends MacrosEntityImpl<AttrMapping> {
 
     private AttrMapping(ColumnData<AttrMapping> data, ObjectSource objectSource) {
         super(data, objectSource);

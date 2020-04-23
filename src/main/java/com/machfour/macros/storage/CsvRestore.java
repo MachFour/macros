@@ -1,7 +1,7 @@
 package com.machfour.macros.storage;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.core.MacrosPersistable;
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.TypeCastException;
@@ -45,7 +45,7 @@ public class CsvRestore {
     }
 
 
-    public static <M extends MacrosPersistable<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDatabase db, PrintStream out)
+    public static <M extends MacrosEntity<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDatabase db, PrintStream out)
             throws SQLException, IOException, TypeCastException {
         List<M> objects = buildObjectsForRestore(t, csvData, out);
         db.saveObjects(objects, ObjectSource.RESTORE);

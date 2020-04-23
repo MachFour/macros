@@ -64,13 +64,13 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> int deleteObject(M object) throws SQLException {
+    public <M extends MacrosEntity<M>> int deleteObject(M object) throws SQLException {
         onDbWrite(object);
         return upstream.deleteObject(object);
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> int deleteObjects(List<M> objects) throws SQLException {
+    public <M extends MacrosEntity<M>> int deleteObjects(List<M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
@@ -166,28 +166,28 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
-    public <M extends MacrosPersistable<M>> int saveObject(M object) throws SQLException {
+    public <M extends MacrosEntity<M>> int saveObject(M object) throws SQLException {
         onDbWrite(object);
         return upstream.saveObject(object);
     }
 
 
     @Override
-    public <M extends MacrosPersistable<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
+    public <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
         return upstream.updateObjects(objects);
     }
     @Override
-    public <M extends MacrosPersistable<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
+    public <M extends MacrosEntity<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
         return upstream.updateObjects(objects);
     }
 
-    private <M extends MacrosPersistable<M>> void onDbWrite(M object) {
+    private <M extends MacrosEntity<M>> void onDbWrite(M object) {
         if (object instanceof Food) {
             allFoodsNeedsRefresh = true;
             unCache(object.getId(), Schema.FoodTable.instance());
@@ -200,7 +200,7 @@ public class MacrosDataCache implements MacrosDataSource {
         }
     }
 
-    private <M extends MacrosPersistable<M>> void unCache(Long id, Table<M> type) {
+    private <M extends MacrosEntity<M>> void unCache(Long id, Table<M> type) {
         if (type instanceof Schema.FoodTable) {
             foodCache.remove(id);
         } else if (type instanceof Schema.MealTable) {

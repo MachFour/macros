@@ -40,7 +40,7 @@ class FoodTest {
     @BeforeAll
     static void doFood() {
         foodData = new ColumnData<>(Schema.FoodTable.instance());
-        foodData.put(Schema.FoodTable.ID, MacrosPersistable.NO_ID);
+        foodData.put(Schema.FoodTable.ID, MacrosEntity.NO_ID);
         foodData.put(Schema.FoodTable.CREATE_TIME, 0L);
         foodData.put(Schema.FoodTable.MODIFY_TIME, 0L);
         foodData.put(Schema.FoodTable.INDEX_NAME, "food1");

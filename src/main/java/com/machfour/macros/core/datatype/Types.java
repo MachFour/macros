@@ -3,6 +3,8 @@ package com.machfour.macros.core.datatype;
 import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.*;
+
 // basic types corresponding roughly to database types
 // TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type
 public class Types {
@@ -16,6 +18,18 @@ public class Types {
     public static final Date DATESTAMP = new Date();
 
     public static class Bool implements MacrosType<Boolean> {
+        private static final Set<String> truthyStrings;
+        private static final Set<String> falseyStrings;
+
+        static {
+            // TODO internationalisation lol
+            List<String> truthyStringsList = Arrays.asList("true", "t", "yes", "y", "1");
+            List<String> falseyStringsList = Arrays.asList("false", "f", "no", "n", "0");
+
+            truthyStrings = Collections.unmodifiableSet(new HashSet<>(truthyStringsList));
+            falseyStrings = Collections.unmodifiableSet(new HashSet<>(falseyStringsList));
+        }
+
         @Override @NotNull
         public String toString() {
             return "boolean";
@@ -35,15 +49,10 @@ public class Types {
         @Override
         // TODO internationalisation...
         public Boolean fromString(@NotNull String boolString) throws TypeCastException {
-            boolean truthy = boolString.equalsIgnoreCase("true")
-                    || boolString.equalsIgnoreCase("yes")
-                    || boolString.equalsIgnoreCase("y")
-                    || boolString.equals("1");
-            boolean falsey = boolString.equalsIgnoreCase("false")
-                    || boolString.equalsIgnoreCase("no")
-                    || boolString.equalsIgnoreCase("n")
-                    || boolString.equals("0");
+            boolean truthy = truthyStrings.contains(boolString);
+            boolean falsey = falseyStrings.contains(boolString);
             assert !(truthy && falsey); // can't be both (bad programming)
+
             if (!truthy && !falsey) { // if neither then it's a user problem
                 throw new TypeCastException("Cannot convert string '" + boolString + "' to boolean");
             } else {
@@ -54,6 +63,7 @@ public class Types {
         public Class<Boolean> javaClass() {
             return Boolean.class;
         }
+        // SQLite doesn't have a boolean type, so we return int
         @Override
         public Object toRaw(Boolean data) {
             if (data == null) {
@@ -140,15 +150,15 @@ public class Types {
             return "real";
         }
         @Override
-        public Double fromString(@NotNull String doubleString) {
+        public Double fromString(@NotNull String doubleString) throws TypeCastException {
             try {
                 return Double.parseDouble(doubleString);
             } catch (NumberFormatException e) {
-                throw new ClassCastException("Cannot convert string '" + doubleString + "' to Double");
+                throw new TypeCastException("Cannot convert string '" + doubleString + "' to Double");
             }
         }
         @Override
-        public Double fromRaw(Object raw) {
+        public Double fromRaw(Object raw) throws TypeCastException {
             if (raw == null) {
                 return null;
             } else if (raw instanceof Double) {

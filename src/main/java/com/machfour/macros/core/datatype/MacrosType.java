@@ -20,10 +20,12 @@ public interface MacrosType<J> {
         return toRawString(data, "");
     }
 
+    @NotNull
     default String toSqlString(J data) {
         return toRawString(data, "NULL");
     }
 
+    @NotNull
     default String toRawString(J data, String nullString) {
         // can't use Objects.toString() cause of Android API
         return data == null ? nullString : String.valueOf(toRaw(data));
@@ -38,6 +40,7 @@ public interface MacrosType<J> {
 
     SqliteType sqliteType();
 
+    // this is not anything to do with the data!
     @Override
     @NotNull
     String toString();

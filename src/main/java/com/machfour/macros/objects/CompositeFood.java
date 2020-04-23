@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class CompositeFood extends Food {
@@ -75,7 +74,7 @@ public class CompositeFood extends Food {
 
     public void addIngredient(@NotNull Ingredient i) {
         assert !ingredients.contains(i)
-                && MacrosEntity.foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
+                && MacrosEntityImpl.foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this);
         ingredients.add(i);
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients

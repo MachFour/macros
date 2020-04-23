@@ -2,7 +2,7 @@ package com.machfour.macros.objects;
 
 import com.machfour.macros.core.*;
 
-public class RegularMeal extends MacrosEntity<RegularMeal> {
+public class RegularMeal extends MacrosEntityImpl<RegularMeal> {
 
     public RegularMeal(ColumnData<RegularMeal> data, ObjectSource objectSource) {
         super(data, objectSource);

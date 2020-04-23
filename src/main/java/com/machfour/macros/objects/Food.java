@@ -11,7 +11,7 @@ import java.util.List;
 
 import static com.machfour.macros.core.Schema.FoodTable.*;
 
-public class Food extends MacrosEntity<Food> {
+public class Food extends MacrosEntityImpl<Food> {
 
     public static final List<Column<Food, String>> DESCRIPTION_COLUMNS = Arrays.asList(
         Schema.FoodTable.BRAND

@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
-import com.machfour.macros.core.MacrosPersistable;
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
@@ -32,7 +32,7 @@ public class Export extends CommandImpl {
         out.println("Please specify the containing directory. It will be created if it doesn't exist.");
     }
 
-    private <M extends MacrosPersistable<M>> void exportTable(MacrosDatabase db, String outDir, Table<M> t)
+    private <M extends MacrosEntity<M>> void exportTable(MacrosDatabase db, String outDir, Table<M> t)
             throws SQLException, IOException {
         out.println("Exporting " + t.name() + " table...");
         String outCsvPath = FileUtils.joinPath(outDir, t.name() + ".csv");

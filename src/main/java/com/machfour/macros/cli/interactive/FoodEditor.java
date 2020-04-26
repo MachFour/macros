@@ -3,23 +3,21 @@ package com.machfour.macros.cli.interactive;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyType;
-import com.googlecode.lanterna.terminal.Terminal;
-import com.googlecode.lanterna.terminal.TerminalFactory;
+import com.googlecode.lanterna.screen.Screen;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.MacrosEntity;
-import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.names.*;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.UnicodeUtils;
 import com.machfour.macros.validation.ValidationError;
-import com.sun.tools.javac.tree.DCTree;
 import org.jetbrains.annotations.NotNull;
 
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.input.KeyStroke;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class FoodEditor {
-
     private static final int NUM_ACTIONS = Action.values().length;
     private static final Collection<Column<Food, ?>> FOOD_TABLE_COLUMNS = Food.table().columns();
     private static final Collection<Column<NutritionData, ?>> ND_TABLE_COLUMNS = NutritionData.table().columns();
@@ -39,50 +36,37 @@ public class FoodEditor {
     private static final int columnNameWidth = 28;
     // move cursor to relevant row, and columnNameWidth + 3 (3 for the "|" and ": ")
     private static final int fieldValueStartCol = columnNameWidth + 3;
-    // TODO this will cause long inputs to be cut off if there's an error message
-    private static final int fieldValueWidth = 20;
-    private static final int actionRow = 2;
+    private static final int fieldValueWidth = 15;
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
 
     private final MacrosDataSource ds;
     private final MacrosBuilder<Food> foodBuilder;
     private final MacrosBuilder<NutritionData> nDataBuilder;
     private final ColumnStrings colStrings;
-    private final Terminal terminal;
+    private final Screen screen;
 
     private final StringBuilder editingValue;
-    // whether the current value has been changed at all
-    private boolean valueIsEdited;
 
     // maps column Indices to terminal rows
     private final List<Integer> terminalRowForColumnIndex;
     private final List<String> errorMessageForColumnIndex;
+
     private final List<Column<Food, ?>> foodColumnsForDisplay;
-    // current highlighted (if not editing) or last highlighted (if editing) Action
     private final List<Column<NutritionData, ?>> ndColumnsForDisplay;
     private final int layoutWidth = 79;
 
-    private TextGraphics textGraphics;
-    // have all the fields been validated by the MacrosBuilders
-    private boolean isAllValidated;
-    // whether the currentAction or the currentField should be highlihghed
+    // whether the currentAction or the currentField should be highlighted
     private boolean isEditing;
     // which field (Column) is currently highlighted (if editing) or was last active
-
     private int currentField;
-    private int lastField;
-    private boolean currentFieldNeedsReprint;
-    private boolean lastFieldNeedsReprint;
-    // lastField will be reprinted automatically if it's not equal to currentField
 
+    // current highlighted (if not editing) or last highlighted (if editing) Action
     @NotNull
     private Action currentAction;
-    private boolean actionRowNeedsReprint;
-    // records whether we need to repaint the whole UI for some reason.
-    private boolean uiNeedsFullReprint;
     // whether we should exit at next input loop iteration
     private boolean finishedEditing;
-    // where the printing is happening
+
+    private TextGraphics textGraphics;
 
     // current position of cursor
     private int terminalRow;
@@ -93,14 +77,14 @@ public class FoodEditor {
     public FoodEditor(@NotNull MacrosDataSource ds,
                       @NotNull MacrosBuilder<Food> foodBuilder,
                       @NotNull MacrosBuilder<NutritionData> nDataBuilder) throws IOException {
-        this(ds, foodBuilder, nDataBuilder, DefaultColumnStrings.getInstance(), defaultTerminal());
+        this(ds, foodBuilder, nDataBuilder, DefaultColumnStrings.getInstance(), defaultScreen());
     }
 
     // TODO servings?
     public FoodEditor(@NotNull MacrosDataSource ds, @NotNull MacrosBuilder<Food> foodBuilder,
                       @NotNull MacrosBuilder<NutritionData> nDataBuilder,
                       @NotNull ColumnStrings colStrings,
-                      @NotNull Terminal terminal) {
+                      @NotNull Screen screen) {
         this.ds = ds;
         this.foodBuilder = foodBuilder;
         this.nDataBuilder = nDataBuilder;
@@ -115,7 +99,7 @@ public class FoodEditor {
         this.terminalRowForColumnIndex = new ArrayList<>(totalColumns);
         this.errorMessageForColumnIndex = new ArrayList<>(totalColumns);
 
-        this.terminal = terminal;
+        this.screen = screen;
 
         this.currentAction = Action.SAVE;
         this.editingValue = new StringBuilder();
@@ -123,9 +107,9 @@ public class FoodEditor {
         initVariables();
     }
 
-    private static Terminal defaultTerminal() throws IOException {
-        TerminalFactory tf = new DefaultTerminalFactory();
-        return tf.createTerminal();
+    private static Screen defaultScreen() throws IOException {
+        DefaultTerminalFactory tf = new DefaultTerminalFactory();
+        return tf.createScreen();
     }
 
     private static boolean isRecognisedKeyType(KeyType kt) {
@@ -168,47 +152,71 @@ public class FoodEditor {
         currentAction = Action.values()[nextActionOrdinal];
     }
 
+    @NotNull
+    private static String errorMessageHint() {
+        return " *";
+    }
+
+    @Nullable
+    private <M extends MacrosEntity<M>, J> String getErrorMessage(MacrosBuilder<M> b, Column<M, J> col) {
+        String message = null;
+        List<ValidationError> errors = b.getErrors(col);
+        if (!errors.isEmpty()) {
+            // just display first error
+            switch (errors.get(0)) {
+                case NON_NULL:
+                    message = " ** Cannot be empty";
+                    break;
+                case TYPE_MISMATCH:
+                    message = " ** Must be of type '" + col.getType() + "'";
+                    break;
+                default:
+                    message = " ** Error : " + errors.get(0).toString();
+                    break;
+            }
+        }
+        return message;
+    }
+
 
     private boolean isNDataField(int fieldIndex) {
         return (fieldIndex >= foodColumnsForDisplay.size());
     }
 
-    private <M extends MacrosEntity<M>, J> void acceptColumnInput(MacrosBuilder<M> builder,
-                                                                  Column<M, J> col, String input) {
-        String message = null; // message to display on the field after entry
-        try {
-            builder.setFieldFromString(col, input);
-            List<ValidationError> errors = builder.validateSingle(col);
-            if (!errors.isEmpty()) {
-                // TODO
-                message = errors.toString();
-            }
-        } catch (TypeCastException e) {
-            message = "    ** (should be " + col.getType() + ")";
-        }
+    private <M extends MacrosEntity<M>, J> void acceptColumnInput(MacrosBuilder<M> b, Column<M, J> col, String input) {
+        b.setFieldFromString(col, input);
+        String message = getErrorMessage(b, col);
         errorMessageForColumnIndex.set(currentField, message);
     }
 
     private void processEnter() throws IOException {
         if (isEditing) {
             stepField(true, true);
-        }
-        // else we're choosing an action, so start it
-        switch (currentAction) {
-            case SAVE:
-                // TODO
-                validateAll();
-                if (isAllValidated) {
+        } else {
+            // else we're choosing an action, so start it
+            switch (currentAction) {
+                case SAVE:
+                    if (isAllValid()) {
+                        save();
+                    } else {
+                        // TODO implement status line
+                        // TODO print could not save
+                    }
                     save();
-                } else {
-                    // TODO print could not save
-                }
-                save();
-                break;
-            case EXIT:
-                // TODO confirm quit
-                quit();
+                    break;
+                case RESET:
+                    // TODO confirm
+                    reset();
+                case EXIT:
+                    // TODO confirm quit
+                    quit();
+            }
         }
+    }
+
+    private void reset() {
+        foodBuilder.resetFields();
+        nDataBuilder.resetFields();
     }
 
     private void processArrow(KeyType kt) {
@@ -222,7 +230,6 @@ public class FoodEditor {
                     stepField(kt == KeyType.ArrowDown, false);
                 } else {
                     isEditing = true;
-                    actionRowNeedsReprint = true;
                 }
                 break;
             // left and right cancel edits and step actions
@@ -233,7 +240,6 @@ public class FoodEditor {
                 } else {
                     isEditing = false;
                 }
-                actionRowNeedsReprint = true;
                 break;
             default:
                 throw new IllegalArgumentException("KeyType is not an arrow key");
@@ -247,42 +253,37 @@ public class FoodEditor {
     private void processCharacter(char c) {
         if (isEditing) {
             editingValue.append(c);
-            valueIsEdited = true;
-            currentFieldNeedsReprint = true;
         }
     }
     private void processBackspace() {
         if (isEditing && editingValue.length() > 0) {
             editingValue.deleteCharAt(editingValue.length() - 1);
-            valueIsEdited = true;
-            currentFieldNeedsReprint = true;
         }
     }
     // Return true if the UI needs update after the command has processed
     // (i.e. because something changed)
-    private boolean processCommand(@NotNull KeyStroke command) throws IOException {
+    private void processCommand(@NotNull KeyStroke command) throws IOException {
         // keyType is one of the 'recognised' keytypes now
         KeyType type = command.getKeyType();
         switch (type) {
             case Character:
                 processCharacter(command.getCharacter());
-                return false;
+                break;
             case Backspace:
                 processBackspace();
-                return false;
+                break;
             case ArrowLeft:
             case ArrowRight:
             case ArrowUp:
             case ArrowDown:
                 processArrow(type);
-                return false;
+                break;
             case Enter:
                 processEnter();
-                // repaint UI only if an action was selected
-                return !isEditing;
+                break;
             case Escape:
                 processEscape();
-                return true;
+                break;
             default:
                 throw new IllegalArgumentException("Unrecognised keytype: " + command.getKeyType());
         }
@@ -290,14 +291,14 @@ public class FoodEditor {
 
     public void run() throws IOException {
         while (!finishedEditing) {
-                // UI loop
+            // UI loop
             printLayout();
             KeyStroke command = null;
             // wait for keystroke
             while (command == null || !isRecognisedKeyType(command.getKeyType())) {
-                command = terminal.readInput(); // blocking read
+                command = screen.readInput(); // blocking read
             }
-            uiNeedsFullReprint = processCommand(command);
+            processCommand(command);
         }
     }
 
@@ -325,8 +326,6 @@ public class FoodEditor {
     }
 
     private void initVariables() {
-        this.valueIsEdited = false;
-
         this.terminalRow = 0;
         this.terminalCol = 0;
         this.charsLeftOnLine = 0;
@@ -334,38 +333,28 @@ public class FoodEditor {
         this.isEditing = true;
 
         this.currentField = 0;
-        this.lastField = 0;
-        this.currentFieldNeedsReprint = false;
-        this.lastFieldNeedsReprint = false;
 
-        this.actionRowNeedsReprint = true;
-        this.isAllValidated = false;
         this.finishedEditing = false;
-        this.uiNeedsFullReprint = true;
-
     }
 
     public void init() throws IOException {
         initVariables();
+        screen.startScreen();
 
-        terminal.enterPrivateMode();
-        newScreen(true);
+        newScreen();
         initDisplayColumns();
     }
 
     public void deInit() throws IOException {
-        terminal.exitPrivateMode();
-        terminal.close();
+        screen.stopScreen();
+        screen.close();
     }
 
-    private void newScreen(boolean clear) throws IOException {
-        if (clear) {
-            terminal.clearScreen();
-        }
+    private void newScreen() {
+        screen.clear();
         // refresh text graphics
-        textGraphics = terminal.newTextGraphics();
+        textGraphics = screen.newTextGraphics();
 
-        //terminal.setCursorPosition(0, 0);
         terminalRow = 0;
         terminalCol = 0;
     }
@@ -399,7 +388,7 @@ public class FoodEditor {
         }
     }
 
-    private void newline() throws IOException {
+    private void newline() {
         //TerminalPosition currentPos = terminal.getCursorPosition();
         //terminal.setCursorPosition(currentPos.withRelativeRow(2).getRow(), 0);
         //terminal.putCharacter('\n');
@@ -446,14 +435,26 @@ public class FoodEditor {
         print(colStrings.getName(col), columnNameWidth, true);
         print(": ");
         if (isEditing && columnIndex == currentField) {
-            print(editingValue);
+            // print out only last fieldValueWidth chars, if the entry is too long
+            String editValue = editingValue.toString();
+            int len = editValue.length();
+            if (len > fieldValueWidth) {
+                editValue = editValue.substring(len - fieldValueWidth, len);
+            }
+            print(editValue, fieldValueWidth, false);
         } else {
-            print(builder.getFieldAsString(col));
+            print(builder.getFieldAsString(col), fieldValueWidth, false);
         }
         print(" ");
         // move cursor (on same line) to print error message
         if (errorMessageForColumnIndex.get(columnIndex) != null) {
-            print(errorMessageForColumnIndex.get(columnIndex));
+            if (columnIndex == currentField) {
+                // print the full message
+                print(errorMessageForColumnIndex.get(columnIndex));
+            } else {
+                // just print a star
+                print(errorMessageHint());
+            }
         }
         newline();
     }
@@ -470,44 +471,12 @@ public class FoodEditor {
         return columnIndex; // final column index
     }
 
-    /*
-     * TODO only repaint things that change:
-     * -- line being edited, and previous line
-     * -- action select indicator
-     */
 
     private void printActionRow() throws IOException {
         print("Actions: ", actionPaddingWidth, false);
         for (Action a : Action.values()) {
             String indicator = (!isEditing && a == currentAction) ? " > " : "   ";
             print(String.format(" %s %s", indicator, a.name), actionPaddingWidth, false);
-        }
-    }
-
-    private void moveToRowAndClear(int row) throws IOException {
-        int width = textGraphics.getSize().getColumns();
-        textGraphics.drawLine(0, row, width, row, ' ');
-        terminal.setCursorPosition(0, row);
-        terminalRow = row;
-        terminalCol = 0;
-    }
-
-    // erase, then printActionRow
-    private void reprintActionRow() throws IOException {
-        moveToRowAndClear(actionRow);
-        printActionRow();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void reprintSingleColumn(int columnIndex) throws IOException {
-        int whichRow = terminalRowForColumnIndex.get(columnIndex);
-        moveToRowAndClear(whichRow);
-        if (isNDataField(columnIndex)) {
-            Column<NutritionData, ?> col = (Column<NutritionData, ?>) columnForFieldIndex(columnIndex);
-            printColumn(col, nDataBuilder, columnIndex);
-        } else {
-            Column<Food, ?> col = (Column<Food, ?>) columnForFieldIndex(columnIndex);
-            printColumn(col, foodBuilder, columnIndex);
         }
     }
 
@@ -529,62 +498,44 @@ public class FoodEditor {
      |      kilojoules             400
      */
     private void printLayout() throws IOException {
-        terminal.setCursorVisible(false);
-        if (uiNeedsFullReprint) {
-            uiNeedsFullReprint = false;
+        newScreen();
+        println("== Macros Food Editor ==");
+        newline();
+        // actions
+        printActionRow();
+        newline();
+        newline();
 
-            newScreen(true);
-            println("== Macros Food Editor ==");
-            newline();
-            // actions
-            printActionRow();
-            newline();
+        println("Food Details");
+        println("|");
 
-            println("| Food Details");
-            newline();
+        int numFoodColumns = printColumns(foodColumnsForDisplay, foodBuilder, 0);
 
-            int numFoodColumns = printColumns(foodColumnsForDisplay, foodBuilder, 0);
-
-            newline();
-            println("| Nutrition Details");
-            printColumns(ndColumnsForDisplay, nDataBuilder, numFoodColumns);
-
-        } else {
-            newScreen(false);
-            if (actionRowNeedsReprint) {
-                actionRowNeedsReprint = false;
-                reprintActionRow();
-            }
-            // reprint fields
-            if (currentFieldNeedsReprint) {
-                currentFieldNeedsReprint = false;
-                reprintSingleColumn(currentField);
-
-            }
-            if (lastFieldNeedsReprint) {
-                lastFieldNeedsReprint = false;
-                reprintSingleColumn(lastField);
-            }
-        }
-
-        terminal.flush();
+        newline();
+        println("Nutrition Details");
+        println("|");
+        printColumns(ndColumnsForDisplay, nDataBuilder, numFoodColumns);
 
         if (isEditing) {
-            terminal.setCursorVisible(true);
-            int activeColumnRow = terminalRowForColumnIndex.get(currentField);
-            terminal.setCursorPosition(fieldValueStartCol + editingValue.length(), activeColumnRow);
+            int activeFieldRow = terminalRowForColumnIndex.get(currentField);
+            // if the text entered is more than the fieldValueWidth, we truncate the display to the last
+            // fieldValueWidth chars, which means that so the cursor should not advance across the screen
+            int column = fieldValueStartCol + Math.min(editingValue.length(), fieldValueWidth);
+            TerminalPosition newPos = new TerminalPosition(column, activeFieldRow);
+            screen.setCursorPosition(newPos);
         }
+
+        screen.refresh(Screen.RefreshType.DELTA);
     }
 
-    private void validateAll() {
-        Map<Column<Food, ?>, List<ValidationError>> foodErrors = foodBuilder.findAllErrors();
-        Map<Column<NutritionData, ?>, List<ValidationError>> nDataErrors = nDataBuilder.findAllErrors();
-        isAllValidated = foodErrors.isEmpty() && nDataErrors.isEmpty();
-        // TODO print errors
+    private boolean isAllValid() {
+        Map<Column<Food, ?>, List<ValidationError>> foodErrors = foodBuilder.getAllErrors();
+        Map<Column<NutritionData, ?>, List<ValidationError>> nDataErrors = nDataBuilder.getAllErrors();
+        return foodErrors.isEmpty() && nDataErrors.isEmpty();
     }
 
     private void save() {
-        if (isAllValidated) {
+        if (isAllValid()) {
             Food f = foodBuilder.build();
             NutritionData nd = nDataBuilder.build();
             try {
@@ -630,14 +581,10 @@ public class FoodEditor {
 
     private void stepField(boolean forward, boolean save) {
         final int displayedFields = foodColumnsForDisplay.size() + ndColumnsForDisplay.size();
-        lastField = currentField;
-        if (valueIsEdited) {
-            lastFieldNeedsReprint = true;
-            if (save)
+        if (save) {
             // move to next field
             saveIntoCurrentField(editingValue.toString());
         }
-        valueIsEdited = false;
 
         // advance current field
         if (forward) {
@@ -649,7 +596,6 @@ public class FoodEditor {
                 currentField = displayedFields - 1;
             }
         }
-        // was resetEditingValue();
         editingValue.delete(0, editingValue.length());
         editingValue.append(getCurrentFieldData());
     }

@@ -4,7 +4,6 @@ import com.machfour.macros.core.datatype.TypeCastException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 // Class which maps columns to their data values in instances of Macros objects
@@ -19,26 +18,19 @@ public class ColumnData<M>  {
 
     private boolean immutable;
 
-    public final <J> void putFromNullableString(Column<M, J> col, @Nullable String data) throws TypeCastException {
-        // also catch empty whitespace with trim()
-        if (data == null || data.trim().equals("")) {
-            putFromRaw(col, null);
-        } else {
-            putFromString(col, data);
-        }
-    }
-
     // null represented by empty string
     @NotNull
     public final <J> String getAsRawString(Column<M, J> col) {
         return col.getType().toRawString(get(col));
     }
+
     // null represented by "NULL"
     @NotNull
     public final <J> String getAsSqlString(Column<M, J> col) {
         return col.getType().toSqlString(get(col));
     }
 
+    // null represented by empty string
     public final <J> void putFromString(Column<M, J> col, @NotNull String data) throws TypeCastException {
         put(col, col.getType().fromString(data));
     }
@@ -47,7 +39,7 @@ public class ColumnData<M>  {
         return col.getType().toRaw(get(col));
     }
 
-    public final <J> void putFromRaw(Column<M, J> col, Object data) throws TypeCastException {
+    public final <J> void putFromRaw(Column<M, J> col, @Nullable Object data) throws TypeCastException {
         put(col, col.getType().fromRaw(data));
     }
 

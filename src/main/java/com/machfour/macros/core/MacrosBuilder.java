@@ -1,12 +1,18 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.core.datatype.TypeCastException;
+import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.validation.ValidationError;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class MacrosBuilder<M extends MacrosEntity<M>> {
     private final List<Column<M, ?>> settableColumns;
@@ -22,7 +28,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
      * If creating a new object, editInstance is null.
      */
     private final ColumnData<M> draftData;
-    private final Map<Column<M, ?>, Boolean> isValidValue;
+    private final Map<Column<M, ?>, List<ValidationError>> validationErrors;
 
     public MacrosBuilder(@NotNull Table<M> table) {
         this(table, null);
@@ -33,35 +39,56 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
     }
 
     private MacrosBuilder(@NotNull Table<M> t, @Nullable M editInstance) {
-        table = t;
-        objectFactory = t.getFactory();
+        this.table = t;
+        this.objectFactory = t.getFactory();
         this.editInstance = editInstance;
-        settableColumns = table.columns();
-        isValidValue = new HashMap<>(settableColumns.size(), 1);
+        this.settableColumns = table.columns();
+        this.validationErrors = new HashMap<>(settableColumns.size(), 1);
+        initValidationErrorsMap();
+
         if (editInstance != null) {
-            draftData = editInstance.getAllData().copy();
+            this.draftData = editInstance.getAllData().copy();
         } else {
-            draftData = new ColumnData<>(t);
+            this.draftData = new ColumnData<>(t);
         }
-        recheckValidValues();
+        validateAll();
     }
 
-    private void resetFields() {
+    private void initValidationErrorsMap() {
+        // init with empty lists
+        for (Column<M, ?> col : settableColumns) {
+            validationErrors.put(col, new ArrayList<>());
+        }
+    }
+
+    public void resetFields() {
         if (editInstance != null) {
             ColumnData.copyData(editInstance.getAllData(), draftData, settableColumns);
         } else {
             draftData.setDefaultData(settableColumns);
         }
-        recheckValidValues();
+        validateAll();
     }
+
 
     public <J> void setField(Column<M, J> col, @Nullable J value) {
+        J oldValue = getField(col);
         draftData.put(col, value);
-        recheckValidValues(Collections.singleton(col));
+        // validation
+        if (!MiscUtils.objectsEquals(oldValue, value)) {
+            validateSingle(col);
+        }
+
     }
 
-    public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) throws TypeCastException {
-        setField(col, col.getType().fromString(value));
+    // empty strings treated as null
+    public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) {
+        try {
+            J castValue = col.getType().fromString(value);
+            setField(col, castValue);
+        } catch (TypeCastException e) {
+            handleTypeCastError(col);
+        }
     }
 
     @Nullable
@@ -77,13 +104,38 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
     }
 
     /*
-     * Validates the given field according to its currently set value.
      * Returns a list containing identifiers of each failing com.machfour.macros.validation test for the given field,
      * or otherwise an empty list.
      */
-    public <J> List<ValidationError> validateSingle(Column<M, J> field) {
-        List<ValidationError> failedValidations = findErrors(draftData, field);
+    public <J> List<ValidationError> getErrors(Column<M, J> field) {
+        return validationErrors.get(field);
+    }
 
+    // TODO should it be set to null or default value? Or edit value?
+    // ... i.e. do we really need this method, or just a 'reset to initial/default/original editable instance value'?
+    public void clearField(Column<M, ?> field) {
+        setField(field, null);
+    }
+
+    private <J> void handleTypeCastError(Column<M, J> col) {
+        assert validationErrors.containsKey(col) : "ValidationErrors not initialised properly";
+        List<ValidationError> errorList = validationErrors.get(col);
+        errorList.clear();
+        errorList.add(ValidationError.TYPE_MISMATCH);
+    }
+
+    /*
+       Checks that:
+       * Non null constraints as defined by the columns are upheld
+       If any violations are found, the affected column as well as an enum value describing the violation are recorded
+       in a map, which is returned at the end, after all columns have been processed.
+     */
+    // method used by MacrosEntity
+    static <M extends MacrosEntity<M>, J> List<ValidationError> validate(ColumnData<M> data, Column<M, J> col) {
+        List<ValidationError> errorList = new ArrayList<>();
+        if (data.get(col) == null && !col.isNullable() && col.defaultData() == null) {
+            errorList.add(ValidationError.NON_NULL);
+        }
         // TODO add custom valiations
         //List<Validation> validationsToPerform = field.getValidations();
         /*
@@ -93,65 +145,47 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
             }
         }
         */
-        return failedValidations;
-    }
-
-    private void recheckValidValues(Collection<Column<M, ?>> columns) {
-        for (Column<M, ?> field : columns) {
-            isValidValue.put(field, validateSingle(field).isEmpty());
-        }
-    }
-
-    private void recheckValidValues() {
-        recheckValidValues(settableColumns);
+        return errorList;
 
     }
 
-    // TODO should it be set to null or default value? Or edit value?
-    // ... i.e. do we really need this method, or just a 'reset to initial/default/original editable instance value'?
-    public void clearField(Column<M, ?> field) {
-        setField(field, null);
-    }
-
-
-    /*
-       Checks that:
-       * Non null constraints as defined by the columns are upheld
-       If any violations are found, the affected column as well as an enum value describing the violation are recorded
-       in a map, which is returned at the end, after all columns have been processed.
-       Returns a list of columns whose non-null constraints have been violated, or an empty list otherwise
-       Note that if the assertion passes, then dataMap has the correct columns as keys
-     */
-    @NotNull
-    private static <M, J> List<ValidationError> findErrors(ColumnData<M> data, Column<M, J> col) {
-        List<ValidationError> errors = new ArrayList<>();
-        if (data.get(col) == null && !col.isNullable() && col.defaultData() == null) {
-            errors.add(ValidationError.NON_NULL);
-        }
-        return errors;
-    }
-
-    public static <M> Map<Column<M, ?>, List<ValidationError>> validate(ColumnData<M> data) {
-        List<Column<M, ?>> required = data.getTable().columns();
-        // TODO should this be a list
-        Map<Column<M, ?>, List<ValidationError>> badMappings = new HashMap<>(required.size());
-        for (Column<M, ?> col : required) {
-            List<ValidationError> errors = findErrors(data, col);
-            if (!errors.isEmpty()) {
-                badMappings.put(col, errors);
+    // method used by MacrosEntity
+    // returns a map of ONLY the columns with errors, mapping to list of validation errors
+    static <M extends MacrosEntity<M>, J> Map<Column<M, ?>, List<ValidationError>> validate(ColumnData<M> data) {
+        Map<Column<M, ?>, List<ValidationError>> allErrors = new HashMap<>(data.getColumns().size(), 1.0f);
+        for (Column<M, ?> col : data.getColumns()) {
+            List<ValidationError> colErrors = validate(data, col);
+            if (!colErrors.isEmpty()) {
+                allErrors.put(col, colErrors);
             }
         }
-        return badMappings;
+        return allErrors;
     }
-    /*
-     * Returns a mapping from each fields whose value failed one or more com.machfour.macros.validation tests, to a list
-     * of those failing tests.
+
+    /* Saves a list of columns whose non-null constraints have been violated, or an empty list otherwise,
+     * into the validationErrors map.
      */
-    public Map<Column<M, ?>, List<ValidationError>> findAllErrors() {
+    private <J> void validateSingle(Column<M, J> col) {
+        assert validationErrors.containsKey(col) : "ValidationErrors not initialised properly";
+        List<ValidationError> errorList = validationErrors.get(col);
+        errorList.clear();
+        errorList.addAll(validate(draftData, col));
+    }
+
+    private void validateAll() {
+        for (Column<M, ?> col : settableColumns) {
+            validateSingle(col);
+        }
+    }
+
+    /*
+     * Returns the subset of the validationErrors map with non-empty error lists
+     */
+    public Map<Column<M, ?>, List<ValidationError>> getAllErrors() {
         Map<Column<M, ?>, List<ValidationError>> allValidationErrors = new LinkedHashMap<>(settableColumns.size(), 1);
 
         for (Column<M, ?> field : settableColumns) {
-            List<ValidationError> fieldErrors = validateSingle(field);
+            List<ValidationError> fieldErrors = getErrors(field);
             if (!fieldErrors.isEmpty()) {
                 allValidationErrors.put(field, fieldErrors);
             }
@@ -187,7 +221,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
      * created after a successful build.
      */
     public M build() {
-        if (!canConstruct()) {
+        if (hasAnyInvalidFields()) {
             throw new IllegalStateException("Field values are not all valid");
         }
         ColumnData<M> buildData = draftData.copy();
@@ -196,14 +230,16 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         return objectFactory.construct(buildData, source);
     }
 
-    public boolean canConstruct() {
-        boolean canConstruct = true;
-        for (Column<M, ?> s : settableColumns) {
-            if (!isValidValue.get(s)) {
-                canConstruct = false;
+    public boolean hasAnyInvalidFields() {
+        boolean anyInvalid = false;
+        for (Column<M, ?> col : settableColumns) {
+            assert validationErrors.containsKey(col) : "ValidationErrors not initialised properly";
+            if (!validationErrors.get(col).isEmpty()) {
+                anyInvalid = true;
+                break;
             }
         }
-        return canConstruct;
+        return anyInvalid;
     }
 
 }

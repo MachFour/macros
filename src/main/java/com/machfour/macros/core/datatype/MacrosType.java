@@ -7,7 +7,13 @@ public interface MacrosType<J> {
 
     // These methods perform type-specific conversion is necessary
     // if raw is null then null will be returned
+    @Nullable
     J fromRaw(@Nullable Object raw) throws TypeCastException;
+
+    @Nullable
+    // tries to convert the given string representation into the desired type
+    // Empty strings will return the result of fromRaw(null)
+    // This method will never return null if the string is non-empty
     J fromString(@NotNull String stringData) throws TypeCastException;
 
     // This returns the data in a form that is able to be inserted into a database
@@ -16,32 +22,27 @@ public interface MacrosType<J> {
         return data;
     }
 
-    default String toRawString(J data) {
-        return toRawString(data, "");
-    }
-
+    // Returns a string representation suitable for saving into a textual format (e.g. CSV)
+    // In particular, null data becomes empty strings
     @NotNull
-    default String toSqlString(J data) {
-        return toRawString(data, "NULL");
-    }
+    String toRawString(J data);
 
+    // Returns a string representation suitable for use in issuing an SQL command to store the given data
+    // into an SQL database. In particular, null data is converted into the string "NULL"
     @NotNull
-    default String toRawString(J data, String nullString) {
-        // can't use Objects.toString() cause of Android API
-        return data == null ? nullString : String.valueOf(toRaw(data));
-    }
+    String toSqlString(J data);
 
-    default J cast(Object o) {
-        return javaClass().cast(o);
-    }
+    // Returns a string representation of the given data, with null data represented by the string 'null'
+    @NotNull
+    String toString(J data);
 
-    // TODO this doesn't need to be a public method
-    Class<J> javaClass();
+    // Returns a string representation of the given data, with a custom placeholder as null
+    @NotNull
+    String toString(J data, String nullString);
+
+    // A dumb Java cast from the given object to the Java class associated with this Type
+    J cast(Object o);
 
     SqliteType sqliteType();
 
-    // this is not anything to do with the data!
-    @Override
-    @NotNull
-    String toString();
 }

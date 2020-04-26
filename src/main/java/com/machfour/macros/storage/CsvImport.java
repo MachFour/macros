@@ -26,7 +26,11 @@ public class CsvImport {
             String value = csvRow.get(colName);
             Column<M, ?> col = table.columnForName(colName);
             // map empty strings in CSV to null
-            data.putFromNullableString(col, value);
+            if (value == null) {
+                data.putFromRaw(col, null);
+            } else {
+                data.putFromString(col, value.trim());
+            }
         }
         return data;
     }

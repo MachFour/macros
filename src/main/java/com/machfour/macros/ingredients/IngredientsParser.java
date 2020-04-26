@@ -75,8 +75,8 @@ public class IngredientsParser {
         builder.setField(Schema.IngredientTable.NOTES, spec.notes);
         builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity);
 
-        if (!builder.canConstruct()) {
-            throw new SchemaViolation(builder.findAllErrors());
+        if (builder.hasAnyInvalidFields()) {
+            throw new SchemaViolation(builder.getAllErrors());
             // throw SchemaViolation
         }
 
@@ -108,8 +108,8 @@ public class IngredientsParser {
         // setting this means that Food.factory().construct() will create a CompositeFood
         builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
 
-        if (!builder.canConstruct()) {
-            throw new SchemaViolation(builder.findAllErrors());
+        if (builder.hasAnyInvalidFields()) {
+            throw new SchemaViolation(builder.getAllErrors());
             // throw SchemaViolation
         }
 

@@ -10,7 +10,7 @@ import java.util.*;
  * parent class for all macros persistable objects
  */
 
-public abstract class MacrosEntityImpl<M extends MacrosEntity> implements MacrosEntity<M> {
+public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements MacrosEntity<M> {
     private final ColumnData<M> dataMap;
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
@@ -123,7 +123,7 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity> implements Macros
     public boolean equals(Object o) {
         return o instanceof MacrosEntityImpl
             //&& isFromDb == ((MacrosEntity) o).isFromDb
-            && dataMap.equals(((MacrosEntityImpl) o).dataMap);
+            && dataMap.equals(((MacrosEntityImpl<?>) o).dataMap);
     }
 
     public boolean equalsWithoutMetadata(MacrosEntity<M> o) {

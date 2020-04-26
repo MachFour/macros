@@ -10,7 +10,7 @@ import static java.lang.Double.NaN;
  * Defines common methods for each object to be persisted
  */
 
-public interface MacrosEntity<M extends MacrosEntity> {
+public interface MacrosEntity<M extends MacrosEntity<M>> {
 
     long NO_ID = -100;
     // special ID for the 'null' serving of just grams / mL

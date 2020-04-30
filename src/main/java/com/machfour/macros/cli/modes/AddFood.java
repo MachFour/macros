@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.ArgParsing;
 import com.machfour.macros.cli.interactive.FoodEditor;
 import com.machfour.macros.core.MacrosBuilder;
+import com.machfour.macros.core.Schema;
 import com.machfour.macros.linux.Config;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
@@ -55,6 +56,7 @@ public class AddFood extends CommandImpl {
         MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
 
         try {
+            // TODO move this check inside MacrosBuilder validations
             if (!checkIndexName(db, indexName)) {
                 out.println("Index name " + indexName + " already exists in the database, cannot continue.");
                 return 1;
@@ -66,6 +68,8 @@ public class AddFood extends CommandImpl {
 
         MacrosBuilder<Food> foodBuilder = new MacrosBuilder<>(Food.table());
         MacrosBuilder<NutritionData> nDataBuilder = new MacrosBuilder<>(NutritionData.table());
+
+        foodBuilder.setField(Schema.FoodTable.INDEX_NAME, indexName);
 
         FoodEditor editor = null;
         boolean editorInitialised = false;

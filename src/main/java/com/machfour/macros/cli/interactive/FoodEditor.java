@@ -32,11 +32,11 @@ public class FoodEditor {
     private static final Collection<Column<NutritionData, ?>> ND_TABLE_COLUMNS = NutritionData.table().columns();
 
     // Layout parameters
-    private static final int actionPaddingWidth = 15;
+    private static final int actionPaddingWidth = 18;
     private static final int columnNameWidth = 28;
     // move cursor to relevant row, and columnNameWidth + 3 (3 for the "|" and ": ")
     private static final int fieldValueStartCol = columnNameWidth + 3;
-    private static final int fieldValueWidth = 15;
+    private static final int fieldValueWidth = 20;
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
 
     private final MacrosDataSource ds;
@@ -59,6 +59,12 @@ public class FoodEditor {
     private boolean isEditing;
     // which field (Column) is currently highlighted (if editing) or was last active
     private int currentField;
+
+    // a message at the top of the screen, above the action row
+    @NotNull
+    private String statusLine1;
+    @NotNull
+    private String statusLine2;
 
     // current highlighted (if not editing) or last highlighted (if editing) Action
     @NotNull
@@ -102,6 +108,8 @@ public class FoodEditor {
         this.screen = screen;
 
         this.currentAction = Action.SAVE;
+        this.statusLine1 = "Welcome to the food editor.";
+        this.statusLine2 = "Use the arrow keys to navigate, and enter to confirm an edit or select an action";
         this.editingValue = new StringBuilder();
 
         initVariables();
@@ -189,6 +197,14 @@ public class FoodEditor {
         errorMessageForColumnIndex.set(currentField, message);
     }
 
+    private void setStatus(@Nullable String line1, @Nullable String line2) {
+        statusLine1 = line1 == null ? "" : line1;
+        statusLine2 = line2 == null ? "" : line2;
+    }
+    private void setStatus(@Nullable String line1) {
+        setStatus(line1, null);
+    }
+
     private void processEnter() throws IOException {
         if (isEditing) {
             stepField(true, true);
@@ -196,17 +212,18 @@ public class FoodEditor {
             // else we're choosing an action, so start it
             switch (currentAction) {
                 case SAVE:
-                    if (isAllValid()) {
-                        save();
-                    } else {
-                        // TODO implement status line
-                        // TODO print could not save
-                    }
-                    save();
+                    trySave();
+                    break;
+                case HELP:
+                    setStatus("Enter the food details for each field below, then choose save",
+                            "Use the up/down keys to navigate fields, and the left/right keys to navigate actions");
+                    break;
+                case MORE_FIELDS:
                     break;
                 case RESET:
                     // TODO confirm
                     reset();
+                    break;
                 case EXIT:
                     // TODO confirm quit
                     quit();
@@ -325,6 +342,11 @@ public class FoodEditor {
         }
     }
 
+    private void setEditingValue(String initial) {
+        editingValue.delete(0, editingValue.length());
+        editingValue.append(initial);
+    }
+
     private void initVariables() {
         this.terminalRow = 0;
         this.terminalCol = 0;
@@ -339,10 +361,10 @@ public class FoodEditor {
 
     public void init() throws IOException {
         initVariables();
-        screen.startScreen();
-
-        newScreen();
         initDisplayColumns();
+        setEditingValue(getCurrentFieldData());
+
+        screen.startScreen();
     }
 
     public void deInit() throws IOException {
@@ -473,10 +495,10 @@ public class FoodEditor {
 
 
     private void printActionRow() throws IOException {
-        print("Actions: ", actionPaddingWidth, false);
+        println("Actions: ", actionPaddingWidth, false);
         for (Action a : Action.values()) {
             String indicator = (!isEditing && a == currentAction) ? " > " : "   ";
-            print(String.format(" %s %s", indicator, a.name), actionPaddingWidth, false);
+            print(String.format(" %s %s", indicator, a.name), actionPaddingWidth, true);
         }
     }
 
@@ -500,6 +522,9 @@ public class FoodEditor {
     private void printLayout() throws IOException {
         newScreen();
         println("== Macros Food Editor ==");
+        newline();
+        println(statusLine1);
+        println(statusLine2);
         newline();
         // actions
         printActionRow();
@@ -534,7 +559,8 @@ public class FoodEditor {
         return foodErrors.isEmpty() && nDataErrors.isEmpty();
     }
 
-    private void save() {
+    private void trySave() {
+        // TODO print out which columns
         if (isAllValid()) {
             Food f = foodBuilder.build();
             NutritionData nd = nDataBuilder.build();
@@ -542,12 +568,13 @@ public class FoodEditor {
                 ds.saveObject(f);
                 // TODO get food ID, etc.
                 ds.saveObject(nd);
+                setStatus("Successfully saved food and nutrition data", "");
             } catch (SQLException e) {
-                // TODO print message
-
+                setStatus("Could not save!", "SQL Exception: " + e.getLocalizedMessage());
             }
+        } else {
+            setStatus("Could not save!", "Check columns with * characters");
         }
-        // TODO print message if cannot save
     }
 
     private void quit() {
@@ -596,14 +623,16 @@ public class FoodEditor {
                 currentField = displayedFields - 1;
             }
         }
-        editingValue.delete(0, editingValue.length());
-        editingValue.append(getCurrentFieldData());
+        setEditingValue(getCurrentFieldData());
     }
 
     private enum Action {
-          SAVE("Save")
+          MORE_FIELDS("Extra fields")
+        , SAVE("Save")
         , RESET("Reset")
-        , EXIT("Exit");
+        , EXIT("Exit")
+        , HELP("Help")
+        ;
 
         final String name;
 
@@ -611,7 +640,8 @@ public class FoodEditor {
             this.name = name;
         }
 
-        @NotNull @Override
+        @NotNull
+        @Override
         public String toString() {
             return name;
         }

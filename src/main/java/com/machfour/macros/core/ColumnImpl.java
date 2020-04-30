@@ -4,6 +4,7 @@ import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,12 +167,30 @@ class ColumnImpl<M, J> implements Column<M, J> {
             this.defaultValue = () -> value;
             return this;
         }
-        <M> ColumnImpl<M, J> build() {
+        private <M> ColumnImpl<M, J> build() {
             return new ColumnImpl<>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique);
         }
-        <M, N> Fk<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
+        private <M, N> Fk<M, J, N> buildFk(Column<N, J> parent, Table<N> parentTable) {
             // not sure why the constructor call needs type parameters here...
             return new Fk<M, J, N>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique, parent, parentTable);
+        }
+
+        private static <M> void addToListAndSetIndex(ColumnImpl<M, ?> newlyCreated, @NotNull List<Column<M, ?>> columns) {
+            newlyCreated.setIndex(columns.size());
+            columns.add(newlyCreated);
+        }
+
+        // sets index
+        <M> ColumnImpl<M, J> buildAndAdd(@NotNull List<Column<M, ?>> columnList) {
+            ColumnImpl<M, J> builtCol = build();
+            addToListAndSetIndex(builtCol, columnList);
+            return builtCol;
+        }
+
+        <M, N> Fk<M, J, N> buildAndAddFk(Column<N, J> parent, Table<N> parentTable, @NotNull List<Column<M, ?>> columnList) {
+            Fk<M, J, N> builtCol = buildFk(parent, parentTable);
+            addToListAndSetIndex(builtCol, columnList);
+            return builtCol;
         }
     }
 }

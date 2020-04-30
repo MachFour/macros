@@ -1,7 +1,5 @@
 package com.machfour.macros.core;
 
-import com.machfour.macros.validation.ValidationError;
-
 import java.util.*;
 
 abstract class BaseTable<M> implements Table<M> {
@@ -16,22 +14,21 @@ abstract class BaseTable<M> implements Table<M> {
     private final Column<M, Long> modifyTimeColumn;
     private final Column<M, ?> naturalKeyColumn;
 
-    BaseTable(String name, Factory<M> factory,
-              Column<M, Long> id,
-              Column<M, Long> createTime,
-              Column<M, Long> modTime,
-              List<Column<M, ?>> otherCols) {
+    // first three columns must be ID, create time, modify time
+    BaseTable(String name, Factory<M> factory, List<Column<M, ?>> cols) {
         this.name = name;
         this.factory = factory;
-        this.idColumn = id;
-        this.createTimeColumn = createTime;
-        this.modifyTimeColumn = modTime;
 
-        List<Column<M, ?>> cols = new ArrayList<>(otherCols.size() + 3);
-        cols.add(id);
-        cols.add(createTime);
-        cols.add(modTime);
-        cols.addAll(otherCols);
+        // TODO make this better
+        this.idColumn = (Column<M, Long>)cols.get(0);
+        this.createTimeColumn = (Column<M, Long>)cols.get(1);
+        this.modifyTimeColumn = (Column<M, Long>)cols.get(2);
+
+        assert Schema.ID_COLUMN_NAME.equals(this.idColumn.sqlName());
+        assert Schema.CREATE_TIME_COLUMN_NAME.equals(this.createTimeColumn.sqlName());
+        assert Schema.MODIFY_TIME_COLUMN_NAME.equals(this.modifyTimeColumn.sqlName());
+
+
         this.columns = Collections.unmodifiableList(cols);
 
         Column<M, ?> naturalKeyColumn = null;
@@ -42,14 +39,14 @@ abstract class BaseTable<M> implements Table<M> {
 
         int index = 0;
         for (Column<M, ?> c : cols) {
-            setColIndexAndTable(c, index);
+            setTable(c, index);
 
             columnsByName.put(c.sqlName(), c);
             if (c.inSecondaryKey()) {
                 secondaryKeyCols.add(c);
             }
             // record secondary key
-            if (c.isUnique() && !c.equals(id)) {
+            if (c.isUnique() && !c.equals(this.idColumn)) {
                 assert naturalKeyColumn == null : "two natural keys defined";
                 naturalKeyColumn = c;
             }
@@ -74,10 +71,9 @@ abstract class BaseTable<M> implements Table<M> {
 
     // This package only uses ColumnImpl objects so we're good
     @SuppressWarnings("unchecked")
-    private void setColIndexAndTable(Column<M, ?> c, int index) {
+    private void setTable(Column<M, ?> c, int index) {
         assert c instanceof ColumnImpl;
         ColumnImpl<M, ?> impl = (ColumnImpl<M, ?>) c;
-        impl.setIndex(index);
         impl.setTable(this);
     }
 

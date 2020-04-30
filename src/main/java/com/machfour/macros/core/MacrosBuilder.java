@@ -7,16 +7,18 @@ import com.machfour.macros.validation.ValidationError;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class MacrosBuilder<M extends MacrosEntity<M>> {
-    private final List<Column<M, ?>> settableColumns;
     private final Table<M> table;
+    // columns that are available for editing
+    private final Set<Column<M, ?>> settableColumns;
+    // columns that are not available for editing; initially empty
+    private final Set<Column<M, ?>> unsettableColumns;
+    // invariant: union of settableColumns and unsettableColumns is table.columns()
+
+
     private final Factory<M> objectFactory;
 
     private final M editInstance;
@@ -28,6 +30,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
      * If creating a new object, editInstance is null.
      */
     private final ColumnData<M> draftData;
+
     private final Map<Column<M, ?>, List<ValidationError>> validationErrors;
 
     public MacrosBuilder(@NotNull Table<M> table) {
@@ -40,11 +43,16 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
 
     private MacrosBuilder(@NotNull Table<M> t, @Nullable M editInstance) {
         this.table = t;
-        this.objectFactory = t.getFactory();
+        this.objectFactory = table.getFactory();
         this.editInstance = editInstance;
-        this.settableColumns = table.columns();
-        this.validationErrors = new HashMap<>(settableColumns.size(), 1);
-        initValidationErrorsMap();
+        this.settableColumns = new LinkedHashSet<>(table.columns());
+        this.unsettableColumns = new LinkedHashSet<>();
+
+        this.validationErrors = new HashMap<>(t.columns().size(), 1);
+        // init with empty lists
+        for (Column<M, ?> col : table.columns()) {
+            validationErrors.put(col, new ArrayList<>());
+        }
 
         if (editInstance != null) {
             this.draftData = editInstance.getAllData().copy();
@@ -54,13 +62,17 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         validateAll();
     }
 
-    private void initValidationErrorsMap() {
-        // init with empty lists
-        for (Column<M, ?> col : settableColumns) {
-            validationErrors.put(col, new ArrayList<>());
+
+    // prevents setting value via setField or resetting value
+    // it's up to the caller to ensure that the column has a valid value first!
+    public void markFixed(Column<M, ?> col) {
+        if (settableColumns.contains(col)) {
+            settableColumns.remove(col);
+            unsettableColumns.add(col);
         }
     }
 
+    // only resets settable fields
     public void resetFields() {
         if (editInstance != null) {
             ColumnData.copyData(editInstance.getAllData(), draftData, settableColumns);
@@ -70,24 +82,44 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         validateAll();
     }
 
-
+    // Sets a field to the given value, unless it has been marked unsettable
+    // In the latter case, this function will do nothing
     public <J> void setField(Column<M, J> col, @Nullable J value) {
+        if (unsettableColumns.contains(col)) {
+            // TODO throw exception?
+            return;
+        }
+        assert settableColumns.contains(col);
+
         J oldValue = getField(col);
         draftData.put(col, value);
         // validation
-        if (!MiscUtils.objectsEquals(oldValue, value)) {
+        boolean isChangedValue = !MiscUtils.objectsEquals(oldValue, value);
+        // if there was a type cast exception then there was an attempt to change the value
+        // which failed ... so it's like a pseudo-changed value
+        boolean wasTypeCastException = getErrorsInternal(col).contains(ValidationError.TYPE_MISMATCH);
+        if (isChangedValue || wasTypeCastException) {
             validateSingle(col);
         }
-
     }
 
     // empty strings treated as null
     public <J> void setFieldFromString(Column<M, J> col, @NotNull String value) {
+        if (unsettableColumns.contains(col)) {
+            // TODO throw exception?
+            return;
+        }
+        assert settableColumns.contains(col);
+
         try {
             J castValue = col.getType().fromString(value);
             setField(col, castValue);
         } catch (TypeCastException e) {
-            handleTypeCastError(col);
+            // TODO this sets an error for the field... but technically its actual value wasn't changed.
+            // but I guess it's okay because the user should set the value once more (correctly) anyway
+            List<ValidationError> errorList = getErrorsInternal(col);
+            errorList.clear();
+            errorList.add(ValidationError.TYPE_MISMATCH);
         }
     }
 
@@ -103,25 +135,23 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         return data == null ? "" : data.toString();
     }
 
+    //
+    private <J> List<ValidationError> getErrorsInternal(Column<M, J> field) {
+        return validationErrors.get(field);
+    }
     /*
-     * Returns a list containing identifiers of each failing com.machfour.macros.validation test for the given field,
+     * Returns an immutable list containing identifiers of each failing
+     * com.machfour.macros.validation.ValidationError test for the given field,
      * or otherwise an empty list.
      */
     public <J> List<ValidationError> getErrors(Column<M, J> field) {
-        return validationErrors.get(field);
+        return Collections.unmodifiableList(getErrorsInternal(field));
     }
 
     // TODO should it be set to null or default value? Or edit value?
     // ... i.e. do we really need this method, or just a 'reset to initial/default/original editable instance value'?
     public void clearField(Column<M, ?> field) {
         setField(field, null);
-    }
-
-    private <J> void handleTypeCastError(Column<M, J> col) {
-        assert validationErrors.containsKey(col) : "ValidationErrors not initialised properly";
-        List<ValidationError> errorList = validationErrors.get(col);
-        errorList.clear();
-        errorList.add(ValidationError.TYPE_MISMATCH);
     }
 
     /*
@@ -131,12 +161,13 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
        in a map, which is returned at the end, after all columns have been processed.
      */
     // method used by MacrosEntity
-    static <M extends MacrosEntity<M>, J> List<ValidationError> validate(ColumnData<M> data, Column<M, J> col) {
+    public static <M extends MacrosEntity<M>, J> List<ValidationError> validate(ColumnData<M> data, Column<M, J> col) {
         List<ValidationError> errorList = new ArrayList<>();
         if (data.get(col) == null && !col.isNullable() && col.defaultData() == null) {
             errorList.add(ValidationError.NON_NULL);
         }
         // TODO add custom valiations
+        // TODO add check for unique: needs DB access
         //List<Validation> validationsToPerform = field.getValidations();
         /*
         for (Validation v : validationsToPerform) {
@@ -151,7 +182,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
 
     // method used by MacrosEntity
     // returns a map of ONLY the columns with errors, mapping to list of validation errors
-    static <M extends MacrosEntity<M>, J> Map<Column<M, ?>, List<ValidationError>> validate(ColumnData<M> data) {
+    public static <M extends MacrosEntity<M>, J> Map<Column<M, ?>, List<ValidationError>> validate(ColumnData<M> data) {
         Map<Column<M, ?>, List<ValidationError>> allErrors = new HashMap<>(data.getColumns().size(), 1.0f);
         for (Column<M, ?> col : data.getColumns()) {
             List<ValidationError> colErrors = validate(data, col);
@@ -173,7 +204,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
     }
 
     private void validateAll() {
-        for (Column<M, ?> col : settableColumns) {
+        for (Column<M, ?> col : validationErrors.keySet()) {
             validateSingle(col);
         }
     }
@@ -182,14 +213,13 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
      * Returns the subset of the validationErrors map with non-empty error lists
      */
     public Map<Column<M, ?>, List<ValidationError>> getAllErrors() {
-        Map<Column<M, ?>, List<ValidationError>> allValidationErrors = new LinkedHashMap<>(settableColumns.size(), 1);
+        Map<Column<M, ?>, List<ValidationError>> allValidationErrors = new LinkedHashMap<>(validationErrors.size(), 1);
 
-        for (Column<M, ?> field : settableColumns) {
+        for (Column<M, ?> field : validationErrors.keySet()) {
             List<ValidationError> fieldErrors = getErrors(field);
             if (!fieldErrors.isEmpty()) {
                 allValidationErrors.put(field, fieldErrors);
             }
-
         }
         return allValidationErrors;
     }
@@ -232,8 +262,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
 
     public boolean hasAnyInvalidFields() {
         boolean anyInvalid = false;
-        for (Column<M, ?> col : settableColumns) {
-            assert validationErrors.containsKey(col) : "ValidationErrors not initialised properly";
+        for (Column<M, ?> col : validationErrors.keySet()) {
             if (!validationErrors.get(col).isEmpty()) {
                 anyInvalid = true;
                 break;

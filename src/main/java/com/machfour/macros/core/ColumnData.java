@@ -95,7 +95,7 @@ public class ColumnData<M>  {
     }
 
     // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
-    private ColumnData(Table<M> table, List<Column<M, ?>> cols, @Nullable ColumnData<M> existing) {
+    private ColumnData(Table<M> table, Collection<Column<M, ?>> cols, @Nullable ColumnData<M> existing) {
         // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
         // hold columns of any index, up to the number of columns in the table minus 1.
         int arraySize = table.columns().size();
@@ -148,7 +148,7 @@ public class ColumnData<M>  {
     }
 
     // columns are the same so there will be no type issues
-    public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to, List<Column<M, ?>> which) {
+    public static <M> void copyData(@NotNull ColumnData<M> from, @NotNull ColumnData<M> to, Collection<Column<M, ?>> which) {
         assert to.hasColumns(which) && from.hasColumns(which): "Specified columns not present in both from and to";
         to.assertMutable();
         for (Column<M, ?> col : which) {
@@ -162,7 +162,7 @@ public class ColumnData<M>  {
         return new ColumnData<>(table, table.columns(), this);
     }
 
-    public ColumnData<M> copy(List<Column<M, ?>> whichCols) {
+    public ColumnData<M> copy(Collection<Column<M, ?>> whichCols) {
         assertHasColumns(whichCols);
         return new ColumnData<>(table, whichCols, this);
     }
@@ -170,7 +170,7 @@ public class ColumnData<M>  {
     private void assertHasColumn(Column<M, ?> col) {
         assertHasColumns(Collections.singletonList(col));
     }
-    private void assertHasColumns(List<Column<M, ?>> cols) {
+    private void assertHasColumns(Collection<Column<M, ?>> cols) {
         assert columns.containsAll(cols);
     }
     private void assertMutable() {

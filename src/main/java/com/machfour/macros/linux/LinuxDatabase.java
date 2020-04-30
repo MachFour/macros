@@ -211,11 +211,6 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return resultMap;
     }
 
-    private static <M, J> void rethrowAsSqlException(Object value, Column<M, J> col) throws SQLException {
-        throw new SQLException(String.format("Could not convert value '%s' for column %s.%s (type %s)",
-                value, col.getTable(), col.sqlName(), col.getType()));
-    }
-
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Override

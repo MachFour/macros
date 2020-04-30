@@ -14,6 +14,8 @@ import static com.machfour.macros.core.MacrosEntity.NO_ID;
 
 /**
  *  Class holding the database column information for all persistable entities used in this library
+ *  You will know very quickly if you break anything in this class, because basically everything uses
+ *  the tables and columns defined here.
  */
 public class Schema {
     private Schema() { }

@@ -70,6 +70,7 @@ public class AddFood extends CommandImpl {
         MacrosBuilder<NutritionData> nDataBuilder = new MacrosBuilder<>(NutritionData.table());
 
         foodBuilder.setField(Schema.FoodTable.INDEX_NAME, indexName);
+        foodBuilder.markFixed(Schema.FoodTable.INDEX_NAME);
 
         FoodEditor editor = null;
         boolean editorInitialised = false;

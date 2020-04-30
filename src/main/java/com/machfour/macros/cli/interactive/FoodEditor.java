@@ -197,12 +197,17 @@ public class FoodEditor {
         errorMessageForColumnIndex.set(currentField, message);
     }
 
-    private void setStatus(@Nullable String line1, @Nullable String line2) {
-        statusLine1 = line1 == null ? "" : line1;
-        statusLine2 = line2 == null ? "" : line2;
+    private void clearStatus() {
+        statusLine1 = "";
+        statusLine2 = "";
     }
-    private void setStatus(@Nullable String line1) {
-        setStatus(line1, null);
+
+    private void setStatus(@NotNull String line1, @NotNull String line2) {
+        statusLine1 = line1;
+        statusLine2 = line2;
+    }
+    private void setStatus(@NotNull String line1) {
+        setStatus(line1, "");
     }
 
     private void processEnter() throws IOException {
@@ -236,15 +241,18 @@ public class FoodEditor {
         nDataBuilder.resetFields();
     }
 
-    private void processArrow(KeyType kt) {
-        // up and down cancel edits and move to next field
-        // TODO don't cancel edits by default, but holding shift cancels edits
+    // up and down saves edits and move to next field
+    // holding shift cancels edits
+    // left and right scrolls through actions
+    private void processArrow(KeyStroke key) {
+        KeyType kt = key.getKeyType();
+        boolean isShiftHeld = key.isShiftDown();
         switch (kt) {
             case ArrowUp:
             case ArrowDown:
                 if (isEditing) {
-                    // handles setting of reprinting
-                    stepField(kt == KeyType.ArrowDown, false);
+                    // Don't cancel edits by default, but holding shift cancels edits
+                    stepField(kt == KeyType.ArrowDown, !isShiftHeld);
                 } else {
                     isEditing = true;
                 }
@@ -279,12 +287,12 @@ public class FoodEditor {
     }
     // Return true if the UI needs update after the command has processed
     // (i.e. because something changed)
-    private void processCommand(@NotNull KeyStroke command) throws IOException {
+    private void processCommand(@NotNull KeyStroke key) throws IOException {
         // keyType is one of the 'recognised' keytypes now
-        KeyType type = command.getKeyType();
+        KeyType type = key.getKeyType();
         switch (type) {
             case Character:
-                processCharacter(command.getCharacter());
+                processCharacter(key.getCharacter());
                 break;
             case Backspace:
                 processBackspace();
@@ -293,7 +301,7 @@ public class FoodEditor {
             case ArrowRight:
             case ArrowUp:
             case ArrowDown:
-                processArrow(type);
+                processArrow(key);
                 break;
             case Enter:
                 processEnter();
@@ -302,7 +310,7 @@ public class FoodEditor {
                 processEscape();
                 break;
             default:
-                throw new IllegalArgumentException("Unrecognised keytype: " + command.getKeyType());
+                throw new IllegalArgumentException("Unrecognised keytype: " + key.getKeyType());
         }
     }
 
@@ -568,12 +576,13 @@ public class FoodEditor {
                 ds.saveObject(f);
                 // TODO get food ID, etc.
                 ds.saveObject(nd);
-                setStatus("Successfully saved food and nutrition data", "");
+                setStatus("Successfully saved food and nutrition data");
             } catch (SQLException e) {
                 setStatus("Could not save!", "SQL Exception: " + e.getLocalizedMessage());
             }
         } else {
-            setStatus("Could not save!", "Check columns with * characters");
+            setStatus("Could not save due to validation errors. Check the following columns:",
+                    foodBuilder.getAllErrors().keySet() + " / " + nDataBuilder.getAllErrors().keySet());
         }
     }
 
@@ -627,7 +636,7 @@ public class FoodEditor {
     }
 
     private enum Action {
-          MORE_FIELDS("Extra fields")
+          MORE_FIELDS("Extra fields") //TODO
         , SAVE("Save")
         , RESET("Reset")
         , EXIT("Exit")

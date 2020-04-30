@@ -9,8 +9,6 @@ import com.machfour.macros.objects.NutritionData;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-
 public interface ColumnNamer {
     @NotNull
     String getNutrientName(Column<NutritionData, Double> col);

@@ -68,6 +68,11 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     protected abstract <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn, Column<M, J> valueColumn, Set<I> keys) throws SQLException;
 
+    protected static <M, J> void rethrowAsSqlException(Object rawValue, Column<M, J> col) throws SQLException {
+        throw new SQLException(String.format("Could not convert value '%s' for column %s.%s (type %s)",
+                rawValue, col.getTable(), col.sqlName(), col.getType()));
+    }
+
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     protected abstract <M, I, J> List<I> selectColumn(

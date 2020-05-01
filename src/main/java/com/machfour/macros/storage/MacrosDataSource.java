@@ -1,5 +1,6 @@
 package com.machfour.macros.storage;
 
+import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
@@ -8,10 +9,7 @@ import com.machfour.macros.util.DateStamp;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface MacrosDataSource {
     // Used to create a persistent connection that lasts across calls to the DB.
@@ -59,7 +57,7 @@ public interface MacrosDataSource {
     Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException;
 
     // returns number of objects saved correctly (i.e. 0 or 1)
-    // TODO return the ID of the saved object
+    // If possible return the ID of the saved object? -> can't with SQLite JDBC
     <M extends MacrosEntity<M>> int saveObject(M object) throws SQLException;
 
     /* These functions save the objects given to them into the database, via INSERT or UPDATE.
@@ -71,7 +69,7 @@ public interface MacrosDataSource {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time throws SQLException;
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    // TODO return the ID of the inserted objects
+    // If possible return the ID of the saved object? -> can't with SQLite JDBC
     <M extends MacrosEntity<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException;
     <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException;
 
@@ -86,4 +84,12 @@ public interface MacrosDataSource {
     //List<FoodTable> getMatchingFoods(String searchString, String[] columnNames, boolean prefixOnly);
 
 
+
+    // Methods used when saving multiple new objects to the database at once which must be cross-referenced, and
+    // IDs are not known at the time of saving.
+    // These methods replace a manual database retrieval of objects whose ID is needed. However, there still
+    // needs to be a well-ordering of dependencies between the fields of each type of object, so that the first type
+    // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
+    <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException;
+    <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException;
 }

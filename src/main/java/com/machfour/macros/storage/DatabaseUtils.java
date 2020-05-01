@@ -7,6 +7,7 @@ import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.util.Function;
+import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.util.StringJoiner;
 
 import java.io.BufferedReader;
@@ -108,14 +109,14 @@ public class DatabaseUtils {
     }
 
     public static <M> String selectLikeTemplate(Table<M> t, Column<M, ?> selectColumn, List<Column<M, String>> likeColumns) {
-        return selectTemplate(t, toList(selectColumn), makeWhereLikeString(likeColumns), false);
+        return selectTemplate(t, MiscUtils.toList(selectColumn), makeWhereLikeString(likeColumns), false);
     }
 
     public static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues, boolean distinct) {
-        return selectTemplate(t, toList(selectColumn), whereColumn, nValues, distinct);
+        return selectTemplate(t, MiscUtils.toList(selectColumn), whereColumn, nValues, distinct);
     }
     public static <M> String selectTemplate(Table<M> t, Column<M, ?> selectColumn, Column<M, ?> whereColumn, int nValues) {
-        return selectTemplate(t, toList(selectColumn), whereColumn, nValues, false);
+        return selectTemplate(t, MiscUtils.toList(selectColumn), whereColumn, nValues, false);
     }
     public static <M> String selectTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, ?> whereColumn, int nValues, boolean distinct) {
         return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct);
@@ -173,10 +174,6 @@ public class DatabaseUtils {
             idMap.put(m.getId(), m);
         }
         return idMap;
-    }
-
-    public static <E> List<E> toList(E e) {
-        return Collections.singletonList(e);
     }
 
     public static String createStatements(Reader r) throws IOException {

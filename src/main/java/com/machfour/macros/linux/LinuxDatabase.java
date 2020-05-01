@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 
-import static com.machfour.macros.storage.DatabaseUtils.toList;
+import static com.machfour.macros.util.MiscUtils.toList;
 
 // data source provided by Xerial library
 

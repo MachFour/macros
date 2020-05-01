@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static com.machfour.macros.linux.Config.PROGNAME;
-import static com.machfour.macros.storage.DatabaseUtils.toList;
+import static com.machfour.macros.util.MiscUtils.toList;
 
 public class Import extends CommandImpl {
     private static final String NAME = "import";

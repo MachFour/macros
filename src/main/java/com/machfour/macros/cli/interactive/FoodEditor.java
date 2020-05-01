@@ -7,10 +7,12 @@ import com.googlecode.lanterna.screen.Screen;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.MacrosEntity;
+import com.machfour.macros.core.Schema;
 import com.machfour.macros.names.*;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.util.UnicodeUtils;
 import com.machfour.macros.validation.ValidationError;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +67,8 @@ public class FoodEditor {
     private String statusLine1;
     @NotNull
     private String statusLine2;
+    @NotNull
+    private String exceptionMessage;
 
     // current highlighted (if not editing) or last highlighted (if editing) Action
     @NotNull
@@ -110,6 +114,7 @@ public class FoodEditor {
         this.currentAction = Action.SAVE;
         this.statusLine1 = "Welcome to the food editor.";
         this.statusLine2 = "Use the arrow keys to navigate, and enter to confirm an edit or select an action";
+        this.exceptionMessage = "";
         this.editingValue = new StringBuilder();
 
         initVariables();
@@ -201,14 +206,26 @@ public class FoodEditor {
         statusLine1 = "";
         statusLine2 = "";
     }
+    private void clearExceptionMessage() {
+        exceptionMessage = "";
+    }
 
     private void setStatus(@NotNull String line1, @NotNull String line2) {
-        statusLine1 = line1;
-        statusLine2 = line2;
+        // replace newlines with spaces
+        statusLine1 = line1.replaceAll("\n", " ");
+        statusLine2 = line2.replaceAll("\n", " ");
     }
+
     private void setStatus(@NotNull String line1) {
         setStatus(line1, "");
     }
+
+    // a long message to print at the end
+    private void setExceptionMessage(@NotNull String value) {
+        this.exceptionMessage = value;
+
+    }
+
 
     private void processEnter() throws IOException {
         if (isEditing) {
@@ -239,6 +256,8 @@ public class FoodEditor {
     private void reset() {
         foodBuilder.resetFields();
         nDataBuilder.resetFields();
+        clearStatus();
+        clearExceptionMessage();
     }
 
     // up and down saves edits and move to next field
@@ -549,6 +568,16 @@ public class FoodEditor {
         println("|");
         printColumns(ndColumnsForDisplay, nDataBuilder, numFoodColumns);
 
+        if (!exceptionMessage.isEmpty()) {
+            newline();
+            newline();
+            println("*****************************************");
+            String[] exceptionLines = exceptionMessage.split("\n");
+            for (String line : exceptionLines) {
+                println(line);
+            }
+        }
+
         if (isEditing) {
             int activeFieldRow = terminalRowForColumnIndex.get(currentField);
             // if the text entered is more than the fieldValueWidth, we truncate the display to the last
@@ -572,13 +601,32 @@ public class FoodEditor {
         if (isAllValid()) {
             Food f = foodBuilder.build();
             NutritionData nd = nDataBuilder.build();
+            String indexName = f.getIndexName();
             try {
-                ds.saveObject(f);
-                // TODO get food ID, etc.
-                ds.saveObject(nd);
-                setStatus("Successfully saved food and nutrition data");
+                try {
+                    // link the food to the nd
+                    nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, indexName);
+
+                    // gotta do it in one go
+                    ds.openConnection();
+                    ds.beginTransaction();
+                    ds.saveObject(f);
+
+                    // get the food ID into the FOOD_ID field of the NutritionData
+                    List<NutritionData> completedNdata = ds.completeForeignKeys(MiscUtils.toList(nd), Schema.NutritionDataTable.FOOD_ID);
+                    assert completedNdata.size() == 1 : "Completed nutrition data did not have size 1";
+
+                    ds.saveObject(completedNdata.get(0));
+                    ds.endTransaction();
+                    setStatus("Successfully saved food and nutrition data");
+                } finally {
+                    // TODO if exception is thrown here after an exception thrown
+                    // in the above try block, the one here will hide the previous.
+                    ds.closeConnection();
+                }
             } catch (SQLException e) {
-                setStatus("Could not save!", "SQL Exception: " + e.getLocalizedMessage());
+                setStatus("Could not save!", "SQL Exception occurred (see bottom)");
+                setExceptionMessage(e.getLocalizedMessage());
             }
         } else {
             setStatus("Could not save due to validation errors. Check the following columns:",

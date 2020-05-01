@@ -104,9 +104,10 @@ public class ColumnData<M>  {
         this.table = table;
         this.immutable = false;
 
-        HashSet<Column<M, ?>> tempCols = new HashSet<>(cols.size(), 1);
-        tempCols.addAll(cols);
-        columns = Collections.unmodifiableSet(tempCols);
+        // don't really need unmodifiable cause it's private
+        //Set<Column<M, ?>> tempCols = new LinkedHashSet<>(cols);
+        //columns = Collections.unmodifiableSet(tempCols);
+        columns = new LinkedHashSet<>(cols);
 
         setDefaultData();
         if (existing != null) {

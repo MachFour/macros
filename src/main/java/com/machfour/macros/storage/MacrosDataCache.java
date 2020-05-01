@@ -78,6 +78,16 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
+    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+        return upstream.completeForeignKeys(objects, fk);
+    }
+
+    @Override
+    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
+        return upstream.completeForeignKeys(objects, which);
+    }
+
+    @Override
     public Set<Long> foodSearch(String keyword) throws SQLException {
         return upstream.foodSearch(keyword);
     }

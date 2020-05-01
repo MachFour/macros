@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static com.machfour.macros.core.MacrosUtils.getOrDefault;
-import static com.machfour.macros.storage.DatabaseUtils.toList;
+import static com.machfour.macros.util.MiscUtils.toList;
 
 public abstract class MacrosDatabase implements MacrosDataSource {
 
@@ -520,14 +520,14 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     }
 
     // wildcard capture helper for parent unique column type
-    private <M extends MacrosEntity<M>, J, N> List<M> completeFkCol(
-            List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
+    private <M extends MacrosEntity<M>, J, N> List<M> completeFkCol(List<M> objects, Column.Fk<M, J, N> fkCol) throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         List<ColumnData<N>> naturalKeyData = new ArrayList<>(objects.size());
         for (M object : objects) {
-            // needs to be either imported data, or computed, for Recipe nutrition data
-            assert (object.getObjectSource() == ObjectSource.IMPORT) ||
-                    (object.getObjectSource() == ObjectSource.COMPUTED) : "Object is not from import or computed";
+            // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
+            assert (Arrays.asList(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
+                        .contains(object.getObjectSource())) : "Object is not from import, new or computed";
+
             assert !object.getFkNaturalKeyMap().isEmpty() : "Object has no FK data maps";
             ColumnData<N> objectNkData = object.getFkParentNaturalKey(fkCol);
             assert objectNkData != null : "Natural key data was null";
@@ -548,18 +548,17 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         return completedObjects;
     }
 
-    // only Storage classes should know about these two methods
-    <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
+    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk)
+            throws SQLException {
         return completeForeignKeys(objects, toList(fk));
     }
 
-    <M extends MacrosEntity<M>> List<M> completeForeignKeys(
-            Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
+    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which)
+            throws SQLException {
         List<M> completedObjects = new ArrayList<>(objects.size());
         if (!objects.isEmpty()) {
             // objects without foreign key data yet (mutable copy of first argument)
-            List<M> partiallyCompletedObjects = new ArrayList<>(objects.size());
-            partiallyCompletedObjects.addAll(objects);
+            List<M> partiallyCompletedObjects = new ArrayList<>(objects);
 
             // hack to get correct factory type without passing it explicitly as argument
             Factory<M> factory = partiallyCompletedObjects.get(0).getFactory();
@@ -568,7 +567,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
             for (Column.Fk<M, ?, ?> fkCol: which) {
                 partiallyCompletedObjects = completeFkCol(partiallyCompletedObjects, fkCol);
             }
-            // Check everything's fine and change source to ObjectSource.IMPORT_FK_PRESENT
+            // Check everything's fine and (not yet implemented) change source to ObjectSource.IMPORT_FK_PRESENT
             for (M object : partiallyCompletedObjects) {
                 assert fkIdsPresent(object);
                 completedObjects.add(factory.construct(object.getAllData(), object.getObjectSource()));

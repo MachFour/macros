@@ -3,6 +3,9 @@ package com.machfour.macros.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.List;
+
 public class MiscUtils {
     // Basically Objects.toString() except for Android's API level
     // Returns empty string on null input
@@ -38,4 +41,7 @@ public class MiscUtils {
         return x >= 0 ? unsignedValue : -unsignedValue;
     }
 
+    public static <E> List<E> toList(E e) {
+        return Collections.singletonList(e);
+    }
 }

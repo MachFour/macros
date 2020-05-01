@@ -52,11 +52,13 @@ public class QtyUnits {
         }
 
         INBUILT = Arrays.asList(QtyUnits.GRAMS, QtyUnits.MILLIGRAMS, QtyUnits.MILLILITRES);
+
         ABBREVIATION_MAP = new HashMap<>(QtyUnits.INBUILT.size(), 1.0f);
         ID_MAP = new HashMap<>(QtyUnits.INBUILT.size(), 1.0f);
+
         for (QtyUnit u : QtyUnits.INBUILT) {
-            QtyUnits.ABBREVIATION_MAP.put(u.abbr().toLowerCase(), u);
-            QtyUnits.ID_MAP.put(u.getId(), u);
+            ABBREVIATION_MAP.put(u.abbr().toLowerCase(), u);
+            ID_MAP.put(u.getId(), u);
         }
     }
 
@@ -69,7 +71,7 @@ public class QtyUnits {
         if (ABBREVIATION_MAP.containsKey(abbr)) {
             return ABBREVIATION_MAP.get(abbr);
         } else if (throwIfNotFound) {
-            throw new IllegalArgumentException("No EnergyUnit exists with abbreviation '" + abbreviation + "'");
+            throw new IllegalArgumentException("No QtyUnit exists with abbreviation '" + abbreviation + "'");
         } else {
             return null;
         }

@@ -1,13 +1,10 @@
 package com.machfour.macros.names;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.core.Schema;
 import com.machfour.macros.core.Schema.FoodTable;
 import com.machfour.macros.core.Schema.NutritionDataTable;
-import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 
-import com.machfour.macros.objects.QtyUnit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;

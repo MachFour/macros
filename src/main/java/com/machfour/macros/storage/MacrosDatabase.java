@@ -40,6 +40,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
     public abstract void beginTransaction() throws SQLException;
     public abstract void endTransaction() throws SQLException;
 
+    public abstract void initDb() throws SQLException, IOException;
 
     protected abstract <M> int deleteById(Long id, Table<M> t) throws SQLException;
 
@@ -75,8 +76,8 @@ public abstract class MacrosDatabase implements MacrosDataSource {
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    protected abstract <M, I, J> List<I> selectColumn(
-            Table<M> t, Column<M, I> selectColumn, Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException;
+    public abstract <M, I, J> List<I> selectColumn(
+            Table<M> t, Column<M, I> selected, Column<M, J> where, Collection<J> whereValues, boolean distinct) throws SQLException;
 
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
@@ -149,6 +150,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         }
     }
 
+    @NotNull
     public Meal getOrCreateMeal(@NotNull DateStamp day, @NotNull String name) throws SQLException {
         Map<String, Meal> mealsForDay = getMealsForDay(day);
         if (mealsForDay.containsKey(name)) {
@@ -475,7 +477,7 @@ public abstract class MacrosDatabase implements MacrosDataSource {
         Collections.sort(mealsByCreateTime, (m1, m2) -> Long.compare(m1.createTime(), m2.createTime()));
 
         Map<String, Meal> mealsByName = new TreeMap<>();
-        for (Meal m : mealsById.values()) {
+        for (Meal m : mealsByCreateTime) {
             assert !mealsByName.containsKey(m.getName());
             mealsByName.put(m.getName(), m);
         }

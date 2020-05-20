@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Collection;
 
-import static java.lang.Character.PARAGRAPH_SEPARATOR;
 import static java.lang.Character.UnicodeBlock;
 
 public class UnicodeUtils {

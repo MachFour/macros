@@ -2,52 +2,49 @@ package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class DeleteFood extends CommandImpl {
     private static final String NAME = "deletefood";
-    private static final String USAGE = String.format("Usage: %s %s <index name 1> [<index name 2>] [...]", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index name 1> [<index name 2>] [...]", config.getProgramName(), NAME);
 
     public DeleteFood() {
         super(NAME, USAGE);
     }
 
-    public void doActionNoExitCode(List<String> args) {
+    public int doAction(List<String> args) {
         if (args.contains("--help")) {
             printHelp();
-            return;
+            return -1;
         } else if (args.size() < 2) {
             out.println(usage());
-            return;
+            return -1;
         }
 
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds = config.getDataSourceInstance();
 
         out.println("Retrieving foods...");
         out.println();
 
-        List<Food> foodsToDelete = Collections.emptyList();
+        List<Food> foodsToDelete;
         try {
-            foodsToDelete = new ArrayList<>(db.getFoodsByIndexName(args.subList(1, args.size())).values());
+            foodsToDelete = new ArrayList<>(ds.getFoodsByIndexName(args.subList(1, args.size())).values());
         } catch (SQLException e) {
             out.println("SQL Exception while retrieving foods: " + e);
-            return;
+            return 1;
         }
 
         switch (foodsToDelete.size()) {
             case 0:
                 out.println("No matching foods found!");
-                return;
+                return 2;
             case 1:
                 out.println("===== Food to delete =====");
                 out.println();
@@ -71,27 +68,29 @@ public class DeleteFood extends CommandImpl {
             out.println("Deleting foods...");
             out.println();
             try {
-                db.openConnection();
-                db.beginTransaction();
+                ds.openConnection();
+                ds.beginTransaction();
                 for (Food f : foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    db.deleteObject(f);
+                    ds.deleteObject(f);
                     out.println("Deleted " + f.getIndexName());
                 }
-                db.endTransaction();
+                ds.endTransaction();
             } catch (SQLException e) {
-                out.println("SQL Exception occurred while deleting foods: " + e);
-                out.println("No foods deleted");
+                err.println("SQL Exception occurred while deleting foods: " + e);
+                err.println("No foods deleted");
+                return 1;
             } finally {
                 try {
-                    db.closeConnection();
+                    ds.closeConnection();
                 } catch (SQLException e) {
-                    out.println("Warning: SQL exception occurred when closing the DB");
+                    err.println("Warning: SQL exception occurred when closing the DB");
                 }
             }
         } else {
             out.println("No action performed");
         }
+        return 0;
 
     }
 

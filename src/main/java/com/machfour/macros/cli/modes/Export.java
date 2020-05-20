@@ -3,11 +3,9 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Table;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.CsvExport;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.FileUtils;
 
 import java.io.FileWriter;
@@ -16,11 +14,11 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class Export extends CommandImpl {
     private static final String NAME = "export";
-    private static final String USAGE = String.format("%s %s [output dir]", PROGNAME, NAME);
+    private static final String USAGE = String.format("%s %s [output dir]", config.getProgramName(), NAME);
 
     public Export() {
         super(NAME, USAGE);
@@ -32,7 +30,7 @@ public class Export extends CommandImpl {
         out.println("Please specify the containing directory. It will be created if it doesn't exist.");
     }
 
-    private <M extends MacrosEntity<M>> void exportTable(MacrosDatabase db, String outDir, Table<M> t)
+    private <M extends MacrosEntity<M>> void exportTable(MacrosDataSource db, String outDir, Table<M> t)
             throws SQLException, IOException {
         out.println("Exporting " + t.name() + " table...");
         String outCsvPath = FileUtils.joinPath(outDir, t.name() + ".csv");
@@ -48,16 +46,16 @@ public class Export extends CommandImpl {
             return 0;
         }
 
-        String outputDir = args.size() >= 2 ? args.get(1) : Config.DEFAULT_CSV_OUTPUT_DIR;
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        String outputDir = args.size() >= 2 ? args.get(1) : config.getDefaultCsvOutputDir();
+        MacrosDataSource ds =  config.getDataSourceInstance();
 
         try {
-            exportTable(db, outputDir, Food.table());
-            exportTable(db, outputDir, NutritionData.table());
-            exportTable(db, outputDir, Serving.table());
-            exportTable(db, outputDir, Ingredient.table());
-            exportTable(db, outputDir, Meal.table());
-            exportTable(db, outputDir, FoodPortion.table());
+            exportTable(ds, outputDir, Food.table());
+            exportTable(ds, outputDir, NutritionData.table());
+            exportTable(ds, outputDir, Serving.table());
+            exportTable(ds, outputDir, Ingredient.table());
+            exportTable(ds, outputDir, Meal.table());
+            exportTable(ds, outputDir, FoodPortion.table());
         } catch (SQLException | IOException e) {
             out.println();
             err.printf("Exception occurred (%s). Message: %s\n", e.getClass(), e.getMessage());

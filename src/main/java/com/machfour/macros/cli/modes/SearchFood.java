@@ -1,22 +1,20 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.StringJoiner;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 
 public class SearchFood extends CommandImpl {
     private static final String NAME = "search";
-    private static final String USAGE = String.format("Usage: %s %s <keyword>", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <keyword>", config.getProgramName(), NAME);
 
     public SearchFood() {
         super(NAME, USAGE);
@@ -31,14 +29,14 @@ public class SearchFood extends CommandImpl {
             }
             return;
         }
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds =  config.getDataSourceInstance();
         String keyword = args.get(1);
 
         Map<Long, Food> resultFoods = Collections.emptyMap();
         try {
-            Set<Long> resultIds = db.foodSearch(keyword);
+            Set<Long> resultIds = ds.foodSearch(keyword);
             if (!resultIds.isEmpty()) {
-                resultFoods = db.getFoodsById(resultIds);
+                resultFoods = ds.getFoodsById(resultIds);
             }
         } catch (SQLException e) {
             out.print("SQL exception occurred: ");

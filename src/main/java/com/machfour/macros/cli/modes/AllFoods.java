@@ -1,20 +1,18 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class AllFoods extends CommandImpl {
     private static final String NAME = "allfoods";
-    private static final String USAGE = String.format("Usage: %s %s\n", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s\n", config.getProgramName(), NAME);
 
     public AllFoods() {
         super(NAME, USAGE);
@@ -26,11 +24,11 @@ public class AllFoods extends CommandImpl {
             printHelp();
             return;
         }
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource db = config.getDataSourceInstance();
         listFoods(out, db);
     }
 
-    public static void listFoods(PrintStream out, MacrosDatabase db) {
+    public static void listFoods(PrintStream out, MacrosDataSource db) {
         List<Food> allFoods;
         try {
             allFoods = db.getAllFoods();

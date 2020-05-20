@@ -5,12 +5,9 @@ import com.machfour.macros.cli.utils.ArgParsing;
 import com.machfour.macros.cli.interactive.FoodEditor;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.Schema;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
 import com.machfour.macros.storage.MacrosDataSource;
-import com.machfour.macros.storage.MacrosDatabase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -18,11 +15,11 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class AddFood extends CommandImpl {
     private static final String NAME = "addfood";
-    private static final String USAGE = String.format("Usage: %s %s <index name>\n", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index name>\n", config.getProgramName(), NAME);
 
     /*
      * Ensures the given index name is not already in the database; returns true if it is not present.
@@ -53,11 +50,11 @@ public class AddFood extends CommandImpl {
         }
 
         String indexName = indexNameArg.argument();
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds = config.getDataSourceInstance();
 
         try {
             // TODO move this check inside MacrosBuilder validations
-            if (!checkIndexName(db, indexName)) {
+            if (!checkIndexName(ds, indexName)) {
                 out.println("Index name " + indexName + " already exists in the database, cannot continue.");
                 return 1;
             }
@@ -76,7 +73,7 @@ public class AddFood extends CommandImpl {
         boolean editorInitialised = false;
         try {
             try {
-                editor = new FoodEditor(db, foodBuilder, nDataBuilder);
+                editor = new FoodEditor(ds, foodBuilder, nDataBuilder);
                 editor.init();
                 editorInitialised = true;
                 editor.run();

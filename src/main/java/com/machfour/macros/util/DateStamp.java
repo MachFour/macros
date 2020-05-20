@@ -18,21 +18,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class DateStamp implements Comparable<DateStamp> {
     // Used to format and parse ISO8601 date strings, e.g '2017-08-01'
-    public static final DateFormat dateFormatter;
+    private static final DateFormat dateFormatter;
     // Fixed locale for machine-readable operations
-    public static final Locale locale = Locale.US;
-    public static final TimeZone currentTimeZone = TimeZone.getDefault();
+    private static final Locale internalLocale = Locale.US;
+    private static final TimeZone currentTimeZone = TimeZone.getDefault();
     //public static final Parcelable.Creator<DateStamp> CREATOR = new Creator();
 
     static {
-        dateFormatter = new SimpleDateFormat("yyyy-MM-dd", locale);
+        dateFormatter = new SimpleDateFormat("yyyy-MM-dd", internalLocale);
         dateFormatter.setTimeZone(currentTimeZone);
     }
 
+    // this calendar instance's date and time
     public final int year;
     public final int month;
     public final int day;
-    public final Calendar midnightOnDay;
+    private final Calendar midnightOnDay;
     private final int hashCode;
 
     /*
@@ -75,7 +76,7 @@ public class DateStamp implements Comparable<DateStamp> {
      * Return calendar corresponding to midnight on today's date in the current timezone
      */
     private static Calendar midnightToday() {
-        Calendar c = Calendar.getInstance(currentTimeZone, locale);
+        Calendar c = Calendar.getInstance(currentTimeZone, internalLocale);
         c.set(Calendar.HOUR, 0);
         c.set(Calendar.MINUTE, 0);
         c.set(Calendar.SECOND, 0);
@@ -115,7 +116,7 @@ public class DateStamp implements Comparable<DateStamp> {
      * Creates a new DateStamp instance from an ISO-8601 string.
      * Throws IllegalArgumentException if the string is in an invalid format
      */
-    public static DateStamp fromIso8601String(String dateString) {
+    public static DateStamp fromIso8601String(@NotNull String dateString) {
         Calendar date = Calendar.getInstance();
         try {
             date.setTime(dateFormatter.parse(dateString));
@@ -137,7 +138,6 @@ public class DateStamp implements Comparable<DateStamp> {
             - d.midnightOnDay.getTimeInMillis();
         return TimeUnit.DAYS.convert(millisDifference, TimeUnit.MILLISECONDS);
     }
-
 
     @Override
     public int hashCode() {
@@ -166,11 +166,13 @@ public class DateStamp implements Comparable<DateStamp> {
         return midnightOnDay.compareTo(other.midnightOnDay);
     }
 
-    @Deprecated
-    public Calendar getCalendar() {
-        return midnightOnDate(year, month, day);
+    // Number of days from this date since January 1, 1970.
+    public long daysSinceJan1970() {
+        long unixTimeMillis = midnightOnDay.getTimeInMillis();
+        return TimeUnit.DAYS.convert(unixTimeMillis, TimeUnit.MILLISECONDS);
     }
 
+    // TODO wrap Datestamp class in ParcelableDateStamp which has these methods?
     /*
      * Parcelable methods
      */

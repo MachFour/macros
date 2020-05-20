@@ -3,11 +3,9 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.ingredients.IngredientsParser;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.CompositeFood;
 import com.machfour.macros.objects.NutritionData;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,11 +14,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class Recipe extends CommandImpl {
     private static final String NAME = "recipe";
-    private static final String USAGE = String.format("Usage: %s %s <recipes.json>", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <recipes.json>", config.getProgramName(), NAME);
 
     public Recipe() {
         super(NAME, USAGE);
@@ -36,12 +34,12 @@ public class Recipe extends CommandImpl {
             return;
         }
 
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds =  config.getDataSourceInstance();
         List<CompositeFood> recipes = new ArrayList<>();
 
         try (Reader jsonReader = new FileReader(args.get(1))) {
             out.println("Importing recipes...");
-            recipes.addAll(IngredientsParser.readRecipes(jsonReader, db));
+            recipes.addAll(IngredientsParser.readRecipes(jsonReader, ds));
         } catch (IOException e1) {
             out.println("IO exception occurred while reading recipes file: " + e1.getLocalizedMessage());
         } catch (SQLException e2) {
@@ -88,7 +86,7 @@ public class Recipe extends CommandImpl {
         out.println();
         if (response == 'y' || response == 'Y') {
             try {
-                IngredientsParser.saveRecipes(recipes, db);
+                IngredientsParser.saveRecipes(recipes, ds);
                 out.println("Recipes saved!");
             } catch (SQLException e) {
                 out.println("SQL exception occurred while saving recipe objects: " + e.getMessage());

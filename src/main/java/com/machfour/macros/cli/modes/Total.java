@@ -3,10 +3,8 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.MealPrinter;
 import com.machfour.macros.cli.utils.MealSpec;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Meal;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.PrintFormatting;
 
 import java.sql.SQLException;
@@ -14,14 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 /*
  * Prints out totals for all DB recorded meals in a day
  */
 public class Total extends CommandImpl {
     private static final String NAME = "total";
-    private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", config.getProgramName(), NAME);
 
     public Total() {
         super(NAME, USAGE);
@@ -68,13 +66,13 @@ public class Total extends CommandImpl {
         boolean per100 = args.contains("--per100");
         boolean allMeals = args.contains("--all");
 
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds =  config.getDataSourceInstance();
         MealSpec spec = makeMealSpec(args, allMeals);
-        return process(spec, db, allMeals, verbose, per100);
+        return process(spec, ds, allMeals, verbose, per100);
 
     }
 
-    int process(MealSpec mealSpec, MacrosDatabase db, boolean allMeals, boolean verbose, boolean per100) {
+    int process(MealSpec mealSpec, MacrosDataSource db, boolean allMeals, boolean verbose, boolean per100) {
         if (!allMeals) {
             // total for specific meal
             mealSpec.process(db, false);
@@ -96,6 +94,7 @@ public class Total extends CommandImpl {
             } catch (SQLException e) {
                 out.println();
                 err.println("Error retrieving meals: " + e.getMessage());
+                return 1;
             }
         }
         return 0;

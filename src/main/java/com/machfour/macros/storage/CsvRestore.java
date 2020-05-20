@@ -45,7 +45,7 @@ public class CsvRestore {
     }
 
 
-    public static <M extends MacrosEntity<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDatabase db, PrintStream out)
+    public static <M extends MacrosEntity<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDataSource db, PrintStream out)
             throws SQLException, IOException, TypeCastException {
         List<M> objects = buildObjectsForRestore(t, csvData, out);
         db.saveObjects(objects, ObjectSource.RESTORE);

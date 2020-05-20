@@ -1,42 +1,45 @@
 package com.machfour.macros.cli;
 
-import com.machfour.macros.cli.CliMain;
-import com.machfour.macros.cli.Command;
+import com.machfour.macros.core.MacrosConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.PrintStream;
-import java.security.cert.CertificateRevokedException;
 import java.util.List;
 
 public abstract class CommandImpl implements Command {
+
+    static void setConfig(MacrosConfig newConfig) {
+        config = newConfig;
+        out = config.outStream();
+        err = config.errStream();
+        in = config.inputReader();
+    }
+
+    protected static MacrosConfig config;
+    protected static PrintStream out;
+    protected static PrintStream err;
+    protected static BufferedReader in;
+
 
     @NotNull
     private final String name;
     @Nullable
     private final String usage;
 
-    protected final PrintStream out;
-    protected final PrintStream err;
-    protected final BufferedReader in;
-
     protected CommandImpl(@NotNull String name) {
         this(name, null);
     }
-    protected CommandImpl(@NotNull String name, @Nullable String usage) {
-        this(name, usage, CliMain.OUT, CliMain.ERR, CliMain.IN);
-    }
 
-    private CommandImpl(@NotNull String name, @Nullable String usage, PrintStream out, PrintStream err, BufferedReader in) {
+    protected CommandImpl(@NotNull String name, @Nullable String usage) {
         this.name = name;
         this.usage = usage;
-        this.out = out;
-        this.err = err;
-        this.in = in;
     }
 
+
     // can be overridden
+    @Override
     public void doActionNoExitCode(List<String> args) {
         doAction(args);
     }
@@ -59,11 +62,17 @@ public abstract class CommandImpl implements Command {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return name();
     }
     @Override
-    public boolean isUserCommand() {
-        return !name().startsWith("_");
+    public final boolean isUserCommand() {
+        return isUserCommand(name());
     }
+
+    // logic for deciding whether a command is user-facing
+    static boolean isUserCommand(String name) {
+        return !name.startsWith("_");
+    }
+
 }

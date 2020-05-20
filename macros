@@ -18,7 +18,7 @@ for lib in ${LIBRARIES[@]}; do
 done
 
 #PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
-MAINCLASS=com.machfour.macros.cli.CliMain
+MAINCLASS=com.machfour.macros.linux.LinuxMain
 
 # AOT things
 #"-XX:+PrintAOT"

@@ -92,10 +92,20 @@ public class MacrosDataCache implements MacrosDataSource {
         return upstream.foodSearch(keyword);
     }
 
+    public void saveFoodPortions(@NotNull Meal m) throws SQLException {
+        upstream.saveFoodPortions(m);
+    }
+
     @Override
-    // TODO should this only return the ID, for caching purposes
-    public @Nullable Meal getCurrentMeal() throws SQLException {
+    @Nullable
+    public Meal getCurrentMeal() throws SQLException {
+        // TODO should this only return the ID, for caching purposes
         return upstream.getCurrentMeal();
+    }
+
+    @NotNull
+    public Meal getOrCreateMeal(@NotNull DateStamp day, @NotNull String name) throws SQLException {
+        return upstream.getOrCreateMeal(day, name);
     }
 
     @Override
@@ -176,11 +186,24 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     @Override
+    public <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selected, Column<M, J> where, Collection<J> whereValues, boolean distinct) throws SQLException {
+        // todo caching
+        return upstream.selectColumn(t, selected, where, whereValues, distinct);
+    }
+
+    @Override
     public <M extends MacrosEntity<M>> int saveObject(M object) throws SQLException {
         onDbWrite(object);
         return upstream.saveObject(object);
     }
 
+    @Override
+    public <M extends MacrosEntity<M>> int saveObjects(Collection<? extends M> objects, ObjectSource objectSource) throws SQLException {
+        for (M object : objects) {
+            onDbWrite(object);
+        }
+        return upstream.saveObjects(objects, objectSource);
+    }
 
     @Override
     public <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
@@ -195,6 +218,21 @@ public class MacrosDataCache implements MacrosDataSource {
             onDbWrite(object);
         }
         return upstream.updateObjects(objects);
+    }
+
+    @Override
+    public <M, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
+        return upstream.deleteByColumn(t, whereColumn, whereValues);
+    }
+
+    @Override
+    public <M> int clearTable(Table<M> t) throws SQLException {
+        return upstream.clearTable(t);
+    }
+
+    @Override
+    public <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
+        return upstream.getAllRawObjects(t);
     }
 
     private <M extends MacrosEntity<M>> void onDbWrite(M object) {

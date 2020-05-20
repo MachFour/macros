@@ -113,12 +113,13 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return millisInDb;
     }
 
+    @Override
     public void initDb() throws SQLException, IOException {
         Connection c = getConnection();
         try (Statement s = c.createStatement();
-             Reader init = new FileReader(Config.INIT_SQL);
-             Reader trig = new FileReader(Config.TRIG_SQL);
-             Reader data = new FileReader(Config.DATA_SQL)
+             Reader init = new FileReader(LinuxConfig.INIT_SQL);
+             Reader trig = new FileReader(LinuxConfig.TRIG_SQL);
+             Reader data = new FileReader(LinuxConfig.DATA_SQL)
             ) {
 
             String createSchemaSql = DatabaseUtils.createStatements(init);
@@ -135,6 +136,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             closeIfNecessary(c);
         }
     }
+
     @Override
     protected <M> int deleteById(Long id, Table<M> t) throws SQLException {
         Connection c = getConnection();
@@ -214,19 +216,19 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Override
-    protected <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selectColumn,
-            Column<M, J> whereColumn, Collection<J> whereValues, boolean distinct) throws SQLException {
+    public <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selected, Column<M, J> where, Collection<J> whereValues,
+                                          boolean distinct) throws SQLException {
         List<I> resultList = new ArrayList<>(0);
         Connection c = getConnection();
-        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, selectColumn, whereColumn, whereValues.size(), distinct))) {
+        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, selected, where, whereValues.size(), distinct))) {
             LinuxDatabaseUtils.bindObjects(p, whereValues);
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
-                    Object resultValue = rs.getObject(selectColumn.sqlName());
+                    Object resultValue = rs.getObject(selected.sqlName());
                     try {
-                        resultList.add(selectColumn.getType().fromRaw(resultValue));
+                        resultList.add(selected.getType().fromRaw(resultValue));
                     } catch (TypeCastException e) {
-                        rethrowAsSqlException(resultValue, selectColumn);
+                        rethrowAsSqlException(resultValue, selected);
                     }
                 }
             }

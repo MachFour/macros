@@ -43,6 +43,7 @@ public interface MacrosType<J> {
     // A dumb Java cast from the given object to the Java class associated with this Type
     J cast(Object o);
 
+    // used in Android database code
     SqliteType sqliteType();
 
 }

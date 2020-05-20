@@ -12,7 +12,6 @@ import org.supercsv.prefs.CsvPreference;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
 import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
@@ -73,7 +72,7 @@ public class CsvImport {
 
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
-    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDatabase db)
+    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDataSource db)
             throws IOException, SQLException, TypeCastException {
         Map<String, List<Ingredient>> data = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(ingredientCsv)) {
@@ -216,7 +215,7 @@ public class CsvImport {
         return servings;
     }
 
-    private static Set<String> findDuplicateIndexNames(Collection<String> indexNames, MacrosDatabase db) throws SQLException {
+    private static Set<String> findDuplicateIndexNames(Collection<String> indexNames, MacrosDataSource db) throws SQLException {
         List<String> duplicateList = db.selectColumn(Food.table(), INDEX_NAME, INDEX_NAME, indexNames, false);
         Set<String> duplicates = new HashSet<>(duplicateList.size());
         duplicates.addAll(duplicateList);
@@ -224,7 +223,7 @@ public class CsvImport {
     }
 
     // foods maps from index name to food object. Food object must have nutrition data attached by way of getnData()
-    private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDatabase db) throws SQLException {
+    private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDataSource db) throws SQLException {
         // collect all of the index names to be imported, and check if they're already in the DB.
         Set<String> newIndexNames = foods.keySet();
         Set<String> existingIndexNames = findDuplicateIndexNames(newIndexNames, db);
@@ -259,21 +258,21 @@ public class CsvImport {
         db.saveObjects(completedNd, ObjectSource.IMPORT);
     }
 
-    public static void importFoodData(Reader foodCsv, MacrosDatabase db, boolean allowOverwrite)
+    public static void importFoodData(Reader foodCsv, MacrosDataSource ds, boolean allowOverwrite)
             throws IOException, SQLException, TypeCastException {
         Map<String, Food> csvFoods = buildFoodObjectTree(foodCsv);
-        saveImportedFoods(csvFoods, db);
+        saveImportedFoods(csvFoods, ds);
     }
 
     // TODO detect existing servings
-    public static void importServings(Reader servingCsv, MacrosDatabase db, boolean allowOverwrite)
+    public static void importServings(Reader servingCsv, MacrosDataSource ds, boolean allowOverwrite)
             throws IOException, SQLException, TypeCastException {
         List<Serving> csvServings = CsvImport.buildServings(servingCsv);
-        List<Serving> completedServings = db.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
-        db.saveObjects(completedServings, ObjectSource.IMPORT);
+        List<Serving> completedServings = ds.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
+        ds.saveObjects(completedServings, ObjectSource.IMPORT);
     }
 
-    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDatabase db)
+    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDataSource db)
             throws IOException, SQLException, TypeCastException {
         Map<String, List<Ingredient>> ingredientsByRecipe = makeIngredients(ingredientCsv, db);
         Map<String, CompositeFood> csvRecipes = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe);

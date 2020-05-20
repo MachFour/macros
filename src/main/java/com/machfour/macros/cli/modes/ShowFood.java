@@ -3,10 +3,8 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.core.Schema;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -16,12 +14,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 import static com.machfour.macros.util.PrintFormatting.deNull;
 
 public class ShowFood extends CommandImpl {
     private static final String NAME = "show";
-    private static final String USAGE = String.format("Usage: %s %s <index_name>", PROGNAME, NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index_name>", config.getProgramName(), NAME);
 
     public ShowFood() {
         super(NAME, USAGE);
@@ -41,11 +39,11 @@ public class ShowFood extends CommandImpl {
             verbose = true;
         }
 
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds =  config.getDataSourceInstance();
         String indexName = args.get(1);
         Food foodToList = null;
         try {
-            foodToList = db.getFoodByIndexName(indexName);
+            foodToList = ds.getFoodByIndexName(indexName);
         } catch (SQLException e) {
             out.print("SQL exception occurred: ");
             out.println(e.getErrorCode());

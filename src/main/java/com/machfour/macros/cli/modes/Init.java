@@ -1,18 +1,17 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
+import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class Init extends CommandImpl {
     private static final String NAME = "init";
-    private static final String USAGE = String.format("%s %s", PROGNAME, NAME);
+    private static final String USAGE = String.format("%s %s", config.getProgramName(), NAME);
 
     public Init() {
         super(NAME, USAGE);
@@ -29,10 +28,10 @@ public class Init extends CommandImpl {
             printHelp();
             return;
         }
-        LinuxDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDatabase db = config.getDatabaseInstance();
         try {
-            db.deleteIfExists(Config.DB_LOCATION);
-            out.printf("Deleted database at %s\n", Config.DB_LOCATION);
+            db.deleteIfExists(config.getDbLocation());
+            out.printf("Deleted database at %s\n", config.getDbLocation());
         } catch (IOException e) {
             out.println();
             out.println("Error deleting the database: " + e.getMessage());
@@ -44,6 +43,6 @@ public class Init extends CommandImpl {
             out.println();
             out.println("Error initialising the database: " + e.getMessage());
         }
-        out.printf("Database re-initialised at %s\n", Config.DB_LOCATION);
+        out.printf("Database re-initialised at %s\n", config.getDbLocation());
     }
 }

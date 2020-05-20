@@ -4,11 +4,9 @@ import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.FileParser;
 import com.machfour.macros.cli.utils.MealPrinter;
 import com.machfour.macros.cli.utils.MealSpec;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.FoodPortionSpec;
 import com.machfour.macros.util.PrintFormatting;
 
@@ -17,12 +15,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class Portion extends CommandImpl {
     private static final String NAME = "portion";
     private static final String USAGE =
-            String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", PROGNAME, NAME);
+            String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", config.getProgramName(), NAME);
 
     public Portion() {
         super(NAME, USAGE);
@@ -34,7 +32,7 @@ public class Portion extends CommandImpl {
             printHelp();
             return 0;
         }
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        MacrosDataSource ds =  config.getDataSourceInstance();
         // MealSpec mealSpec = MealSpec.makeMealSpec(args);
 
         // TODO use argParsing here
@@ -68,7 +66,7 @@ public class Portion extends CommandImpl {
         if (!mealSpec.mealSpecified()) {
             out.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), PrintFormatting.prettyDay(mealSpec.day()));
         }
-        mealSpec.process(db, true);
+        mealSpec.process(ds, true);
         if (mealSpec.error() != null) {
             err.println(mealSpec.error());
             return 1;
@@ -80,11 +78,11 @@ public class Portion extends CommandImpl {
             specs.add(FileParser.makefoodPortionSpecFromLine(args.get(index)));
         }
 
-        return process(mealSpec.processedObject(), specs, db, out, err);
+        return process(mealSpec.processedObject(), specs, ds, out, err);
 
     }
 
-    static int process(Meal toAddTo, List<FoodPortionSpec> specs, MacrosDatabase db, PrintStream out, PrintStream err) {
+    static int process(Meal toAddTo, List<FoodPortionSpec> specs, MacrosDataSource db, PrintStream out, PrintStream err) {
         if (specs.isEmpty()) {
             out.println("No food portions specified, nothing to do");
             return 0;

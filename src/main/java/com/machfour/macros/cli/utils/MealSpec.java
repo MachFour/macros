@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.objects.Meal;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.PrintFormatting;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +75,7 @@ public class MealSpec {
     }
 
 
-    public void process(MacrosDatabase db, boolean create) {
+    public void process(MacrosDataSource db, boolean create) {
         if (processed || error != null) {
             // skip processing if there are already errors
             return;

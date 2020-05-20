@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.datatype.Types;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
@@ -55,24 +54,10 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
             CALORIES, KILOJOULES
     );
 
+    /*
     private static final Set<Column<NutritionData, Double>> MILLIGRAMS_COLS = new HashSet<>(
             Arrays.asList(SODIUM, CALCIUM, POTASSIUM, IRON, OMEGA_3_FAT, OMEGA_6_FAT));
-
-    private static final Map<Column<NutritionData, Double>, String> unitString;
-    static {
-        unitString = new HashMap<>(NUTRIENT_COLUMNS.size());
-        for (Column<NutritionData, Double> col : NUTRIENT_COLUMNS) {
-            if (MILLIGRAMS_COLS.contains(col)) {
-                NutritionData.unitString.put(col, "mg");
-            } else if (col.equals(CALORIES)) {
-                NutritionData.unitString.put(col, "kcal");
-            } else if (col.equals(KILOJOULES)) {
-                NutritionData.unitString.put(col, "kj");
-            } else {
-                NutritionData.unitString.put(col, "g");
-            }
-        }
-    }
+     */
 
     // keeps track of missing data for adding different instances of NutritionDataTable together
     // only NUTRIENT_COLUMNS are present in this map

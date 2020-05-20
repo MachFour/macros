@@ -6,11 +6,11 @@ import com.machfour.macros.cli.Commands;
 
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 
 public class Help extends CommandImpl {
     private static final String NAME = "help";
-    private static final String USAGE = String.format("%s %s <command>", PROGNAME, NAME);
+    private static final String USAGE = String.format("%s %s <command>", config.getProgramName(), NAME);
 
     public Help() {
         super(NAME, USAGE);
@@ -29,7 +29,7 @@ public class Help extends CommandImpl {
             }
         }
         out.println();
-        out.printf("For help using a particular command, run %s %s <command> or %s <command> --help\n", PROGNAME, NAME, PROGNAME);
+        out.printf("For help using a particular command, run %s %s <command> or %s <command> --help\n", config.getProgramName(), NAME, config.getProgramName());
     }
 
     @Override

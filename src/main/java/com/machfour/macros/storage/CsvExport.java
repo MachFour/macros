@@ -8,7 +8,6 @@ import org.supercsv.prefs.CsvPreference;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
 public class CsvExport {
     static <M extends MacrosEntity<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
@@ -40,7 +39,7 @@ public class CsvExport {
         return new CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE);
     }
 
-    public static <M extends MacrosEntity<M>> void exportTable(Table<M> t, Writer outCsv, MacrosDatabase db) throws SQLException, IOException {
+    public static <M extends MacrosEntity<M>> void exportTable(Table<M> t, Writer outCsv, MacrosDataSource db) throws SQLException, IOException {
         // TODO do we need to get raw objects? This method should probably be protected...
         Map<Long, M> rawObjectMap = db.getAllRawObjects(t);
         List<M> allRawObjects = new ArrayList<>(rawObjectMap.values());

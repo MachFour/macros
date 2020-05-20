@@ -1,75 +1,67 @@
 package com.machfour.macros.cli;
 
 import com.machfour.macros.cli.modes.*;
+import com.machfour.macros.core.MacrosConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
  * Helper class that holds static instances of all the other commands
  */
 public class Commands {
-    private static final Map<String, Command> CMDS_BY_NAME;
+    // allows initialisation of command objects using a loop of constructors
+    private interface CommandConstructor {
+        Command newInstance();
+    }
+    private static final Map<String, Command> CMDS_BY_NAME = new LinkedHashMap<>();
 
-    private static final Command RECIPES = new Recipe();
-    private static final Command ADDFOOD = new AddFood();
-    private static final Command DELETEFOOD = new DeleteFood();
-    private static final Command IMPORT = new Import();
-    private static final Command EXPORT = new Export();
-    private static final Command RESTORE = new Restore();
-    private static final Command INIT = new Init();
-    private static final Command EDIT = new Edit();
-    private static final Command READ = new Read();
-    private static final Command HELP = new Help();
-    private static final Command NEWMEAL = new NewMeal();
-    private static final Command SEARCH = new SearchFood();
-    private static final Command SHOWFOOD = new ShowFood();
-    private static final Command TOTAL = new Total();
-    private static final Command PORTION = new Portion();
-    private static final Command ALLFOODS = new AllFoods();
-    private static final Command LISTMEALS = new Meals();
-    // special commands
-    private static final Command NO_ARGS = new NoArgs();
-    private static final Command INVALID_COMMAND = new InvalidCommand();
-
-    private static final Command[] COMMANDS = {
-              HELP
-            , EDIT
-            , LISTMEALS
-            , SHOWFOOD
-            , ADDFOOD
-            , DELETEFOOD
-            , PORTION
-            , NEWMEAL
-            , READ
-            , SEARCH
-            , TOTAL
-            , RECIPES
-            , ALLFOODS
-            , IMPORT
-            , EXPORT
-            , RESTORE
-            , INIT
+    private static final CommandConstructor[] COMMAND_CONSTRUCTORS = {
+              Help::new
+            , Edit::new
+            , Meals::new
+            , ShowFood::new
+            , AddFood::new
+            , DeleteFood::new
+            , Portion::new
+            , NewMeal::new
+            , Read::new
+            , SearchFood::new
+            , Total::new
+            , Recipe::new
+            , AllFoods::new
+            , Import::new
+            , Export::new
+            , Restore::new
+            , Init::new
               // hidden ones - command name is prepended with underscore
-            , INVALID_COMMAND
-            , NO_ARGS
+            , InvalidCommand::new
+            , NoArgs::new
     };
 
-    static {
-        Map<String, Command> _cmdsByName = new HashMap<>();
-        for (Command m : COMMANDS) {
-            assert !_cmdsByName.containsKey(m.name()): "Two commands have the same name";
-            _cmdsByName.put(m.name(), m);
+    private static boolean initialised = false;
+
+    // and then init commands
+    public static void initCommands(@NotNull MacrosConfig config) {
+        CommandImpl.setConfig(config);
+        for (CommandConstructor cc : COMMAND_CONSTRUCTORS) {
+            Command c = cc.newInstance();
+            assert !CMDS_BY_NAME.containsKey(c.name()): "Two commands have the same name";
+            CMDS_BY_NAME.put(c.name(), c);
         }
-        CMDS_BY_NAME = Collections.unmodifiableMap(_cmdsByName);
+        initialised = true;
+    }
+
+    private static void checkInitialised() {
+        if (!initialised) {
+            throw new IllegalStateException("Commands not initialised");
+        }
     }
 
     @Nullable
     public static Command getCommandByName(String name) {
+        checkInitialised();
         return CMDS_BY_NAME.getOrDefault(name, null);
     }
 
@@ -78,8 +70,9 @@ public class Commands {
         return s.startsWith("--") ? s.substring(2) : s;
     }
 
-    public static Command[] getCommands() {
-        return COMMANDS;
+    public static List<Command> getCommands() {
+        checkInitialised();
+        return new ArrayList<>(CMDS_BY_NAME.values());
     }
 
     /*
@@ -87,12 +80,24 @@ public class Commands {
      */
     @NotNull
     public static Command parseCommand(@NotNull String cmdArg) {
-        return CMDS_BY_NAME.getOrDefault(cleanInput(cmdArg), INVALID_COMMAND);
+        checkInitialised();
+        return CMDS_BY_NAME.getOrDefault(cleanInput(cmdArg), invalidCommand());
     }
 
     @NotNull
     public static Command noArgsCommand() {
-        return NO_ARGS;
+        checkInitialised();
+        Command noArgs = getCommandByName(NoArgs.NAME);
+        assert noArgs != null;
+        return noArgs;
+    }
+
+    @NotNull
+    public static Command invalidCommand() {
+        checkInitialised();
+        Command invalid = getCommandByName(InvalidCommand.NAME);
+        assert invalid != null;
+        return invalid;
     }
 
     private Commands() {}
@@ -109,8 +114,7 @@ public class Commands {
         @Override
         public int doAction(List<String> args) {
             out.printf("Command not recognised: '%s'\n\n", args.get(0));
-            NO_ARGS.doActionNoExitCode(Collections.emptyList());
-            return -1;
+            return noArgsCommand().doAction(Collections.emptyList());
         }
     }
 
@@ -124,7 +128,7 @@ public class Commands {
         @Override
         public int doAction(List<String> args) {
             out.println("Please specify one of the following commands:");
-            for (Command m : COMMANDS) {
+            for (Command m : getCommands()) {
                 if (m.isUserCommand()) {
                     out.println(m.name());
                 }

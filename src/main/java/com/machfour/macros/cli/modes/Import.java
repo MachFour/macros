@@ -3,11 +3,9 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.core.datatype.TypeCastException;
-import com.machfour.macros.linux.Config;
-import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.storage.CsvImport;
-import com.machfour.macros.storage.MacrosDatabase;
+import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,12 +13,12 @@ import java.io.Reader;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.machfour.macros.linux.Config.PROGNAME;
+
 import static com.machfour.macros.util.MiscUtils.toList;
 
 public class Import extends CommandImpl {
     private static final String NAME = "import";
-    private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", PROGNAME, NAME);
+    private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", config.getProgramName(), NAME);
 
     public Import() {
         super(NAME, USAGE);
@@ -48,26 +46,26 @@ public class Import extends CommandImpl {
         boolean noRecipes = args.contains("--norecipes");
         boolean noFoodsServings = args.contains("--nofoods");
 
-        String foodCsvFile = Config.FOOD_CSV_PATH;
-        String servingCsvFile = Config.SERVING_CSV_PATH;
-        String recipeCsvFile = Config.RECIPE_CSV_PATH;
-        String ingredientsCsvFile = Config.INGREDIENTS_CSV_PATH;
-        MacrosDatabase db = LinuxDatabase.getInstance(Config.DB_LOCATION);
+        String foodCsvFile = config.getFoodCsvPath();
+        String servingCsvFile = config.getServingCsvPath();
+        String recipeCsvFile = config.getRecipeCsvPath();
+        String ingredientsCsvFile = config.getIngredientsCsvPath();
+        MacrosDataSource ds = config.getDataSourceInstance();
 
         try {
             if (doClear) {
                 if (!noFoodsServings) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...");
                     // have to clear in reverse order
-                    db.clearTable(Ingredient.table());
-                    db.clearTable(Serving.table());
-                    db.clearTable(NutritionData.table());
-                    db.clearTable(Food.table());
+                    ds.clearTable(Ingredient.table());
+                    ds.clearTable(Serving.table());
+                    ds.clearTable(NutritionData.table());
+                    ds.clearTable(Food.table());
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...");
                     // have to clear nutrition data first
-                    db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.getName()));
-                    db.clearTable(Ingredient.table());
+                    ds.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.getName()));
+                    ds.clearTable(Ingredient.table());
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used");
                 }
@@ -76,9 +74,9 @@ public class Import extends CommandImpl {
                 try (Reader foodCsv = new FileReader(foodCsvFile);
                      Reader servingCsv = new FileReader(servingCsvFile)) {
                     out.println("Importing foods and nutrition data into database...");
-                    CsvImport.importFoodData(foodCsv, db, false);
+                    CsvImport.importFoodData(foodCsv, ds, false);
                     out.println("Saved foods and nutrition data");
-                    CsvImport.importServings(servingCsv, db, false);
+                    CsvImport.importServings(servingCsv, ds, false);
                     out.println("Saved servings");
                     out.println();
                 }
@@ -88,7 +86,7 @@ public class Import extends CommandImpl {
                 try (Reader recipeCsv = new FileReader(recipeCsvFile);
                      Reader ingredientsCsv = new FileReader(ingredientsCsvFile)) {
                     out.println("Importing recipes and ingredients into database...");
-                    CsvImport.importRecipes(recipeCsv, ingredientsCsv, db);
+                    CsvImport.importRecipes(recipeCsv, ingredientsCsv, ds);
                     out.println("Saved recipes and ingredients");
                     out.println();
                 }

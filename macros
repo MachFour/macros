@@ -32,6 +32,6 @@ MAINCLASS=com.machfour.macros.linux.LinuxMain
 #     -XX:+LogTouchedMethods \
 #     -XX:+PrintTouchedMethodsAtExit 
 
-java -enableassertions -cp ${CLASSPATH} \
+archlinux-java-run --min 13 -- -enableassertions -cp ${CLASSPATH} \
 	 -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
 	 ${MAINCLASS} "$@"

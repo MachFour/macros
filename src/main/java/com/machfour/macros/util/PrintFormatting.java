@@ -124,7 +124,8 @@ public class PrintFormatting {
     ));
 
     // for formatting nutrition data in food details
-    public static String foodDetailsFormat(@Nullable NutritionData nd, Column<NutritionData, Double> field,
+    public static String foodDetailsFormat(@Nullable NutritionData nd,
+                                           @NotNull Column<NutritionData, Double> field,
                                            @NotNull ColumnStrings ndStrings) {
         if (nd == null) {
             return null;
@@ -139,6 +140,17 @@ public class PrintFormatting {
             width = 10;
             needsDpFlag = false;
         }
-        return formatQuantity(nd.amountOf(field), unit, width, 4, needsDpFlag, false, "");
+        return formatQuantity(nd.amountOf(field), unit, width, 5, needsDpFlag, false, "");
+    }
+
+    // for formatting nutrition data in meal summaries (no decimal places)
+    public static String mealSummaryFormat(@Nullable NutritionData nd,
+                                           @NotNull Column<NutritionData, Double> field,
+                                           @NotNull ColumnStrings ndStrings) {
+        if (nd == null) {
+            return null;
+        }
+        Unit unit = ndStrings.getUnit(field);
+        return formatQuantity(nd.amountOf(field), unit, 10, 4, false, false, "");
     }
 }

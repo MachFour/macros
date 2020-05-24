@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public class Meal extends MacrosEntityImpl<Meal> {
@@ -59,6 +60,19 @@ public class Meal extends MacrosEntityImpl<Meal> {
 
     public DateStamp getDay() {
         return getData(Schema.MealTable.DAY);
+    }
+
+    public Long getStartTime() {
+        return getData(Schema.MealTable.START_TIME);
+    }
+
+    // in seconds
+    public Long getDuration() {
+        return getData(Schema.MealTable.DURATION);
+    }
+
+    public Date getStartTimeObject() {
+        return new Date(getStartTime()*1000L);
     }
 
     public List<FoodPortion> getFoodPortions() {

@@ -223,8 +223,10 @@ public class Schema {
         public static final Column<Meal, Long> ID;
         public static final Column<Meal, Long> CREATE_TIME;
         public static final Column<Meal, Long> MODIFY_TIME;
-        public static final Column<Meal, DateStamp> DAY;
         public static final Column<Meal, String> NAME;
+        public static final Column<Meal, DateStamp> DAY;
+        public static final Column<Meal, Long> START_TIME;
+        public static final Column<Meal, Long> DURATION;
 
         static {
             ID          = idColumnBuildAndAdd(COLUMNS);
@@ -232,6 +234,8 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS);
             NAME        = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS);
             DAY         = builder("day", Types.DATESTAMP).notNull().buildAndAdd(COLUMNS);
+            START_TIME  = builder("time", Types.TIMESTAMP).notNull().defaultsTo(0L).buildAndAdd(COLUMNS);
+            DURATION    = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS);
         }
 
         private static final MealTable INSTANCE = new MealTable();

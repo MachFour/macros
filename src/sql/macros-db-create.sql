@@ -179,6 +179,11 @@ CREATE TABLE Meal (
     -- which day to associate the meal with. Dependent on user's time zone.
     -- only year, month and day stored, in ISO8601 format.
     , day                  TEXT NOT NULL DEFAULT (date('now', 'localtime'))
+    -- start time when meal was eaten. Defaults to creation time via trigger.
+    -- Measured in unix time
+    , start_time           INTEGER NOT NULL DEFAULT 0
+    -- duration of meal, in seconds from the start_time
+    , duration             INTEGER NOT NULL DEFAULT 0
     -- timestamps are updated via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
@@ -190,8 +195,10 @@ CREATE TABLE Meal (
     --    -- don't care, just keep old name
     --    ON DELETE NO ACTION
     --    ON UPDATE CASCADE
-    , CONSTRAINT single_meal_per_day
-        UNIQUE (day, name)
+    -- , CONSTRAINT single_meal_per_day
+    --    UNIQUE (day, name)
+    , CONSTRAINT nonnegative_duration
+        CHECK (duration >= 0)
 );
 
 CREATE TABLE FoodPortion (

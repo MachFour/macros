@@ -79,6 +79,14 @@ CREATE TRIGGER init_meal_timestamp
         SET create_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
+CREATE TRIGGER init_meal_time_column
+    AFTER INSERT ON Meal
+    WHEN (NEW.time = 0)
+    BEGIN
+        UPDATE Meal
+        SET time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
 
 CREATE TRIGGER update_meal_timestamp
     AFTER UPDATE ON MEAL

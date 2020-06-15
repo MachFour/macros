@@ -2,23 +2,26 @@ package com.machfour.macros.cli.interactive;
 
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.graphics.TextGraphics;
+import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Schema;
-import com.machfour.macros.names.*;
+import com.machfour.macros.names.ColumnStrings;
+import com.machfour.macros.names.DefaultColumnStrings;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.queries.FkCompletion;
+import com.machfour.macros.queries.Queries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.util.UnicodeUtils;
 import com.machfour.macros.validation.ValidationError;
-import org.jetbrains.annotations.NotNull;
 
-import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
-import com.googlecode.lanterna.input.KeyStroke;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -610,13 +613,15 @@ public class FoodEditor {
                     // gotta do it in one go
                     ds.openConnection();
                     ds.beginTransaction();
-                    ds.saveObject(f);
+                    Queries.saveObject(ds, f);
 
                     // get the food ID into the FOOD_ID field of the NutritionData
-                    List<NutritionData> completedNdata = ds.completeForeignKeys(MiscUtils.toList(nd), Schema.NutritionDataTable.FOOD_ID);
+                    List<NutritionData> completedNdata = FkCompletion.completeForeignKeys(ds,
+                            MiscUtils.toList(nd), Schema.NutritionDataTable.FOOD_ID);
+                    
                     assert completedNdata.size() == 1 : "Completed nutrition data did not have size 1";
 
-                    ds.saveObject(completedNdata.get(0));
+                    Queries.saveObject(ds, completedNdata.get(0));
                     ds.endTransaction();
                     setStatus("Successfully saved food and nutrition data");
                 } finally {

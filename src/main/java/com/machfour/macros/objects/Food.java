@@ -143,14 +143,18 @@ public class Food extends MacrosEntityImpl<Food> {
     private String makeSortableName() {
         return prettyFormat(true, true, true, true);
     }
+
+    @NotNull
     public String getSortableName() {
         return sortableName;
     }
 
+    @NotNull
     public String getCategoryName() {
         return getData(Schema.FoodTable.CATEGORY);
     }
 
+    @NotNull
     private String prettyFormat(boolean withBrand, boolean withVariety, boolean withNotes, boolean sortable) {
         StringBuilder prettyName = new StringBuilder(getDescriptionData(Schema.FoodTable.NAME));
 

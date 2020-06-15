@@ -6,6 +6,8 @@ import com.machfour.macros.cli.utils.MealPrinter;
 import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.FoodPortionSpec;
 import com.machfour.macros.util.PrintFormatting;
@@ -82,7 +84,7 @@ public class Portion extends CommandImpl {
 
     }
 
-    static int process(Meal toAddTo, List<FoodPortionSpec> specs, MacrosDataSource db, PrintStream out, PrintStream err) {
+    static int process(Meal toAddTo, List<FoodPortionSpec> specs, MacrosDataSource ds, PrintStream out, PrintStream err) {
         if (specs.isEmpty()) {
             out.println("No food portions specified, nothing to do");
             return 0;
@@ -93,7 +95,7 @@ public class Portion extends CommandImpl {
         Food f;
 
         try {
-            f = db.getFoodByIndexName(spec.foodIndexName);
+            f = FoodQueries.getFoodByIndexName(ds, spec.foodIndexName);
         } catch (SQLException e) {
             err.println("Could not retrieve food. Reason: " + e.getMessage());
             return 1;
@@ -111,7 +113,7 @@ public class Portion extends CommandImpl {
         toAddTo.addFoodPortion(spec.createdObject);
 
         try {
-            db.saveFoodPortions(toAddTo);
+            MealQueries.saveFoodPortions(ds, toAddTo);
         } catch (SQLException e) {
             err.println("Error saving food portion. Reason: " + e.getMessage());
             return 1;

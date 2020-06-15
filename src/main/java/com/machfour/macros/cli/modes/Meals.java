@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.ArgParsing;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.PrintFormatting;
@@ -59,7 +60,7 @@ public class Meals extends CommandImpl {
 
     private int printMealList(MacrosDataSource db, DateStamp d) {
         try {
-            Map<String, Meal> meals = db.getMealsForDay(d);
+            Map<String, Meal> meals = MealQueries.getMealsForDay(db, d);
             if (meals.isEmpty()) {
                 out.println("No meals recorded on " + PrintFormatting.prettyDay(d));
             } else {

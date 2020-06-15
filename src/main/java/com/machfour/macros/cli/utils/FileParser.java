@@ -1,5 +1,6 @@
 package com.machfour.macros.cli.utils;
 
+import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.objects.*;
 import com.machfour.macros.core.ObjectSource;
@@ -99,7 +100,7 @@ public final class FileParser {
 
         List<Meal> meals = new ArrayList<>();
 
-        Map<String, Food> foods = db.getFoodsByIndexName(foodIndexNames);
+        Map<String, Food> foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames);
         DateStamp currentDay = DateStamp.forCurrentDate();
         for (Map.Entry<MealSpec, List<FoodPortionSpec>> spec : mealSpecs.entrySet()) {
             Meal m = makeMeal(spec.getKey().name(), currentDay);

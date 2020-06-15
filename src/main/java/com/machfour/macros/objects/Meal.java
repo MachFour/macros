@@ -62,13 +62,17 @@ public class Meal extends MacrosEntityImpl<Meal> {
         return getData(Schema.MealTable.DAY);
     }
 
+    // returns time in Unix time, aka seconds since Jan 1 1970
     public Long getStartTime() {
         return getData(Schema.MealTable.START_TIME);
     }
 
     // in seconds
-    public Long getDuration() {
+    public Long getDurationSeconds() {
         return getData(Schema.MealTable.DURATION);
+    }
+    public Long getDurationMinutes() {
+        return getDurationSeconds() / 60;
     }
 
     public Date getStartTimeObject() {

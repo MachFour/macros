@@ -3,12 +3,14 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.objects.Food;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.Queries;
 import com.machfour.macros.storage.MacrosDataSource;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Map;
 
 
 public class DeleteFood extends CommandImpl {
@@ -33,9 +35,11 @@ public class DeleteFood extends CommandImpl {
         out.println("Retrieving foods...");
         out.println();
 
+        List<String> indexNamesToDelete = args.subList(1, args.size());
         List<Food> foodsToDelete;
         try {
-            foodsToDelete = new ArrayList<>(ds.getFoodsByIndexName(args.subList(1, args.size())).values());
+            Map<String, Food> retrievedFoods = FoodQueries.getFoodsByIndexName(ds, indexNamesToDelete);
+            foodsToDelete = new ArrayList<>(retrievedFoods.values());
         } catch (SQLException e) {
             out.println("SQL Exception while retrieving foods: " + e);
             return 1;
@@ -72,7 +76,7 @@ public class DeleteFood extends CommandImpl {
                 ds.beginTransaction();
                 for (Food f : foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    ds.deleteObject(f);
+                    Queries.deleteObject(ds, f);
                     out.println("Deleted " + f.getIndexName());
                 }
                 ds.endTransaction();

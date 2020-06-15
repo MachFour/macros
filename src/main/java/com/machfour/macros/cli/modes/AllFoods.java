@@ -2,6 +2,7 @@ package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.objects.Food;
+import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.PrintStream;
@@ -28,10 +29,10 @@ public class AllFoods extends CommandImpl {
         listFoods(out, db);
     }
 
-    public static void listFoods(PrintStream out, MacrosDataSource db) {
+    public static void listFoods(PrintStream out, MacrosDataSource ds) {
         List<Food> allFoods;
         try {
-            allFoods = db.getAllFoods();
+            allFoods = FoodQueries.getAllFoods(ds);
         } catch (SQLException e) {
             out.print("SQL exception occurred: ");
             out.println(e.getErrorCode());

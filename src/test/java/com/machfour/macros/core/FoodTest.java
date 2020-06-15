@@ -3,6 +3,8 @@ package com.machfour.macros.core;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodType;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.Queries;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,14 +65,14 @@ class FoodTest {
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {
             // first save with known ID
-            assertEquals(1, db.saveObject(f));
+            assertEquals(1, Queries.saveObject(db, f));
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB save threw exception");
         }
         Food f2 = null;
         try {
-            f2 = db.getFoodById(50L);
+            f2 = FoodQueries.getFoodById(db, 50L);
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB get threw exception");
@@ -82,7 +84,7 @@ class FoodTest {
     @Test
     void saveFoodNotFromDb() {
         try {
-            assertEquals(1, db.saveObject(testFood));
+            assertEquals(1, Queries.saveObject(db, testFood));
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB save threw exception");
@@ -100,7 +102,7 @@ class FoodTest {
             lotsOfFoods.add(modifiedIndexName);
         }
         try {
-            assertEquals(1000, db.insertObjects(lotsOfFoods, true));
+            assertEquals(1000, Queries.insertObjects(db, lotsOfFoods, true));
         } catch (SQLiteException e) {
             fail("DB save threw SQLite exception with result code: " + e.getResultCode());
             e.printStackTrace();
@@ -117,7 +119,7 @@ class FoodTest {
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {
             // first save with known ID
-            assertEquals(1, db.saveObject(f));
+            assertEquals(1, Queries.saveObject(db, f));
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB save threw exception");
@@ -127,7 +129,7 @@ class FoodTest {
         modifiedData2.put(Schema.FoodTable.NAME, "newName");
         Food f1 = Food.factory().construct(modifiedData2, ObjectSource.DB_EDIT);
         try {
-            assertEquals(1, db.saveObject(f1));
+            assertEquals(1, Queries.saveObject(db, f1));
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB save threw exception");
@@ -140,7 +142,7 @@ class FoodTest {
         modifiedData.put(Schema.FoodTable.ID, 500L);
         Food f = Food.factory().construct(modifiedData, ObjectSource.RESTORE);
         try {
-            assertEquals(1, db.saveObject(f));
+            assertEquals(1, Queries.saveObject(db, f));
         } catch (SQLException e) {
             e.printStackTrace();
             fail("DB save threw exception");

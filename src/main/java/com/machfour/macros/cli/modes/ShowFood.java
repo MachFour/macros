@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.objects.*;
+import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 
 import java.io.PrintStream;
@@ -43,7 +44,7 @@ public class ShowFood extends CommandImpl {
         String indexName = args.get(1);
         Food foodToList = null;
         try {
-            foodToList = ds.getFoodByIndexName(indexName);
+            foodToList = FoodQueries.getFoodByIndexName(ds, indexName);
         } catch (SQLException e) {
             out.print("SQL exception occurred: ");
             out.println(e.getErrorCode());

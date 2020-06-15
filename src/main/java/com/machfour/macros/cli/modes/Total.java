@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.MealPrinter;
 import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.PrintFormatting;
 
@@ -72,10 +73,10 @@ public class Total extends CommandImpl {
 
     }
 
-    int process(MealSpec mealSpec, MacrosDataSource db, boolean allMeals, boolean verbose, boolean per100) {
+    int process(MealSpec mealSpec, MacrosDataSource ds, boolean allMeals, boolean verbose, boolean per100) {
         if (!allMeals) {
             // total for specific meal
-            mealSpec.process(db, false);
+            mealSpec.process(ds, false);
             if (mealSpec.error() != null) {
                 err.println(mealSpec.error());
                 return 1;
@@ -85,7 +86,7 @@ public class Total extends CommandImpl {
 
         } else {
             try {
-                Map<String, Meal> mealsForDay = db.getMealsForDay(mealSpec.day());
+                Map<String, Meal> mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.day());
                 if (mealsForDay.isEmpty()) {
                     out.println("No meals recorded on " + PrintFormatting.prettyDay(mealSpec.day()));
                 } else {

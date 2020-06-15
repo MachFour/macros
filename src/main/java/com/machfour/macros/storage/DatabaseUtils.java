@@ -13,6 +13,7 @@ import com.machfour.macros.util.StringJoiner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.sql.SQLException;
 import java.util.*;
 
 public class DatabaseUtils {
@@ -167,7 +168,7 @@ public class DatabaseUtils {
         return array;
     }
 
-    static <M extends MacrosEntity> Map<Long, M> makeIdMap(Collection<M> objects) {
+    public static <M extends MacrosEntity<M>> Map<Long, M> makeIdMap(Collection<M> objects) {
         Map<Long, M> idMap = new HashMap<>(objects.size(), 1);
         for (M m : objects) {
             assert !idMap.containsKey(m.getId()) : "Two objects had the same ID";
@@ -223,5 +224,10 @@ public class DatabaseUtils {
             }
         }
         return StringJoiner.of(trimmedAndDecommented).sep(linesep).join();
+    }
+
+    public static <M, J> void rethrowAsSqlException(Object rawValue, Column<M, J> col) throws SQLException {
+        throw new SQLException(String.format("Could not convert value '%s' for column %s.%s (type %s)",
+                rawValue, col.getTable(), col.sqlName(), col.getType()));
     }
 }

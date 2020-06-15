@@ -10,6 +10,8 @@ import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.queries.MealQueries;
+import com.machfour.macros.queries.Queries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.FoodPortionSpec;
 import com.machfour.macros.util.PrintFormatting;
@@ -55,10 +57,10 @@ public class Edit extends CommandImpl {
         return startEditor(ds, toEdit.getId());
     }
 
-    private int startEditor(MacrosDataSource db, long mealId) {
+    private int startEditor(MacrosDataSource ds, long mealId) {
         Meal toEdit;
         try {
-            toEdit = db.getMealById(mealId);
+            toEdit = MealQueries.getMealById(ds, mealId);
         } catch (SQLException e) {
             err.println(e);
             return 1;
@@ -76,18 +78,18 @@ public class Edit extends CommandImpl {
             out.println();
             switch (action) {
                 case 'a':
-                    addPortion(toEdit, db);
+                    addPortion(toEdit, ds);
                     break;
                 case 'd':
-                    deleteFoodPortion(toEdit, db);
+                    deleteFoodPortion(toEdit, ds);
                     out.println("WARNING: meal is not reloaded");
                     break;
                 case 'D':
-                    deleteMeal(toEdit, db);
+                    deleteMeal(toEdit, ds);
                     // TODO exit if deleted
                     break;
                 case 'e':
-                    editFoodPortion(toEdit, db);
+                    editFoodPortion(toEdit, ds);
                     out.println("WARNING: meal is not reloaded");
                     break;
                 case 'm':
@@ -155,13 +157,13 @@ public class Edit extends CommandImpl {
         out.print("Are you sure? [y/N] ");
         if (CliUtils.getChar(in, out) == 'y' | CliUtils.getChar(in, out) == 'Y') {
             try {
-                db.deleteObject(toDelete);
+                Queries.deleteObject(db, toDelete);
             } catch (SQLException e) {
                 out.println("Error deleting meal: " + e.getMessage());
             }
         }
     }
-    private void deleteFoodPortion(Meal toEdit, MacrosDataSource db) {
+    private void deleteFoodPortion(Meal toEdit, MacrosDataSource ds) {
         out.println("Delete food portion");
         showFoodPortions(toEdit);
         out.print("Enter the number of the food portion to delete and press enter: ");
@@ -172,7 +174,7 @@ public class Edit extends CommandImpl {
             return;
         }
         try {
-            db.deleteObject(portions.get(n));
+            Queries.deleteObject(ds, portions.get(n));
         } catch (SQLException e3) {
             out.println("Error deleting the food portion: " + e3.getMessage());
             return;
@@ -180,7 +182,7 @@ public class Edit extends CommandImpl {
         out.println("Deleted the food portion");
         out.println();
     }
-    private void editFoodPortion(Meal m, MacrosDataSource db) {
+    private void editFoodPortion(Meal m, MacrosDataSource ds) {
         out.println("Edit food portion");
         showFoodPortions(m);
         out.print("Enter the number of the food portion to edit and press enter: ");
@@ -200,7 +202,7 @@ public class Edit extends CommandImpl {
         try {
             ColumnData<FoodPortion> newData = portions.get(n).getAllData(false);
             newData.put(Schema.FoodPortionTable.QUANTITY, newQty);
-            db.saveObject(FoodPortion.factory().construct(newData, ObjectSource.DB_EDIT));
+            Queries.saveObject(ds, FoodPortion.factory().construct(newData, ObjectSource.DB_EDIT));
         } catch (SQLException e3) {
             out.println("Error modifying the food portion: " + e3.getMessage());
             return;

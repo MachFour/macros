@@ -1,18 +1,28 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.*;
+import com.machfour.macros.core.Column;
+import com.machfour.macros.core.MacrosEntity;
+import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.Table;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodPortion;
 import com.machfour.macros.objects.Meal;
 import com.machfour.macros.objects.Serving;
-import com.machfour.macros.util.DateStamp;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.MealQueries;
+import com.machfour.macros.queries.Queries;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class MacrosDataCache implements MacrosDataSource {
+public class MacrosDataCache {
     private static MacrosDataCache INSTANCE;
     private final MacrosDataSource upstream;
 
@@ -44,74 +54,28 @@ public class MacrosDataCache implements MacrosDataSource {
         return INSTANCE;
     }
 
-    @Override
-    public void beginTransaction() throws SQLException {
-        upstream.beginTransaction();
-    }
 
-    @Override
-    public void endTransaction() throws SQLException {
-        upstream.endTransaction();
-    }
-    @Override
-    public void openConnection() throws SQLException {
-        upstream.openConnection();
-    }
-
-    @Override
-    public void closeConnection() throws SQLException {
-        upstream.closeConnection();
-    }
-
-    @Override
     public <M extends MacrosEntity<M>> int deleteObject(M object) throws SQLException {
         onDbWrite(object);
-        return upstream.deleteObject(object);
+        return Queries.deleteObject(upstream, object);
     }
 
-    @Override
     public <M extends MacrosEntity<M>> int deleteObjects(List<M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
-        return upstream.deleteObjects(objects);
+        return Queries.deleteObjects(upstream, objects);
     }
 
-    @Override
-    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, Column.Fk<M, ?, ?> fk) throws SQLException {
-        return upstream.completeForeignKeys(objects, fk);
+
+    public <M> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols, String keyword,
+                                       boolean globBefore, boolean globAfter) throws SQLException {
+        return upstream.stringSearch(t, cols, keyword, globBefore, globAfter);
     }
 
-    @Override
-    public <M extends MacrosEntity<M>> List<M> completeForeignKeys(Collection<M> objects, List<Column.Fk<M, ?, ?>> which) throws SQLException {
-        return upstream.completeForeignKeys(objects, which);
-    }
-
-    @Override
-    public Set<Long> foodSearch(String keyword) throws SQLException {
-        return upstream.foodSearch(keyword);
-    }
-
-    public void saveFoodPortions(@NotNull Meal m) throws SQLException {
-        upstream.saveFoodPortions(m);
-    }
-
-    @Override
-    @Nullable
-    public Meal getCurrentMeal() throws SQLException {
-        // TODO should this only return the ID, for caching purposes
-        return upstream.getCurrentMeal();
-    }
-
-    @NotNull
-    public Meal getOrCreateMeal(@NotNull DateStamp day, @NotNull String name) throws SQLException {
-        return upstream.getOrCreateMeal(day, name);
-    }
-
-    @Override
     public List<Food> getAllFoods() throws SQLException {
         if (foodCache.isEmpty() || allFoodsNeedsRefresh) {
-            List<Food> allFoods = upstream.getAllFoods();
+            List<Food> allFoods = FoodQueries.getAllFoods(upstream);
             foodCache.clear();
             for (Food f : allFoods) {
                 foodCache.put(f.getId(), f);
@@ -122,42 +86,7 @@ public class MacrosDataCache implements MacrosDataSource {
         return new ArrayList<>(foodCache.values());
     }
 
-    @Override
-    public Food getFoodById(Long id) throws SQLException {
-        return upstream.getFoodById(id);
-    }
 
-    @Override
-    public Food getFoodByIndexName(String indexNames) throws SQLException {
-        return upstream.getFoodByIndexName(indexNames);
-    }
-
-    @Override
-    public Map<Long, Food> getFoodsById(Collection<Long> foodIds) throws SQLException {
-        return upstream.getFoodsById(foodIds);
-    }
-
-    @Override
-    public Map<String, Food> getFoodsByIndexName(Collection<String> indexNames) throws SQLException {
-        return upstream.getFoodsByIndexName(indexNames);
-    }
-
-    @Override
-    public Map<String, Long> getFoodIdsByIndexName(Collection<String> indexNames) throws SQLException {
-        return upstream.getFoodIdsByIndexName(indexNames);
-    }
-
-    @Override
-    public Meal getMealById(Long id) throws SQLException {
-        return upstream.getMealById(id);
-    }
-
-    @Override
-    public Map<String, Meal> getMealsForDay(DateStamp day) throws SQLException {
-        return upstream.getMealsForDay(day);
-    }
-
-    @Override
     public Map<Long, Meal> getMealsById(@NotNull List<Long> mealIds) throws SQLException {
         List<Long> unCachedIds = new ArrayList<>(mealIds.size());
         Map<Long, Meal> mealsToReturn = new LinkedHashMap<>(mealIds.size(), 1);
@@ -175,64 +104,38 @@ public class MacrosDataCache implements MacrosDataSource {
     }
 
     private Map<Long, Meal> getUncachedMealsById(@NotNull List<Long> mealIds) throws SQLException {
-        Map<Long, Meal> uncachedMeals = upstream.getMealsById(mealIds);
+        Map<Long, Meal> uncachedMeals = MealQueries.getMealsById(upstream, mealIds);
         mealCache.putAll(uncachedMeals);
         return uncachedMeals;
     }
 
-    @Override
-    public List<Long> getMealIdsForDay(DateStamp day) throws SQLException {
-        return upstream.getMealIdsForDay(day);
-    }
-
-    @Override
-    public <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selected, Column<M, J> where, Collection<J> whereValues, boolean distinct) throws SQLException {
-        // todo caching
-        return upstream.selectColumn(t, selected, where, whereValues, distinct);
-    }
-
-    @Override
     public <M extends MacrosEntity<M>> int saveObject(M object) throws SQLException {
         onDbWrite(object);
-        return upstream.saveObject(object);
+        return Queries.saveObject(upstream, object);
     }
 
-    @Override
     public <M extends MacrosEntity<M>> int saveObjects(Collection<? extends M> objects, ObjectSource objectSource) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
-        return upstream.saveObjects(objects, objectSource);
+        return Queries.saveObjects(upstream, objects, objectSource);
     }
 
-    @Override
     public <M extends MacrosEntity<M>> int updateObjects(Collection<? extends M> objects) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
-        return upstream.updateObjects(objects);
+        return Queries.updateObjects(upstream, objects);
     }
-    @Override
     public <M extends MacrosEntity<M>> int insertObjects(Collection<? extends M> objects, boolean withId) throws SQLException {
         for (M object : objects) {
             onDbWrite(object);
         }
-        return upstream.updateObjects(objects);
+        return Queries.updateObjects(upstream, objects);
     }
 
-    @Override
     public <M, J> int deleteByColumn(Table<M> t, Column<M, J> whereColumn, Collection<J> whereValues) throws SQLException {
         return upstream.deleteByColumn(t, whereColumn, whereValues);
-    }
-
-    @Override
-    public <M> int clearTable(Table<M> t) throws SQLException {
-        return upstream.clearTable(t);
-    }
-
-    @Override
-    public <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
-        return upstream.getAllRawObjects(t);
     }
 
     private <M extends MacrosEntity<M>> void onDbWrite(M object) {

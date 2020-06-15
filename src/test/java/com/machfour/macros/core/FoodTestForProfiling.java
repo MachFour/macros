@@ -3,6 +3,7 @@ package com.machfour.macros.core;
 import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodType;
+import com.machfour.macros.queries.Queries;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -61,7 +62,7 @@ class FoodTestForProfiling {
             lotsOfFoods.add(modifiedIndexName);
         }
         try {
-            db.insertObjects(lotsOfFoods, true);
+            Queries.insertObjects(db, lotsOfFoods, true);
         } catch (SQLException e) {
             e.printStackTrace();
         }

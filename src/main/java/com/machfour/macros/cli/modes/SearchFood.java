@@ -2,6 +2,7 @@ package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.objects.Food;
+import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.StringJoiner;
 
@@ -34,9 +35,9 @@ public class SearchFood extends CommandImpl {
 
         Map<Long, Food> resultFoods = Collections.emptyMap();
         try {
-            Set<Long> resultIds = ds.foodSearch(keyword);
+            Set<Long> resultIds = FoodQueries.foodSearch(ds, keyword);
             if (!resultIds.isEmpty()) {
-                resultFoods = ds.getFoodsById(resultIds);
+                resultFoods = FoodQueries.getFoodsById(ds, resultIds);
             }
         } catch (SQLException e) {
             out.print("SQL exception occurred: ");

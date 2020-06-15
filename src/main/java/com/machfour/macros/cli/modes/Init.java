@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes;
 
 import com.machfour.macros.cli.CommandImpl;
+import com.machfour.macros.linux.LinuxDatabase;
 import com.machfour.macros.storage.MacrosDatabase;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class Init extends CommandImpl {
         }
         MacrosDatabase db = config.getDatabaseInstance();
         try {
-            db.deleteIfExists(config.getDbLocation());
+            LinuxDatabase.deleteIfExists(config.getDbLocation());
             out.printf("Deleted database at %s\n", config.getDbLocation());
         } catch (IOException e) {
             out.println();

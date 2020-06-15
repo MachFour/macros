@@ -1,17 +1,37 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.*;
+import com.machfour.macros.core.Column;
+import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.TypeCastException;
-import com.machfour.macros.objects.*;
+import com.machfour.macros.objects.CompositeFood;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.FoodType;
+import com.machfour.macros.objects.Ingredient;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.objects.Serving;
+import com.machfour.macros.queries.FkCompletion;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.Queries;
 import com.machfour.macros.util.Pair;
 import com.machfour.macros.validation.SchemaViolation;
+
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.ICsvMapReader;
 import org.supercsv.prefs.CsvPreference;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
@@ -72,7 +92,7 @@ public class CsvImport {
 
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
-    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDataSource db)
+    private static Map<String, List<Ingredient>> makeIngredients(Reader ingredientCsv, MacrosDataSource ds)
             throws IOException, SQLException, TypeCastException {
         Map<String, List<Ingredient>> data = new HashMap<>();
         try (ICsvMapReader mapReader = getMapReader(ingredientCsv)) {
@@ -88,7 +108,7 @@ public class CsvImport {
                 String compositeIndexName = csvRow.get("recipe_index_name");
                 String ingredientIndexName = csvRow.get("ingredient_index_name");
                 // TODO error handling
-                Food ingredientFood = db.getFoodByIndexName(ingredientIndexName);
+                Food ingredientFood = FoodQueries.getFoodByIndexName(ds, ingredientIndexName);
                 if (ingredientFood == null) {
                     throw new RuntimeException("No ingredient exists with index name: " + ingredientIndexName);
                 }
@@ -215,18 +235,18 @@ public class CsvImport {
         return servings;
     }
 
-    private static Set<String> findDuplicateIndexNames(Collection<String> indexNames, MacrosDataSource db) throws SQLException {
-        List<String> duplicateList = db.selectColumn(Food.table(), INDEX_NAME, INDEX_NAME, indexNames, false);
+    private static Set<String> findDuplicateIndexNames(Collection<String> indexNames, MacrosDataSource ds) throws SQLException {
+        List<String> duplicateList = Queries.selectColumn(ds, Food.table(), INDEX_NAME, INDEX_NAME, indexNames, false);
         Set<String> duplicates = new HashSet<>(duplicateList.size());
         duplicates.addAll(duplicateList);
         return duplicates;
     }
 
     // foods maps from index name to food object. Food object must have nutrition data attached by way of getnData()
-    private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDataSource db) throws SQLException {
+    private static void saveImportedFoods(Map<String, ? extends Food> foods, MacrosDataSource ds) throws SQLException {
         // collect all of the index names to be imported, and check if they're already in the DB.
         Set<String> newIndexNames = foods.keySet();
-        Set<String> existingIndexNames = findDuplicateIndexNames(newIndexNames, db);
+        Set<String> existingIndexNames = findDuplicateIndexNames(newIndexNames, ds);
         /*
         if (allowOverwrite) {
             Map<String, Food> overwriteFoods = new HashMap<>();
@@ -253,9 +273,9 @@ public class CsvImport {
                 System.out.println(indexName);
             }
         }
-        db.saveObjects(foods.values(), ObjectSource.IMPORT);
-        List<NutritionData> completedNd = db.completeForeignKeys(ndObjects.values(), Schema.NutritionDataTable.FOOD_ID);
-        db.saveObjects(completedNd, ObjectSource.IMPORT);
+        Queries.saveObjects(ds, foods.values(), ObjectSource.IMPORT);
+        List<NutritionData> completedNd = FkCompletion.completeForeignKeys(ds, ndObjects.values(), Schema.NutritionDataTable.FOOD_ID);
+        Queries.saveObjects(ds, completedNd, ObjectSource.IMPORT);
     }
 
     public static void importFoodData(Reader foodCsv, MacrosDataSource ds, boolean allowOverwrite)
@@ -268,17 +288,17 @@ public class CsvImport {
     public static void importServings(Reader servingCsv, MacrosDataSource ds, boolean allowOverwrite)
             throws IOException, SQLException, TypeCastException {
         List<Serving> csvServings = CsvImport.buildServings(servingCsv);
-        List<Serving> completedServings = ds.completeForeignKeys(csvServings, Schema.ServingTable.FOOD_ID);
-        ds.saveObjects(completedServings, ObjectSource.IMPORT);
+        List<Serving> completedServings = FkCompletion.completeForeignKeys(ds, csvServings, Schema.ServingTable.FOOD_ID);
+        Queries.saveObjects(ds, completedServings, ObjectSource.IMPORT);
     }
 
-    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDataSource db)
+    public static void importRecipes(Reader recipeCsv, Reader ingredientCsv, MacrosDataSource ds)
             throws IOException, SQLException, TypeCastException {
-        Map<String, List<Ingredient>> ingredientsByRecipe = makeIngredients(ingredientCsv, db);
+        Map<String, List<Ingredient>> ingredientsByRecipe = makeIngredients(ingredientCsv, ds);
         Map<String, CompositeFood> csvRecipes = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe);
-        Set<String> duplicateRecipes = findDuplicateIndexNames(csvRecipes.keySet(), db);
+        Set<String> duplicateRecipes = findDuplicateIndexNames(csvRecipes.keySet(), ds);
         // todo remove the extra duplicate check from inside this function
-        saveImportedFoods(csvRecipes, db);
+        saveImportedFoods(csvRecipes, ds);
 
         // add all the ingredients for non-duplicated recipes to one big list, then save them all
         List<Ingredient> allIngredients = new ArrayList<>(3*ingredientsByRecipe.size()); // assume 3 ingredients per recipe on average
@@ -287,8 +307,8 @@ public class CsvImport {
             allIngredients.addAll(recipeIngredients);
         }
 
-        List<Ingredient> completedIngredients = db.completeForeignKeys(allIngredients, Schema.IngredientTable.COMPOSITE_FOOD_ID);
-        db.saveObjects(completedIngredients, ObjectSource.IMPORT);
+        List<Ingredient> completedIngredients = FkCompletion.completeForeignKeys(ds, allIngredients, Schema.IngredientTable.COMPOSITE_FOOD_ID);
+        Queries.saveObjects(ds, completedIngredients, ObjectSource.IMPORT);
     }
 
 }

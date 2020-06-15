@@ -1,9 +1,17 @@
 package com.machfour.macros.ingredients;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 import com.google.gson.reflect.TypeToken;
-import com.machfour.macros.core.*;
-import com.machfour.macros.objects.*;
+import com.machfour.macros.core.MacrosBuilder;
+import com.machfour.macros.core.Schema;
+import com.machfour.macros.objects.CompositeFood;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.FoodType;
+import com.machfour.macros.objects.Ingredient;
+import com.machfour.macros.queries.FoodQueries;
+import com.machfour.macros.queries.Queries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.validation.SchemaViolation;
 
@@ -11,7 +19,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class IngredientsParser {
     /*
@@ -131,14 +144,14 @@ public class IngredientsParser {
     static List<CompositeFood> createCompositeFoods(Collection<CompositeFoodSpec> parseResult, MacrosDataSource ds) throws SQLException {
         Set<String> indexNames = extractIngredientIndexNames(parseResult);
         // for invalid index names, the map won't have an entry
-        Map<String, Long> indexNameMap = ds.getFoodIdsByIndexName(indexNames);
+        Map<String, Long> indexNameMap = FoodQueries.getFoodIdsByIndexName(ds, indexNames);
 
         List<CompositeFood> results = new ArrayList<>(parseResult.size());
         for (CompositeFoodSpec spec : parseResult) {
             results.add(processCompositeFoodSpec(spec, indexNameMap));
         }
 
-        Map<Long, Food> ingredientFoods = ds.getFoodsById(indexNameMap.values());
+        Map<Long, Food> ingredientFoods = FoodQueries.getFoodsById(ds, indexNameMap.values());
 
         // go through and create object links so that we can have a proper object tree without having to save to DB first
         for (CompositeFood cf : results) {
@@ -170,14 +183,18 @@ public class IngredientsParser {
             ds.beginTransaction();
 
             // First save the food and then retrieve it from the database, to get the ID
-            ds.saveObject(cf);
-            long id = ds.getFoodByIndexName(cf.getIndexName()).getId();
+            Queries.saveObject(ds, cf);
+            Food saved = FoodQueries.getFoodByIndexName(ds, cf.getIndexName());
+            if (saved == null) {
+                throw new SQLException("Could not retrieved saved composite food");
+            }
+            long id = saved.getId();
 
             // Now we can edit the ingredients to have the ID
             // TODO use completeFk function
             List<Ingredient> newIngredients = addCompositeFoodId(cf.getIngredients(), id);
             // here we go!
-            ds.insertObjects(newIngredients, false);
+            Queries.insertObjects(ds, newIngredients, false);
 
             // TODO nutrition data object to go along with it, if quantity is known
             //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table());

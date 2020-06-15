@@ -7,6 +7,7 @@ import com.machfour.macros.core.MacrosBuilder;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public class AddFood extends CommandImpl {
      * Ensures the given index name is not already in the database; returns true if it is not present.
      */
     private static boolean checkIndexName(@NotNull MacrosDataSource ds, @NotNull String indexName) throws SQLException {
-        return ds.getFoodIdsByIndexName(Collections.singletonList(indexName)).isEmpty();
+        return FoodQueries.getFoodIdsByIndexName(ds, Collections.singletonList(indexName)).isEmpty();
     }
     public AddFood() {
         super(NAME, USAGE);

@@ -13,6 +13,7 @@ import org.sqlite.SQLiteDataSource;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -49,6 +50,16 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             dbPath = dbFile;
         }
         return instance;
+    }
+
+    public static boolean deleteIfExists(String dbFile) throws IOException {
+        Path dbPath = Paths.get(dbFile);
+        if (Files.exists(dbPath)) {
+            Files.delete(dbPath);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // returns persistent connection if there is one, otherwise a new temporary one.
@@ -138,7 +149,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M> int deleteById(Long id, Table<M> t) throws SQLException {
+    public <M> int deleteById(Long id, Table<M> t) throws SQLException {
         Connection c = getConnection();
         try (PreparedStatement s = c.prepareStatement(DatabaseUtils.deleteWhereTemplate(t, t.getIdColumn(), 1))) {
             LinuxDatabaseUtils.bindObjects(s, toList(id));
@@ -156,7 +167,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
      */
     @Override
     @NotNull
-    protected <M> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols,
+    public <M> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols,
             @NotNull String keyword, boolean globBefore, boolean globAfter) throws SQLException {
         List<Long> resultList = new ArrayList<>(0);
         if (!keyword.isEmpty() && !cols.isEmpty()) {
@@ -179,8 +190,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return resultList;
     }
 
+    @NotNull
     @Override
-    protected <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn,
+    public <M, I, J> Map<I, J> selectColumnMap(Table<M> t, Column<M, I> keyColumn,
             Column<M, J> valueColumn, Set<I> keys) throws SQLException {
         Map<I, J> resultMap = new LinkedHashMap<>(keys.size(), 1);
         // for batch queries
@@ -201,7 +213,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                             assert !resultMap.containsKey(key) : "Two rows in the DB contained the same data in the key column!";
                             resultMap.put(key, value);
                         } catch (TypeCastException e) {
-                            rethrowAsSqlException(rawValue, valueColumn);
+                            DatabaseUtils.rethrowAsSqlException(rawValue, valueColumn);
                         }
                     }
                 }
@@ -215,6 +227,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
+    @NotNull
     @Override
     public <M, I, J> List<I> selectColumn(Table<M> t, Column<M, I> selected, Column<M, J> where, Collection<J> whereValues,
                                           boolean distinct) throws SQLException {
@@ -228,7 +241,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                     try {
                         resultList.add(selected.getType().fromRaw(resultValue));
                     } catch (TypeCastException e) {
-                        rethrowAsSqlException(resultValue, selected);
+                        DatabaseUtils.rethrowAsSqlException(resultValue, selected);
                     }
                 }
             }
@@ -245,7 +258,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             try {
                 data.putFromRaw(col, rawValue);
             } catch (TypeCastException e) {
-                rethrowAsSqlException(rawValue, col);
+                DatabaseUtils.rethrowAsSqlException(rawValue, col);
             }
         }
     }
@@ -253,8 +266,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // Constructs a map of key column value to raw object data (i.e. no object references initialised
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null
+    @NotNull
     @Override
-    protected <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
+    public <M, J> Map<J, M> getRawObjectsByKeysNoEmpty(Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
@@ -282,8 +296,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     // Constructs a map of key column value to ID
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null
+    @NotNull
     @Override
-    protected <M, J> Map<J, Long> getIdsByKeysNoEmpty(
+    public <M, J> Map<J, Long> getIdsByKeysNoEmpty(
             Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         // if the list of keys is empty, every row will be returned
         assert !keys.isEmpty() : "List of keys is empty";
@@ -309,6 +324,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         return idMap;
     }
 
+    @NotNull
     @Override
     // returns a map of objects by ID
     // TODO make protected
@@ -331,7 +347,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosEntity<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
+    public <M extends MacrosEntity<M>> int insertObjectData(@NotNull List<ColumnData<M>> objectData, boolean withId) throws SQLException {
         if (objectData.isEmpty()) {
             return 0;
         }
@@ -421,7 +437,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
+    public <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
         String idCol = table.getIdColumn().sqlName();
         String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name() + " WHERE " + idCol + " = " + id;
         boolean exists;
@@ -437,7 +453,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     @Override
-    protected <M extends MacrosEntity<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
+    public <M extends MacrosEntity<M>> Map<Long, Boolean> idsExistInTable(Table<M> table, List<Long> ids) throws SQLException {
         Column<M, Long> idCol = table.getIdColumn();
         Map<Long, Boolean> idMap = new LinkedHashMap<>(ids.size(), 1);
         Connection c = getConnection();

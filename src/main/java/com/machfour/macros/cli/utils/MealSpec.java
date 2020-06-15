@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.objects.Meal;
+import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.PrintFormatting;
@@ -75,7 +76,7 @@ public class MealSpec {
     }
 
 
-    public void process(MacrosDataSource db, boolean create) {
+    public void process(MacrosDataSource ds, boolean create) {
         if (processed || error != null) {
             // skip processing if there are already errors
             return;
@@ -90,7 +91,7 @@ public class MealSpec {
         // meal specified that does not exist -> create it
         Map<String, Meal> mealsForDay;
         try {
-            mealsForDay = db.getMealsForDay(day);
+            mealsForDay = MealQueries.getMealsForDay(ds, day);
         } catch (SQLException e) {
             error = String.format("Error retrieving meals for day %s: %s", day.toString(), e.getMessage());
             return;
@@ -107,7 +108,7 @@ public class MealSpec {
             created = false;
         } else if (create) {
             try {
-                processedObject = db.getOrCreateMeal(day, name);
+                processedObject = MealQueries.getOrCreateMeal(ds, day, name);
                 created = true;
             } catch (SQLException e) {
                 error = "Error retrieving meal: " + e.getMessage();

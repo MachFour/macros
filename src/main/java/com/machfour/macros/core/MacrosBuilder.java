@@ -163,7 +163,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
     // method used by MacrosEntity
     public static <M extends MacrosEntity<M>, J> List<ValidationError> validate(ColumnData<M> data, Column<M, J> col) {
         List<ValidationError> errorList = new ArrayList<>();
-        if (data.get(col) == null && !col.isNullable() && col.defaultData() == null) {
+        if (data.get(col) == null && !col.isNullable() /*&& col.defaultData() == null*/) {
             errorList.add(ValidationError.NON_NULL);
         }
         // TODO add custom valiations

@@ -234,7 +234,7 @@ public class Schema {
             MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS);
             NAME        = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS);
             DAY         = builder("day", Types.DATESTAMP).notNull().buildAndAdd(COLUMNS);
-            START_TIME  = builder("time", Types.TIMESTAMP).notNull().defaultsTo(0L).buildAndAdd(COLUMNS);
+            START_TIME  = builder("start_time", Types.TIMESTAMP).notNull().defaultsTo(0L).buildAndAdd(COLUMNS);
             DURATION    = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS);
         }
 

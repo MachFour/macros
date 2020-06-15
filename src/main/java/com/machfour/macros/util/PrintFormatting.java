@@ -140,7 +140,7 @@ public class PrintFormatting {
             width = 10;
             needsDpFlag = false;
         }
-        return formatQuantity(nd.amountOf(field), unit, width, 5, needsDpFlag, false, "");
+        return formatQuantity(nd.amountOf(field), unit, width, 0, needsDpFlag, false, "");
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)

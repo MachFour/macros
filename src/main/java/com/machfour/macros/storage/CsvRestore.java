@@ -5,13 +5,19 @@ import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.ObjectSource;
 import com.machfour.macros.core.Table;
 import com.machfour.macros.core.datatype.TypeCastException;
+import com.machfour.macros.queries.Queries;
+
 import org.supercsv.io.ICsvMapReader;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CsvRestore {
 
@@ -48,6 +54,6 @@ public class CsvRestore {
     public static <M extends MacrosEntity<M>> void restoreTable(Table<M> t, Reader csvData, MacrosDataSource db, PrintStream out)
             throws SQLException, IOException, TypeCastException {
         List<M> objects = buildObjectsForRestore(t, csvData, out);
-        db.saveObjects(objects, ObjectSource.RESTORE);
+        Queries.saveObjects(db, objects, ObjectSource.RESTORE);
     }
 }

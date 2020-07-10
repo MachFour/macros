@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.machfour.macros.core.Schema.NutritionDataTable.*;
@@ -35,26 +36,6 @@ public class PrintFormatting {
         DEFAULT_INSTANCE = new PrintFormatting(DefaultColumnStrings.getInstance());
     }
 
-    public static String prettyDay(@NotNull DateStamp day) {
-        StringBuilder prettyStr = new StringBuilder(day.toString());
-        DateStamp today = DateStamp.forCurrentDate();
-        if (day.equals(today)) {
-            prettyStr.append(" (today)");
-        } else if (day.equals(today.step(-1))) {
-            prettyStr.append(" (yesterday)");
-        }
-        return prettyStr.toString();
-    }
-
-    // converts null to blank strings, with optional default
-    public static String deNull(String in, String ifNull) {
-        return in != null ? in : ifNull;
-    }
-
-    public static String deNull(String in) {
-        return deNull(in, "");
-    }
-
     public static String formatQuantity(@Nullable Double qty, boolean verbose) {
         int width = verbose ? longDataWidth : shortDataWidth;
         return formatQuantity(qty, null, width, 1, verbose, false, "");
@@ -73,7 +54,7 @@ public class PrintFormatting {
         }
 
         if (unit != null && unitWidth <= 0) {
-            unitWidth = unit.abbr().length();
+            unitWidth = unit.getAbbr().length();
         }
         if (width > 0 && width - unitWidth <= 0) {
             throw new IllegalArgumentException("If width != 0, must have width > unitWidth > 0");
@@ -82,13 +63,13 @@ public class PrintFormatting {
         if (alignLeft) {
             f.format("%" + (withDp ? ".1f" : ".0f") + "%s", qty);
             if (unit != null) {
-                f.format("%" + unitWidth + "s", qty, unit.abbr());
+                f.format("%" + unitWidth + "s", qty, unit.getAbbr());
             }
             return width > 0 ? String.format("%-" + width + "s", f.toString()) : f.toString();
         } else {
             f.format("%" + ((width > 0) ? (width-unitWidth) : "") + (withDp ? ".1f" : ".0f"), qty);
             if (unit != null) {
-                f.format("%-" + unitWidth + "s", unit.abbr());
+                f.format("%-" + unitWidth + "s", unit.getAbbr());
             }
             return f.toString();
         }
@@ -151,6 +132,6 @@ public class PrintFormatting {
             return null;
         }
         Unit unit = ndStrings.getUnit(field);
-        return formatQuantity(nd.amountOf(field), unit, 10, 4, false, false, "");
+        return formatQuantity(nd.amountOf(field), 0) + " " + unit.getAbbr();
     }
 }

@@ -10,6 +10,5 @@ out/
 .idea/workspace.xml
 *.sqlite
 test/
-src/main/java/com/machfour/macros/objects/Measurement.java
 .attach_pid*
 *.so

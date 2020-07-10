@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface Unit {
     @NotNull
-    String name();
+    String getName();
 
     @NotNull
-    String abbr();
+    String getAbbr();
 }

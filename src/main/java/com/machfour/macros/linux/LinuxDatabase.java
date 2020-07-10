@@ -252,7 +252,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     }
 
     private static <M> void fillColumnData(ColumnData<M> data, ResultSet rs) throws SQLException {
-        Collection<Column<M, ?>> columns = data.getTable().columns();
+        Collection<Column<M, ?>> columns = data.getTable().getColumns();
         for (Column<M, ?> col : columns) {
             Object rawValue = rs.getObject(col.sqlName());
             try {
@@ -274,7 +274,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         assert !keyCol.isNullable() && keyCol.isUnique() : "Key column can't be nullable and must be unique";
         Map<J, M> objects = new LinkedHashMap<>(keys.size(), 1);
         Connection c = getConnection();
-        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, t.columns(), keyCol, keys.size(), false))) {
+        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.selectTemplate(t, t.getColumns(), keyCol, keys.size(), false))) {
             LinuxDatabaseUtils.bindObjects(p, keys);
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
@@ -331,7 +331,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     public <M> Map<Long, M> getAllRawObjects(Table<M> t) throws SQLException {
         Map<Long, M> objects = new LinkedHashMap<>();
         Connection c = getConnection();
-        try (ResultSet rs = c.createStatement().executeQuery("SELECT * FROM " + t.name())) {
+        try (ResultSet rs = c.createStatement().executeQuery("SELECT * FROM " + t.getName())) {
             for (rs.next(); !rs.isAfterLast(); rs.next()) {
                 ColumnData<M> data = new ColumnData<>(t);
                 fillColumnData(data, rs);
@@ -353,9 +353,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         }
         int saved = 0;
         Table<M> table = objectData.get(0).getTable();
-        List<Column<M, ?>> columnsToInsert = table.columns();
+        List<Column<M, ?>> columnsToInsert = table.getColumns();
         if (!withId) {
-            columnsToInsert = new ArrayList<>(table.columns());
+            columnsToInsert = new ArrayList<>(table.getColumns());
             columnsToInsert.remove(table.getIdColumn());
         } // else inserting for the first time, but it has an ID that we want to keep intact
         Connection c = getConnection();
@@ -374,7 +374,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             }
         } catch (SQLException e) {
             String newMessage = e.getMessage() + "\n" +
-                    "thrown by insertObjectData() on table " + table.name() + " and object data:\n"
+                    "thrown by insertObjectData() on table " + table.getName() + " and object data:\n"
                     + objectData.get(saved).toString();
             throw new SQLException(newMessage, e.getCause());
         } finally {
@@ -395,9 +395,9 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
         Connection c = getConnection();
         boolean prevAutoCommit = c.getAutoCommit();
         c.setAutoCommit(false);
-        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.updateTemplate(table, table.columns(), table.getIdColumn()))) {
+        try (PreparedStatement p = c.prepareStatement(DatabaseUtils.updateTemplate(table, table.getColumns(), table.getIdColumn()))) {
             for (M object : objects) {
-                LinuxDatabaseUtils.bindData(p, object.getAllData(), table.columns(), object.getId());
+                LinuxDatabaseUtils.bindData(p, object.getAllData(), table.getColumns(), object.getId());
                 saved += p.executeUpdate();
                 p.clearParameters();
             }
@@ -439,7 +439,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     @Override
     public <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
         String idCol = table.getIdColumn().sqlName();
-        String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name() + " WHERE " + idCol + " = " + id;
+        String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.getName() + " WHERE " + idCol + " = " + id;
         boolean exists;
         Connection c = getConnection();
         try (Statement s = c.createStatement()) {

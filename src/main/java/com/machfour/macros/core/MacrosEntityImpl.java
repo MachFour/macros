@@ -44,8 +44,10 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
         this.dataMap.setImmutable();
         this.objectSource = objectSource;
         this.fkNaturalKeyMap = new HashMap<>();
-        this.createDate = new Date(data.get(getTable().getCreateTimeColumn())*1000);
-        this.modifyDate = new Date(data.get(getTable().getModifyTimeColumn())*1000);
+        //noinspection ConstantConditions (create time is not null)
+        this.createDate = MacrosUtils.dateFromUnixTime(data.get(getTable().getCreateTimeColumn()));
+        //noinspection ConstantConditions (modify time is not null)
+        this.modifyDate = MacrosUtils.dateFromUnixTime(data.get(getTable().getModifyTimeColumn()));
         checkObjectSource();
     }
 
@@ -88,22 +90,22 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
     }
 
     @NotNull
-    public Long createTime() {
+    public Long getCreateTime() {
         return getData(getTable().getCreateTimeColumn());
     }
 
     @NotNull
-    public Long modifyTime() {
+    public Long getModifyTime() {
         return getData(getTable().getModifyTimeColumn());
     }
 
     @NotNull
-    public Date createDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
     @NotNull
-    public Date modifyDate() {
+    public Date getModifyDate() {
         return modifyDate;
     }
 
@@ -130,7 +132,7 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
         if (o == null) {
             return false;
         }
-        List<Column<M, ?>> columnsToCheck = new ArrayList<>(getTable().columns());
+        List<Column<M, ?>> columnsToCheck = new ArrayList<>(getTable().getColumns());
         columnsToCheck.remove(getTable().getIdColumn());
         columnsToCheck.remove(getTable().getCreateTimeColumn());
         columnsToCheck.remove(getTable().getModifyTimeColumn());
@@ -196,6 +198,7 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
 
     @Override
     public String toString() {
-        return getTable().name() + " object, objectSource: " + objectSource + ", data: " + dataMap.toString();
+        return String.format(Locale.getDefault(), "%s id=%d, objSrc=%s, data=%s",
+                getTable().getName(), getId(), getObjectSource(), dataMap);
     }
 }

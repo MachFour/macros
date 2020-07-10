@@ -106,6 +106,11 @@ public class Queries {
         return deleted;
     }
 
+    // deletes objects with the given ID from
+    public static <M extends MacrosEntity<M>> int deleteObjectsById(MacrosDataSource ds, Table<M> table, @NotNull List<Long> ids) throws SQLException {
+        return ds.deleteByColumn(table, table.getIdColumn(), ids);
+    }
+
 
     // returns number of objects saved correctly (i.e. 0 or 1)
     // NB: not (yet) possible to return the ID of the saved objec with SQLite JDBC

@@ -29,7 +29,7 @@ public class EnergyUnit implements Unit {
 
         Map<String, EnergyUnit> abbreviationMap = new HashMap<>(INBUILT.size(), 1.0f);
         for (EnergyUnit eu : INBUILT) {
-            abbreviationMap.put(eu.abbr().toLowerCase(), eu);
+            abbreviationMap.put(eu.getAbbr().toLowerCase(), eu);
         }
         ABBREVIATION_MAP = Collections.unmodifiableMap(abbreviationMap);
     }
@@ -64,18 +64,18 @@ public class EnergyUnit implements Unit {
     @Override
     @NotNull
     public String toString() {
-        return String.format("%s (%s)", name(), abbr());
+        return String.format("%s (%s)", getName(), getAbbr());
     }
 
     @NotNull
     @Override
-    public String name() {
+    public String getName() {
         return name;
     }
 
     @NotNull
     @Override
-    public String abbr() {
+    public String getAbbr() {
         return abbr;
     }
 }

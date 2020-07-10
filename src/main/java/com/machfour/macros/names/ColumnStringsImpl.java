@@ -10,13 +10,13 @@ import java.util.Collection;
 
 public abstract class ColumnStringsImpl implements ColumnStrings {
     private final ColumnNamer columnNames;
-    private final ColumnUnits columnUnits;
     private final UnitNamer unitNames;
+    private final ColumnUnits columnUnits;
 
     protected ColumnStringsImpl(
             @NotNull ColumnNamer columnNames,
-            @NotNull ColumnUnits columnUnits,
-            @NotNull UnitNamer unitNames) {
+            @NotNull UnitNamer unitNames,
+            @NotNull ColumnUnits columnUnits) {
         this.columnNames = columnNames;
         this.columnUnits = columnUnits;
         this.unitNames = unitNames;
@@ -38,6 +38,12 @@ public abstract class ColumnStringsImpl implements ColumnStrings {
     @Override
     public String getName(@NotNull Column<?, ?> col) {
         return columnNames.getName(col);
+    }
+
+    @NotNull
+    @Override
+    public String getAbbreviatedName(@NotNull Column<?, ?> col) {
+        return columnNames.getAbbreviatedName(col);
     }
 
     @NotNull

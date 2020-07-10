@@ -127,8 +127,8 @@ class QueryHelpers {
     static void applyServingsToRawFoods(Map<Long, Food> foodMap, Map<Long, Serving> servingMap) {
         for (Serving s : servingMap.values()) {
             // QtyUnit setup
-            QtyUnit unit = QtyUnits.fromAbbreviationNoThrow(s.qtyUnitAbbr());
-            assert (unit != null) : "No quantity unit exists with abbreviation '" + s.qtyUnitAbbr() + "'";
+            QtyUnit unit = QtyUnits.fromAbbreviationNoThrow(s.getQtyUnitAbbr());
+            assert (unit != null) : "No quantity unit exists with abbreviation '" + s.getQtyUnitAbbr() + "'";
             s.setQtyUnit(unit);
             // this query should never fail, due to database constraints
             Food f = foodMap.get(s.getFoodId());

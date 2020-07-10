@@ -45,12 +45,12 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         this.table = t;
         this.objectFactory = table.getFactory();
         this.editInstance = editInstance;
-        this.settableColumns = new LinkedHashSet<>(table.columns());
+        this.settableColumns = new LinkedHashSet<>(table.getColumns());
         this.unsettableColumns = new LinkedHashSet<>();
 
-        this.validationErrors = new HashMap<>(t.columns().size(), 1);
+        this.validationErrors = new HashMap<>(t.getColumns().size(), 1);
         // init with empty lists
-        for (Column<M, ?> col : table.columns()) {
+        for (Column<M, ?> col : table.getColumns()) {
             validationErrors.put(col, new ArrayList<>());
         }
 
@@ -112,7 +112,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         assert settableColumns.contains(col);
 
         try {
-            J castValue = col.getType().fromString(value);
+            J castValue = col.getType().fromRawString(value);
             setField(col, castValue);
         } catch (TypeCastException e) {
             // TODO this sets an error for the field... but technically its actual value wasn't changed.
@@ -269,6 +269,10 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
             }
         }
         return anyInvalid;
+    }
+
+    public boolean canBuild() {
+        return !hasAnyInvalidFields();
     }
 
 }

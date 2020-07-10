@@ -35,13 +35,13 @@ public class EnglishUnitNames implements UnitNamer {
     @Override
     @NotNull
     public String getName(@NotNull Unit unit) {
-        return unit.name();
+        return unit.getName();
     }
 
     @Override
     @NotNull
     public String getAbbr(@NotNull Unit unit) {
-        return unit.abbr();
+        return unit.getAbbr();
     }
 
     @Override

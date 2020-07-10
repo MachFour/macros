@@ -3,7 +3,7 @@ package com.machfour.macros.objects;
 import com.machfour.macros.core.*;
 import org.jetbrains.annotations.NotNull;
 
-public class Serving extends MacrosEntityImpl<Serving> implements Measurement<Serving> {
+public class Serving extends MacrosEntityImpl<Serving> implements PortionMeasurement {
 
     private Food food;
     private QtyUnit qtyUnit;
@@ -43,16 +43,16 @@ public class Serving extends MacrosEntityImpl<Serving> implements Measurement<Se
     }
 
     @NotNull
-    public String qtyUnitAbbr() {
+    public String getQtyUnitAbbr() {
         return getData(Schema.ServingTable.QUANTITY_UNIT);
     }
 
-    public QtyUnit qtyUnit() {
+    public QtyUnit getQtyUnit() {
         return qtyUnit;
     }
 
     public void setQtyUnit(@NotNull QtyUnit q) {
-        assert qtyUnit() == null && foreignKeyMatches(this, Schema.ServingTable.QUANTITY_UNIT, q);
+        assert getQtyUnit() == null && foreignKeyMatches(this, Schema.ServingTable.QUANTITY_UNIT, q);
         qtyUnit = q;
     }
 
@@ -61,11 +61,12 @@ public class Serving extends MacrosEntityImpl<Serving> implements Measurement<Se
     }
 
     @NotNull
-    public String name() {
+    @Override
+    public String getName() {
         return getData(Schema.ServingTable.NAME);
     }
 
-    public double quantity() {
+    public double getQuantity() {
         return getData(Schema.ServingTable.QUANTITY);
     }
 
@@ -76,17 +77,17 @@ public class Serving extends MacrosEntityImpl<Serving> implements Measurement<Se
     // Measurement functions
     @Override
     public double unitMultiplier() {
-        return quantity();
+        return getQuantity();
     }
 
     @Override
     public QtyUnit baseUnit() {
-        return qtyUnit();
+        return getQtyUnit();
     }
 
     @Override
     public boolean isVolumeMeasurement() {
-        return qtyUnit().isVolumeUnit();
+        return getQtyUnit().isVolumeUnit();
     }
 
     @Override

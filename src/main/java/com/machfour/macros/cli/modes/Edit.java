@@ -13,8 +13,8 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.queries.Queries;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.machfour.macros.util.PrintFormatting;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class Edit extends CommandImpl {
         while (true) {
             // TODO reload meal
             out.println();
-            out.printf("Editing meal: %s on %s\n", toEdit.getName(), PrintFormatting.prettyDay(toEdit.getDay()));
+            out.printf("Editing meal: %s on %s\n", toEdit.getName(), DateStamp.prettyPrint(toEdit.getDay()));
             out.println();
             out.print("Action (? for help): ");
             char action = CliUtils.getChar(in, out);

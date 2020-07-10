@@ -26,10 +26,10 @@ public interface MacrosEntity<M extends MacrosEntity<M>> {
     }
 
     @NotNull
-    Long createTime();
+    Long getCreateTime();
 
     @NotNull
-    Long modifyTime();
+    Long getModifyTime();
 
     @NotNull
     ObjectSource getObjectSource();

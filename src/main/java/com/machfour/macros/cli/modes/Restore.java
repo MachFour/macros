@@ -31,8 +31,8 @@ public class Restore extends CommandImpl {
 
     private <M extends MacrosEntity<M>> void restoreTable(MacrosDataSource db, String exportDir, Table<M> t)
             throws SQLException, IOException, TypeCastException {
-        out.println("Restoring " + t.name() + " table...");
-        String csvPath = FileUtils.joinPath(exportDir, t.name() + ".csv");
+        out.println("Restoring " + t.getName() + " table...");
+        String csvPath = FileUtils.joinPath(exportDir, t.getName() + ".csv");
         try (Reader csvData = new FileReader(csvPath)) {
             CsvRestore.restoreTable(t, csvData, db, out);
         }

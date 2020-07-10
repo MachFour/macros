@@ -135,7 +135,7 @@ public class Ingredient extends MacrosEntityImpl<Ingredient> {
     }
 
     public double servingCount() {
-        return (serving != null) ? quantity() / serving.quantity() : 0;
+        return (serving != null) ? quantity() / serving.getQuantity() : 0;
     }
 }
 

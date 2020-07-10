@@ -122,7 +122,7 @@ class ColumnImpl<M, J> implements Column<M, J> {
         }
         @Override
         public String toString() {
-            return super.toString() + " (-> " + parentTable.name() + "." + parent.sqlName() + ")";
+            return super.toString() + " (-> " + parentTable.getName() + "." + parent.sqlName() + ")";
         }
     }
 

@@ -162,7 +162,7 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
             combinedDataMap.put(DENSITY, null);
         }
         combinedDataMap.put(QUANTITY, sumQuantity);
-        combinedDataMap.put(QUANTITY_UNIT, QtyUnits.GRAMS.abbr());
+        combinedDataMap.put(QUANTITY_UNIT, QtyUnits.GRAMS.getAbbr());
         combinedDataMap.put(FOOD_ID, null);
         combinedDataMap.put(DATA_SOURCE, "Sum");
 
@@ -213,7 +213,7 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
     }
 
     @NotNull
-    public QtyUnit qtyUnit() {
+    public QtyUnit getQtyUnit() {
         return qtyUnit;
     }
 
@@ -298,7 +298,7 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
     // returns a new NutritionDataTable object (not from DB) with the converted data.
     // nutrient values always remain in grams.
     private NutritionData convertQuantityUnit(@NotNull QtyUnit targetUnit, double density, boolean isDensityGuessed) {
-        QtyUnit currentUnit = qtyUnit();
+        QtyUnit currentUnit = getQtyUnit();
         if (currentUnit.equals(targetUnit)) {
             // TODO should it be a copy?
             return this;
@@ -316,7 +316,7 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
         double newQuantity = getQuantity() * ratio;
         ColumnData<NutritionData> newData = copyDataForNew();
         newData.put(QUANTITY, newQuantity);
-        newData.put(QUANTITY_UNIT, targetUnit.abbr());
+        newData.put(QUANTITY_UNIT, targetUnit.getAbbr());
         newData.put(DENSITY, density);
         // all other data remains the same
         Map<Column<NutritionData, Double>, Boolean> newHasData = new HashMap<>(completeData);
@@ -378,7 +378,7 @@ public class NutritionData extends MacrosEntityImpl<NutritionData> {
     }
 
     private NutritionData convertToGramsIfNecessary() {
-        if (!qtyUnit().equals(QtyUnits.GRAMS)) {
+        if (!getQtyUnit().equals(QtyUnits.GRAMS)) {
             // then convert to grams, guessing density if required
             double density;
             boolean guessedDensity;

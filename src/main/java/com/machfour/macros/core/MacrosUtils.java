@@ -2,6 +2,7 @@ package com.machfour.macros.core;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -78,12 +79,22 @@ public class MacrosUtils {
     }
 
     public static long idFromString(String value) {
-        return "".equals(value) ? MacrosEntity.NO_ID : Long.valueOf(value);
+        return "".equals(value) ? MacrosEntity.NO_ID : Long.parseLong(value);
     }
 
+    // Returns the given calendar object with its time set to the given unix time
+    public static Calendar setCalendarUnixTime(@NotNull Calendar c, long unixTime) {
+        c.setTimeInMillis(unixTime * 1000L);
+        return c;
+    }
+
+    public static long getUnixTimeFromCalendar(@NotNull Calendar c) {
+        return c.getTimeInMillis() / 1000L;
+    }
+
+    @Deprecated
     public static long getCurrentTimeStamp() {
-        // Date.getTime() return millis, we want seconds
-        return new Date().getTime() / 1000L;
+        return currentUnixTime();
     }
 
     public static String idToString(long id) {

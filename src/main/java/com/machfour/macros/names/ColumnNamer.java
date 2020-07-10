@@ -15,4 +15,9 @@ public interface ColumnNamer {
 
     @NotNull
     String getName(Column<?, ?> col);
+
+    @NotNull
+    default String getAbbreviatedName(Column<?, ?> col) {
+        return getName(col);
+    }
 }

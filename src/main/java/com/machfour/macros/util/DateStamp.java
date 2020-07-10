@@ -33,6 +33,7 @@ public class DateStamp implements Comparable<DateStamp> {
     public final int year;
     public final int month;
     public final int day;
+    
     private final Calendar midnightOnDay;
     private final int hashCode;
 
@@ -48,7 +49,7 @@ public class DateStamp implements Comparable<DateStamp> {
      * Create date stamp from Calendar object representing
      * MIDNIGHT IN THE CURRENT TIME ZONE on some date
      */
-    private DateStamp(Calendar midnight) {
+    private DateStamp(@NotNull Calendar midnight) {
         this.midnightOnDay = midnight;
         this.year = midnight.get(Calendar.YEAR);
         this.month = midnight.get(Calendar.MONTH);
@@ -57,9 +58,24 @@ public class DateStamp implements Comparable<DateStamp> {
     }
 
     /*
+     * Returns a DateStamp representing a Calendar object's year, month and day.
+     * The calendar will be converted into the current/default timezone first.
+     */
+    @NotNull
+    public static DateStamp fromCalendar(@NotNull Calendar c) {
+        c.setTimeZone(currentTimeZone);
+        c.set(Calendar.HOUR, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return new DateStamp(c);
+    }
+
+    /*
      * Return calendar corresponding to midnight in the current timezone
      * on the given day
      */
+    @NotNull
     private static Calendar midnightOnDate(int year, int month, int day) {
         Calendar c = midnightToday();
         c.set(Calendar.YEAR, year);
@@ -75,6 +91,7 @@ public class DateStamp implements Comparable<DateStamp> {
     /*
      * Return calendar corresponding to midnight on today's date in the current timezone
      */
+    @NotNull
     private static Calendar midnightToday() {
         Calendar c = Calendar.getInstance(currentTimeZone, internalLocale);
         c.set(Calendar.HOUR, 0);
@@ -89,9 +106,25 @@ public class DateStamp implements Comparable<DateStamp> {
         return (d != null) && (midnightToday().compareTo(d.midnightOnDay) < 0);
     }
 
-    public DateStamp step(int increment) {
+    @NotNull
+    public static String prettyPrint(@NotNull DateStamp day) {
+        StringBuilder prettyStr = new StringBuilder(day.toString());
+        DateStamp today = forCurrentDate();
+        if (day.equals(today)) {
+            prettyStr.append(" (today)");
+        } else if (day.equals(today.step(-1))) {
+            prettyStr.append(" (yesterday)");
+        }
+        return prettyStr.toString();
+    }
+
+    public Calendar asMidnightOnDay() {
+        return (Calendar) midnightOnDay.clone();
+    }
+
+    public DateStamp step(int dayIncrement) {
         Calendar then = midnightOnDate(year, month, day);
-        then.add(Calendar.DATE, increment);
+        then.add(Calendar.DATE, dayIncrement);
         return new DateStamp(then);
     }
 
@@ -108,6 +141,7 @@ public class DateStamp implements Comparable<DateStamp> {
     /*
      * Constructor for current moment
      */
+    @NotNull
     public static DateStamp forCurrentDate() {
         return new DateStamp(midnightToday());
     }
@@ -167,41 +201,9 @@ public class DateStamp implements Comparable<DateStamp> {
     }
 
     // Number of days from this date since January 1, 1970.
-    public long daysSinceJan1970() {
+    public long daysSince1Jan1970() {
         long unixTimeMillis = midnightOnDay.getTimeInMillis();
         return TimeUnit.DAYS.convert(unixTimeMillis, TimeUnit.MILLISECONDS);
     }
 
-    // TODO wrap Datestamp class in ParcelableDateStamp which has these methods?
-    /*
-     * Parcelable methods
-     */
-    /*
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel out, int flags) {
-        out.writeInt(year);
-        out.writeInt(month);
-        out.writeInt(day);
-    }
-
-    private static class Creator implements Parcelable.Creator<DateStamp> {
-        @Override
-        public DateStamp createFromParcel(Parcel in) {
-            int year = in.readInt();
-            int month = in.readInt();
-            int day = in.readInt();
-            return new DateStamp(year, month, day);
-        }
-
-        @Override
-        public DateStamp[] newArray(int size) {
-            return new DateStamp[size];
-        }
-    }
-    */
 }

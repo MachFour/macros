@@ -39,11 +39,11 @@ public class CsvImport {
     // don't edit csvRow keyset!
     static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) throws TypeCastException {
         Set<String> relevantCols = new HashSet<>(csvRow.keySet());
-        relevantCols.retainAll(table.columnsByName().keySet());
+        relevantCols.retainAll(table.getColumnsByName().keySet());
         ImportData<M> data = new ImportData<>(table);
         for (String colName: relevantCols) {
             String value = csvRow.get(colName);
-            Column<M, ?> col = table.columnForName(colName);
+            Column<M, ?> col = table.getColumnForName(colName);
             // map empty strings in CSV to null
             if (value == null) {
                 data.putFromRaw(col, null);

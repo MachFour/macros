@@ -227,7 +227,7 @@ public class Food extends MacrosEntityImpl<Food> {
     public Serving getServingByName(@NotNull String name) {
         Serving serving = null;
         for (Serving s : servings) {
-            if (name.equals(s.name())) {
+            if (name.equals(s.getName())) {
                 serving = s;
             }
         }

@@ -10,11 +10,11 @@ public abstract class MacrosTypeImpl<J> implements MacrosType<J> {
     // gets the java class associated with this type
     abstract Class<J> javaClass();
 
-    // these one does the real conversion work
+    // this one does the real conversion work
     @NotNull
     protected abstract J fromNonEmptyString(String data) throws TypeCastException;
 
-    // these one does the real conversion work
+    // this one does the real conversion work
     @NotNull
     protected abstract J fromRawNotNull(@NotNull Object data) throws TypeCastException;
 
@@ -26,7 +26,9 @@ public abstract class MacrosTypeImpl<J> implements MacrosType<J> {
 
     @Override
     @Nullable
-    public final J fromString(@NotNull String data) throws TypeCastException {
+    // Empty strings are treated as null object
+    // TODO rename to fromRawString?
+    public final J fromRawString(@NotNull String data) throws TypeCastException {
         return data.isEmpty() ? fromRaw(null) : fromNonEmptyString(data);
     }
 

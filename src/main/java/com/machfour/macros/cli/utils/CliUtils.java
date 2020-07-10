@@ -50,7 +50,7 @@ public class CliUtils {
         String lineFormat = verbose ? "%15s: %6.1f %-2s" : "%15s: %4.0f %-2s";
         for (Column<NutritionData, Double> col: allNutrientsToPrint) {
             Double value = nd.amountOf(col, 0.0);
-            String unitStr = colUnits.getUnit(col).abbr();
+            String unitStr = colUnits.getUnit(col).getAbbr();
             String colName = colNamer.getNutrientName(col);
             out.print(String.format(lineFormat, colName, value, unitStr));
             if (!nd.hasCompleteData(col)) {

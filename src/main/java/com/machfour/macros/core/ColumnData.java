@@ -32,7 +32,7 @@ public class ColumnData<M>  {
 
     // null represented by empty string
     public final <J> void putFromString(Column<M, J> col, @NotNull String data) throws TypeCastException {
-        put(col, col.getType().fromString(data));
+        put(col, col.getType().fromRawString(data));
     }
 
     public final <J> Object getAsRaw(Column<M, J> col) {
@@ -85,7 +85,7 @@ public class ColumnData<M>  {
 
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("ColumnData<").append(table.name()).append("> [");
+        StringBuilder str = new StringBuilder("ColumnData<").append(table.getName()).append("> [");
         for (Column<M, ?> col: columns) {
             // TODO replace with Objects.toString() when Android API level can be bumped
             str.append(String.format("%s = %s, ", col.sqlName(), data[col.index()]));
@@ -98,7 +98,7 @@ public class ColumnData<M>  {
     private ColumnData(Table<M> table, Collection<Column<M, ?>> cols, @Nullable ColumnData<M> existing) {
         // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
         // hold columns of any index, up to the number of columns in the table minus 1.
-        int arraySize = table.columns().size();
+        int arraySize = table.getColumns().size();
         this.data = new Object[arraySize];
         this.hasData = new boolean[arraySize];
         this.table = table;
@@ -124,7 +124,7 @@ public class ColumnData<M>  {
     }
 
     public ColumnData(@NotNull Table<M> t) {
-        this(t, t.columns(), null);
+        this(t, t.getColumns(), null);
     }
 
     public final boolean isImmutable() {
@@ -160,7 +160,7 @@ public class ColumnData<M>  {
     }
 
     public ColumnData<M> copy() {
-        return new ColumnData<>(table, table.columns(), this);
+        return new ColumnData<>(table, table.getColumns(), this);
     }
 
     public ColumnData<M> copy(Collection<Column<M, ?>> whichCols) {

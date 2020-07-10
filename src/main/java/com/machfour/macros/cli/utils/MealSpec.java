@@ -4,7 +4,7 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.PrintFormatting;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +75,6 @@ public class MealSpec {
         }
     }
 
-
     public void process(MacrosDataSource ds, boolean create) {
         if (processed || error != null) {
             // skip processing if there are already errors
@@ -89,7 +88,7 @@ public class MealSpec {
         // no meal specified -> no meal exists
         // meal specified that exists -> use it
         // meal specified that does not exist -> create it
-        Map<String, Meal> mealsForDay;
+        Map<Long, Meal> mealsForDay;
         try {
             mealsForDay = MealQueries.getMealsForDay(ds, day);
         } catch (SQLException e) {
@@ -99,24 +98,27 @@ public class MealSpec {
         if (!mealSpecified) {
             if (!mealsForDay.isEmpty()) {
                 // use most recently modified meal today
-                processedObject = Collections.max(mealsForDay.values(), Comparator.comparingLong(Meal::modifyTime));
+                processedObject = Collections.max(mealsForDay.values(), Comparator.comparingLong(Meal::getModifyTime));
             } else {
-                error = "No meals recorded on " + PrintFormatting.prettyDay(day);
-            }
-        } else if (mealsForDay.containsKey(name)) {
-            processedObject = mealsForDay.get(name);
-            created = false;
-        } else if (create) {
-            try {
-                processedObject = MealQueries.getOrCreateMeal(ds, day, name);
-                created = true;
-            } catch (SQLException e) {
-                error = "Error retrieving meal: " + e.getMessage();
-                return;
+                error = "No meals recorded on " + DateStamp.prettyPrint(day);
             }
         } else {
-            // meal doesn't exist and not allowed to create new meal
-            error = String.format("No meal with name '%s' found on %s", name, PrintFormatting.prettyDay(day));
+            Meal nameMatch = MealQueries.findMealWithName(mealsForDay, name);
+            if (nameMatch != null) {
+                processedObject = nameMatch;
+                created = false;
+            } else if (create) {
+                try {
+                    processedObject = MealQueries.getOrCreateMeal(ds, day, name);
+                    created = true;
+                } catch (SQLException e) {
+                    error = "Error retrieving meal: " + e.getMessage();
+                    return;
+                }
+            } else {
+                // meal doesn't exist and not allowed to create new meal
+                error = String.format("No meal with name '%s' found on %s", name, DateStamp.prettyPrint(day));
+            }
         }
         assert (error != null || processedObject != null) : "No error message but no created object";
         if (error != null) {

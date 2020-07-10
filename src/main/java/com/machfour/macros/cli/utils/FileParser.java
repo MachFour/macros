@@ -151,8 +151,8 @@ public final class FileParser {
                     return;
                 }
             }
-            quantity = fps.servingCount * s.quantity();
-            unit = s.qtyUnit();
+            quantity = fps.servingCount * s.getQuantity();
+            unit = s.getQtyUnit();
         } else {
             // not serving mode
             assert (fps.unit != null);
@@ -163,7 +163,7 @@ public final class FileParser {
         fpData.put(Schema.FoodPortionTable.FOOD_ID, f.getId());
         fpData.put(Schema.FoodPortionTable.SERVING_ID, s == null ? null : s.getId());
         fpData.put(Schema.FoodPortionTable.MEAL_ID, m.getId());
-        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.abbr());
+        fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.getAbbr());
         fpData.put(Schema.FoodPortionTable.QUANTITY, quantity);
         FoodPortion fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW);
         fp.setFood(f);

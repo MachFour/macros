@@ -146,7 +146,7 @@ public class MealPrinter {
         String totalName = String.format("Total for %s", meal.getName());
         NutritionData totalNd = meal.getNutritionTotal();
         // for total data, just use the quantity and unit from the sum
-        List<String> totalRow = nutritionDataToRow(totalName, totalNd, totalNd.getQuantity(), totalNd.qtyUnit(), verbose);
+        List<String> totalRow = nutritionDataToRow(totalName, totalNd, totalNd.getQuantity(), totalNd.getQtyUnit(), verbose);
         printRow(totalRow, rowWidths, rightAlign, columnSep, out);
     }
 

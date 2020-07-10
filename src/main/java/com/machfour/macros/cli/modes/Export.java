@@ -32,8 +32,8 @@ public class Export extends CommandImpl {
 
     private <M extends MacrosEntity<M>> void exportTable(MacrosDataSource db, String outDir, Table<M> t)
             throws SQLException, IOException {
-        out.println("Exporting " + t.name() + " table...");
-        String outCsvPath = FileUtils.joinPath(outDir, t.name() + ".csv");
+        out.println("Exporting " + t.getName() + " table...");
+        String outCsvPath = FileUtils.joinPath(outDir, t.getName() + ".csv");
         try (Writer outCsv = new FileWriter(outCsvPath)) {
             CsvExport.exportTable(t, outCsv, db);
         }

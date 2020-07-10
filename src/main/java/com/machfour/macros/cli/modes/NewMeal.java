@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.ArgParsing;
 import com.machfour.macros.cli.utils.MealSpec;
 import com.machfour.macros.storage.MacrosDataSource;
-import com.machfour.macros.util.PrintFormatting;
+import com.machfour.macros.util.DateStamp;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class NewMeal extends CommandImpl {
             return;
         }
         if (mealSpec.created()) {
-            String prettyDay = PrintFormatting.prettyDay(mealSpec.day());
+            String prettyDay = DateStamp.prettyPrint(mealSpec.day());
             out.println(String.format("Created meal '%s' on %s", mealSpec.name(), prettyDay));
         }
         //Meal toEdit = mealSpec.processedObject();

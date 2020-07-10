@@ -27,7 +27,7 @@ public class CsvRestore {
      */
     public static <M> List<M> buildObjectsForRestore(Table<M> table, Reader csvData, PrintStream out)
             throws IOException, TypeCastException {
-        Map<String, Column<M, ?>> columnsByName = table.columnsByName();
+        Map<String, Column<M, ?>> columnsByName = table.getColumnsByName();
         List<M> objectList = new ArrayList<>();
         Set<String> unrecognisedStrings = new HashSet<>();
 

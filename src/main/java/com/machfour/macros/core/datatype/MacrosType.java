@@ -14,7 +14,16 @@ public interface MacrosType<J> {
     // tries to convert the given string representation into the desired type
     // Empty strings will return the result of fromRaw(null)
     // This method will never return null if the string is non-empty
-    J fromString(@NotNull String stringData) throws TypeCastException;
+    @Deprecated // Use fromRawString instead
+    default J fromString(@NotNull String stringData) throws TypeCastException {
+        return fromRawString(stringData);
+    }
+
+    @Nullable
+    // tries to convert the given string representation into the desired type
+    // Empty strings will return the result of fromRaw(null)
+    // This method will never return null if the string is non-empty
+    J fromRawString(@NotNull String stringData) throws TypeCastException;
 
     // This returns the data in a form that is able to be inserted into a database
     // for SQLite, this means, for example, that booleans become integers.

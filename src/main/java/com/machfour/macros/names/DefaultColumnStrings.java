@@ -16,7 +16,7 @@ public class DefaultColumnStrings extends ColumnStringsImpl {
      * Singleton pattern
      */
     private DefaultColumnStrings() {
-        super(makeColumnNamer(), makeColumnUnits(), makeUnitNamer());
+        super(makeColumnNamer(), makeUnitNamer(), makeColumnUnits());
     }
 
     private static DefaultColumnStrings INSTANCE;

@@ -31,9 +31,9 @@ public class FoodPortion extends MacrosEntityImpl<FoodPortion> {
         sb.append(food == null ? "<no food>" : food.getMediumName());
         sb.append(", ");
         sb.append(String.format("%.1f", getData(Schema.FoodPortionTable.QUANTITY)));
-        sb.append(getQtyUnit().abbr());
+        sb.append(getQtyUnit().getAbbr());
         if (serving != null) {
-            sb.append(" (").append(servingCountString()).append(" ").append(serving.name()).append(")");
+            sb.append(" (").append(servingCountString()).append(" ").append(serving.getName()).append(")");
         }
         if (withNotes) {
             String notes = getNotes();
@@ -144,7 +144,7 @@ public class FoodPortion extends MacrosEntityImpl<FoodPortion> {
     }
 
     private double servingCount() {
-        return (serving != null) ? getQuantity() / serving.quantity() : 0;
+        return (serving != null) ? getQuantity() / serving.getQuantity() : 0;
     }
 }
 

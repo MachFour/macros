@@ -90,7 +90,7 @@ public class DatabaseUtils {
     }
     // delete all!
     public static <M> String deleteAllTemplate(Table<M> table) {
-        return "DELETE FROM " + table.name();
+        return "DELETE FROM " + table.getName();
     }
 
     // " WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
@@ -130,7 +130,7 @@ public class DatabaseUtils {
         }
         words.add(joinColumns(orderedColumns));
         words.add("FROM");
-        words.add(t.name());
+        words.add(t.getName());
         words.add(whereString);
         return StringJoiner.of(words).sep(" ").join();
     }
@@ -138,13 +138,13 @@ public class DatabaseUtils {
     // columns must be a subset of table.columns()
     public static <M> String insertTemplate(Table<M> t, List<Column<M, ?>> orderedColumns) {
         String placeholders = makeInsertPlaceholders(orderedColumns);
-        return String.format("INSERT INTO %s (%s) VALUES (%s)", t.name(), joinColumns(orderedColumns), placeholders);
+        return String.format("INSERT INTO %s (%s) VALUES (%s)", t.getName(), joinColumns(orderedColumns), placeholders);
     }
 
     public static <M, J> String updateTemplate(Table<M> t, List<Column<M, ?>> orderedColumns, Column<M, J> keyCol) {
         String updateColumnPlaceholders = makeUpdatePlaceholders(orderedColumns);
         // TODO dynamic placeholders
-        return String.format("UPDATE %s SET %s %s", t.name(), updateColumnPlaceholders, makeWhereString(keyCol, 1));
+        return String.format("UPDATE %s SET %s %s", t.getName(), updateColumnPlaceholders, makeWhereString(keyCol, 1));
     }
 
 

@@ -11,7 +11,7 @@ import java.util.*;
 
 public class CsvExport {
     static <M extends MacrosEntity<M>> void writeObjectsToCsv(Table<M> table, Writer csvOut, Collection<M> objects) throws IOException {
-        final String[] header = table.columnsByName().keySet().toArray(new String[0]);
+        final String[] header = table.getColumnsByName().keySet().toArray(new String[0]);
         try (ICsvMapWriter mapWriter = getMapWriter(csvOut)) {
             // header columns are used as the keys to the Map
             mapWriter.writeHeader(header);
@@ -26,7 +26,7 @@ public class CsvExport {
     // don't edit keyset!
     private static <M> Map<String, String> prepareDataForExport(ColumnData<M> data) {
         Map<String, String> dataMap = new LinkedHashMap<>(); // preserve column index order
-        for (Column<M, ?> col: data.getTable().columns()) {
+        for (Column<M, ?> col: data.getTable().getColumns()) {
             // null data gets mapped to empty string
             String value = data.getAsRawString(col);
             dataMap.put(col.sqlName(), value);

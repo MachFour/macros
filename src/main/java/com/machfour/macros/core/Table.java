@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 public interface Table<M> {
-    String name();
+    String getName();
 
-    List<Column<M, ?>> columns();
+    List<Column<M, ?>> getColumns();
     // return all FK columns
-    List<Column.Fk<M, ?, ?>> fkColumns();
+    List<Column.Fk<M, ?, ?>> getFkColumns();
 
-    Map<String, Column<M, ?>> columnsByName();
+    Map<String, Column<M, ?>> getColumnsByName();
 
-    Column<M, ?> columnForName(String name);
+    Column<M, ?> getColumnForName(String name);
 
     Column<M, Long> getIdColumn();
 

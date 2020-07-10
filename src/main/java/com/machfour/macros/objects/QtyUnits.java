@@ -57,7 +57,7 @@ public class QtyUnits {
         ID_MAP = new HashMap<>(QtyUnits.INBUILT.size(), 1.0f);
 
         for (QtyUnit u : QtyUnits.INBUILT) {
-            ABBREVIATION_MAP.put(u.abbr().toLowerCase(), u);
+            ABBREVIATION_MAP.put(u.getAbbr().toLowerCase(), u);
             ID_MAP.put(u.getId(), u);
         }
     }

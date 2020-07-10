@@ -11,15 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * Combines interfaces ColumnNamer, ColumnUnits, UnitNames
  */
 public interface ColumnStrings extends ColumnNamer, UnitNamer, ColumnUnits {
-    @NotNull
-    Unit getUnit(@NotNull Column<NutritionData, Double> col);
-
-    @NotNull
-    String getNutrientName(Column<NutritionData, Double> col);
-
-    @NotNull
-    String getName(Column<?, ?> col);
-
+    // these methods combine methods of the parent interfaces
     @NotNull
     String getUnitName(Column<NutritionData, Double> col);
 

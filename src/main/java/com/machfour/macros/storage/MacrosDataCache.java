@@ -68,6 +68,7 @@ public class MacrosDataCache {
     }
 
 
+    @NotNull
     public <M> List<Long> stringSearch(Table<M> t, List<Column<M, String>> cols, String keyword,
                                        boolean globBefore, boolean globAfter) throws SQLException {
         return upstream.stringSearch(t, cols, keyword, globBefore, globAfter);

@@ -22,7 +22,7 @@ public class FkCompletion {
     // fkColumns by definition contains only the foreign key columns
     protected static <M extends MacrosEntity<M>> boolean fkIdsPresent(M object) {
         boolean idsPresent = true;
-        for (Column.Fk<M, ?, ?> fkCol : object.getTable().fkColumns()) {
+        for (Column.Fk<M, ?, ?> fkCol : object.getTable().getFkColumns()) {
             // if the FK refers to an ID column and it's not nullable, make sure there's a value
             if (fkCol.getParentColumn().equals(fkCol.getParentTable().getIdColumn()) && !fkCol.isNullable()) {
                 idsPresent &= object.hasData(fkCol) && !object.getData(fkCol).equals(MacrosEntity.NO_ID);
@@ -57,7 +57,7 @@ public class FkCompletion {
             naturalKeyData.add(objectNkData);
         }
         Column<N, ?> parentNaturalKeyCol = fkCol.getParentTable().getNaturalKeyColumn();
-        assert (parentNaturalKeyCol != null) : "Table " + fkCol.getParentTable().name() + " has no natural key defined";
+        assert (parentNaturalKeyCol != null) : "Table " + fkCol.getParentTable().getName() + " has no natural key defined";
         Map<?, J> uniqueKeyToFkParent = completeFkIdColHelper(ds, fkCol, parentNaturalKeyCol, naturalKeyData);
         for (M object : objects) {
             ColumnData<M> newData = object.getAllData().copy();

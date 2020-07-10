@@ -58,16 +58,27 @@ public class Meal extends MacrosEntityImpl<Meal> {
         return getData(Schema.MealTable.NAME);
     }
 
+    /*
+     * 'Day' is the day for which the nutrition data should be counted.
+     * i.e. the total nutrition value for day X is the sum of nutrition data
+     * for all meals having that Day field
+     */
     public DateStamp getDay() {
         return getData(Schema.MealTable.DAY);
     }
 
+    /*
+     * Start time is the time that the meal was actually consumed. Note that
+     * it's a full timestamp - because for various reasons (timezones, night shifts, eating past midnight)
+     * we allow the day that the meal is labelled with in the Day column to be different from
+     * the calendar date on which it was actually eaten.
+     */
     // returns time in Unix time, aka seconds since Jan 1 1970
     public Long getStartTime() {
         return getData(Schema.MealTable.START_TIME);
     }
 
-    // in seconds
+    // in seconds, how long the meal lasted.
     public Long getDurationSeconds() {
         return getData(Schema.MealTable.DURATION);
     }

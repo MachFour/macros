@@ -22,7 +22,7 @@ import java.util.Map;
 import static com.machfour.macros.core.MacrosUtils.getOrDefault;
 
 public class MealQueries {
-    public static void saveFoodPortions(MacrosDataSource ds, @NotNull Meal m) throws SQLException {
+    public static void saveFoodPortions(@NotNull MacrosDataSource ds, @NotNull Meal m) throws SQLException {
         for (FoodPortion fp : m.getFoodPortions()) {
             if (!fp.getObjectSource().equals(ObjectSource.DATABASE)) {
                 Queries.saveObject(ds, fp);
@@ -31,10 +31,11 @@ public class MealQueries {
     }
 
     @NotNull
-    public static Meal getOrCreateMeal(MacrosDataSource ds, @NotNull DateStamp day, @NotNull String name) throws SQLException {
-        Map<String, Meal> mealsForDay = getMealsForDay(ds, day);
-        if (mealsForDay.containsKey(name)) {
-            return mealsForDay.get(name);
+    public static Meal getOrCreateMeal(@NotNull MacrosDataSource ds, @NotNull DateStamp day, @NotNull String name) throws SQLException {
+        Map<Long, Meal> mealsForDay = getMealsForDay(ds, day);
+        Meal nameMatch = findMealWithName(mealsForDay, name);
+        if (nameMatch != null) {
+            return nameMatch;
         } else {
             ColumnData<Meal> newMealData = new ColumnData<>(Meal.table());
             newMealData.put(Schema.MealTable.DAY, day);
@@ -43,8 +44,9 @@ public class MealQueries {
             Queries.saveObject(ds, newMeal);
             // get it back again, so that it has an ID and stuff
             mealsForDay = getMealsForDay(ds, day);
-            assert (mealsForDay.containsKey(name)) : "didn't find saved meal in meals for its day";
-            return mealsForDay.get(name);
+            nameMatch = findMealWithName(mealsForDay, name);
+            assert (nameMatch != null) : "didn't find saved meal in meals for its day";
+            return nameMatch;
         }
 
     }
@@ -53,35 +55,22 @@ public class MealQueries {
     // defined as the most recently modified meal created for the current date
     // if no meals exist for the current date, returns null
     @Nullable
-    public static Meal getCurrentMeal(MacrosDataSource ds) throws SQLException {
-        Map<String, Meal> mealsForDay = getMealsForDay(ds, DateStamp.forCurrentDate());
+    public static Meal getCurrentMeal(@NotNull MacrosDataSource ds) throws SQLException {
+        Map<Long, Meal> mealsForDay = getMealsForDay(ds, DateStamp.forCurrentDate());
         if (mealsForDay.isEmpty()) {
             return null;
         } else {
             // most recently modified -> largest modification time -> swap compare order
             return Collections.max(mealsForDay.values(),
-                    (Meal a, Meal b) -> Long.compare(b.modifyTime(), a.modifyTime()));
+                    (Meal a, Meal b) -> Long.compare(b.getStartTime(), a.getStartTime()));
 
         }
     }
 
-    // key is the meal name, which is unique given a particular day
     @NotNull
-    public static Map<String, Meal> getMealsForDay(MacrosDataSource ds, DateStamp day) throws SQLException {
+    public static Map<Long, Meal> getMealsForDay(@NotNull MacrosDataSource ds, @NotNull DateStamp day) throws SQLException {
         List<Long> mealIds = getMealIdsForDay(ds, day);
-        Map<Long, Meal> mealsById = getMealsById(ds, mealIds);
-        // sort by create time and put in tree map to preserve order
-        List<Meal> mealsByCreateTime = new ArrayList<>(mealsById.values());
-        // TODO API level: mealsByCreateTime.sort(Comparator.comparingLong(Meal::createTime));
-        // TODO API level: Comparator.comparingLong(Meal::createTime);
-        Collections.sort(mealsByCreateTime, (m1, m2) -> Long.compare(m1.getStartTime(), m2.getStartTime()));
-
-        Map<String, Meal> mealsByName = new LinkedHashMap<>();
-        for (Meal m : mealsByCreateTime) {
-            assert !mealsByName.containsKey(m.getName());
-            mealsByName.put(m.getName(), m);
-        }
-        return mealsByName;
+        return getMealsById(ds, mealIds);
     }
 
     @NotNull
@@ -123,5 +112,16 @@ public class MealQueries {
     @NotNull
     public static List<Long> getFoodIdsForMeals(MacrosDataSource ds, List<Long> mealIds) throws SQLException {
         return ds.selectColumn(FoodPortion.table(), Schema.FoodPortionTable.FOOD_ID, Schema.FoodPortionTable.MEAL_ID, mealIds, true);
+    }
+
+    @Nullable
+    public static Meal findMealWithName(Map<Long, Meal> mealMap, @NotNull String name) {
+        Meal found = null;
+        for (Meal m : mealMap.values()) {
+            if (name.equals(m.getName())) {
+                found = m;
+            }
+        }
+        return found;
     }
 }

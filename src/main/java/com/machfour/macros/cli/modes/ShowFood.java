@@ -13,10 +13,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
-
-import static com.machfour.macros.util.PrintFormatting.deNull;
 
 public class ShowFood extends CommandImpl {
     private static final String NAME = "show";
@@ -61,12 +60,12 @@ public class ShowFood extends CommandImpl {
         final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getDefault());
         out.printf("Name:          %s\n", f.getMediumName());
-        out.printf("Notes:         %s\n", deNull(f.getNotes(), "(no notes)"));
+        out.printf("Notes:         %s\n", Objects.toString(f.getNotes(), "(no notes)"));
         out.printf("Category:      %s\n", f.getFoodCategory());
         out.println();
         out.printf("Type:          %s\n", f.getFoodType().getName());
-        out.printf("Created on:    %s\n", dateFormat.format(f.createDate()));
-        out.printf("Last modified: %s\n", dateFormat.format(f.modifyDate()));
+        out.printf("Created on:    %s\n", dateFormat.format(f.getCreateDate()));
+        out.printf("Last modified: %s\n", dateFormat.format(f.getModifyDate()));
     }
 
     public static void printFood(Food f, boolean verbose, PrintStream out) {
@@ -115,7 +114,7 @@ public class ShowFood extends CommandImpl {
         List<Serving> servings = f.getServings();
         if (!servings.isEmpty()) {
             for (Serving s: servings) {
-                out.printf(" - %s: %.1f%s\n", s.name(), s.quantity(), s.qtyUnit().abbr());
+                out.printf(" - %s: %.1f%s\n", s.getName(), s.getQuantity(), s.getQtyUnit().getAbbr());
             }
         } else {
             out.println("(No servings recorded)");

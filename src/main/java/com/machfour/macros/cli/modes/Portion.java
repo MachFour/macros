@@ -9,8 +9,8 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.util.DateStamp;
 import com.machfour.macros.util.FoodPortionSpec;
-import com.machfour.macros.util.PrintFormatting;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -66,7 +66,7 @@ public class Portion extends CommandImpl {
         }
 
         if (!mealSpec.mealSpecified()) {
-            out.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), PrintFormatting.prettyDay(mealSpec.day()));
+            out.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), DateStamp.prettyPrint(mealSpec.day()));
         }
         mealSpec.process(ds, true);
         if (mealSpec.error() != null) {

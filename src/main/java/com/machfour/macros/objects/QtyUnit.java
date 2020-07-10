@@ -8,7 +8,7 @@ import static com.machfour.macros.core.Schema.QtyUnitTable.*;
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
-public class QtyUnit extends MacrosEntityImpl<QtyUnit> implements Measurement<QtyUnit>, Unit {
+public class QtyUnit extends MacrosEntityImpl<QtyUnit> implements PortionMeasurement, Unit {
 
     public static Factory<QtyUnit> factory() {
         return QtyUnit::new;
@@ -20,7 +20,7 @@ public class QtyUnit extends MacrosEntityImpl<QtyUnit> implements Measurement<Qt
 
     @Override
     public String toString() {
-        return String.format("%s (%s)", name(), abbr());
+        return String.format("%s (%s)", getName(), getAbbr());
     }
 
 
@@ -41,13 +41,13 @@ public class QtyUnit extends MacrosEntityImpl<QtyUnit> implements Measurement<Qt
 
     @NotNull
     @Override
-    public String name() {
+    public String getName() {
         return getData(NAME);
     }
 
     @NotNull
     @Override
-    public String abbr() {
+    public String getAbbr() {
         return getData(ABBREVIATION);
     }
 

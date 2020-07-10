@@ -6,7 +6,6 @@ import com.machfour.macros.objects.Meal;
 import com.machfour.macros.queries.MealQueries;
 import com.machfour.macros.storage.MacrosDataSource;
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.PrintFormatting;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -60,17 +59,17 @@ public class Meals extends CommandImpl {
 
     private int printMealList(MacrosDataSource db, DateStamp d) {
         try {
-            Map<String, Meal> meals = MealQueries.getMealsForDay(db, d);
+            Map<Long, Meal> meals = MealQueries.getMealsForDay(db, d);
             if (meals.isEmpty()) {
-                out.println("No meals recorded on " + PrintFormatting.prettyDay(d));
+                out.println("No meals recorded on " + DateStamp.prettyPrint(d));
             } else {
-                out.println("Meals recorded on " + PrintFormatting.prettyDay(d) + ":");
+                out.println("Meals recorded on " + DateStamp.prettyPrint(d) + ":");
                 out.println();
                 out.println(String.format("%-16s %-16s", "Name", "Last Modified"));
                 out.println("=================================");
                 SimpleDateFormat dateFormat = new SimpleDateFormat();
                 for (Meal m : meals.values()) {
-                    Date mealDate = new Date(m.modifyTime()*1000);
+                    Date mealDate = new Date(m.getModifyTime()*1000);
                     out.println(String.format("%-16s %16s", m.getName(), dateFormat.format(mealDate)));
                 }
             }

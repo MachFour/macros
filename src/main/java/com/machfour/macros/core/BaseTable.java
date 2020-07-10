@@ -95,15 +95,15 @@ abstract class BaseTable<M> implements Table<M> {
         return modifyTimeColumn;
     }
     @Override
-    public String name() {
+    public String getName() {
         return name;
     }
     @Override
-    public List<Column<M, ?>> columns() {
+    public List<Column<M, ?>> getColumns() {
         return columns;
     }
     @Override
-    public List<Column.Fk<M, ?, ?>> fkColumns() {
+    public List<Column.Fk<M, ?, ?>> getFkColumns() {
         return fkColumns;
     }
     @Override
@@ -111,7 +111,7 @@ abstract class BaseTable<M> implements Table<M> {
         return naturalKeyColumn;
     }
     @Override
-    public Map<String, Column<M, ?>> columnsByName() {
+    public Map<String, Column<M, ?>> getColumnsByName() {
         return columnsByName;
     }
     @Override
@@ -119,7 +119,7 @@ abstract class BaseTable<M> implements Table<M> {
         return secondaryKeyCols;
     }
     @Override
-    public Column<M, ?> columnForName(String name) {
+    public Column<M, ?> getColumnForName(String name) {
         return columnsByName.getOrDefault(name, null);
     }
 }

@@ -2,9 +2,19 @@ package com.machfour.macros.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
@@ -18,30 +28,30 @@ import java.util.concurrent.TimeUnit;
  */
 public class DateStamp implements Comparable<DateStamp> {
     // Used to format and parse ISO8601 date strings, e.g '2017-08-01'
-    private static final DateFormat dateFormatter;
+    private static final DateTimeFormatter dateFormatter;
     // Fixed locale for machine-readable operations
     private static final Locale internalLocale = Locale.US;
     private static final TimeZone currentTimeZone = TimeZone.getDefault();
     //public static final Parcelable.Creator<DateStamp> CREATOR = new Creator();
 
     static {
-        dateFormatter = new SimpleDateFormat("yyyy-MM-dd", internalLocale);
-        dateFormatter.setTimeZone(currentTimeZone);
+        dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
     }
 
     // this calendar instance's date and time
     public final int year;
     public final int month;
     public final int day;
-    
-    private final Calendar midnightOnDay;
+
+    private final Clock internalClock = Clock.systemDefaultZone();
+    private final LocalDate date;
     private final int hashCode;
 
     /*
      * Date stamp according to raw year, month, day fields
      */
     public DateStamp(int year, int month, int day) {
-        this(midnightOnDate(year, month, day));
+        this(LocalDate.of(year, month, day));
     }
 
 
@@ -49,11 +59,11 @@ public class DateStamp implements Comparable<DateStamp> {
      * Create date stamp from Calendar object representing
      * MIDNIGHT IN THE CURRENT TIME ZONE on some date
      */
-    private DateStamp(@NotNull Calendar midnight) {
-        this.midnightOnDay = midnight;
-        this.year = midnight.get(Calendar.YEAR);
-        this.month = midnight.get(Calendar.MONTH);
-        this.day = midnight.get(Calendar.DAY_OF_MONTH);
+    private DateStamp(@NotNull LocalDate date) {
+        this.date = date;
+        this.year = date.getYear();
+        this.month = date.getMonthValue();
+        this.day = date.getDayOfMonth();
         this.hashCode = makeHashCode(year, month, day);
     }
 
@@ -62,26 +72,8 @@ public class DateStamp implements Comparable<DateStamp> {
      * The calendar will be converted into the current/default timezone first.
      */
     @NotNull
-    public static DateStamp fromCalendar(@NotNull Calendar c) {
-        c.setTimeZone(currentTimeZone);
-        c.set(Calendar.HOUR, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return new DateStamp(c);
-    }
-
-    /*
-     * Return calendar corresponding to midnight in the current timezone
-     * on the given day
-     */
-    @NotNull
-    private static Calendar midnightOnDate(int year, int month, int day) {
-        Calendar c = midnightToday();
-        c.set(Calendar.YEAR, year);
-        c.set(Calendar.MONTH, month);
-        c.set(Calendar.DAY_OF_MONTH, day);
-        return c;
+    public static DateStamp fromLocalDate(@NotNull LocalDate d) {
+        return new DateStamp(d);
     }
 
     private static int makeHashCode(int year, int month, int day) {
@@ -92,18 +84,13 @@ public class DateStamp implements Comparable<DateStamp> {
      * Return calendar corresponding to midnight on today's date in the current timezone
      */
     @NotNull
-    private static Calendar midnightToday() {
-        Calendar c = Calendar.getInstance(currentTimeZone, internalLocale);
-        c.set(Calendar.HOUR, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        return c;
+    private static LocalDate midnightToday() {
+        return LocalDate.now();
     }
 
     // returns false for null
-    public static boolean isInTheFuture(DateStamp d) {
-        return (d != null) && (midnightToday().compareTo(d.midnightOnDay) < 0);
+    public static boolean isInTheFuture(@NotNull DateStamp d) {
+        return midnightToday().isBefore(d.date);
     }
 
     @NotNull
@@ -118,14 +105,12 @@ public class DateStamp implements Comparable<DateStamp> {
         return prettyStr.toString();
     }
 
-    public Calendar asMidnightOnDay() {
-        return (Calendar) midnightOnDay.clone();
+    public LocalDate asMidnightOnDay() {
+        return LocalDate.of(year, month, day);
     }
 
     public DateStamp step(int dayIncrement) {
-        Calendar then = midnightOnDate(year, month, day);
-        then.add(Calendar.DATE, dayIncrement);
-        return new DateStamp(then);
+        return new DateStamp(date.plusDays(dayIncrement));
     }
 
     /*
@@ -133,9 +118,7 @@ public class DateStamp implements Comparable<DateStamp> {
      * field addition methods to add a negative amount of days
      */
     public static DateStamp forDaysAgo(int daysAgo) {
-        Calendar then = midnightToday();
-        then.add(Calendar.DATE, -1 * daysAgo);
-        return new DateStamp(then);
+        return DateStamp.forCurrentDate().step(-1*daysAgo);
     }
 
     /*
@@ -151,26 +134,20 @@ public class DateStamp implements Comparable<DateStamp> {
      * Throws IllegalArgumentException if the string is in an invalid format
      */
     public static DateStamp fromIso8601String(@NotNull String dateString) {
-        Calendar date = Calendar.getInstance();
         try {
-            date.setTime(dateFormatter.parse(dateString));
-        } catch (ParseException e) {
+            LocalDate date = LocalDate.parse(dateString);
+            return new DateStamp(date);
+        } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Date string not in ISO-8601 format");
         }
-        return new DateStamp(date);
     }
 
     /*
      * Converts this date into a number of days back from the today's date.
      * May return a negative number for dates in the future.
      */
-    public static long daysSince(DateStamp d) {
-        if (d == null) {
-            return 0;
-        }
-        long millisDifference = midnightToday().getTimeInMillis()
-            - d.midnightOnDay.getTimeInMillis();
-        return TimeUnit.DAYS.convert(millisDifference, TimeUnit.MILLISECONDS);
+    public static long daysSince(@NotNull DateStamp d) {
+        return d.date.until(midnightToday(), ChronoUnit.DAYS);
     }
 
     @Override
@@ -184,7 +161,7 @@ public class DateStamp implements Comparable<DateStamp> {
             return false;
         }
         DateStamp d = (DateStamp) o;
-        return year == d.year && month == d.month && day == d.day;
+        return date.equals(d.date);
     }
 
     /*
@@ -192,18 +169,21 @@ public class DateStamp implements Comparable<DateStamp> {
      */
     @Override
     public String toString() {
-        return dateFormatter.format(midnightOnDay.getTime());
+        return date.toString();
     }
 
     @Override
     public int compareTo(@NotNull DateStamp other) {
-        return midnightOnDay.compareTo(other.midnightOnDay);
+        return this.date.compareTo(other.date);
     }
 
     // Number of days from this date since January 1, 1970.
     public long daysSince1Jan1970() {
-        long unixTimeMillis = midnightOnDay.getTimeInMillis();
-        return TimeUnit.DAYS.convert(unixTimeMillis, TimeUnit.MILLISECONDS);
+        return date.toEpochDay();
+    }
+
+    public long toEpochMillis() {
+        return ZonedDateTime.of(date, LocalTime.MIDNIGHT, ZoneId.systemDefault()).toEpochSecond()*1000L;
     }
 
 }

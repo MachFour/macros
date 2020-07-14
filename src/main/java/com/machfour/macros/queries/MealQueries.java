@@ -13,13 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.machfour.macros.core.MacrosUtils.getOrDefault;
 
 public class MealQueries {
     public static void saveFoodPortions(@NotNull MacrosDataSource ds, @NotNull Meal m) throws SQLException {
@@ -88,7 +84,7 @@ public class MealQueries {
     @Nullable
     public static Meal getMealById(MacrosDataSource ds, @NotNull Long id) throws SQLException {
         Map<Long, Meal> resultMeals = getMealsById(ds, Collections.singletonList(id));
-        return getOrDefault(resultMeals, id, null);
+        return resultMeals.getOrDefault(id, null);
     }
 
     @NotNull

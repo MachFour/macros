@@ -35,5 +35,6 @@
     </orderEntry>
     <orderEntry type="library" name="gson-2.8.5" level="project" />
     <orderEntry type="library" name="com.googlecode.lanterna:lanterna:3.1.0-alpha1" level="project" />
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
   </component>
 </module>

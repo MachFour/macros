@@ -1,9 +1,7 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.core.datatype.TypeCastException;
-import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.validation.ValidationError;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,7 +92,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
         J oldValue = getField(col);
         draftData.put(col, value);
         // validation
-        boolean isChangedValue = !MiscUtils.objectsEquals(oldValue, value);
+        boolean isChangedValue = !Objects.equals(oldValue, value);
         // if there was a type cast exception then there was an attempt to change the value
         // which failed ... so it's like a pseudo-changed value
         boolean wasTypeCastException = getErrorsInternal(col).contains(ValidationError.TYPE_MISMATCH);

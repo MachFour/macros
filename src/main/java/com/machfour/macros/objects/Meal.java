@@ -1,12 +1,18 @@
 package com.machfour.macros.objects;
 
-import com.machfour.macros.core.*;
+import com.machfour.macros.core.ColumnData;
+import com.machfour.macros.core.Factory;
+import com.machfour.macros.core.MacrosEntityImpl;
+import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.Table;
 import com.machfour.macros.util.DateStamp;
+
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 public class Meal extends MacrosEntityImpl<Meal> {
@@ -86,8 +92,8 @@ public class Meal extends MacrosEntityImpl<Meal> {
         return getDurationSeconds() / 60;
     }
 
-    public Date getStartTimeObject() {
-        return new Date(getStartTime()*1000L);
+    public Instant getStartTimeInstant() {
+        return Instant.ofEpochSecond(getStartTime());
     }
 
     public List<FoodPortion> getFoodPortions() {

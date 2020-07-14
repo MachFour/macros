@@ -12,6 +12,9 @@ LIBRARIES=(
 	'sqlite-jdbc-3.30.1'
 	'gson-2.8.5'
 	'lanterna-3.1.0-alpha1'
+	'kotlin-stdlib'
+	'kotlin-stdlib-jdk7'
+	'kotlin-stdlib-jdk8'
 	)
 for lib in ${LIBRARIES[@]}; do
 	CLASSPATH+=":${LIB_DIR}/${lib}.jar"

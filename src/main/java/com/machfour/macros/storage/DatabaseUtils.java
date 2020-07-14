@@ -1,12 +1,11 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Column;
 import com.machfour.macros.core.ColumnData;
-import com.machfour.macros.core.datatype.MacrosType;
+import com.machfour.macros.core.MacrosEntity;
 import com.machfour.macros.core.Table;
+import com.machfour.macros.core.datatype.MacrosType;
 import com.machfour.macros.core.datatype.Types;
-import com.machfour.macros.util.Function;
 import com.machfour.macros.util.MiscUtils;
 import com.machfour.macros.util.StringJoiner;
 
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 public class DatabaseUtils {
     private DatabaseUtils() {

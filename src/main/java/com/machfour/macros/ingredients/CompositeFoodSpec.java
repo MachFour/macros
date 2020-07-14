@@ -1,7 +1,9 @@
 package com.machfour.macros.ingredients;
 
-import com.machfour.macros.core.MacrosUtils;
+import com.machfour.macros.core.datatype.TypeCastException;
+import com.machfour.macros.core.datatype.Types;
 import com.machfour.macros.util.StringJoiner;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,9 +26,21 @@ class CompositeFoodSpec {
     CompositeFoodSpec(@NotNull String indexName, @NotNull String name, @Nullable String variety, @Nullable String notes) {
         this.indexName = indexName;
         this.name = name;
-        ingredients = new ArrayList<>();
-        this.variety = MacrosUtils.emptyStringToNull(variety); // empty string -> null data
-        this.notes = MacrosUtils.emptyStringToNull(notes); // empty string -> null data
+        this.ingredients = new ArrayList<>();
+        this.variety = emptyStringAsNull(variety);
+        this.notes = emptyStringAsNull(notes);
+    }
+
+    @Nullable
+    private String emptyStringAsNull(@Nullable String in) {
+        if (in == null) {
+            return null;
+        }
+        try {
+            return Types.TEXT.fromRawString(in); // empty string -> null data
+        } catch (TypeCastException ignored) {
+            return null;
+        }
     }
 
     void addIngredients(Collection<IngredientSpec> ingredientSpecs) {

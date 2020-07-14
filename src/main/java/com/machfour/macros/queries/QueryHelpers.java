@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.machfour.macros.core.MacrosUtils.getOrDefault;
-
 class QueryHelpers {
     static <M, J> Map<J, Long> getIdsFromKeys(MacrosDataSource ds, Table<M> t, Column<M, J> keyCol, Collection<J> keys) throws SQLException {
         return keys.isEmpty() ? Collections.emptyMap() : ds.getIdsByKeysNoEmpty(t, keyCol, keys);
@@ -53,7 +51,7 @@ class QueryHelpers {
     @Nullable
     static <M, J> M getRawObjectByKey(MacrosDataSource ds, Table<M> t, Column<M, J> keyCol, J key) throws SQLException {
         Map<J, M> returned = getRawObjectsByKeys(ds, t, keyCol, Collections.singletonList(key));
-        return getOrDefault(returned, key, null);
+        return returned.getOrDefault(key, null);
     }
 
     @NotNull

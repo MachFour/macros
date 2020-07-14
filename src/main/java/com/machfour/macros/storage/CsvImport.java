@@ -146,8 +146,8 @@ public class CsvImport {
         Map<String, ImportData<NutritionData>> ndMap = new LinkedHashMap<>();
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(recipeCsv)) {
-            ImportData<Food> foodData = rowData.first;
-            ImportData<NutritionData> ndData = rowData.second;
+            ImportData<Food> foodData = rowData.getFirst();
+            ImportData<NutritionData> ndData = rowData.getSecond();
 
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
@@ -188,8 +188,8 @@ public class CsvImport {
         // preserve insertion order
         Map<String, Food> foodMap = new LinkedHashMap<>();
         for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
-            ImportData<Food> foodData = rowData.first;
-            ImportData<NutritionData> ndData = rowData.second;
+            ImportData<Food> foodData = rowData.getFirst();
+            ImportData<NutritionData> ndData = rowData.getSecond();
             Food f;
             NutritionData nd;
             try {

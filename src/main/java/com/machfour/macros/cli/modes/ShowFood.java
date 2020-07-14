@@ -3,18 +3,21 @@ package com.machfour.macros.cli.modes;
 import com.machfour.macros.cli.CommandImpl;
 import com.machfour.macros.cli.utils.CliUtils;
 import com.machfour.macros.core.Schema;
-import com.machfour.macros.objects.*;
+import com.machfour.macros.objects.CompositeFood;
+import com.machfour.macros.objects.Food;
+import com.machfour.macros.objects.FoodType;
+import com.machfour.macros.objects.Ingredient;
+import com.machfour.macros.objects.NutritionData;
+import com.machfour.macros.objects.Serving;
 import com.machfour.macros.queries.FoodQueries;
 import com.machfour.macros.storage.MacrosDataSource;
+import com.machfour.macros.util.DateTimeUtils;
 
 import java.io.PrintStream;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.TimeZone;
 
 
 public class ShowFood extends CommandImpl {
@@ -57,15 +60,14 @@ public class ShowFood extends CommandImpl {
     }
 
     public static void printFoodSummary(Food f, PrintStream out) {
-        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        dateFormat.setTimeZone(TimeZone.getDefault());
+        final DateTimeFormatter dateFormat = DateTimeUtils.LOCALIZED_DATETIME_MEDIUM;
         out.printf("Name:          %s\n", f.getMediumName());
         out.printf("Notes:         %s\n", Objects.toString(f.getNotes(), "(no notes)"));
         out.printf("Category:      %s\n", f.getFoodCategory());
         out.println();
         out.printf("Type:          %s\n", f.getFoodType().getName());
-        out.printf("Created on:    %s\n", dateFormat.format(f.getCreateDate()));
-        out.printf("Last modified: %s\n", dateFormat.format(f.getModifyDate()));
+        out.printf("Created on:    %s\n", dateFormat.format(f.getCreateInstant()));
+        out.printf("Last modified: %s\n", dateFormat.format(f.getModifyInstant()));
     }
 
     public static void printFood(Food f, boolean verbose, PrintStream out) {

@@ -2,9 +2,17 @@ package com.machfour.macros.core;
 
 import com.machfour.macros.validation.SchemaViolation;
 import com.machfour.macros.validation.ValidationError;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * parent class for all macros persistable objects
@@ -15,8 +23,8 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
     private final ObjectSource objectSource;
-    private final Date createDate;
-    private final Date modifyDate;
+    private final Instant createDate;
+    private final Instant modifyDate;
     // TODO only really need to map to the Natural key value,
     // but there's no convenient way of enforcing the type relationship except by wrapping it in a ColumnData
     private final Map<Column.Fk<M, ?, ?>, ColumnData<?>> fkNaturalKeyMap;
@@ -45,9 +53,9 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
         this.objectSource = objectSource;
         this.fkNaturalKeyMap = new HashMap<>();
         //noinspection ConstantConditions (create time is not null)
-        this.createDate = MacrosUtils.dateFromUnixTime(data.get(getTable().getCreateTimeColumn()));
+        this.createDate = Instant.ofEpochSecond(data.get(getTable().getCreateTimeColumn()));
         //noinspection ConstantConditions (modify time is not null)
-        this.modifyDate = MacrosUtils.dateFromUnixTime(data.get(getTable().getModifyTimeColumn()));
+        this.modifyDate = Instant.ofEpochSecond(data.get(getTable().getModifyTimeColumn()));
         checkObjectSource();
     }
 
@@ -76,7 +84,7 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
             MacrosEntityImpl<M> childObj, Column.Fk<M, J, N> childCol, MacrosEntityImpl<N> parentObj) {
         J childData = childObj.getData(childCol);
         J parentData = parentObj.getData(childCol.getParentColumn());
-        return MacrosUtils.objectsEquals(childData, parentData);
+        return Objects.equals(childData, parentData);
     }
     /*
     // used by child classes to create default instance
@@ -99,13 +107,11 @@ public abstract class MacrosEntityImpl<M extends MacrosEntity<M>> implements Mac
         return getData(getTable().getModifyTimeColumn());
     }
 
-    @NotNull
-    public Date getCreateDate() {
+    public @NotNull Instant getCreateInstant() {
         return createDate;
     }
 
-    @NotNull
-    public Date getModifyDate() {
+    public @NotNull Instant getModifyInstant() {
         return modifyDate;
     }
 

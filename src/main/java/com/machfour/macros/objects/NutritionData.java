@@ -1,14 +1,52 @@
 package com.machfour.macros.objects;
 
-import com.machfour.macros.core.*;
+import com.machfour.macros.core.Column;
+import com.machfour.macros.core.ColumnData;
+import com.machfour.macros.core.Factory;
+import com.machfour.macros.core.MacrosEntityImpl;
+import com.machfour.macros.core.ObjectSource;
+import com.machfour.macros.core.Schema;
+import com.machfour.macros.core.Table;
+import com.machfour.macros.core.datatype.Types;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-import com.machfour.macros.core.datatype.Types;
-
-import static com.machfour.macros.core.Schema.NutritionDataTable.*;
+import static com.machfour.macros.core.Schema.NutritionDataTable.ALCOHOL;
+import static com.machfour.macros.core.Schema.NutritionDataTable.CALCIUM;
+import static com.machfour.macros.core.Schema.NutritionDataTable.CALORIES;
+import static com.machfour.macros.core.Schema.NutritionDataTable.CARBOHYDRATE;
+import static com.machfour.macros.core.Schema.NutritionDataTable.CARBOHYDRATE_BY_DIFF;
+import static com.machfour.macros.core.Schema.NutritionDataTable.DATA_SOURCE;
+import static com.machfour.macros.core.Schema.NutritionDataTable.DENSITY;
+import static com.machfour.macros.core.Schema.NutritionDataTable.FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.FIBRE;
+import static com.machfour.macros.core.Schema.NutritionDataTable.FOOD_ID;
+import static com.machfour.macros.core.Schema.NutritionDataTable.ID;
+import static com.machfour.macros.core.Schema.NutritionDataTable.IRON;
+import static com.machfour.macros.core.Schema.NutritionDataTable.KILOJOULES;
+import static com.machfour.macros.core.Schema.NutritionDataTable.MONOUNSATURATED_FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.OMEGA_3_FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.OMEGA_6_FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.POLYUNSATURATED_FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.POTASSIUM;
+import static com.machfour.macros.core.Schema.NutritionDataTable.PROTEIN;
+import static com.machfour.macros.core.Schema.NutritionDataTable.QUANTITY;
+import static com.machfour.macros.core.Schema.NutritionDataTable.QUANTITY_UNIT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.SALT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.SATURATED_FAT;
+import static com.machfour.macros.core.Schema.NutritionDataTable.SODIUM;
+import static com.machfour.macros.core.Schema.NutritionDataTable.STARCH;
+import static com.machfour.macros.core.Schema.NutritionDataTable.SUGAR;
+import static com.machfour.macros.core.Schema.NutritionDataTable.SUGAR_ALCOHOL;
+import static com.machfour.macros.core.Schema.NutritionDataTable.WATER;
+import static com.machfour.macros.core.Schema.NutritionDataTable.instance;
 
 // immutable class storing nutrition data for a food or meal
 public class NutritionData extends MacrosEntityImpl<NutritionData> {

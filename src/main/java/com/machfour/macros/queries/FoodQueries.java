@@ -1,7 +1,6 @@
 package com.machfour.macros.queries;
 
 import com.machfour.macros.core.Column;
-import com.machfour.macros.core.MacrosUtils;
 import com.machfour.macros.core.Schema;
 import com.machfour.macros.objects.Food;
 import com.machfour.macros.objects.FoodCategory;
@@ -62,13 +61,13 @@ public class FoodQueries {
     @Nullable
     public static Food getFoodByIndexName(MacrosDataSource ds, @NotNull String indexName) throws SQLException {
         Map<String, Food> resultFood = getFoodsByIndexName(ds, toList(indexName));
-        return MacrosUtils.getOrDefault(resultFood, indexName, null);
+        return resultFood.getOrDefault(indexName, null);
     }
 
     @Nullable
     public static Food getFoodById(MacrosDataSource ds, @NotNull Long id) throws SQLException {
         Map<Long, Food> resultFood = getFoodsById(ds, toList(id));
-        return MacrosUtils.getOrDefault(resultFood, id, null);
+        return resultFood.getOrDefault(id, null);
     }
 
     // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)

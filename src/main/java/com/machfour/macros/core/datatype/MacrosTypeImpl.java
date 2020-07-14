@@ -1,8 +1,9 @@
 package com.machfour.macros.core.datatype;
 
-import com.machfour.macros.util.MiscUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public abstract class MacrosTypeImpl<J> implements MacrosType<J> {
 
@@ -54,8 +55,7 @@ public abstract class MacrosTypeImpl<J> implements MacrosType<J> {
 
     @NotNull
     public final String toString(J data, String nullString) {
-        // can't use Objects.toString() cause of Android API
-        return MiscUtils.nullableToString(toRaw(data), nullString);
+        return Objects.toString(data, nullString);
     }
 
     @Override

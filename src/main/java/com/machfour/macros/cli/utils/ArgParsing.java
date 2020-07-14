@@ -1,10 +1,10 @@
 package com.machfour.macros.cli.utils;
 
 import com.machfour.macros.util.DateStamp;
-import com.machfour.macros.util.Function;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
 // Utility class for argument parsing
 public class ArgParsing {

@@ -2,24 +2,13 @@ package com.machfour.macros.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 /*
  * Custom class for representing immutable Calendar dates without times.
@@ -44,7 +33,7 @@ public class DateStamp implements Comparable<DateStamp> {
     public final int day;
 
     private final Clock internalClock = Clock.systemDefaultZone();
-    private final LocalDate date;
+    public final LocalDate date;
     private final int hashCode;
 
     /*
@@ -105,8 +94,8 @@ public class DateStamp implements Comparable<DateStamp> {
         return prettyStr.toString();
     }
 
-    public LocalDate asMidnightOnDay() {
-        return LocalDate.of(year, month, day);
+    public LocalDate getDate() {
+        return date;
     }
 
     public DateStamp step(int dayIncrement) {

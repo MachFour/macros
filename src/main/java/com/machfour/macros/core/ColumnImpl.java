@@ -1,12 +1,12 @@
 package com.machfour.macros.core;
 
 import com.machfour.macros.core.datatype.MacrosType;
-import com.machfour.macros.util.Supplier;
 import com.machfour.macros.validation.Validation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 class ColumnImpl<M, J> implements Column<M, J> {
     private final String name;

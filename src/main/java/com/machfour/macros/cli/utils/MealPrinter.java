@@ -89,7 +89,7 @@ public class MealPrinter {
         // add nutrients, formatting to be the appropriate width
         for (Column<NutritionData, Double> nutrient : nutrientColumns) {
             Double value = nd.amountOf(nutrient);
-            row.add(PrintFormatting.formatQuantity(value, verbose));
+            row.add(PrintFormatting.formatQuantityAsVerbose(value, verbose));
         }
         // add quantity and unit
         row.add(PrintFormatting.formatQuantity(qty, unit, PrintFormatting.servingWidth));

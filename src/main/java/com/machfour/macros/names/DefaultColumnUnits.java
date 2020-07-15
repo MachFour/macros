@@ -72,7 +72,7 @@ public class DefaultColumnUnits implements ColumnUnits {
             assert u != null;
             return u;
         } else {
-            throw new IllegalArgumentException("No such nutrient column: " + col.sqlName());
+            throw new IllegalArgumentException("No such nutrient column: " + col.getSqlName());
         }
     }
     @NotNull

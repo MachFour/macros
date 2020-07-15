@@ -39,16 +39,18 @@ class ColumnImpl<M, J> implements Column<M, J> {
     public boolean isUserEditable() {
         return editable;
     }
+    @NotNull
     @Override
-    public String sqlName() {
+    public String getSqlName() {
         return name;
     }
     @Override
-    public int index() {
+    public int getIndex() {
         return index;
     }
 
 
+    @NotNull
     @Override
     public Table<M> getTable() {
         return table;
@@ -79,7 +81,7 @@ class ColumnImpl<M, J> implements Column<M, J> {
         return nullable;
     }
     @Override
-    public boolean inSecondaryKey() {
+    public boolean isInSecondaryKey() {
         return inSecondaryKey;
     }
     @Override
@@ -87,15 +89,17 @@ class ColumnImpl<M, J> implements Column<M, J> {
         return unique;
     }
     @Override
-    public J defaultData() {
+    public J getDefaultData() {
         return defaultValue.get();
     }
+    @NotNull
     @Override
     public List<Validation> getValidations() {
         // TODO
         return new ArrayList<>();
     }
 
+    @NotNull
     @Override
     public MacrosType<J> getType() {
         return type;
@@ -112,6 +116,7 @@ class ColumnImpl<M, J> implements Column<M, J> {
             this.parentTable = parentTable;
         }
 
+        @NotNull
         @Override
         public Column<N, J> getParentColumn() {
             return parent;
@@ -122,7 +127,7 @@ class ColumnImpl<M, J> implements Column<M, J> {
         }
         @Override
         public String toString() {
-            return super.toString() + " (-> " + parentTable.getName() + "." + parent.sqlName() + ")";
+            return super.toString() + " (-> " + parentTable.getName() + "." + parent.getSqlName() + ")";
         }
     }
 

@@ -52,7 +52,7 @@ public class MealQueries {
     // if no meals exist for the current date, returns null
     @Nullable
     public static Meal getCurrentMeal(@NotNull MacrosDataSource ds) throws SQLException {
-        Map<Long, Meal> mealsForDay = getMealsForDay(ds, DateStamp.forCurrentDate());
+        Map<Long, Meal> mealsForDay = getMealsForDay(ds, DateStamp.currentDate());
         if (mealsForDay.isEmpty()) {
             return null;
         } else {

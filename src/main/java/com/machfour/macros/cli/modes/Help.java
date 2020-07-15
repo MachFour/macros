@@ -25,7 +25,7 @@ public class Help extends CommandImpl {
         out.println("Available commands:");
         for (Command m : Commands.getCommands()) {
             if (m.isUserCommand()) {
-                out.println(m.name());
+                out.println(m.getName());
             }
         }
         out.println();

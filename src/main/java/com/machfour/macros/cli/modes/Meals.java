@@ -36,7 +36,7 @@ public class Meals extends CommandImpl {
         DateStamp d;
         switch (dateArgument.status()) {
             case NOT_FOUND:
-                d = DateStamp.forCurrentDate();
+                d = DateStamp.currentDate();
                 break;
             case OPT_ARG_MISSING:
                 out.println("-d option requires a day specified");

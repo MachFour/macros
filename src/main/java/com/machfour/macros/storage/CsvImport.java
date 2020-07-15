@@ -225,7 +225,7 @@ public class CsvImport {
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
                 ImportData<Serving> servingData = extractData(csvRow, Serving.table());
-                String foodIndexName = csvRow.get(INDEX_NAME.sqlName());
+                String foodIndexName = csvRow.get(INDEX_NAME.getSqlName());
                 Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
                 // TODO move next line to be run immediately before saving
                 s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, INDEX_NAME, foodIndexName);

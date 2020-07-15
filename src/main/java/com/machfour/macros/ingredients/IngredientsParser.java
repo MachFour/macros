@@ -73,20 +73,20 @@ public class IngredientsParser {
         // get notes
         // create Ingredients Object
 
-        if (!ingredientMap.containsKey(spec.indexName)) {
-            throw new RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName));
+        if (!ingredientMap.containsKey(spec.getIndexName())) {
+            throw new RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.getIndexName()));
         }
 
-        Long ingredientId = ingredientMap.get(spec.indexName);
+        Long ingredientId = ingredientMap.get(spec.getIndexName());
         assert ingredientId != null;
 
         MacrosBuilder<Ingredient> builder = new MacrosBuilder<>(Ingredient.table());
         builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, composite.getId());
         builder.setField(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientId);
         builder.setField(Schema.IngredientTable.SERVING_ID, null); // TODO
-        builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.quantityUnit);
-        builder.setField(Schema.IngredientTable.NOTES, spec.notes);
-        builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity);
+        builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.getUnit());
+        builder.setField(Schema.IngredientTable.NOTES, spec.getNotes());
+        builder.setField(Schema.IngredientTable.QUANTITY, spec.getQuantity());
 
         if (builder.hasAnyInvalidFields()) {
             throw new SchemaViolation(builder.getAllErrors());
@@ -101,7 +101,7 @@ public class IngredientsParser {
         Set<String> indexNames = new HashSet<>(4 * allSpecs.size());
         for (CompositeFoodSpec cSpec : allSpecs) {
             for (IngredientSpec iSpec : cSpec.getIngredients()) {
-                indexNames.add(iSpec.indexName);
+                indexNames.add(iSpec.getIndexName());
             }
         }
         return indexNames;
@@ -112,11 +112,11 @@ public class IngredientsParser {
     // NOTE that no IDs are ever created for the objects
     private static CompositeFood processCompositeFoodSpec(CompositeFoodSpec spec, Map<String, Long> indexNameMap) {
         MacrosBuilder<Food> builder = new MacrosBuilder<>(Food.table());
-        builder.setField(Schema.FoodTable.INDEX_NAME, spec.indexName);
-        builder.setField(Schema.FoodTable.NAME, spec.name);
-        builder.setField(Schema.FoodTable.VARIETY, spec.variety);
+        builder.setField(Schema.FoodTable.INDEX_NAME, spec.getIndexName());
+        builder.setField(Schema.FoodTable.NAME, spec.getName());
+        builder.setField(Schema.FoodTable.VARIETY, spec.getVariety());
         builder.setField(Schema.FoodTable.VARIETY_AFTER_NAME, false);
-        builder.setField(Schema.FoodTable.NOTES, spec.notes);
+        builder.setField(Schema.FoodTable.NOTES, spec.getNotes());
         builder.setField(Schema.FoodTable.CATEGORY, "recipes"); //TODO
         // setting this means that Food.factory().construct() will create a CompositeFood
         builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());

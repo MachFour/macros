@@ -26,7 +26,7 @@ public class DeleteFood extends CommandImpl {
             printHelp();
             return -1;
         } else if (args.size() < 2) {
-            out.println(usage());
+            out.println(getUsage());
             return -1;
         }
 

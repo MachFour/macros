@@ -101,7 +101,7 @@ public final class FileParser {
         List<Meal> meals = new ArrayList<>();
 
         Map<String, Food> foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames);
-        DateStamp currentDay = DateStamp.forCurrentDate();
+        DateStamp currentDay = DateStamp.currentDate();
         for (Map.Entry<MealSpec, List<FoodPortionSpec>> spec : mealSpecs.entrySet()) {
             Meal m = makeMeal(spec.getKey().name(), currentDay);
             for (FoodPortionSpec fps : spec.getValue()) {

@@ -29,7 +29,7 @@ public class CsvExport {
         for (Column<M, ?> col: data.getTable().getColumns()) {
             // null data gets mapped to empty string
             String value = data.getAsRawString(col);
-            dataMap.put(col.sqlName(), value);
+            dataMap.put(col.getSqlName(), value);
         }
         return dataMap;
     }

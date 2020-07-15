@@ -33,7 +33,7 @@ public class AddFood extends CommandImpl {
     }
 
     @Override
-    public void doActionNoExitCode(List<String> args) {
+    public void doActionNoExitCode(@NotNull List<String> args) {
         out.println("doAction() is deprecated, using doActionWithExitCode() instead");
         doAction(args);
     }
@@ -46,7 +46,7 @@ public class AddFood extends CommandImpl {
         }
         ArgParsing.Result indexNameArg = ArgParsing.findArgument(args, 1);
         if (indexNameArg.status() != ArgParsing.Status.ARG_FOUND) {
-            out.print(usage());
+            out.print(getUsage());
             return -1;
         }
 

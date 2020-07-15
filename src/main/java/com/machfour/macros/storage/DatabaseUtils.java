@@ -21,7 +21,7 @@ public class DatabaseUtils {
     }
 
     private static <M> String joinColumns(Iterable<Column<M, ?>> columns, String suffix) {
-        return StringJoiner.of(columns).sep(", ").stringFunc(Column::sqlName).suffix(suffix).join();
+        return StringJoiner.of(columns).sep(", ").stringFunc(Column::getSqlName).suffix(suffix).join();
     }
 
     private static <M> String joinColumns(Iterable<Column<M, ?>> columns) {
@@ -57,7 +57,7 @@ public class DatabaseUtils {
 
     // creates SQL placeholders for the given (ordered) list of columns
     private static <M> String makeUpdatePlaceholders(List<Column<M, ?>> columns) {
-        return makePlaceholders(columns, (c) -> c.sqlName() + " = " + getSqlPlaceholder(c.getType()));
+        return makePlaceholders(columns, (c) -> c.getSqlName() + " = " + getSqlPlaceholder(c.getType()));
     }
 
     // " WHERE column1 = ?"
@@ -68,7 +68,7 @@ public class DatabaseUtils {
         if (nValues == 0) {
             return "";
         }
-        String colName = whereColumn.sqlName();
+        String colName = whereColumn.getSqlName();
         String placeholder = getSqlPlaceholder(whereColumn.getType());
 
         //if (whereColumn.type().equals(DATESTAMP)) {
@@ -99,11 +99,11 @@ public class DatabaseUtils {
             case 0:
                 return "";
             case 1:
-                return " WHERE " + likeColumns.get(0).sqlName() + " LIKE ?";
+                return " WHERE " + likeColumns.get(0).getSqlName() + " LIKE ?";
             default:
                 List<String> bracketedWhereClauses = new ArrayList<>(likeColumns.size());
                 for (Column<?, String> c : likeColumns) {
-                    bracketedWhereClauses.add("(" + c.sqlName() + " LIKE ?)");
+                    bracketedWhereClauses.add("(" + c.getSqlName() + " LIKE ?)");
                 }
                 return " WHERE " + StringJoiner.of(bracketedWhereClauses).sep(" OR ").join();
         }
@@ -228,6 +228,6 @@ public class DatabaseUtils {
 
     public static <M, J> void rethrowAsSqlException(Object rawValue, Column<M, J> col) throws SQLException {
         throw new SQLException(String.format("Could not convert value '%s' for column %s.%s (type %s)",
-                rawValue, col.getTable(), col.sqlName(), col.getType()));
+                rawValue, col.getTable(), col.getSqlName(), col.getType()));
     }
 }

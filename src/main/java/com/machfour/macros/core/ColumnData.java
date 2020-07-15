@@ -88,7 +88,7 @@ public class ColumnData<M>  {
         StringBuilder str = new StringBuilder("ColumnData<").append(table.getName()).append("> [");
         for (Column<M, ?> col: columns) {
             // TODO replace with Objects.toString() when Android API level can be bumped
-            str.append(String.format("%s = %s, ", col.sqlName(), data[col.index()]));
+            str.append(String.format("%s = %s, ", col.getSqlName(), data[col.getIndex()]));
         }
         str.append("]");
         return str.toString();
@@ -140,10 +140,10 @@ public class ColumnData<M>  {
         assert hasColumns(cols);
         assertMutable();
         for (Column<M, ?> col : cols) {
-            Object o = col.defaultData();
+            Object o = col.getDefaultData();
             // can't use the put() method due to type erasure
-            data[col.index()] = o;
-            hasData[col.index()] = (o != null);
+            data[col.getIndex()] = o;
+            hasData[col.getIndex()] = (o != null);
         }
 
     }
@@ -153,9 +153,9 @@ public class ColumnData<M>  {
         assert to.hasColumns(which) && from.hasColumns(which): "Specified columns not present in both from and to";
         to.assertMutable();
         for (Column<M, ?> col : which) {
-            Object o = from.data[col.index()];
-            to.data[col.index()] = o;
-            to.hasData[col.index()] = (o != null);
+            Object o = from.data[col.getIndex()];
+            to.data[col.getIndex()] = o;
+            to.hasData[col.getIndex()] = (o != null);
         }
     }
 
@@ -191,7 +191,7 @@ public class ColumnData<M>  {
 
     @Nullable
     private <J> J getWithoutAssert(@NotNull Column<M, J> col) {
-        return col.getType().cast(data[col.index()]);
+        return col.getType().cast(data[col.getIndex()]);
     }
 
     // will throw exception if the column is not present
@@ -199,12 +199,12 @@ public class ColumnData<M>  {
     public final <J> void put(@NotNull Column<M, J> col, J value) {
         assertHasColumn(col);
         assertMutable();
-        data[col.index()] = value;
-        hasData[col.index()] = (value != null);
+        data[col.getIndex()] = value;
+        hasData[col.getIndex()] = (value != null);
     }
 
     public final boolean hasData(Column<M, ?> col) {
         assertHasColumn(col);
-        return hasData[col.index()];
+        return hasData[col.getIndex()];
     }
 }

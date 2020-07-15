@@ -44,11 +44,11 @@ public class Commands {
 
     // and then init commands
     public static void initCommands(@NotNull MacrosConfig config) {
-        CommandImpl.setConfig(config);
+        CommandImpl.overwriteConfig(config);
         for (CommandConstructor cc : COMMAND_CONSTRUCTORS) {
             Command c = cc.newInstance();
-            assert !CMDS_BY_NAME.containsKey(c.name()): "Two commands have the same name";
-            CMDS_BY_NAME.put(c.name(), c);
+            assert !CMDS_BY_NAME.containsKey(c.getName()): "Two commands have the same name";
+            CMDS_BY_NAME.put(c.getName(), c);
         }
         initialised = true;
     }
@@ -126,11 +126,11 @@ public class Commands {
         }
 
         @Override
-        public int doAction(List<String> args) {
+        public int doAction(@NotNull List<String> args) {
             out.println("Please specify one of the following commands:");
             for (Command m : getCommands()) {
                 if (m.isUserCommand()) {
-                    out.println(m.name());
+                    out.println(m.getName());
                 }
             }
             return -1;

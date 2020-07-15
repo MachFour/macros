@@ -1,6 +1,4 @@
-package com.machfour.macros.core;
-
-import org.jetbrains.annotations.NotNull;
+package com.machfour.macros.core
 
 /*
  * Describes how an object was created, which describes its state with respect to the database.
@@ -10,14 +8,15 @@ import org.jetbrains.annotations.NotNull;
  * DB:  whether the object has been stored in the database, even if it's a previous copy.
  *      If so, then by definition the object has an ID. If not, then by definition the object is modified.
  */
-public enum ObjectSource {
-      /*
-       * Data loaded from DB. All data is truth.
-       * ID: yes
-       * MOD: no
-       * DB: yes
-       */
-      DATABASE ("database") // from database. All data is truth
+enum class ObjectSource(private val niceName: String) {
+    /*
+    * Data loaded from DB. All data is truth.
+    * ID: yes
+    * MOD: no
+    * DB: yes
+    */
+    DATABASE("database"),
+
     /*
      * From import of user-friendly spreadsheet, which does not have IDs.
      * Need to use secondary keys to determine whether the object is in the DB, as it may already be.
@@ -26,7 +25,8 @@ public enum ObjectSource {
      * MOD: ?
      * DB: ?
      */
-    , IMPORT ("import")
+    IMPORT("import"),
+
     /*
      * From restore of complete database dump, which does have IDs
      * As with IMPORT_FK_MISSING, the object may already be in the DB, but this time we can use the ID to check presence.
@@ -35,21 +35,22 @@ public enum ObjectSource {
      * MOD: ? (assume yes if DB = no also assumed)
      * DB: ? (could assume no)
      */
-    , RESTORE ("restore")
+    RESTORE("restore"),
+
     /*
      * Object has just been created by user input (CLI or GUI), build by builder
      * ID: no
      * MOD: yes
      * DB: no
      */
-    , USER_NEW ("user created")
+    USER_NEW("user created"),
     /*
      * Object is a user-edited version of something already in the database, built by builder
      * ID: yes
      * MOD: yes
      * DB: yes
      */
-    , DB_EDIT ("edit")
+    DB_EDIT("edit"),
 
     /*
      * Describes when objects are together, e.g. combined nutrition data objects.
@@ -58,7 +59,7 @@ public enum ObjectSource {
      * MOD: yes
      * DB: no
      */
-    , COMPUTED ("computed") // when adding together nutrition data objects
+    COMPUTED("computed"),
 
     /*
      * Describes when an object exists as hardcoded into the business logic
@@ -68,17 +69,9 @@ public enum ObjectSource {
      * MOD: no
      * DB: no
      */
-    , INBUILT ("inbuilt");
+    INBUILT("inbuilt");
 
-
-    final String name;
-
-    ObjectSource(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public @NotNull String toString() {
-        return name;
+    override fun toString(): String {
+        return niceName
     }
 }

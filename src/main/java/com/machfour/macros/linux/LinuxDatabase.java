@@ -207,7 +207,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
                 try (ResultSet rs = p.executeQuery()) {
                     for (rs.next(); !rs.isAfterLast(); rs.next()) {
                         //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
-                        Object rawValue = rs.getObject(valueColumn.sqlName());
+                        Object rawValue = rs.getObject(valueColumn.getSqlName());
                         try {
                             J value = valueColumn.getType().fromRaw(rawValue);
                             assert !resultMap.containsKey(key) : "Two rows in the DB contained the same data in the key column!";
@@ -237,7 +237,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             LinuxDatabaseUtils.bindObjects(p, whereValues);
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
-                    Object resultValue = rs.getObject(selected.sqlName());
+                    Object resultValue = rs.getObject(selected.getSqlName());
                     try {
                         resultList.add(selected.getType().fromRaw(resultValue));
                     } catch (TypeCastException e) {
@@ -254,7 +254,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
     private static <M> void fillColumnData(ColumnData<M> data, ResultSet rs) throws SQLException {
         Collection<Column<M, ?>> columns = data.getTable().getColumns();
         for (Column<M, ?> col : columns) {
-            Object rawValue = rs.getObject(col.sqlName());
+            Object rawValue = rs.getObject(col.getSqlName());
             try {
                 data.putFromRaw(col, rawValue);
             } catch (TypeCastException e) {
@@ -311,8 +311,8 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             LinuxDatabaseUtils.bindObjects(p, keys);
             try (ResultSet rs = p.executeQuery()) {
                 for (rs.next(); !rs.isAfterLast(); rs.next()) {
-                    long id = rs.getLong(t.getIdColumn().sqlName());
-                    J key = keyCol.getType().cast(rs.getObject(keyCol.sqlName())); //XXX wow
+                    long id = rs.getLong(t.getIdColumn().getSqlName());
+                    J key = keyCol.getType().cast(rs.getObject(keyCol.getSqlName())); //XXX wow
                     assert (key != null);
                     assert (!idMap.containsKey(key)) : "Key " + key + " already in returned map!";
                     idMap.put(key, id);
@@ -438,7 +438,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
 
     @Override
     public <M extends MacrosEntity<M>> boolean idExistsInTable(Table<M> table, long id) throws SQLException {
-        String idCol = table.getIdColumn().sqlName();
+        String idCol = table.getIdColumn().getSqlName();
         String query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.getName() + " WHERE " + idCol + " = " + id;
         boolean exists;
         Connection c = getConnection();
@@ -461,7 +461,7 @@ public class LinuxDatabase extends MacrosDatabase implements MacrosDataSource {
             LinuxDatabaseUtils.bindObjects(p, ids);
             ResultSet rs = p.executeQuery();
             for (rs.next(); !rs.isAfterLast(); rs.next()) {
-                Long id = rs.getLong(idCol.sqlName());
+                Long id = rs.getLong(idCol.getSqlName());
                 idMap.put(id, true);
             }
             rs.next();

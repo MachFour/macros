@@ -99,7 +99,7 @@ public class ArgParsing {
     public static DateStamp dayStringParse(@Nullable String dayString) {
         // default values
         if (dayString == null) {
-            return DateStamp.forCurrentDate();
+            return DateStamp.currentDate();
         }
         try {
             // enter day as '-1' for yesterday, '0' for today, '1' for tomorrow, etc.

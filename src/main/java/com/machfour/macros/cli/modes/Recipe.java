@@ -30,7 +30,7 @@ public class Recipe extends CommandImpl {
             printHelp();
             return;
         } else if (args.size() < 2) {
-            out.println(usage());
+            out.println(getUsage());
             return;
         }
 

@@ -14,8 +14,7 @@ import java.sql.SQLException
 
 object DatabaseUtils {
     private fun <M> joinColumns(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
-        val stringFunc : (Column<M, *>) -> String = { it.sqlName }
-        return StringJoiner.of(columns).sep(", ").stringFunc(stringFunc).suffix(suffix).join()
+        return StringJoiner.of(columns).sep(", ").stringFunc { it.sqlName }.suffix(suffix).join()
     }
 
     // usually, an SQL placeholder is just a question mark. But, for example a DateStamp

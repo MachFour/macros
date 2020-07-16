@@ -20,7 +20,7 @@ import static com.machfour.macros.util.MiscUtils.toList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IngredientsRollbackTest {
-    private static final String TEST_DB_LOCATION = "/home/max/devel/macros-java/test-ingredients.sqlite";
+    private static final String TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test-ingredients.sqlite";
     private static LinuxDatabase db;
 
     @BeforeAll

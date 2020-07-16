@@ -21,9 +21,9 @@ class CsvTest {
     static LinuxDatabase db;
     // TODO make test config
     static final MacrosConfig config = new LinuxConfig();
-    static final String TEST_DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
-    static final String REAL_DB_LOCATION = "/home/max/devel/macros-java/macros.sqlite";
-    static final String TEST_WRITE_DIR = "/home/max/devel/macros-java/test";
+    static final String TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test.sqlite";
+    static final String REAL_DB_LOCATION = "/home/max/devel/macros-kotlin/macros.sqlite";
+    static final String TEST_WRITE_DIR = "/home/max/devel/macros-kotlin/test";
 
     @BeforeAll
     static void initDb() {

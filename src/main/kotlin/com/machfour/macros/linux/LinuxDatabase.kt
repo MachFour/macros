@@ -5,7 +5,6 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.storage.DatabaseUtils
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.storage.MacrosDatabase
-import com.machfour.macros.util.MiscUtils.toList
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File

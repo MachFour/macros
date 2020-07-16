@@ -1,7 +1,6 @@
 package com.machfour.macros.core.datatype
 
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.MiscUtils
 
 // basic types corresponding roughly to database types
 // TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type
@@ -37,7 +36,7 @@ class Types {
         internal fun objectToLong(data: Any): Long {
             return when (data) {
                 is Long -> data // auto unbox
-                is kotlin.Int -> MiscUtils.toUnsignedLong(data)
+                is kotlin.Int -> data.toLong()
                 else -> stringToLong(data.toString())
             }
         }

@@ -19,7 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FoodTest {
-    private static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
+    private static final String DB_LOCATION = "/home/max/devel/macros-kotlin/test.sqlite";
     private static LinuxDatabase db;
     private static ColumnData<Food> foodData;
     private static Food testFood;

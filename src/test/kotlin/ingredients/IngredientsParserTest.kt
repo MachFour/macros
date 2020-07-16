@@ -7,7 +7,6 @@ import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
 import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.util.MiscUtils.toList
 import com.machfour.macros.util.StringJoiner
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -18,14 +17,14 @@ import java.sql.SQLException
 
 internal class IngredientsParserTest {
     companion object {
-        private const val TEST_DB_LOCATION = "/home/max/devel/macros-java/test-ingredients.sqlite"
+        private const val TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
 
         @BeforeAll
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.getName()))
+                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.getName()))
                 db.clearTable(Ingredient.table())
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")

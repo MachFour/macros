@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class FoodTestForProfiling {
-    private static final String DB_LOCATION = "/home/max/devel/macros-java/test.sqlite";
+    private static final String DB_LOCATION = "/home/max/devel/macros-kotlin/test.sqlite";
     private static LinuxDatabase db;
     private static ColumnData<Food> foodDc;
     private static Food testFood;

@@ -11,37 +11,29 @@ import java.io.PrintStream
 
 class LinuxConfig : MacrosConfig {
     companion object {
-        private const val PROJECT_DIR = "/home/max/devel/macros-java"
+        private const val PROJECT_DIR = "/home/max/devel/macros-kotlin"
 
         private const val programName = "macros"
         private const val dbName = "macros.sqlite"
-
         private const val DATA_DIR = "/home/max/devel/macros/macros-data"
         private const val DB_DIR = PROJECT_DIR
         private const val FOOD_CSV_NAME = "foods.csv"
         private const val SERVING_CSV_NAME = "servings.csv"
         private const val RECIPE_CSV_NAME = "recipes.csv"
         private const val INGREDIENTS_CSV_NAME = "ingredients.csv"
-
         private const val initSqlName = "macros-db-create.sql"
         private const val trigSqlName = "macros-db-triggers.sql"
         private const val dataSqlName = "macros-initial-data.sql"
 
+        private val LIB_DIR = joinPath(PROJECT_DIR, "libs")
+        private val SQL_DIR = joinPath(PROJECT_DIR, "src/main/resources/sql")
 
-        private val LIB_DIR = joinPath(PROJECT_DIR, "lib")
-        private val SQL_DIR = joinPath(PROJECT_DIR, "src/sql")
-
-        @JvmField
         val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so"
 
-        @JvmField
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR
 
-        @JvmField
         val INIT_SQL = File(joinPath(SQL_DIR, initSqlName))
-        @JvmField
         val TRIG_SQL = File(joinPath(SQL_DIR, trigSqlName))
-        @JvmField
         val DATA_SQL = File(joinPath(SQL_DIR, dataSqlName))
 
         private val inputReader = BufferedReader(InputStreamReader(System.`in`))

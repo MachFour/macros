@@ -20,9 +20,5 @@ interface Table<M> {
     val naturalKeyColumn: Column<M, *>?
     val factory: Factory<M>
 
-    fun getColumnForName(name: String): Column<M, *>?
-
-    fun construct(dataMap: ColumnData<M>, objectSource: ObjectSource): M {
-        return factory.construct(dataMap, objectSource)
-    }
+    fun construct(dataMap: ColumnData<M>, objectSource: ObjectSource): M = factory.construct(dataMap, objectSource)
 }

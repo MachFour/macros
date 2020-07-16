@@ -2,17 +2,18 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.storage.DatabaseUtils
 import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.sql.SQLException
 
 internal object LinuxDatabaseUtils {
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M> bindData(p: PreparedStatement, values: ColumnData<M>, orderedColumns: List<Column<M, *>>) {
         bindData(p, values, orderedColumns, null)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M> bindData(p: PreparedStatement, values: ColumnData<M>, orderedColumns: List<Column<M, *>>, extra: Any?) {
         var colIndex = 1 // parameters are 1 indexed!
@@ -26,7 +27,6 @@ internal object LinuxDatabaseUtils {
         }
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <E> bindObjects(p: PreparedStatement, objects: Collection<E>) {
         var colIndex = 1 // parameters are 1 indexed!
@@ -35,4 +35,18 @@ internal object LinuxDatabaseUtils {
             colIndex++
         }
     }
+
+    @Throws(SQLException::class)
+    fun <M> fillColumnData(data: ColumnData<M>, rs: ResultSet) {
+        val columns: Collection<Column<M, *>> = data.table.columns
+        for (col in columns) {
+            val rawValue = rs.getObject(col.sqlName)
+            try {
+                data.putFromRaw(col, rawValue)
+            } catch (e: TypeCastException) {
+                DatabaseUtils.rethrowAsSqlException(rawValue, col)
+            }
+        }
+    }
+
 }

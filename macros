@@ -5,8 +5,6 @@ DEVEL_DIR="/home/max/devel/macros-kotlin"
 ARTIFACT_DIR="${DEVEL_DIR}/out/artifacts"
 LIB_DIR="${DEVEL_DIR}/libs"
 
-
-
 #PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
 MAINCLASS=com.machfour.macros.linux.LinuxMain
 

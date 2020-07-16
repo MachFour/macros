@@ -1,9 +1,6 @@
 package com.machfour.macros.storage;
 
-import com.machfour.macros.core.Column;
-import com.machfour.macros.core.ObjectSource;
-import com.machfour.macros.core.Schema;
-import com.machfour.macros.core.Table;
+import com.machfour.macros.core.*;
 import com.machfour.macros.core.datatype.TypeCastException;
 import com.machfour.macros.objects.CompositeFood;
 import com.machfour.macros.objects.Food;
@@ -37,13 +34,13 @@ import static com.machfour.macros.core.Schema.FoodTable.INDEX_NAME;
 
 public class CsvImport {
     // don't edit csvRow keyset!
-    static <M> ImportData<M> extractData(Map<String, String> csvRow, Table<M> table) throws TypeCastException {
+    static <M> ColumnData<M> extractData(Map<String, String> csvRow, Table<M> table) throws TypeCastException {
         Set<String> relevantCols = new HashSet<>(csvRow.keySet());
         relevantCols.retainAll(table.getColumnsByName().keySet());
-        ImportData<M> data = new ImportData<>(table);
+        ColumnData<M> data = new ColumnData<>(table);
         for (String colName: relevantCols) {
             String value = csvRow.get(colName);
-            Column<M, ?> col = table.getColumnForName(colName);
+            Column<M, ?> col = table.getColumnsByName().get(colName);
             // map empty strings in CSV to null
             if (value == null) {
                 data.putFromRaw(col, null);
@@ -72,9 +69,9 @@ public class CsvImport {
         return result;
     }
     // Returns map of food index name to parsed food and nutrition columnData objects
-    private static List<Pair<ImportData<Food>, ImportData<NutritionData>>> getFoodData(Reader foodCsv)
+    private static List<Pair<ColumnData<Food>, ColumnData<NutritionData>>> getFoodData(Reader foodCsv)
             throws IOException, TypeCastException {
-        List<Pair<ImportData<Food>, ImportData<NutritionData>>> data = new ArrayList<>();
+        List<Pair<ColumnData<Food>, ColumnData<NutritionData>>> data = new ArrayList<>();
         try (ICsvMapReader mapReader = getMapReader(foodCsv)) {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
@@ -82,8 +79,8 @@ public class CsvImport {
                 if (allValuesEmpty(csvRow)) {
                     continue; // it's a blank row
                 }
-                ImportData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
-                ImportData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
+                ColumnData<Food> foodData = extractData(csvRow, Schema.FoodTable.instance());
+                ColumnData<NutritionData> ndData = extractData(csvRow, Schema.NutritionDataTable.instance());
                 data.add(new Pair<>(foodData, ndData));
             }
         }
@@ -103,7 +100,7 @@ public class CsvImport {
                     continue; // it's a blank row
                 }
                 // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                ImportData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
+                ColumnData<Ingredient> ingredientData = extractData(csvRow, Schema.IngredientTable.instance());
 
                 String compositeIndexName = csvRow.get("recipe_index_name");
                 String ingredientIndexName = csvRow.get("ingredient_index_name");
@@ -143,11 +140,11 @@ public class CsvImport {
             throws IOException, TypeCastException {
         // preserve insertion order
         Map<String, CompositeFood> foodMap = new LinkedHashMap<>();
-        Map<String, ImportData<NutritionData>> ndMap = new LinkedHashMap<>();
+        Map<String, ColumnData<NutritionData>> ndMap = new LinkedHashMap<>();
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
-        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(recipeCsv)) {
-            ImportData<Food> foodData = rowData.getFirst();
-            ImportData<NutritionData> ndData = rowData.getSecond();
+        for (Pair<ColumnData<Food>, ColumnData<NutritionData>> rowData : getFoodData(recipeCsv)) {
+            ColumnData<Food> foodData = rowData.getFirst();
+            ColumnData<NutritionData> ndData = rowData.getSecond();
 
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName());
             Food f = Food.factory().construct(foodData, ObjectSource.IMPORT);
@@ -171,7 +168,7 @@ public class CsvImport {
         // now we can finally create the nutrition data
 
         for (CompositeFood cf : foodMap.values()) {
-            ImportData<NutritionData> csvNutritionData = ndMap.get(cf.getIndexName());
+            ColumnData<NutritionData> csvNutritionData = ndMap.get(cf.getIndexName());
             if (csvNutritionData.hasData(Schema.NutritionDataTable.QUANTITY)) {
                 // assume that there is overriding data
                 NutritionData overridingData = NutritionData.factory().construct(csvNutritionData, ObjectSource.IMPORT);
@@ -187,9 +184,9 @@ public class CsvImport {
     static Map<String, Food> buildFoodObjectTree(Reader foodCsv) throws IOException, TypeCastException {
         // preserve insertion order
         Map<String, Food> foodMap = new LinkedHashMap<>();
-        for (Pair<ImportData<Food>, ImportData<NutritionData>> rowData : getFoodData(foodCsv)) {
-            ImportData<Food> foodData = rowData.getFirst();
-            ImportData<NutritionData> ndData = rowData.getSecond();
+        for (Pair<ColumnData<Food>, ColumnData<NutritionData>> rowData : getFoodData(foodCsv)) {
+            ColumnData<Food> foodData = rowData.getFirst();
+            ColumnData<NutritionData> ndData = rowData.getSecond();
             Food f;
             NutritionData nd;
             try {
@@ -224,7 +221,7 @@ public class CsvImport {
             final String[] header = mapReader.getHeader(true);
             Map<String, String> csvRow;
             while ((csvRow = mapReader.read(header)) != null) {
-                ImportData<Serving> servingData = extractData(csvRow, Serving.table());
+                ColumnData<Serving> servingData = extractData(csvRow, Serving.table());
                 String foodIndexName = csvRow.get(INDEX_NAME.getSqlName());
                 Serving s = Serving.factory().construct(servingData, ObjectSource.IMPORT);
                 // TODO move next line to be run immediately before saving

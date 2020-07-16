@@ -1,7 +1,5 @@
 package com.machfour.macros.util
 
-import java.util.function.Function
-
 /*
  * Class to do string joining of arbitrary iterable objects, using a custom string function
  * Similar functionality exists as java.util.StringJoiner but not all of this functionality is
@@ -14,33 +12,23 @@ import java.util.function.Function
 class StringJoiner<E> private constructor(private val iterator: Iterator<E>) {
     private var sep = ""
     private var suffix = ""
-    private var stringFunc: (E) -> String = { it.toString() }
+    private var strFunc: (E) -> String = { it.toString() }
 
     // how many copies of each element
     private var copies = 1
 
-    fun sep(sep: String): StringJoiner<E> {
-        this.sep = sep
-        return this
-    }
+    fun sep(sep: String) = apply { this.sep = sep }
 
-    fun suffix(suffix: String): StringJoiner<E> {
-        this.suffix = suffix
-        return this
-    }
+    fun suffix(suffix: String) = apply { this.suffix = suffix }
 
-    fun copies(copies: Int): StringJoiner<E> {
+    fun copies(copies: Int) = apply {
         require(copies >= 1) { "copies must be >= 1" }
         this.copies = copies
-        return this
-    }
-
-    fun stringFunc(stringFunc: Function<E, String>): StringJoiner<E> {
-        this.stringFunc = { stringFunc.apply(it) }
-        return this
     }
 
     // StringFunc is arbitary function to apply to object to produce a string
+    fun stringFunc(f: (E) -> String) = apply { this.strFunc = f }
+
     fun join(): String {
         if (!iterator.hasNext()) {
             return ""
@@ -48,7 +36,7 @@ class StringJoiner<E> private constructor(private val iterator: Iterator<E>) {
         val joined = StringBuilder()
         // there will be one last separator string at the end but we'll remove it
         while (iterator.hasNext()) {
-            val next = stringFunc(iterator.next())
+            val next = strFunc(iterator.next())
             for (i in 1..copies) {
                 joined.append(next)
                 joined.append(suffix)
@@ -63,20 +51,9 @@ class StringJoiner<E> private constructor(private val iterator: Iterator<E>) {
     }
 
     companion object {
-        @JvmStatic
-        fun <E> of(iterator: Iterator<E>): StringJoiner<E> {
-            return StringJoiner(iterator)
-        }
-
-        @JvmStatic
-        fun <E> of(iterable: Iterable<E>): StringJoiner<E> {
-            return StringJoiner(iterable.iterator())
-        }
-
-        @JvmStatic
-        fun <E> of(element: E): StringJoiner<E> {
-            return StringJoiner(listOf(element).iterator())
-        }
+        fun <E> of(iterator: Iterator<E>): StringJoiner<E> = StringJoiner(iterator)
+        fun <E> of(iterable: Iterable<E>): StringJoiner<E> = StringJoiner(iterable.iterator())
+        fun <E> of(element: E): StringJoiner<E> = StringJoiner(listOf(element).iterator())
     }
 
 }

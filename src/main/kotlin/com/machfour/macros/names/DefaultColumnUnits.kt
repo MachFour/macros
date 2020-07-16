@@ -6,20 +6,22 @@ import com.machfour.macros.objects.EnergyUnit
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.QtyUnits
 import com.machfour.macros.objects.Unit
+import java.util.Collections;
+import kotlin.collections.HashMap
 
 /*
  * Singleton pattern
  */
 class DefaultColumnUnits private constructor() : ColumnUnits {
     companion object {
-        private val MILLIGRAMS_COLS = setOf(
+        private val MILLIGRAMS_COLS = Collections.unmodifiableList(listOf(
             NutritionDataTable.SODIUM
             , NutritionDataTable.CALCIUM
             , NutritionDataTable.POTASSIUM
             , NutritionDataTable.IRON
             , NutritionDataTable.OMEGA_3_FAT
             , NutritionDataTable.OMEGA_6_FAT
-        )
+        ))
 
         private fun unitForNutrientCol(col: Column<NutritionData, Double>): Unit {
             return when {
@@ -37,7 +39,7 @@ class DefaultColumnUnits private constructor() : ColumnUnits {
             NutritionData.NUTRIENT_COLUMNS.forEach { col ->
                 map[col] = unitForNutrientCol(col)
             }
-            map
+            Collections.unmodifiableMap(map)
         }
 
         @JvmStatic
@@ -50,6 +52,6 @@ class DefaultColumnUnits private constructor() : ColumnUnits {
     }
 
     override fun columnsWithUnits(): Collection<Column<NutritionData, Double>> {
-        return UNIT_MAP.keys.toList()
+        return Collections.unmodifiableCollection(UNIT_MAP.keys)
     }
 }

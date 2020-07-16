@@ -1,6 +1,6 @@
 package com.machfour.macros.core
 
-import java.util.*
+import java.util.Collections
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
@@ -9,7 +9,7 @@ internal abstract class BaseTable<M>(
     final override val factory: Factory<M>,
     cols: List<Column<M, *>>
 ) : Table<M> {
-    final override val columns: List<Column<M, *>> = Collections.unmodifiableList(cols)
+    final override val columns: List<Column<M, *>>
 
     // TODO make these better
     final override val idColumn: Column<M, Long> = cols[0] as Column<M, Long>
@@ -17,12 +17,9 @@ internal abstract class BaseTable<M>(
     final override val modifyTimeColumn: Column<M, Long> = cols[2] as Column<M, Long>
 
     final override val fkColumns: List<Column.Fk<M, *, *>>
-    final override val naturalKeyColumn: Column<M, *>?
     final override val columnsByName: Map<String, Column<M, *>>
     final override val secondaryKeyCols: List<Column<M, *>>
-
-
-    override fun getColumnForName(name: String): Column<M, *>? = columnsByName.getOrDefault(name, null)
+    final override val naturalKeyColumn: Column<M, *>?
 
 
     // first three columns must be ID, create time, modify time
@@ -32,20 +29,20 @@ internal abstract class BaseTable<M>(
         require(Schema.MODIFY_TIME_COLUMN_NAME == modifyTimeColumn.sqlName)
 
         // make name map and secondary key cols list. Linked hash map keeps insertion order
-        columnsByName = LinkedHashMap(cols.size, 1.0f)
-        secondaryKeyCols = ArrayList(2)
-        fkColumns = ArrayList(2)
-
+        val tmpColumnsByName = LinkedHashMap<String, Column<M, *>>(cols.size, 1.0f)
         var naturalKeyColumn: Column<M, *>? = null
+
+        val tmpSecondaryKeyCols = ArrayList<Column<M, *>>(2)
+        val tmpFkColumns = ArrayList<Column.Fk<M, *, *>>(2)
 
         for (c in cols) {
             // This package only uses ColumnImpl objects so we're good
             require(c is ColumnImpl<*, *>)
             (c as ColumnImpl<M, *>).setTable(this)
 
-            columnsByName[c.sqlName] = c
+            tmpColumnsByName[c.sqlName] = c
             if (c.isInSecondaryKey) {
-                secondaryKeyCols.add(c)
+                tmpSecondaryKeyCols.add(c)
             }
             // record secondary key
             if (c.isUnique && c != idColumn) {
@@ -53,9 +50,13 @@ internal abstract class BaseTable<M>(
                 naturalKeyColumn = c
             }
             if (c is Column.Fk<*, *, *>) {
-                fkColumns.add(c as Column.Fk<M, *, *>)
+                tmpFkColumns.add(c as Column.Fk<M, *, *>)
             }
         }
+        this.columns = Collections.unmodifiableList(cols)
+        this.columnsByName = Collections.unmodifiableMap(tmpColumnsByName)
+        this.secondaryKeyCols = Collections.unmodifiableList(tmpSecondaryKeyCols)
+        this.fkColumns = Collections.unmodifiableList(tmpFkColumns)
         this.naturalKeyColumn = naturalKeyColumn
     }
 

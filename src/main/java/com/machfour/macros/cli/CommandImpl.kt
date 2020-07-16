@@ -9,6 +9,18 @@ import java.io.PrintStream
 abstract class CommandImpl @JvmOverloads protected constructor(final override val name: String, usage: String? = null) : Command {
 
     final override val usage = usage ?: "No help available for mode '${name}'"
+    // have to initialise this first with overwriteConfig
+
+    @JvmField
+    protected var config: MacrosConfig = defaultConfig()
+
+    @JvmField
+    protected var out: PrintStream = config.outStream
+    @JvmField
+    protected var err: PrintStream = config.errStream
+    @JvmField
+    protected var `in`: BufferedReader = config.inputReader
+
 
     // can be overridden
     override fun doActionNoExitCode(args: List<String>) {
@@ -28,33 +40,23 @@ abstract class CommandImpl @JvmOverloads protected constructor(final override va
 
     override val isUserCommand = isUserCommand(name)
 
+
     companion object {
-        @JvmStatic
-        fun overwriteConfig(newConfig: MacrosConfig) {
-            newConfig.let {
-                config = it
-                out = it.outStream
-                err = it.errStream
-                `in` = it.inputReader
-            }
-        }
-
-        @JvmField
-        // have to initialise this first with overwriteConfig
-        protected var config: MacrosConfig = DummyConfig()
-
-        @JvmField
-        protected var out: PrintStream = config.outStream
-        @JvmField
-        protected var err: PrintStream = config.errStream
-        @JvmField
-        protected var `in`: BufferedReader = config.inputReader
-
         // logic for deciding whether a command is user-facing
         @JvmStatic
         fun isUserCommand(name: String): Boolean {
             return !name.startsWith("_")
         }
+
+        private val dummyConfig = DummyConfig()
+
+        @JvmField
+        var defaultConfig: () -> MacrosConfig = { dummyConfig }
+
+        @JvmStatic
+        // TODO this is a hack for now
+        val programName: String = "macros"
+
     }
 
 }

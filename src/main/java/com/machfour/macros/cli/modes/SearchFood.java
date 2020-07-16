@@ -15,7 +15,7 @@ import java.util.*;
 
 public class SearchFood extends CommandImpl {
     private static final String NAME = "search";
-    private static final String USAGE = String.format("Usage: %s %s <keyword>", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <keyword>", getProgramName(), NAME);
 
     public SearchFood() {
         super(NAME, USAGE);

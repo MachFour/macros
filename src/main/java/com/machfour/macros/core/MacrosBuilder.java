@@ -248,6 +248,7 @@ public class MacrosBuilder<M extends MacrosEntity<M>> {
      * Builder object's data may continue to be changed and other objects
      * created after a successful build.
      */
+    @NotNull
     public M build() {
         if (hasAnyInvalidFields()) {
             throw new IllegalStateException("Field values are not all valid");

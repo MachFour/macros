@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Export extends CommandImpl {
     private static final String NAME = "export";
-    private static final String USAGE = String.format("%s %s [output dir]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("%s %s [output dir]", getProgramName(), NAME);
 
     public Export() {
         super(NAME, USAGE);

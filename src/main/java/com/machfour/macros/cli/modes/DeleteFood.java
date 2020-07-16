@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class DeleteFood extends CommandImpl {
     private static final String NAME = "deletefood";
-    private static final String USAGE = String.format("Usage: %s %s <index name 1> [<index name 2>] [...]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index name 1> [<index name 2>] [...]", getProgramName(), NAME);
 
     public DeleteFood() {
         super(NAME, USAGE);

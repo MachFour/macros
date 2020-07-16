@@ -17,7 +17,7 @@ import java.util.List;
 
 public class Restore extends CommandImpl {
     private static final String NAME = "restore";
-    private static final String USAGE = String.format("%s %s [backup dir]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("%s %s [backup dir]", getProgramName(), NAME);
 
     public Restore() {
         super(NAME, USAGE);

@@ -22,7 +22,7 @@ import java.util.List;
 public class Portion extends CommandImpl {
     private static final String NAME = "portion";
     private static final String USAGE =
-            String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", config.getProgramName(), NAME);
+            String.format("Usage: %s %s [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]", getProgramName(), NAME);
 
     public Portion() {
         super(NAME, USAGE);
@@ -65,12 +65,15 @@ public class Portion extends CommandImpl {
                 return 1;
         }
 
-        if (!mealSpec.mealSpecified()) {
-            out.printf("No meal specified, assuming %s on %s\n", mealSpec.name(), DateStamp.prettyPrint(mealSpec.day()));
+        if (!mealSpec.isMealSpecified()) {
+            String name = mealSpec.getName();
+            DateStamp day = mealSpec.getDay();
+            out.printf("No meal specified, assuming %s on %s\n", name, day != null ? DateStamp.prettyPrint(day) : "(invalid day)");
+            //out.println("No meal specified, assuming ${mealSpec.getName} on ${DateStamp.prettyPrint(mealSpec.getDay}");
         }
         mealSpec.process(ds, true);
-        if (mealSpec.error() != null) {
-            err.println(mealSpec.error());
+        if (mealSpec.getError() != null) {
+            err.println(mealSpec.getError());
             return 1;
         }
 
@@ -80,7 +83,7 @@ public class Portion extends CommandImpl {
             specs.add(FileParser.makefoodPortionSpecFromLine(args.get(index)));
         }
 
-        return process(mealSpec.processedObject(), specs, ds, out, err);
+        return process(mealSpec.getProcessedObject(), specs, ds, out, err);
 
     }
 
@@ -93,6 +96,8 @@ public class Portion extends CommandImpl {
         FoodPortionSpec spec = specs.get(0);
 
         Food f;
+
+        assert spec.foodIndexName != null;
 
         try {
             f = FoodQueries.getFoodByIndexName(ds, spec.foodIndexName);

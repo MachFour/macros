@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Recipe extends CommandImpl {
     private static final String NAME = "recipe";
-    private static final String USAGE = String.format("Usage: %s %s <recipes.json>", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <recipes.json>", getProgramName(), NAME);
 
     public Recipe() {
         super(NAME, USAGE);
@@ -34,7 +34,7 @@ public class Recipe extends CommandImpl {
             return;
         }
 
-        MacrosDataSource ds =  config.getDataSourceInstance();
+        MacrosDataSource ds = config.getDataSourceInstance();
         List<CompositeFood> recipes = new ArrayList<>();
 
         try (Reader jsonReader = new FileReader(args.get(1))) {

@@ -24,7 +24,7 @@ import java.util.List;
 
 public class Edit extends CommandImpl {
     private static final String NAME = "edit";
-    private static final String USAGE = String.format("Usage: %s %s [meal [day]]\n", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s [meal [day]]\n", getProgramName(), NAME);
 
     public Edit() {
         super(NAME, USAGE);
@@ -45,15 +45,15 @@ public class Edit extends CommandImpl {
         MealSpec mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg);
         mealSpec.process(ds, true);
 
-        if (mealSpec.error() != null) {
-            err.println(mealSpec.error());
+        if (mealSpec.getError() != null) {
+            err.println(mealSpec.getError());
             return 1;
         }
-        if (mealSpec.created()) {
-            String createMsg = String.format("Created meal '%s' on %s", mealSpec.name(), mealSpec.day());
+        if (mealSpec.isCreated()) {
+            String createMsg = String.format("Created meal '%s' on %s", mealSpec.getName(), mealSpec.getDay());
             out.println(createMsg);
         }
-        Meal toEdit = mealSpec.processedObject();
+        Meal toEdit = mealSpec.getProcessedObject();
         return startEditor(ds, toEdit.getId());
     }
 

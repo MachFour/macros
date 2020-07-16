@@ -13,7 +13,7 @@ import java.util.List;
 
 public class AllFoods extends CommandImpl {
     private static final String NAME = "allfoods";
-    private static final String USAGE = String.format("Usage: %s %s\n", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s\n", getProgramName(), NAME);
 
     public AllFoods() {
         super(NAME, USAGE);

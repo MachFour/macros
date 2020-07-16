@@ -18,7 +18,7 @@ import static com.machfour.macros.util.MiscUtils.toList;
 
 public class Import extends CommandImpl {
     private static final String NAME = "import";
-    private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("%s %s [--clear] [--norecipes] [--nofoods]", getProgramName(), NAME);
 
     public Import() {
         super(NAME, USAGE);

@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class Total extends CommandImpl {
     private static final String NAME = "total";
-    private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s (<meal name>|--all) [<day>] [-v|--verbose] [--per100]", getProgramName(), NAME);
 
     public Total() {
         super(NAME, USAGE);
@@ -77,18 +77,18 @@ public class Total extends CommandImpl {
         if (!allMeals) {
             // total for specific meal
             mealSpec.process(ds, false);
-            if (mealSpec.error() != null) {
-                err.println(mealSpec.error());
+            if (mealSpec.getError() != null) {
+                err.println(mealSpec.getError());
                 return 1;
             }
             out.println();
-            MealPrinter.printMeal(mealSpec.processedObject(), verbose, out);
+            MealPrinter.printMeal(mealSpec.getProcessedObject(), verbose, out);
 
         } else {
             try {
-                Map<Long, Meal> mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.day());
+                Map<Long, Meal> mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.getDay());
                 if (mealsForDay.isEmpty()) {
-                    out.println("No meals recorded on " + DateStamp.prettyPrint(mealSpec.day()));
+                    out.println("No meals recorded on " + DateStamp.prettyPrint(mealSpec.getDay()));
                 } else {
                     MealPrinter.printMeals(mealsForDay.values(), out, verbose, per100, true);
                 }

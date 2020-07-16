@@ -14,13 +14,10 @@ object PrintFormatting {
     const val shortDataWidth = 4
     const val longDataWidth = 6
 
-    @JvmStatic
     fun formatQuantityAsVerbose(qty: Double? = null, verbose: Boolean = false): String {
         return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, withDp = verbose)
     }
 
-    @JvmOverloads
-    @JvmStatic
     fun formatQuantity(
             qty: Double? = null,
             unit: Unit? = null,
@@ -51,8 +48,6 @@ object PrintFormatting {
 
     // Converts the given data field into a string. Adds an asterisk if the data is missing.
     // Returns null if the input nutrition data is null
-    @JvmOverloads
-    @JvmStatic
     fun formatNutrnData(nd: NutritionData?, field: Column<NutritionData, Double>, withUnit: Boolean = false): String? {
         if (nd == null) {
             return null
@@ -63,7 +58,7 @@ object PrintFormatting {
         } else {
             //QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitStringForNutrient(field));
             // TODO
-            val unit = DefaultColumnStrings.getInstance().getUnit(field)
+            val unit = DefaultColumnStrings.instance.getUnit(field)
             formatQuantity(nd.amountOf(field), unit, width = 0, unitWidth = 0)
         }
     }
@@ -83,7 +78,6 @@ object PrintFormatting {
     )
 
     // for formatting nutrition data in food details
-    @JvmStatic
     fun foodDetailsFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
         nd ?: return null
 
@@ -96,8 +90,7 @@ object PrintFormatting {
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)
-    @JvmStatic
-    fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData?, Double?>, ndStrings: ColumnStrings): String? {
+    fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
         nd ?: return null
 
         val unit = ndStrings.getUnit(field)

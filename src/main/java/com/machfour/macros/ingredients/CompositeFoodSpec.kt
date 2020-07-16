@@ -4,7 +4,7 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.util.StringJoiner
 
-internal class CompositeFoodSpec(val indexName: String, val name: String, variety: String?, notes: String?) {
+class CompositeFoodSpec(val indexName: String, val name: String, variety: String?, notes: String?) {
     val variety: String?
     val notes: String?
     private val ingredients: MutableList<IngredientSpec> = ArrayList()

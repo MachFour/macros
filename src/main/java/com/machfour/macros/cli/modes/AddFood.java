@@ -20,7 +20,7 @@ import java.util.List;
 
 public class AddFood extends CommandImpl {
     private static final String NAME = "addfood";
-    private static final String USAGE = String.format("Usage: %s %s <index name>\n", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index name>\n", getProgramName(), NAME);
 
     /*
      * Ensures the given index name is not already in the database; returns true if it is not present.
@@ -45,12 +45,12 @@ public class AddFood extends CommandImpl {
             return -1;
         }
         ArgParsing.Result indexNameArg = ArgParsing.findArgument(args, 1);
-        if (indexNameArg.status() != ArgParsing.Status.ARG_FOUND) {
+        if (indexNameArg.getStatus() != ArgParsing.Status.ARG_FOUND) {
             out.print(getUsage());
             return -1;
         }
 
-        String indexName = indexNameArg.argument();
+        String indexName = indexNameArg.getArgument();
         MacrosDataSource ds = config.getDataSourceInstance();
 
         try {

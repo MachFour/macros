@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Init extends CommandImpl {
     private static final String NAME = "init";
-    private static final String USAGE = String.format("%s %s", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("%s %s", getProgramName(), NAME);
 
     public Init() {
         super(NAME, USAGE);

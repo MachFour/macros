@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class Read extends CommandImpl {
     private static final String NAME = "read";
-    private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--per100]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <file> [-v | --verbose] [--per100]", getProgramName(), NAME);
 
     public Read() {
         super(NAME, USAGE);

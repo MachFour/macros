@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class Meals extends CommandImpl {
     private static final String NAME = "meals";
-    private static final String USAGE = String.format("Usage: %s %s [day]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s [day]", getProgramName(), NAME);
 
     public Meals() {
         super(NAME, USAGE);
@@ -34,7 +34,7 @@ public class Meals extends CommandImpl {
         MacrosDataSource ds =  config.getDataSourceInstance();
         ArgParsing.Result dateArgument = ArgParsing.findArgument(args, 1);
         DateStamp d;
-        switch (dateArgument.status()) {
+        switch (dateArgument.getStatus()) {
             case NOT_FOUND:
                 d = DateStamp.currentDate();
                 break;
@@ -42,10 +42,10 @@ public class Meals extends CommandImpl {
                 out.println("-d option requires a day specified");
                 return 1;
             case ARG_FOUND:
-                d = ArgParsing.dayStringParse(dateArgument.argument());
+                d = ArgParsing.dayStringParse(dateArgument.getArgument());
                 break;
             default:
-                out.println("Invalid date format: '" + dateArgument.argument() + "'.");
+                out.println("Invalid date format: '" + dateArgument.getArgument() + "'.");
                 return 1;
         }
         if (d != null) {

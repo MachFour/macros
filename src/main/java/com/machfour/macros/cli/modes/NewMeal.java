@@ -12,7 +12,7 @@ import java.util.List;
 
 public class NewMeal extends CommandImpl {
     private static final String NAME = "newmeal";
-    private static final String USAGE = String.format("Usage: %s %s <meal name> [<day>]", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <meal name> [<day>]", getProgramName(), NAME);
 
     public NewMeal() {
         super(NAME, USAGE);
@@ -35,13 +35,13 @@ public class NewMeal extends CommandImpl {
 
         mealSpec.process(ds, true);
 
-        if (mealSpec.error() != null) {
-            out.println(mealSpec.error());
+        if (mealSpec.getError() != null) {
+            out.println(mealSpec.getError());
             return;
         }
-        if (mealSpec.created()) {
-            String prettyDay = DateStamp.prettyPrint(mealSpec.day());
-            out.println(String.format("Created meal '%s' on %s", mealSpec.name(), prettyDay));
+        if (mealSpec.isCreated()) {
+            String prettyDay = DateStamp.prettyPrint(mealSpec.getDay());
+            out.println(String.format("Created meal '%s' on %s", mealSpec.getName(), prettyDay));
         }
         //Meal toEdit = mealSpec.processedObject();
     }

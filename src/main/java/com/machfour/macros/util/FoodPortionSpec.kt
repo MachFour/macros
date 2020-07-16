@@ -2,7 +2,6 @@ package com.machfour.macros.util
 
 import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.QtyUnit
-import java.util.*
 
 // records intermediate data during parsing of a food portion spec
 class FoodPortionSpec {
@@ -52,6 +51,6 @@ class FoodPortionSpec {
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(foodIndexName, isServingMode, quantity, unit, servingName, servingCount)
+        return arrayOf(foodIndexName, isServingMode, quantity, unit, servingName, servingCount).contentHashCode()
     }
 }

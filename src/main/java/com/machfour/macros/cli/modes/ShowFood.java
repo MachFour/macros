@@ -22,7 +22,7 @@ import java.util.Objects;
 
 public class ShowFood extends CommandImpl {
     private static final String NAME = "show";
-    private static final String USAGE = String.format("Usage: %s %s <index_name>", config.getProgramName(), NAME);
+    private static final String USAGE = String.format("Usage: %s %s <index_name>", getProgramName(), NAME);
 
     public ShowFood() {
         super(NAME, USAGE);

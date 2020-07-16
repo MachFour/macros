@@ -2,30 +2,9 @@
 
 unset _JAVA_OPTIONS
 DEVEL_DIR="/home/max/devel/macros-kotlin"
-BUILD_PREFIX="/build/classes"
+ARTIFACT_DIR="${DEVEL_DIR}/out/artifacts"
 LIB_DIR="${DEVEL_DIR}/libs"
 
-#CLASSPATH="${DEVEL_DIR}${BUILD_PREFIX}/kotlin/main:${DEVEL_DIR}${BUILD_PREFIX}/java/main"
-
-declare -a LIBRARIES
-# these are .jar files located in lib dir that must be included
-LIBRARIES=(
-	'sqlite-jdbc-3.30.1'
-	'lanterna-3.1.0-alpha1'
-	)
-
-for lib in ${LIBRARIES[@]}; do
-	CLASSPATH+=":${LIB_DIR}/${lib}.jar"
-done
-
-# these are included in the jar below
-#	'super-csv-2.4.0'
-#	'gson-2.8.5'
-#   'kotlinx-collections-immutable"
-#	'kotlin-stdlib'
-#	'kotlin-stdlib-jdk7'
-#	'kotlin-stdlib-jdk8'
-CLASSPATH+=":out/artifacts/macros_kotlin_main_jar/macros-kotlin.main.jar"
 
 
 #PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
@@ -43,8 +22,8 @@ MAINCLASS=com.machfour.macros.linux.LinuxMain
 #     -XX:+LogTouchedMethods \
 #     -XX:+PrintTouchedMethodsAtExit 
 
-archlinux-java-run --min 13 -- \
-    -enableassertions -cp ${CLASSPATH} \
+archlinux-java-run --min 13 -- -enableassertions \
+	-cp "${ARTIFACT_DIR}/macros_kotlin_main_jar/macros-kotlin.main.jar" \
     -XX:+UnlockExperimentalVMOptions \
     -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
     ${MAINCLASS} "$@"

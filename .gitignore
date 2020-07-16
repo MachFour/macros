@@ -1,8 +1,10 @@
 /build/
 /libs/
+/out/
 /test/
 .gradle/
 .idea/workspace.xml
+
 
 /gradle/wrapper/gradle-wrapper.jar
 

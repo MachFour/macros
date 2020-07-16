@@ -14,26 +14,23 @@ repositories {
 dependencies {
     // Kotlin JVM standard library
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
     // immutable collections
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:0.3.2"
-
     // CSV support
     implementation "net.sf.supercsv:super-csv:2.4.0"
     // Nullable annotations in Java
     implementation "org.jetbrains:annotations:19.0.0"
     // JSON
     implementation "com.google.code.gson:gson:2.8.6"
-
     // for lanterna and sqlite-jdbc
     implementation fileTree(dir: 'libs', include: '*.jar')
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    // testing
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.6.2"
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }

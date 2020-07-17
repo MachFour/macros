@@ -123,7 +123,7 @@ object IngredientsParser {
     // to save the object tree correctly, use the method saveCompositeFoods(compositeFoods, ds)
     @JvmStatic
     @Throws(SQLException::class)
-    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDataSource?): List<CompositeFood> {
+    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDataSource): List<CompositeFood> {
         val indexNames = extractIngredientIndexNames(parseResult)
         // for invalid index names, the map won't have an entry
         val indexNameMap = FoodQueries.getFoodIdsByIndexName(ds, indexNames)

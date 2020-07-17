@@ -44,9 +44,10 @@ object DatabaseUtils {
 
     // " WHERE column1 = ?"
     // " WHERE column1 IN (?, ?, ?, ...?)"
-    // if nkeys is <= 0, no where string will be formed, so all objects will be returned.
+    // if nkeys is 0, no where string will be formed, so all objects will be returned.
+    // exception thrown if nValues < 0
     private fun makeWhereString(whereColumn: Column<*, *>, nValues: Int): String {
-        assert(nValues >= 0)
+        require(nValues >= 0)
         if (nValues == 0) {
             return ""
         }
@@ -66,13 +67,11 @@ object DatabaseUtils {
         }
     }
 
-    @JvmStatic
     fun <M> deleteWhereTemplate(table: Table<M>, whereColumn: Column<M, *>, nValues: Int): String {
         return deleteAllTemplate(table) + makeWhereString(whereColumn, nValues)
     }
 
     // delete all!
-    @JvmStatic
     fun <M> deleteAllTemplate(table: Table<M>): String {
         return "DELETE FROM " + table.name
     }
@@ -92,27 +91,22 @@ object DatabaseUtils {
         }
     }
 
-    @JvmStatic
     fun <M> selectLikeTemplate(t: Table<M>, selectColumn: Column<M, *>, likeColumns: List<Column<M, String>>): String {
         return selectTemplate(t, listOf(selectColumn), makeWhereLikeString(likeColumns), false)
     }
 
-    @JvmStatic
     fun <M> selectTemplate(t: Table<M>, selectColumn: Column<M, *>, whereColumn: Column<M, *>, nValues: Int, distinct: Boolean): String {
         return selectTemplate(t, listOf(selectColumn), whereColumn, nValues, distinct)
     }
 
-    @JvmStatic
     fun <M> selectTemplate(t: Table<M>, selectColumn: Column<M, *>, whereColumn: Column<M, *>, nValues: Int): String {
         return selectTemplate(t, listOf(selectColumn), whereColumn, nValues, false)
     }
 
-    @JvmStatic
     fun <M> selectTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, whereColumn: Column<M, *>, nValues: Int, distinct: Boolean): String {
         return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct)
     }
 
-    @JvmStatic
     fun <M> selectTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, whereString: String, distinct: Boolean): String {
         val words: MutableList<String> = ArrayList(6)
         words.add("SELECT")
@@ -127,13 +121,11 @@ object DatabaseUtils {
     }
 
     // columns must be a subset of table.columns()
-    @JvmStatic
     fun <M> insertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
         val placeholders = makeInsertPlaceholders(orderedColumns)
         return String.format("INSERT INTO %s (%s) VALUES (%s)", t.name, joinColumns(orderedColumns), placeholders)
     }
 
-    @JvmStatic
     fun <M, J> updateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
         val columnPlaceholders = makeUpdatePlaceholders(orderedColumns)
         val whereString = makeWhereString(keyCol, 1)
@@ -141,14 +133,12 @@ object DatabaseUtils {
         return "UPDATE ${t.name} SET $columnPlaceholders $whereString"
     }
 
-    @JvmStatic
     fun <J> makeBindableStrings(objects: Collection<J>, type: MacrosType<J>): Array<String> {
         return objects.map { type.toSqlString(it) }.toTypedArray<String>()
     }
 
     // for use with Android SQLite implementation
     // The Object array is only allowed to contain String, Long, Double, byte[] and null
-    @JvmStatic
     fun <M> makeBindableObjects(data: ColumnData<M>, orderedColumns: List<Column<M, *>>): Array<Any?> {
         return orderedColumns.map { data.getAsRaw(it) }.toTypedArray<Any?>()
     }
@@ -182,8 +172,6 @@ object DatabaseUtils {
         return statements
     }
 
-    @JvmStatic
-    @JvmOverloads
     @Throws(IOException::class)
     fun createStatements(r: Reader, linesep: String = " "): String {
         val trimmedAndDecommented: MutableList<String> = ArrayList(32)
@@ -210,7 +198,6 @@ object DatabaseUtils {
         return StringJoiner.of(trimmedAndDecommented).sep(linesep).join()
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M, J> rethrowAsSqlException(rawValue: Any?, c: Column<M, J>) {
         throw SQLException("Could not convert value '$rawValue' for column ${c.table}.${c.sqlName} (type ${c.type})")

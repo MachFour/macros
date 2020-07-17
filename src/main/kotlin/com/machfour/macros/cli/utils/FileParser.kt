@@ -17,7 +17,7 @@ import java.sql.SQLException
 import java.util.regex.Pattern
 
 class FileParser {
-    private val errorLines: MutableMap<String, String?> = LinkedHashMap() // LinkedHashMap maintains insertion order
+    private val errorLines: MutableMap<String, String> = LinkedHashMap() // LinkedHashMap maintains insertion order
 
     fun getErrorLines(): Map<String, String?> {
         return errorLines.toMap()
@@ -46,7 +46,7 @@ class FileParser {
                     val m = makeMealSpec(mealTitle.group("mealdesc"))
                     currentFpSpecs = ArrayList()
                     specMap[m] = currentFpSpecs
-                } else if (!line.isEmpty() && !line.startsWith("#")) {
+                } else if (line.isNotEmpty() && !line.startsWith("#")) {
                     // ignore 'comment lines' and treat anything else as a FoodPortionSpec.
                     // make a new meal if necessary
                     if (currentFpSpecs == null) {
@@ -62,15 +62,9 @@ class FileParser {
             return specMap
         }
 
-        private fun getAllIndexNames(allFpSpecs: Collection<List<FoodPortionSpec>>): Set<String?> {
-            // assume around 8 food portions per list
-            val foodIndexNames: MutableSet<String?> = HashSet(8 * allFpSpecs.size)
-            for (portionSpecs in allFpSpecs) {
-                for (fps in portionSpecs) {
-                    foodIndexNames.add(fps.foodIndexName)
-                }
-            }
-            return foodIndexNames
+        private fun getAllIndexNames(allFpSpecs: Collection<List<FoodPortionSpec>>): Set<String> {
+            val foodIndexNames = allFpSpecs.flatMap { it.map { spec -> spec.foodIndexName } }
+            return foodIndexNames.toSet()
         }
 
         // like Files.readAllLines() but for a reader input.
@@ -124,7 +118,7 @@ class FileParser {
             fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit!!.abbr)
             fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
             val fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW)
-            fp.setFood(f)
+            fp.food = f
             if (s != null) {
                 fp.setServing(s)
             }
@@ -157,71 +151,81 @@ class FileParser {
             for (i in tokens.indices) {
                 tokens[i] = tokens[i].trim { it <= ' ' }
             }
-            val spec = FoodPortionSpec()
-            spec.foodIndexName = tokens[0]
+            val indexName = tokens[0]
+            var quantity = 0.0
+            var unit: QtyUnit? = null
+            var servingCount = 0.0
+            var servingName: String? = null
+            var isServingMode = false
+            var error: String? = null
+
             // have to use run block to be able to escape from 'when' at arbitrary points (using return@run
             run {
                 when (tokens.size) {
                     1 -> {
                         // 1 of default serving
-                        spec.isServingMode = true
-                        spec.servingCount = 1.0
-                        spec.servingName = ""
+                        isServingMode = true
+                        servingCount = 1.0
+                        servingName = ""
                     }
                     2 -> {
                         // vanilla food and quantity, with optional unit, defaulting to grams
-                        spec.isServingMode = false
+                        isServingMode = false
                         val quantityMatch = quantityAndUnitPattern.matcher(tokens[1])
                         if (!quantityMatch.find()) {
                             // could not understand anything
-                            spec.error = "invalid quantity or unit"
+                            error = "invalid quantity or unit"
                             return@run // 'break from when'
                         }
                         try {
-                            spec.quantity = quantityMatch.group("qty").toDouble()
+                            quantity = quantityMatch.group("qty").toDouble()
                         } catch (e: NumberFormatException) {
                             // invalid quantity
-                            spec.error = "invalid quantity"
+                            error = "invalid quantity"
                             return@run // 'break from when'
                         }
                         val unitString = quantityMatch.group("unit")
                         if (unitString == null) {
-                            spec.unit = QtyUnits.GRAMS
+                            unit = QtyUnits.GRAMS
                         } else {
-                            spec.unit = QtyUnits.fromAbbreviationNoThrow(unitString)
-                            if (spec.unit == null) {
+                            val matchUnit = QtyUnits.fromAbbreviationNoThrow(unitString)
+                            if (matchUnit != null) {
+                                unit = matchUnit
+                            } else {
                                 // invalid unit
-                                spec.error = "unrecognised unit"
+                                error = "unrecognised unit"
                                 return@run // 'break from when'
                             }
                         }
                     }
                     3 -> {
-                        spec.isServingMode = true
-                        spec.servingName = tokens[1]
+                        isServingMode = true
+                        servingName = tokens[1]
                         // get quantity, which defaults to 1 of serving if not included
                         val servingCountStr = tokens[2]
                         if (servingCountStr.isEmpty()) {
-                            spec.servingCount = 1.0
+                            servingCount = 1.0
                         } else {
                             val servingCountMatch = servingCountPattern.matcher(tokens[2])
                             if (servingCountMatch.find()) {
                                 try {
-                                    spec.servingCount = servingCountMatch.group("qty").toDouble()
+                                    servingCount = servingCountMatch.group("qty").toDouble()
                                 } catch (e: NumberFormatException) {
-                                    spec.error = "invalid serving count"
+                                    error = "invalid serving count"
                                     return@run // 'break from when'
                                 }
                             } else {
-                                spec.error = "invalid serving count"
+                                error = "invalid serving count"
                                 return@run // 'break from when'
                             }
                         }
                     }
-                    else -> spec.error = "too many commas"
+                    else -> {
+                        error = "too many commas"
+                    }
                 }
             }
-            return spec
+            return FoodPortionSpec(indexName, quantity, unit, servingCount, servingName, isServingMode, error)
         }
 
         private fun makeMeal(description: String, day: DateStamp): Meal {
@@ -234,7 +238,7 @@ class FileParser {
 
     // make sure to close the reader afterwards
     @Throws(IOException::class, SQLException::class)
-    fun parseFile(fileReader: Reader, db: MacrosDataSource?): List<Meal> {
+    fun parseFile(fileReader: Reader, db: MacrosDataSource): List<Meal> {
         val fileLines = readAllLines(fileReader)
         // also gets list of index names to retrieve
         val mealSpecs = createSpecFromLines(fileLines)
@@ -249,8 +253,8 @@ class FileParser {
             for (fps in value) {
                 if (fps.error != null) {
                     // it was an error, log and then ignore
-                    errorLines[fileLines[fps.lineIdx]] = fps.error
-                } else if (fps.foodIndexName == null || !foods.containsKey(fps.foodIndexName)) {
+                    errorLines[fileLines[fps.lineIdx]] = fps.error!!
+                } else if (!foods.containsKey(fps.foodIndexName)) {
                     // no food found
                     val errorMsg = "Unrecognised food index name: '${fps.foodIndexName}'"
                     errorLines[fileLines[fps.lineIdx]] = errorMsg
@@ -260,7 +264,7 @@ class FileParser {
                     // was there a DB error?
                     if (fps.createdObject == null) {
                         assert(fps.error != null) { "No FoodPortion created but no error message" }
-                        errorLines[fileLines[fps.lineIdx]] = fps.error
+                        errorLines[fileLines[fps.lineIdx]] = fps.error!!
                     } else {
                         // finally!
                         m.addFoodPortion(fps.createdObject!!)

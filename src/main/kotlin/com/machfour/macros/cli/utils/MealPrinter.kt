@@ -118,7 +118,7 @@ object MealPrinter {
         out.println(rowSeparator)
         // now we get to the actual data
         val dataRows: MutableList<List<String>> = ArrayList()
-        for (fp in meal.foodPortions) {
+        for (fp in meal.getFoodPortions()) {
             val name = fp.food.mediumName
             val nd = fp.nutritionData
             dataRows.add(nutritionDataToRow(name, nd, fp.quantity, fp.qtyUnit, verbose))
@@ -143,7 +143,7 @@ object MealPrinter {
         out.println("============")
         out.println()
         for (m in meals) {
-            if (m.foodPortions.isEmpty()) {
+            if (m.getFoodPortions().isEmpty()) {
                 out.println("Meal ${m.name} has no recorded data")
             } else {
                 printMeal(m, verbose, out)

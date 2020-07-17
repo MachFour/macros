@@ -103,7 +103,7 @@ object IngredientsParser {
         builder.setField(Schema.FoodTable.NOTES, spec.notes)
         builder.setField(Schema.FoodTable.CATEGORY, "recipes") //TODO
         // setting this means that Food.factory().construct() will create a CompositeFood
-        builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.getName())
+        builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
         if (builder.hasAnyInvalidFields()) {
             throw SchemaViolation(builder.allErrors)
             // throw SchemaViolation
@@ -135,9 +135,9 @@ object IngredientsParser {
 
         // go through and create object links so that we can have a proper object tree without having to save to DB first
         for (cf in results) {
-            for (i in cf.ingredients) {
-                i.compositeFood = cf
-                i.ingredientFood = ingredientFoods[i.ingredientFoodId]
+            for (i in cf.getIngredients()) {
+                i.initCompositeFood(cf)
+                i.initIngredientFood(ingredientFoods.getValue(i.ingredientFoodId))
             }
         }
         return results
@@ -169,7 +169,7 @@ object IngredientsParser {
 
             // Now we can edit the ingredients to have the ID
             // TODO use completeFk function
-            val newIngredients = addCompositeFoodId(cf.ingredients, id)
+            val newIngredients = addCompositeFoodId(cf.getIngredients(), id)
             // here we go!
             Queries.insertObjects(ds, newIngredients, false)
 

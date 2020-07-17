@@ -118,9 +118,9 @@ class FileParser {
             fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit!!.abbr)
             fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
             val fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW)
-            fp.food = f
+            fp.initFood(f)
             if (s != null) {
-                fp.setServing(s)
+                fp.initServing(s)
             }
             fps.createdObject = fp
         }

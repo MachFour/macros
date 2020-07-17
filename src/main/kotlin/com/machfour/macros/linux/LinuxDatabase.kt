@@ -110,7 +110,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
 
     @Throws(SQLException::class, IOException::class)
     override fun initDb() {
-        val getSqlFromFile : (File) -> String = { path -> FileReader(path).use { DatabaseUtils.createStatements(it) } }
+        val getSqlFromFile : (File) -> String = { FileReader(it).use { reader -> DatabaseUtils.createStatements(reader) } }
         val c = connection
         try {
             c.createStatement().use { s ->
@@ -375,7 +375,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
             return 0
         }
         var saved = 0
-        val table = objects.iterator().next().getTable()
+        val table = objects.iterator().next().table
         val c = connection
         val prevAutoCommit = c.autoCommit
         c.autoCommit = false

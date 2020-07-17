@@ -143,12 +143,12 @@ object DatabaseUtils {
         return orderedColumns.map { data.getAsRaw(it) }.toTypedArray<Any?>()
     }
 
-    @JvmStatic
     fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
         val idMap: MutableMap<Long, M> = HashMap(objects.size, 1.0f)
-        for (m in objects) {
-            assert(!idMap.containsKey(m.id)) { "Two objects had the same ID" }
-            idMap[m.id] = m
+        objects.forEach {
+            val id : Long = it.id
+            require(!idMap.containsKey(id)) { "Two objects had the same ID" }
+            idMap[id] = it
         }
         return idMap
     }

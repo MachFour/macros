@@ -15,7 +15,7 @@ import java.util.*
 object MealQueries {
     @Throws(SQLException::class)
     fun saveFoodPortions(ds: MacrosDataSource, m: Meal) {
-        for (fp in m.foodPortions) {
+        for (fp in m.getFoodPortions()) {
             if (fp.objectSource != ObjectSource.DATABASE) {
                 Queries.saveObject(ds, fp)
             }
@@ -67,7 +67,7 @@ object MealQueries {
     @JvmStatic
     @Throws(SQLException::class)
     fun getMealIdsForDay(ds: MacrosDataSource, day: DateStamp): List<Long> {
-        val ids = Queries.selectColumn(ds, Schema.MealTable.instance(), Schema.MealTable.ID, Schema.MealTable.DAY, listOf(day))
+        val ids = Queries.selectColumn(ds, Schema.MealTable.instance, Schema.MealTable.ID, Schema.MealTable.DAY, listOf(day))
         return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
 
         // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???

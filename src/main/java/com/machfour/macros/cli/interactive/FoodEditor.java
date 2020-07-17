@@ -33,8 +33,8 @@ import java.util.Map;
 
 public class FoodEditor {
     private static final int NUM_ACTIONS = Action.values().length;
-    private static final Collection<Column<Food, ?>> FOOD_TABLE_COLUMNS = Food.table().getColumns();
-    private static final Collection<Column<NutritionData, ?>> ND_TABLE_COLUMNS = NutritionData.table().getColumns();
+    private static final Collection<Column<Food, ?>> FOOD_TABLE_COLUMNS = Food.Companion.table().getColumns();
+    private static final Collection<Column<NutritionData, ?>> ND_TABLE_COLUMNS = NutritionData.Companion.table().getColumns();
 
     // Layout parameters
     private static final int actionPaddingWidth = 18;

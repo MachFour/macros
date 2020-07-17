@@ -16,7 +16,7 @@ interface Column<M, J> {
     }
 
     val sqlName: String
-    val defaultData: J
+    val defaultData: J?
     val type: MacrosType<J>
     val table: Table<M>
 

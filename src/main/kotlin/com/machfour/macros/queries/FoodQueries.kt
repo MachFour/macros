@@ -93,12 +93,14 @@ object FoodQueries {
     @JvmStatic
     @Throws(SQLException::class)
     fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
-        val foods = QueryHelpers.getRawObjectsByKeys(ds, Schema.FoodTable.instance(), Schema.FoodTable.INDEX_NAME, indexNames)
+        val foods = QueryHelpers.getRawObjectsByKeys(ds, Schema.FoodTable.instance, Schema.FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
         QueryHelpers.processRawFoodMap(ds, idMap)
         return foods
-    } /*
+    }
+
+    /*
      * FoodTable search done by substring matching the searchString against any of the given columns
      * Use prefixOnly to only allow matches at the start of the matching string.
      */

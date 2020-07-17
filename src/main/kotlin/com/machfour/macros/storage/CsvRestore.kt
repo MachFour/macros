@@ -1,9 +1,6 @@
 package com.machfour.macros.storage
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Table
+import com.machfour.macros.core.*
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.queries.Queries
 import java.io.IOException
@@ -33,7 +30,7 @@ object CsvRestore {
             // iterate over lines in CSV
             var csvRow: Map<String, String>?
             while (mapReader.read(*header).also { csvRow = it } != null) {
-                val data = CsvImport.extractData(csvRow, table)
+                val data = CsvImport.extractData(csvRow!!, table)
                 objectList += table.factory.construct(data, ObjectSource.RESTORE)
             }
         }

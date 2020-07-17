@@ -60,11 +60,11 @@ internal object QueryHelpers {
         for (i in ingredientMap.values) {
             // applyFoodsToRawIngredients(ingredients, servings
             val f = ingredientFoods.getValue(i.ingredientFoodId)
-            i.ingredientFood = f
+            i.initIngredientFood(f)
             // applyServingsToRawIngredients(ingredients, servings)
             i.servingId?.let { id ->
                 val s = ingredientServings.getValue(id)
-                i.setServing(s)
+                i.initServing(s)
             }
         }
     }
@@ -110,13 +110,9 @@ internal object QueryHelpers {
 
     private fun applyServingsToRawFoods(foodMap: Map<Long, Food>, servingMap: Map<Long, Serving>) {
         for (s in servingMap.values) {
-            // QtyUnit setup
-            val unit = QtyUnits.fromAbbreviationNoThrow(s.qtyUnitAbbr)
-                    ?: error("No quantity unit exists with abbreviation '" + s.qtyUnitAbbr + "'")
-            s.qtyUnit = unit
             // this query should never fail, due to database constraints
             val f = foodMap.getValue(s.foodId)
-            s.food = f
+            s.initFood(f)
             f.addServing(s)
         }
     }
@@ -126,7 +122,7 @@ internal object QueryHelpers {
             // this lookup should never fail, due to database constraints
             val f = foodMap[nd.foodId]!!
             nd.food = f
-            f.nutritionData = nd
+            f.setNutritionData(nd)
         }
     }
 
@@ -134,8 +130,8 @@ internal object QueryHelpers {
     private fun applyIngredientsToRawFoods(foodMap: Map<Long, Food>, ingredientMap: Map<Long, Ingredient>) {
         for (i in ingredientMap.values) {
             val f = foodMap[i.compositeFoodId]
-            require(f is CompositeFood && f.getFoodType() == FoodType.COMPOSITE)
-            i.compositeFood = f
+            require(f is CompositeFood && f.foodType == FoodType.COMPOSITE)
+            i.initCompositeFood(f)
             f.addIngredient(i)
         }
     }
@@ -143,8 +139,8 @@ internal object QueryHelpers {
     private fun applyFoodCategoriesToRawFoods(foodMap: Map<Long, Food>, categories: Map<String, FoodCategory>) {
         for (f in foodMap.values) {
             val categoryName = f.getData(Schema.FoodTable.CATEGORY)
-            val c = categories[categoryName]
-            f.foodCategory = c!!
+            val c = categories[categoryName]!!
+            f.setFoodCategory(c)
         }
     }
 
@@ -161,13 +157,13 @@ internal object QueryHelpers {
             val foodPortions = getRawObjectsByIds(ds, FoodPortion.table(), foodPortionIds)
             for (fp in foodPortions.values) {
                 val portionFood = foodMap.getValue(fp.foodId)
-                fp.food = portionFood
+                fp.initFood(portionFood)
                 fp.servingId?.let {
                     val serving = portionFood.getServingById(it)
                             ?: error("Serving specified by FoodPortion not found in its food!")
-                    fp.setServing(serving)
+                    fp.initServing(serving)
                 }
-                fp.meal = meal
+                fp.initMeal(meal)
                 meal.addFoodPortion(fp)
             }
         }

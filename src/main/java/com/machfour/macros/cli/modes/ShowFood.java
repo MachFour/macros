@@ -65,7 +65,7 @@ public class ShowFood extends CommandImpl {
         out.printf("Notes:         %s\n", Objects.toString(f.getNotes(), "(no notes)"));
         out.printf("Category:      %s\n", f.getFoodCategory());
         out.println();
-        out.printf("Type:          %s\n", f.getFoodType().getName());
+        out.printf("Type:          %s\n", f.getFoodType().getNiceName());
         out.printf("Created on:    %s\n", dateFormat.format(f.getCreateInstant()));
         out.printf("Last modified: %s\n", dateFormat.format(f.getModifyInstant()));
     }

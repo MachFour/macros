@@ -44,7 +44,7 @@ object Validations {
     class Integral : Validation {
         override fun <M> validate(stringValues: Map<Column<M, *>, String?>, field: Column<M, *>): Boolean {
             return try {
-                java.lang.Long.valueOf(stringValues[field])
+                stringValues[field]?.toLong() ?: return false
                 true
             } catch (e: NumberFormatException) {
                 // allow blank strings, since those should be validated by REQUIRED_FIELD

@@ -15,7 +15,7 @@ import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
 
-internal class IngredientsParserTest {
+class IngredientsParserTest {
     companion object {
         private const val TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
@@ -24,7 +24,7 @@ internal class IngredientsParserTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.getName()))
+                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
                 db.clearTable(Ingredient.table())
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")

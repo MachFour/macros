@@ -131,11 +131,11 @@ class MacrosDataCache private constructor(private val upstream: MacrosDataSource
         when (obj) {
             is Food -> {
                 allFoodsNeedsRefresh = true
-                unCache(obj.id, FoodTable.instance())
+                unCache(obj.id, FoodTable.instance)
             }
-            is Meal -> unCache(obj.id, MealTable.instance())
-            is FoodPortion -> unCache(obj.mealId, MealTable.instance())
-            is Serving -> unCache(obj.foodId, FoodTable.instance())
+            is Meal -> unCache(obj.id, MealTable.instance)
+            is FoodPortion -> unCache(obj.mealId, MealTable.instance)
+            is Serving -> unCache(obj.foodId, FoodTable.instance)
         }
     }
 

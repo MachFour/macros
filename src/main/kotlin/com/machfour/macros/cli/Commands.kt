@@ -3,8 +3,8 @@ package com.machfour.macros.cli
 import com.machfour.macros.cli.modes.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.util.MiscUtils.javaTrim
-import java.util.*
 import kotlin.collections.LinkedHashMap
+import java.util.Collections;
 
 /*
  * Helper class that holds static instances of all the other commands
@@ -61,7 +61,6 @@ object Commands {
         }
     }
 
-    @JvmStatic
     val commands: Collection<Command>
         get() {
             checkInitialised()

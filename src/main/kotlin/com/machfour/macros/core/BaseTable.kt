@@ -4,7 +4,7 @@ import java.util.Collections
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
-internal abstract class BaseTable<M>(
+abstract class BaseTable<M>(
     final override val name: String,
     final override val factory: Factory<M>,
     cols: List<Column<M, *>>
@@ -38,7 +38,7 @@ internal abstract class BaseTable<M>(
         for (c in cols) {
             // This package only uses ColumnImpl objects so we're good
             require(c is ColumnImpl<*, *>)
-            (c as ColumnImpl<M, *>).setTable(this)
+            (c as ColumnImpl<M, *>).table = this
 
             tmpColumnsByName[c.sqlName] = c
             if (c.isInSecondaryKey) {

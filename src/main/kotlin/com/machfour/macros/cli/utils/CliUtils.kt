@@ -30,7 +30,6 @@ object CliUtils {
         , NutritionDataTable.CALCIUM
     )
 
-    @JvmStatic
     fun printPer100g(nd: NutritionData, verbose: Boolean, out: PrintStream) {
         printNutritionData(nd.rescale(100.0), verbose, out)
     }
@@ -46,7 +45,7 @@ object CliUtils {
         for (col in allNutrientsToPrint) {
             val value = nd.amountOf(col, 0.0)
             val unitStr = colUnits.getUnit(col).abbr
-            val colName = colNamer.getName(col!!)
+            val colName = colNamer.getName(col)
             out.print(String.format(lineFormat, colName, value, unitStr))
             if (!nd.hasCompleteData(col)) {
                 // mark incomplete
@@ -56,7 +55,6 @@ object CliUtils {
         }
     }
 
-    @JvmStatic
     fun printEnergyProportions(nd: NutritionData, verbose: Boolean, out: PrintStream) {
         // TODO pass in ColumnUnits and ColumnNamer
         val colNamer: ColumnNamer = EnglishColumnNames.instance
@@ -65,7 +63,7 @@ object CliUtils {
         val proportionMap = nd.makeEnergyProportionsMap()
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
         for (col in proportionMap.keys) {
-            out.printf(fmt, colNamer.getName(col!!), proportionMap[col])
+            out.printf(fmt, colNamer.getName(col), proportionMap[col])
         }
     }
 

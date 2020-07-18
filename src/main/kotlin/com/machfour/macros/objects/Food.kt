@@ -10,7 +10,11 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
 
     companion object {
         val DESCRIPTION_COLUMNS = listOf(
-                FoodTable.BRAND, FoodTable.VARIETY, FoodTable.NAME, FoodTable.NOTES, FoodTable.INDEX_NAME
+            FoodTable.BRAND,
+            FoodTable.VARIETY,
+            FoodTable.NAME,
+            FoodTable.NOTES,
+            FoodTable.INDEX_NAME
         )
 
         fun table(): Table<Food> {
@@ -33,7 +37,7 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
 
     private val servings: MutableList<Serving> = ArrayList()
 
-    private val sortableName = makeSortableName()
+    val sortableName = makeSortableName()
 
     var defaultServing: Serving? = null
         private set

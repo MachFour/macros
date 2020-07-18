@@ -142,9 +142,9 @@ object CliUtils {
         }
     }
 
-    fun getStringInput(`in`: BufferedReader, out: PrintStream): String? {
+    fun getStringInput(input: BufferedReader, out: PrintStream): String? {
         return try {
-            `in`.readLine()?.javaTrim()
+            input.readLine()?.javaTrim()
         } catch (e: IOException) {
             out.println("Error reading input: " + e.message)
             null
@@ -159,7 +159,7 @@ object CliUtils {
     }
 
     fun getChar(input: BufferedReader, out: PrintStream): Char {
-        val input = getStringInput(input, out)
-        return if (input.isNullOrEmpty()) '\u0000' else input[0]
+        val inputString = getStringInput(input, out)
+        return if (inputString.isNullOrEmpty()) '\u0000' else inputString[0]
     }
 }

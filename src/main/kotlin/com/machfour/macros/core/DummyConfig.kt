@@ -6,13 +6,23 @@ import com.machfour.macros.storage.MacrosDatabase
 import java.io.PrintStream
 import java.io.OutputStream
 import java.io.BufferedReader
+import java.io.InputStream
 import java.io.InputStreamReader
 
 class DummyConfig : MacrosConfig {
+    companion object {
+        val nullOutputStream = object : OutputStream() {
+            override fun write(i: Int) {}
+        }
+        val nullInputStream = object : InputStream() {
+            override fun read(): Int = 0
+        }
+    }
 
-    override val outStream = PrintStream(OutputStream.nullOutputStream())
-    override val errStream = PrintStream(OutputStream.nullOutputStream())
-    override val inputReader = BufferedReader(InputStreamReader.nullReader())
+    // null streams
+    override val outStream = PrintStream(nullOutputStream)
+    override val errStream = PrintStream(nullOutputStream)
+    override val inputReader = BufferedReader(InputStreamReader(nullInputStream))
 
     override val initSqlName: String
             get() = throw IllegalStateException("Dummy config")

@@ -48,6 +48,8 @@ object PrintFormatting {
 
     // Converts the given data field into a string. Adds an asterisk if the data is missing.
     // Returns null if the input nutrition data is null
+    @JvmStatic
+    @JvmOverloads
     fun formatNutrnData(nd: NutritionData?, field: Column<NutritionData, Double>, withUnit: Boolean = false): String? {
         if (nd == null) {
             return null
@@ -78,6 +80,7 @@ object PrintFormatting {
     )
 
     // for formatting nutrition data in food details
+    @JvmStatic
     fun foodDetailsFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
         nd ?: return null
 
@@ -90,6 +93,7 @@ object PrintFormatting {
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)
+    @JvmStatic
     fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
         nd ?: return null
 

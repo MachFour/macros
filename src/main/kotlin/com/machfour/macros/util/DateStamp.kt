@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit
  * When Java 8 is available on android (which is now), this class can be replaced with the
  * native java.time classes
  */
-class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp> {
+open class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp> {
 
     /*
      * Create date stamp from Calendar object representing

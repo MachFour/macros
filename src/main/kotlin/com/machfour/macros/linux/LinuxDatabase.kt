@@ -24,7 +24,6 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         private lateinit var instance: LinuxDatabase
         private lateinit var dbPath: String
 
-        @JvmStatic
         fun getInstance(dbFile: String): LinuxDatabase {
             if (!Companion::instance.isInitialized || dbFile != dbPath) {
                 instance = LinuxDatabase(dbFile)
@@ -34,7 +33,6 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         }
 
         @Throws(IOException::class)
-        @JvmStatic
         fun deleteIfExists(dbFile: String): Boolean {
             val dbPath = Paths.get(dbFile)
             return if (Files.exists(dbPath)) {

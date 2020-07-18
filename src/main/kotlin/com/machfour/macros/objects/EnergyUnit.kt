@@ -40,7 +40,6 @@ class EnergyUnit private constructor(
         /*
          * Case insensitive matching of abbreviation
          */
-        @JvmStatic
         fun fromAbbreviation(abbr: String, throwIfNotFound: Boolean): EnergyUnit? {
             val abbrLower = abbr.toLowerCase()
             return when {

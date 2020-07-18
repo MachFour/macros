@@ -21,7 +21,6 @@ class EnglishUnitNames private constructor(): UnitNamer {
             , EnergyUnit.CALORIES
         )
 
-        @JvmStatic
         val instance: EnglishUnitNames = EnglishUnitNames()
     }
 }

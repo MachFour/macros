@@ -132,21 +132,17 @@ class MealSpec {
         // Both options can be omitted under certain condititions:
         // If -d is omitted then the current day is used.
         // If there are no meals recorded for the day, then an error is given.
-        @JvmStatic
         fun makeMealSpec(args: List<String>): MealSpec {
             val dayArg: ArgParsing.Result = findArgument(args, "-d")
             val mealArg: ArgParsing.Result = findArgument(args, "-m")
             return MealSpec(dayArg, mealArg)
         }
 
-        @JvmOverloads
-        @JvmStatic
         fun makeMealSpec(name: String? = null, dayString: String? = null): MealSpec {
             val day = dayStringParse(dayString)
             return MealSpec(name, day)
         }
 
-        @JvmStatic
         fun makeMealSpec(nameArg: ArgParsing.Result, dayArg: ArgParsing.Result): MealSpec {
             return MealSpec(nameArg, dayArg)
         }

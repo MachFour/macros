@@ -6,20 +6,15 @@ import java.io.BufferedReader
 import java.io.PrintStream
 
 
-abstract class CommandImpl @JvmOverloads protected constructor(final override val name: String, usage: String? = null) : Command {
+abstract class CommandImpl protected constructor(final override val name: String, usage: String? = null) : Command {
 
     final override val usage = usage ?: "No help available for mode '${name}'"
     // have to initialise this first with overwriteConfig
 
-    @JvmField
     protected var config: MacrosConfig = defaultConfig()
-
-    @JvmField
     protected var out: PrintStream = config.outStream
-    @JvmField
     protected var err: PrintStream = config.errStream
-    @JvmField
-    protected var `in`: BufferedReader = config.inputReader
+    protected var input: BufferedReader = config.inputReader
 
 
     // can be overridden
@@ -43,17 +38,14 @@ abstract class CommandImpl @JvmOverloads protected constructor(final override va
 
     companion object {
         // logic for deciding whether a command is user-facing
-        @JvmStatic
         fun isUserCommand(name: String): Boolean {
             return !name.startsWith("_")
         }
 
         private val dummyConfig = DummyConfig()
 
-        @JvmField
         var defaultConfig: () -> MacrosConfig = { dummyConfig }
 
-        @JvmStatic
         // TODO this is a hack for now
         val programName: String = "macros"
 

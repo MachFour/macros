@@ -6,7 +6,6 @@ import java.sql.SQLException
 
 object Queries {
     @Throws(SQLException::class)
-    @JvmStatic
     fun <M> prefixSearch(ds: MacrosDataSource, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
         return stringSearch(ds, t, cols, keyword, false, true)
     }
@@ -22,13 +21,11 @@ object Queries {
     }
 
     @Throws(SQLException::class)
-    @JvmStatic
     fun <M> stringSearch(ds: MacrosDataSource, t: Table<M>, cols: List<Column<M, String>>, keyword: String, globBefore: Boolean, globAfter: Boolean): List<Long> {
         return ds.stringSearch(t, cols, keyword, globBefore, globAfter)
     }
 
     // Convenience method (default arguments)
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M, I, J> selectColumn(ds: MacrosDataSource, t: Table<M>, selectColumn: Column<M, I>, whereColumn: Column<M, J>, whereValue: J): List<I?> {
         return selectColumn(ds, t, selectColumn, whereColumn, listOf(whereValue), false)
@@ -36,7 +33,6 @@ object Queries {
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
     // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M, I, J> selectColumn(ds: MacrosDataSource, t: Table<M>, selected: Column<M, I>, where: Column<M, J>,
                                whereValues: Collection<J>, distinct: Boolean = false): List<I?> {
@@ -52,20 +48,17 @@ object Queries {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> insertObjects(ds: MacrosDataSource, objects: Collection<M>, withId: Boolean): Int {
         val objectData : List<ColumnData<M>> = objects.map { it.allData }
         return ds.insertObjectData(objectData, withId)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> updateObjects(ds: MacrosDataSource, objects: Collection<M>): Int {
         return ds.updateObjects(objects)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> deleteObject(ds: MacrosDataSource, o: M): Int {
         return ds.deleteById(o.id, o.table)
@@ -93,13 +86,11 @@ object Queries {
     // returns number of objects saved correctly (i.e. 0 or 1)
     // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
     @Throws(SQLException::class)
-    @JvmStatic
     fun <M : MacrosEntity<M>> saveObject(ds: MacrosDataSource, o: M): Int {
         return saveObjects(ds, listOf(o), o.objectSource)
     }
 
     @Throws(SQLException::class)
-    @JvmStatic
     fun <M : MacrosEntity<M>> saveObjects(ds: MacrosDataSource, objects: Collection<M>, objectSource: ObjectSource): Int {
         return when (objectSource) {
             ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(ds, objects, false)
@@ -133,6 +124,7 @@ object Queries {
                 // no way to know except by ID...
             }
             TODO()
+            @Suppress("UNREACHABLE_CODE")
             false
         }
     }

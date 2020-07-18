@@ -81,7 +81,6 @@ class FileParser {
             return allLines
         }
 
-        @JvmStatic
         fun processFpSpec(fps: FoodPortionSpec, m: Meal, f: Food) {
             assert(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
             var s: Serving? = null
@@ -144,7 +143,6 @@ class FileParser {
         //index name  separator  number of servings
         // (default serving assumed, error if no default serving registered)
         // returns null if there was an error during parsing (not a DB error)
-        @JvmStatic
         fun makefoodPortionSpecFromLine(line: String): FoodPortionSpec {
             // if you don't specify an array length limit, it won't match empty strings between commas
             val tokens = line.split(",".toRegex(), 4).toTypedArray()
@@ -238,7 +236,7 @@ class FileParser {
 
     // make sure to close the reader afterwards
     @Throws(IOException::class, SQLException::class)
-    fun parseFile(fileReader: Reader, db: MacrosDataSource): List<Meal> {
+    fun parseFile(db: MacrosDataSource, fileReader: Reader): List<Meal> {
         val fileLines = readAllLines(fileReader)
         // also gets list of index names to retrieve
         val mealSpecs = createSpecFromLines(fileLines)

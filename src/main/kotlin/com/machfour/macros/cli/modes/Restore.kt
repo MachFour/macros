@@ -28,7 +28,7 @@ class Restore : CommandImpl(NAME, USAGE) {
     private fun <M : MacrosEntity<M>> restoreTable(db: MacrosDataSource, exportDir: String, t: Table<M>) {
         out.println("Restoring " + t.name + " table...")
         val csvPath = joinPath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(t, csvData, db, out) }
+        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(db, t, csvData, out) }
     }
 
     override fun doAction(args: List<String>): Int {

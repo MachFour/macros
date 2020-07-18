@@ -81,7 +81,6 @@ object MealPrinter {
         return row
     }
 
-    @JvmStatic
     fun printMeal(meal: Meal, verbose: Boolean, out: PrintStream) {
         val nutrientCols = if (verbose) verboseTableCols else conciseTableCols
         //Columns: first the food name, then one for each nutrient, then quantity/serving
@@ -135,8 +134,6 @@ object MealPrinter {
         printRow(totalRow, rowWidths, rightAlign, columnSep, out)
     }
 
-    @JvmStatic
-    @JvmOverloads
     fun printMeals(meals: Collection<Meal>, out: PrintStream, verbose: Boolean = false, per100: Boolean = false, grandTotal: Boolean = true) {
         out.println("============")
         out.println("Meal totals:")

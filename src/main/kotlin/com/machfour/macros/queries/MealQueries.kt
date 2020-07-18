@@ -57,14 +57,12 @@ object MealQueries {
         }
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getMealsForDay(ds: MacrosDataSource, day: DateStamp): Map<Long, Meal> {
         val mealIds = getMealIdsForDay(ds, day)
         return getMealsById(ds, mealIds)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getMealIdsForDay(ds: MacrosDataSource, day: DateStamp): List<Long> {
         val ids = Queries.selectColumn(ds, Schema.MealTable.instance, Schema.MealTable.ID, Schema.MealTable.DAY, listOf(day))
@@ -79,14 +77,12 @@ object MealQueries {
      * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
      * It's probably worth caching the results of these!
      */
-    @JvmStatic
     @Throws(SQLException::class)
     fun getMealById(ds: MacrosDataSource, id: Long): Meal? {
         val resultMeals = getMealsById(ds, listOf(id))
         return resultMeals.getOrDefault(id, null)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getMealsById(ds: MacrosDataSource, mealIds: List<Long>): Map<Long, Meal> {
         if (mealIds.isEmpty()) {
@@ -105,7 +101,6 @@ object MealQueries {
         return meals
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: List<Long>): List<Long> {
         val ids = ds.selectColumn(FoodPortion.table(), Schema.FoodPortionTable.FOOD_ID, Schema.FoodPortionTable.MEAL_ID, mealIds, true)
@@ -113,7 +108,6 @@ object MealQueries {
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
     }
 
-    @JvmStatic
     fun findMealWithName(mealMap: Map<Long, Meal>, name: String): Meal? {
         var found: Meal? = null
         for (m in mealMap.values) {

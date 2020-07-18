@@ -38,6 +38,7 @@ class IngredientsParserTest {
         try {
             FileReader("/home/max/devel/macros-test-data/mayo-recipes.json").use { r ->
                 val ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(r)
+                @Suppress("UNUSED")
                 val newFoods: Collection<CompositeFood> = IngredientsParser.createCompositeFoods(ingredientSpecs, db)
                 println("Composite Foods Read:")
                 println(StringJoiner.of(ingredientSpecs).sep("\n").join())

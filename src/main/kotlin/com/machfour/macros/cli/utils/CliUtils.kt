@@ -14,7 +14,6 @@ import com.machfour.macros.util.StringJoiner.Companion.of
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintStream
-import java.util.*
 
 object CliUtils {
     private val allNutrientsToPrint = listOf(
@@ -35,7 +34,6 @@ object CliUtils {
     }
 
     // TODO use methods from PrintFormatting here?
-    @JvmStatic
     fun printNutritionData(nd: NutritionData, verbose: Boolean, out: PrintStream) {
         // TODO pass in ColumnUnits and ColumnNamer
         val colNamer: ColumnNamer = EnglishColumnNames.instance
@@ -101,7 +99,6 @@ object CliUtils {
     private const val lineLength = nameWidth + notesWidth + quantityWidth + 2 * sep.length + start.length + end.length - 2
     private val hLine = " " + of("-").copies(lineLength).join()
 
-    @JvmStatic
     fun printIngredients(ingredients: List<Ingredient>, out: PrintStream) {
         // XXX use printLine(text, widths), etc function
         out.printf(lineFormat, "Name", "Quantity", "Notes")
@@ -123,31 +120,28 @@ object CliUtils {
 
     // command line inputs
     // returns null if there was an error or input was invalid
-    @JvmStatic
-    fun getIntegerInput(`in`: BufferedReader, out: PrintStream, min: Int, max: Int): Int? {
-        val input = getStringInput(`in`, out) ?: return null
+    fun getIntegerInput(input: BufferedReader, out: PrintStream, min: Int, max: Int): Int? {
+        val inputString = getStringInput(input, out) ?: return null
         return try {
-            input.toInt().takeIf { it in min..max }
+            inputString.toInt().takeIf { it in min..max }
         } catch (ignore: NumberFormatException) {
-            out.println("Bad number format: '${input}'")
+            out.println("Bad number format: '${inputString}'")
             null
         }
     }
 
     // command line inputs
     // returns null if there was an error or input was invalid
-    @JvmStatic
     fun getDoubleInput(`in`: BufferedReader, out: PrintStream): Double? {
         val input = getStringInput(`in`, out) ?: return null
         return try {
             input.toDouble().takeIf { it.isFinite() }
         } catch (ignore: NumberFormatException) {
-            out.printf("Bad number format: '%s'\n", input)
+            out.println("Bad number format: '$input'")
             null
         }
     }
 
-    @JvmStatic
     fun getStringInput(`in`: BufferedReader, out: PrintStream): String? {
         return try {
             `in`.readLine()?.javaTrim()
@@ -164,9 +158,8 @@ object CliUtils {
         out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a")
     }
 
-    @JvmStatic
-    fun getChar(`in`: BufferedReader, out: PrintStream): Char {
-        val input = getStringInput(`in`, out)
+    fun getChar(input: BufferedReader, out: PrintStream): Char {
+        val input = getStringInput(input, out)
         return if (input.isNullOrEmpty()) '\u0000' else input[0]
     }
 }

@@ -12,7 +12,6 @@ class SearchFood : CommandImpl(NAME, USAGE) {
         private const val NAME = "search"
         private val USAGE = "Usage: $programName $NAME <keyword>"
 
-        @JvmStatic
         fun printFoodList(foods: Collection<Food>, out: PrintStream) {
             // work out how wide the column should be
             var maxNameLength = 0

@@ -70,7 +70,6 @@ object FkCompletion {
         return completedObjects
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> completeForeignKeys(ds: MacrosDataSource, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
         return completeForeignKeys(ds, objects, listOf(fk))
@@ -81,7 +80,6 @@ object FkCompletion {
     // These methods replace a manual database retrieval of objects whose ID is needed. However, there still
     // needs to be a well-ordering of dependencies between the fields of each type of object, so that the first type
     // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
-    @JvmStatic
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> completeForeignKeys(ds: MacrosDataSource, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
         val completedObjects: MutableList<M> = ArrayList(objects.size)

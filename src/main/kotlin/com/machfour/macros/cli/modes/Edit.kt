@@ -5,7 +5,6 @@ import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealSpec
-import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
@@ -14,10 +13,8 @@ import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.FoodPortionSpec
 
 import java.sql.SQLException
-import java.util.Collections
 
 
 class Edit : CommandImpl(NAME, USAGE) {
@@ -73,17 +70,16 @@ class Edit : CommandImpl(NAME, USAGE) {
             err.println(e)
             return 1
         }
-
-        assert(toEdit != null) { "Could not re-retrieve meal with id given by processed MealSpec" }
-        assert(toEdit!!.objectSource === ObjectSource.DATABASE) { "Not editing an object from the database" }
+        requireNotNull(toEdit) { "Could not re-retrieve meal with id given by processed MealSpec" }
+        require(toEdit.objectSource === ObjectSource.DATABASE) { "Not editing an object from the database" }
 
         while (true) {
             // TODO reload meal
             out.println()
-            out.printf("Editing meal: %s on %s\n", toEdit!!.name, DateStamp.prettyPrint(toEdit.day))
+            out.println("Editing meal: ${toEdit.name} on ${DateStamp.prettyPrint(toEdit.day)}")
             out.println()
             out.print("Action (? for help): ")
-            val action = CliUtils.getChar(`in`, out)
+            val action = CliUtils.getChar(input, out)
             out.println()
             when (action) {
                 'a' -> addPortion(toEdit, ds)
@@ -122,8 +118,8 @@ class Edit : CommandImpl(NAME, USAGE) {
     private fun addPortion(toEdit: Meal, db: MacrosDataSource) {
         out.println("Please enter the portion information (see help for how to specify a food portion)")
         // copy from portion
-        val inputString = CliUtils.getStringInput(`in`, out)
-        if (inputString != null && !inputString.isEmpty()) {
+        val inputString = CliUtils.getStringInput(input, out)
+        if (inputString != null && inputString.isNotEmpty()) {
             val spec = FileParser.makefoodPortionSpecFromLine(inputString)
             Portion.process(toEdit, listOf(spec), db, out, err)
         }
@@ -142,7 +138,7 @@ class Edit : CommandImpl(NAME, USAGE) {
     private fun deleteMeal(toDelete: Meal, db: MacrosDataSource) {
         out.print("Delete meal")
         out.print("Are you sure? [y/N] ")
-        if ((CliUtils.getChar(`in`, out) == 'y') or (CliUtils.getChar(`in`, out) == 'Y')) {
+        if ((CliUtils.getChar(input, out) == 'y') or (CliUtils.getChar(input, out) == 'Y')) {
             try {
                 Queries.deleteObject(db, toDelete)
             } catch (e: SQLException) {
@@ -157,7 +153,7 @@ class Edit : CommandImpl(NAME, USAGE) {
         showFoodPortions(toEdit)
         out.print("Enter the number of the food portion to delete and press enter: ")
         val portions = toEdit.getFoodPortions()
-        val n = CliUtils.getIntegerInput(`in`, out, 0, portions.size - 1)
+        val n = CliUtils.getIntegerInput(input, out, 0, portions.size - 1)
         if (n == null) {
             out.println("Invalid number")
             return
@@ -178,13 +174,13 @@ class Edit : CommandImpl(NAME, USAGE) {
         showFoodPortions(m)
         out.print("Enter the number of the food portion to edit and press enter: ")
         val portions = m.getFoodPortions()
-        val n = CliUtils.getIntegerInput(`in`, out, 0, portions.size - 1)
+        val n = CliUtils.getIntegerInput(input, out, 0, portions.size - 1)
         if (n == null) {
             out.println("Invalid number")
             return
         }
         out.print("Enter a new quantity (in the same unit) and press enter: ")
-        val newQty = CliUtils.getDoubleInput(`in`, out)
+        val newQty = CliUtils.getDoubleInput(input, out)
         if (newQty == null) {
             out.println("Invalid quantity")
             return
@@ -206,7 +202,7 @@ class Edit : CommandImpl(NAME, USAGE) {
     private fun renameMeal() {
         out.println("Rename meal")
         out.print("Type a new name and press enter: ")
-        val newName = CliUtils.getStringInput(`in`, out) ?: return
+        val newName = CliUtils.getStringInput(input, out) ?: return
         out.println("The new name is: $newName")
     }
 

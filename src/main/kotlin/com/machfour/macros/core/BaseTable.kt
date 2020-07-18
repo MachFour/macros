@@ -12,8 +12,11 @@ abstract class BaseTable<M>(
     final override val columns: List<Column<M, *>>
 
     // TODO make these better
+    @Suppress("UNCHECKED_CAST")
     final override val idColumn: Column<M, Long> = cols[0] as Column<M, Long>
+    @Suppress("UNCHECKED_CAST")
     final override val createTimeColumn: Column<M, Long> = cols[1] as Column<M, Long>
+    @Suppress("UNCHECKED_CAST")
     final override val modifyTimeColumn: Column<M, Long> = cols[2] as Column<M, Long>
 
     final override val fkColumns: List<Column.Fk<M, *, *>>

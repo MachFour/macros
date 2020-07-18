@@ -42,7 +42,6 @@ class DefaultColumnUnits private constructor() : ColumnUnits {
             Collections.unmodifiableMap(map)
         }
 
-        @JvmStatic
         val instance = DefaultColumnUnits()
     }
 

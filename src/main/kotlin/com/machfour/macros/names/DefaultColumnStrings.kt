@@ -6,7 +6,6 @@ class DefaultColumnStrings : ColumnStringsImpl(
         DefaultColumnUnits.instance) {
 
     companion object {
-        @JvmStatic
         val instance: DefaultColumnStrings = DefaultColumnStrings()
     }
 }

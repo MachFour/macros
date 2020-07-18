@@ -16,12 +16,10 @@ object ArgParsing {
         return parser(r.argument)
     }
 
-    @JvmStatic
     fun parseDate(args: List<String>, flag: String): DateStamp? {
         return parseArgument(args, flag) { dayStringParse(it) }
     }
 
-    @JvmStatic
     fun findArgument(args: List<String>, flag: String?): Result {
         val detectedIndex = args.indexOf(flag) + 1
         val argument: String?
@@ -49,7 +47,6 @@ object ArgParsing {
     }
 
     // just attempts to use the given argument index
-    @JvmStatic
     fun findArgument(args: List<String>, argIdx: Int): Result {
         assert(argIdx >= 0)
         val argument: String?
@@ -66,7 +63,6 @@ object ArgParsing {
     }
 
     // returns null for invalid, today if flag not found, or otherwise decodes day from argument string
-    @JvmStatic
     fun dayStringParse(dayString: String?): DateStamp? {
         // default values
         if (dayString == null) {

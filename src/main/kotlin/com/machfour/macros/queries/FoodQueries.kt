@@ -36,14 +36,12 @@ object FoodQueries {
         }
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodByIndexName(ds: MacrosDataSource, indexName: String): Food? {
         val resultFood = getFoodsByIndexName(ds, listOf(indexName))
         return resultFood[indexName]
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodById(ds: MacrosDataSource, id: Long): Food? {
         val resultFood = getFoodsById(ds, listOf(id))
@@ -52,14 +50,12 @@ object FoodQueries {
 
     // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
     // items in indexNames that do not correspond to a food, will not appear in the output map
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodIdsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Long> {
         return QueryHelpers.getIdsFromKeys(ds, Food.table(), Schema.FoodTable.INDEX_NAME, indexNames)
     }
 
     // The proper way to get all foods
-    @JvmStatic
     @Throws(SQLException::class)
     fun getAllFoods(ds: MacrosDataSource): List<Food> {
         val allFoods = ds.getAllRawObjects(Food.table())
@@ -72,7 +68,6 @@ object FoodQueries {
         return ArrayList(allFoods.values)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodsById(ds: MacrosDataSource, foodIds: Collection<Long>): Map<Long, Food> {
         val foods = QueryHelpers.getRawObjectsByIds(ds, Food.table(), foodIds)
@@ -80,7 +75,6 @@ object FoodQueries {
         return foods
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun getServingsById(ds: MacrosDataSource, servingIds: Collection<Long>): Map<Long, Serving> {
         return QueryHelpers.getRawObjectsByIds(ds, Serving.table(), servingIds)
@@ -90,7 +84,6 @@ object FoodQueries {
      * Constructs full food objects by their index name
      * Returns a map of index name to food object
      */
-    @JvmStatic
     @Throws(SQLException::class)
     fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
         val foods = QueryHelpers.getRawObjectsByKeys(ds, Schema.FoodTable.instance, Schema.FoodTable.INDEX_NAME, indexNames)

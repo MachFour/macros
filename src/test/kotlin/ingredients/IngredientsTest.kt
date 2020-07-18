@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
 
 import java.sql.SQLException
 
-import com.machfour.macros.util.MiscUtils.toList
 import org.junit.jupiter.api.Assertions.*
 
 class IngredientsTest {
@@ -40,7 +39,7 @@ class IngredientsTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, toList(FoodType.COMPOSITE.niceName))
+                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
                 db.clearTable(Ingredient.table())
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")

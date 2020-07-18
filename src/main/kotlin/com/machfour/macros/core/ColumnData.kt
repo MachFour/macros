@@ -111,7 +111,6 @@ class ColumnData<M> private constructor(
         return str.toString()
     }
 
-    @JvmOverloads
     fun setDefaultData(cols: Collection<Column<M, *>> = columns) {
         assert(hasColumns(cols))
         assertMutable()

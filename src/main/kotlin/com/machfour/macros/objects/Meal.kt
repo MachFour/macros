@@ -12,7 +12,6 @@ import java.time.Instant
 
 class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
     companion object {
-        @JvmStatic
         fun sumNutritionData(meals: Collection<Meal>): NutritionData {
             val totalPerMeal = ArrayList<NutritionData>(meals.size)
             for (m in meals) {

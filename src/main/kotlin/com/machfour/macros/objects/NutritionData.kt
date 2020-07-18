@@ -374,7 +374,6 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         }
 
         /* Result is always converted to grams. */
-        @JvmOverloads
         fun sum(components: List<NutritionData>, combineDensities: Boolean = false): NutritionData {
             var sumQuantity = 0.0
             var unnormalisedDensity = 0.0 // need to divide by sumQuantity at the end

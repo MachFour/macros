@@ -21,7 +21,6 @@ class Portion : CommandImpl(NAME, USAGE) {
         private const val NAME = "portion"
         private val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
 
-        @JvmStatic
         fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, ds: MacrosDataSource, out: PrintStream, err: PrintStream): Int {
             if (specs.isEmpty()) {
                 out.println("No food portions specified, nothing to do")

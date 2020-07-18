@@ -55,14 +55,12 @@ class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp>
          * Returns a DateStamp representing a Calendar object's year, month and day.
          * The calendar will be converted into the current/default timezone first.
          */
-        @JvmStatic
         fun ofLocalDate(d: LocalDate): DateStamp = DateStamp(d)
 
         private fun makeHashCode(year: Int, month: Int, day: Int): Int {
             return intArrayOf(year, month, day).contentHashCode()
         }
 
-        @JvmStatic
         fun prettyPrint(day: DateStamp): String {
             val prettyStr = StringBuilder(day.toString())
             val today = currentDate()
@@ -78,20 +76,17 @@ class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp>
          * Get corresponding DateStamp for a number of days ago by using the Calendar's
          * field addition methods to add a negative amount of days
          */
-        @JvmStatic
         fun forDaysAgo(daysAgo: Long): DateStamp = currentDate().step(-1 * daysAgo)
 
         /*
          * Constructor for current moment
          */
-        @JvmStatic
         fun currentDate(): DateStamp = DateStamp(LocalDate.now())
 
         /*
          * Creates a new DateStamp instance from an ISO-8601 string, e.g '2017-08-01'
          * Throws IllegalArgumentException if the string is in an invalid format
          */
-        @JvmStatic
         fun fromIso8601String(dateString: String): DateStamp {
             return try {
                 val date = LocalDate.parse(dateString)
@@ -105,7 +100,6 @@ class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp>
          * Converts this date into a number of days back from the today's date.
          * May return a negative number for dates in the future.
          */
-        @JvmStatic
         fun daysSince(d: DateStamp): Long = d.date.until(LocalDate.now(), ChronoUnit.DAYS)
     }
 

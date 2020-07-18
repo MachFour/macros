@@ -40,7 +40,6 @@ object IngredientsParser {
      * ]
      *
      */
-    @JvmStatic
     @Throws(IOException::class)
     fun deserialiseIngredientsJson(json: Reader?): Collection<CompositeFoodSpec> {
         // this creates an anonymous subclass of typetoken?
@@ -121,7 +120,6 @@ object IngredientsParser {
     // Creates objects corresponding to the parsed composite food specs.
     // THE INGREDIENTS CANNOT BE SAVED INTO THE DATABASE AS IS, because they do not have the proper foreign keys set up
     // to save the object tree correctly, use the method saveCompositeFoods(compositeFoods, ds)
-    @JvmStatic
     @Throws(SQLException::class)
     fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDataSource): List<CompositeFood> {
         val indexNames = extractIngredientIndexNames(parseResult)
@@ -185,14 +183,12 @@ object IngredientsParser {
     }
 
     // returns list of index names of foods that were created
-    @JvmStatic
     @Throws(SQLException::class, IOException::class)
     fun readRecipes(json: Reader, ds: MacrosDataSource): List<CompositeFood> {
         val ingredientSpecs = deserialiseIngredientsJson(json)
         return createCompositeFoods(ingredientSpecs, ds)
     }
 
-    @JvmStatic
     @Throws(SQLException::class)
     fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: MacrosDataSource) {
         // TODO save all the composite foods and recreate them in one go

@@ -55,7 +55,6 @@ object QtyUnits {
     /*
      * Case insensitive matching of abbreviation
      */
-    @JvmStatic
     fun fromAbbreviation(abbreviation: String, throwIfNotFound: Boolean): QtyUnit? {
         val abbr = abbreviation.toLowerCase()
         return when {
@@ -73,17 +72,14 @@ object QtyUnits {
         }
     }
 
-    @JvmStatic
     fun fromAbbreviationNoThrow(abbreviation: String): QtyUnit? {
         return fromAbbreviation(abbreviation, false)
     }
 
-    @JvmStatic
     fun fromAbbreviation(abbreviation: String): QtyUnit {
         return fromAbbreviation(abbreviation, true)!!
     }
 
-    @JvmStatic
     fun fromId(id: Long): QtyUnit? {
         return fromId(id, false)
     }

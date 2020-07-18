@@ -42,7 +42,6 @@ object UnicodeUtils {
             , UnicodeBlock.HANGUL_SYLLABLES
     ))
 
-    @JvmStatic
     fun isFullWidthChar(codepoint: Int): Boolean {
         if (UnicodeBlock.of(codepoint) !== halfWidthFullWidthBlock) {
             return false
@@ -62,7 +61,6 @@ object UnicodeUtils {
 
     // Returns true if the character with the given codepoint is printed as a
     // double (or full) width character in most monospace fonts.
-    @JvmStatic
     fun isDoubleSpaceChar(codepoint: Int): Boolean {
         val block = UnicodeBlock.of(codepoint)
         return (kanaBlocks.contains(block)
@@ -88,7 +86,6 @@ object UnicodeUtils {
         }
     }
 
-    @JvmStatic
     fun countDoubleWidthChars(s: String): Int {
         var count = 0
         // if s is null, length(s) is 0, so the loop will be skipped

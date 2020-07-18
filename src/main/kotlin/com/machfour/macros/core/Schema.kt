@@ -86,7 +86,6 @@ object Schema {
             val ID: Column<Food, Long>
             val CREATE_TIME: Column<Food, Long>
             val MODIFY_TIME: Column<Food, Long>
-            @JvmField
             val INDEX_NAME: Column<Food, String>
             val BRAND: Column<Food, String>
             val VARIETY: Column<Food, String>
@@ -326,65 +325,35 @@ object Schema {
              *  - the static initialiser using the builder (won't compile if you don't do this)
              * And additionally, for NutritionData, add to NutritionData.NUTRIENT_COLUMNS if appropriate
             */
-            @JvmField
             val ID: Column<NutritionData, Long>
-            @JvmField
             val CREATE_TIME: Column<NutritionData, Long>
-            @JvmField
             val MODIFY_TIME: Column<NutritionData, Long>
-            @JvmField
             val DATA_SOURCE: Column<NutritionData, String>
-            @JvmField
             val QUANTITY: Column<NutritionData, Double>
-            @JvmField
             val DENSITY: Column<NutritionData, Double>
-            @JvmField
             val KILOJOULES: Column<NutritionData, Double>
-            @JvmField
             val CALORIES: Column<NutritionData, Double>
-            @JvmField
             val PROTEIN: Column<NutritionData, Double>
-            @JvmField
             val CARBOHYDRATE: Column<NutritionData, Double>
-            @JvmField
             val CARBOHYDRATE_BY_DIFF: Column<NutritionData, Double>
-            @JvmField
             val SUGAR: Column<NutritionData, Double>
-            @JvmField
             val SUGAR_ALCOHOL: Column<NutritionData, Double>
-            @JvmField
             val STARCH: Column<NutritionData, Double>
-            @JvmField
             val FAT: Column<NutritionData, Double>
-            @JvmField
             val SATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
             val MONOUNSATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
             val POLYUNSATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
             val OMEGA_3_FAT: Column<NutritionData, Double>
-            @JvmField
             val OMEGA_6_FAT: Column<NutritionData, Double>
-            @JvmField
             val FIBRE: Column<NutritionData, Double>
-            @JvmField
             val SODIUM: Column<NutritionData, Double>
-            @JvmField
             val SALT: Column<NutritionData, Double>
-            @JvmField
             val POTASSIUM: Column<NutritionData, Double>
-            @JvmField
             val CALCIUM: Column<NutritionData, Double>
-            @JvmField
             val IRON: Column<NutritionData, Double>
-            @JvmField
             val WATER: Column<NutritionData, Double>
-            @JvmField
             val ALCOHOL: Column<NutritionData, Double>
-            @JvmField
             val FOOD_ID: Column.Fk<NutritionData, Long, Food>
-            @JvmField
             val QUANTITY_UNIT: Column.Fk<NutritionData, String, QtyUnit>
 
             init {

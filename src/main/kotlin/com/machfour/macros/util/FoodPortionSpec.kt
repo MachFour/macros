@@ -18,11 +18,9 @@ class FoodPortionSpec(
 ) {
 
     // context data
-    @JvmField
     var lineIdx = 0
 
     // holds the completed food portion object, only created if no other errors were encountered
-    @JvmField
     var createdObject: FoodPortion? = null
 
     override fun equals(other: Any?): Boolean {

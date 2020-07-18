@@ -6,21 +6,13 @@ import com.machfour.macros.util.DateStamp
 // TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type
 class Types {
     companion object {
-        @JvmField
         val BOOLEAN = Bool()
-        @JvmField
         val NULLBOOLEAN = NullBool()
-        @JvmField
         val ID = Id()
-        @JvmField
         val INTEGER = Int()
-        @JvmField
         val REAL = Real()
-        @JvmField
         val TEXT = Text()
-        @JvmField
         val TIMESTAMP = Time()
-        @JvmField
         val DATESTAMP = Date()
 
         @Throws(TypeCastException::class)

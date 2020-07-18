@@ -38,9 +38,8 @@ object CsvRestore {
         return objectList
     }
 
-    @JvmStatic
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    fun <M : MacrosEntity<M>> restoreTable(t: Table<M>, csvData: Reader, db: MacrosDataSource, out: PrintStream) {
+    fun <M : MacrosEntity<M>> restoreTable(db: MacrosDataSource, t: Table<M>, csvData: Reader, out: PrintStream) {
         val objects = buildObjectsForRestore(t, csvData, out)
         Queries.saveObjects(db, objects, ObjectSource.RESTORE)
     }

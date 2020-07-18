@@ -9,7 +9,6 @@ import com.machfour.macros.objects.NutritionData
 class EnglishColumnNames private constructor(): ColumnNamer {
     companion object {
         // shortest name for each nutrient printed in default mode
-        @JvmField
         val briefNutrientNames: Map<Column<NutritionData, Double>, String> = mapOf(
                   NutritionDataTable.CALORIES to "Cals"
                 , NutritionDataTable.PROTEIN to "Prot"
@@ -19,7 +18,6 @@ class EnglishColumnNames private constructor(): ColumnNamer {
         )
 
         // longer (but really medium name for nutrients printed in verbose mode
-        @JvmField
         val longerNutrientNames: Map<Column<NutritionData, Double>, String> = mapOf(
                   NutritionDataTable.CALORIES to "Cals"
                 , NutritionDataTable.PROTEIN to "Protæn"
@@ -85,7 +83,6 @@ class EnglishColumnNames private constructor(): ColumnNamer {
                 , NutritionDataTable.ALCOHOL to "Alcohol"
         )
 
-        @JvmStatic
         val instance: EnglishColumnNames = EnglishColumnNames()
     }
 

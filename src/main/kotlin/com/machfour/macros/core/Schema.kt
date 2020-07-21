@@ -38,7 +38,7 @@ object Schema {
                 .buildAndAdd(columnList)
     }
 
-    private fun <J> builder(name: String, type: MacrosType<J>): ColumnImpl.Builder<J> {
+    private fun <J: Any> builder(name: String, type: MacrosType<J>): ColumnImpl.Builder<J> {
         return ColumnImpl.Builder(name, type)
     }
 
@@ -67,7 +67,7 @@ object Schema {
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
                 ABBREVIATION = builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildAndAdd(COLUMNS)
-                IS_VOLUME_UNIT = builder("is_volume_unit", Types.BOOLEAN).notNull().buildAndAdd(COLUMNS)
+                IS_VOLUME_UNIT = builder("is_volume_unit", Types.NULLBOOLEAN).notNull().buildAndAdd(COLUMNS)
                 METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL).notNull().buildAndAdd(COLUMNS)
             }
 
@@ -89,7 +89,7 @@ object Schema {
             val INDEX_NAME: Column<Food, String>
             val BRAND: Column<Food, String>
             val VARIETY: Column<Food, String>
-            val VARIETY_AFTER_NAME: Column<Food, Boolean>
+            val EXTRA_DESC: Column<Food, String>
             val NAME: Column<Food, String>
             val NOTES: Column<Food, String>
             val FOOD_TYPE: Column<Food, String>
@@ -106,8 +106,7 @@ object Schema {
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
                 BRAND = builder("brand", Types.TEXT).buildAndAdd(COLUMNS)
                 VARIETY = builder("variety", Types.TEXT).buildAndAdd(COLUMNS)
-                VARIETY_AFTER_NAME = builder("variety_after_name", Types.BOOLEAN).notNull()
-                        .defaultsTo(false).buildAndAdd(COLUMNS)
+                EXTRA_DESC = builder("extra_desc", Types.TEXT).buildAndAdd(COLUMNS)
                 NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
                 CATEGORY = builder("category", Types.TEXT).notNull()
                         .buildAndAddFk(FoodCategoryTable.NAME, FoodCategoryTable.instance, COLUMNS)
@@ -209,6 +208,7 @@ object Schema {
             val DAY: Column<Meal, DateStamp>
             val START_TIME: Column<Meal, Long>
             val DURATION: Column<Meal, Long>
+            val NOTES: Column<Meal, String>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
@@ -218,6 +218,7 @@ object Schema {
                 DAY = builder("day", Types.DATESTAMP).notNull().buildAndAdd(COLUMNS)
                 START_TIME = builder("start_time", Types.TIMESTAMP).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
                 DURATION = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
+                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
             }
 
             val instance = MealTable()

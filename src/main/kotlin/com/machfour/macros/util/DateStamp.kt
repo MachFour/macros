@@ -11,50 +11,16 @@ import java.time.temporal.ChronoUnit
  * native java.time classes
  */
 open class DateStamp private constructor(val date: LocalDate) : Comparable<DateStamp> {
-
-    /*
-     * Create date stamp from Calendar object representing
-     * MIDNIGHT IN THE CURRENT TIME ZONE on some date
-     */
-    val year: Int = date.year
-    val month: Int = date.monthValue
-    val day: Int = date.dayOfMonth
-
-    private val internalClock = Clock.systemDefaultZone()
-    private val hashCode: Int = makeHashCode(year, month, day)
-
     /*
      * Date stamp according to raw year, month, day fields
      */
     constructor(year: Int, month: Int, day: Int) : this(LocalDate.of(year, month, day))
 
-    fun step(dayIncrement: Long): DateStamp = DateStamp(date.plusDays(dayIncrement.toLong()))
-
-    override fun hashCode(): Int = hashCode
-
-    override fun equals(other: Any?): Boolean = (other is DateStamp) && date == other.date
-
-    /*
-     * Returns date in ISO-8601 format
-     */
-    override fun toString(): String = date.toString()
-
-    override fun compareTo(other: DateStamp): Int = date.compareTo(other.date)
-
-    fun isInTheFuture(): Boolean = date.isAfter(LocalDate.now())
-
-    // Number of days from this date since January 1, 1970.
-    fun daysSince1Jan1970(): Long = date.toEpochDay()
-
-    fun toEpochMillis(): Long {
-        return ZonedDateTime.of(date, LocalTime.MIDNIGHT, ZoneId.systemDefault()).toEpochSecond() * 1000L
-    }
-
     companion object {
-        /*
-         * Returns a DateStamp representing a Calendar object's year, month and day.
-         * The calendar will be converted into the current/default timezone first.
-         */
+        private val internalClock = Clock.systemDefaultZone()
+        private val internalTz = ZoneId.systemDefault()
+        private val utcTz : ZoneId = ZoneOffset.UTC
+
         fun ofLocalDate(d: LocalDate): DateStamp = DateStamp(d)
 
         private fun makeHashCode(year: Int, month: Int, day: Int): Int {
@@ -77,6 +43,10 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
          * field addition methods to add a negative amount of days
          */
         fun forDaysAgo(daysAgo: Long): DateStamp = currentDate().step(-1 * daysAgo)
+
+        fun forEpochDay(epochDay: Long): DateStamp {
+            return DateStamp(LocalDate.ofEpochDay(epochDay))
+        }
 
         /*
          * Constructor for current moment
@@ -103,4 +73,41 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
         fun daysSince(d: DateStamp): Long = d.date.until(LocalDate.now(), ChronoUnit.DAYS)
     }
 
+    /*
+     * Create date stamp from Calendar object representing
+     * MIDNIGHT IN THE CURRENT TIME ZONE on some date
+     */
+    val year: Int = date.year
+    val month: Int = date.monthValue
+    val day: Int = date.dayOfMonth
+
+    private val hashCode: Int = makeHashCode(year, month, day)
+
+    fun step(dayIncrement: Long): DateStamp = DateStamp(date.plusDays(dayIncrement))
+
+    override fun hashCode(): Int = hashCode
+
+    override fun equals(other: Any?): Boolean = (other is DateStamp) && date == other.date
+
+    /*
+     * Returns date in ISO-8601 format
+     */
+    override fun toString(): String = date.toString()
+
+    override fun compareTo(other: DateStamp): Int = date.compareTo(other.date)
+
+    fun isInTheFuture(): Boolean = date.isAfter(LocalDate.now())
+
+    // Number of days from this date since January 1, 1970.
+    fun daysSince1Jan1970(): Long = date.toEpochDay()
+
+    private fun toEpochMillis(tz: ZoneId) : Long {
+        return ZonedDateTime.of(date, LocalTime.MIDNIGHT, tz).toEpochSecond() * 1000L
+
+    }
+
+    fun toEpochMillisCurrentTz(): Long = toEpochMillis(internalTz)
+
+    // returns epoch millis of midnight on this date, in the UTC timezone
+    fun toEpochMillisUTC(): Long = toEpochMillis(utcTz)
 }

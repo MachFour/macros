@@ -13,6 +13,7 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
             FoodTable.BRAND,
             FoodTable.VARIETY,
             FoodTable.NAME,
+            FoodTable.EXTRA_DESC,
             FoodTable.NOTES,
             FoodTable.INDEX_NAME
         )
@@ -26,7 +27,7 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
         fun factory(): Factory<Food> {
             return object : Factory<Food> {
                 override fun construct(dataMap: ColumnData<Food>, objectSource: ObjectSource): Food {
-                    return when (FoodType.fromString(dataMap.get(FoodTable.FOOD_TYPE)!!)) {
+                    return when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
                         FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
                         else -> Food(dataMap, objectSource)
                     }
@@ -98,25 +99,29 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
     }
 
     val shortName: String
-        get() = prettyFormat(false, false, false, false)
+        get() = prettyFormat(withBrand = false, withVariety = false)
 
     val longName: String
-        get() = prettyFormat(true, true, true, false)
+        get() = prettyFormat(withExtra = true)
 
     val mediumName: String
-        get() = prettyFormat(true, true, false, false)
+        get() = prettyFormat()
 
     val indexName: String
         get() = getData(FoodTable.INDEX_NAME)!!
 
     private fun makeSortableName(): String {
-        return prettyFormat(true, true, true, true)
+        return prettyFormat(withExtra = true, withVariety = true)
     }
 
     val categoryName: String
         get() = getData(FoodTable.CATEGORY)!!
 
-    private fun prettyFormat(withBrand: Boolean, withVariety: Boolean, withNotes: Boolean, sortable: Boolean): String {
+    private fun prettyFormat(withBrand : Boolean = true,
+                             withVariety : Boolean = true,
+                             withExtra : Boolean = false,
+                             sortable : Boolean = false)
+            : String {
         val prettyName = StringBuilder(getDescriptionData(FoodTable.NAME))
         val variety = getDescriptionData(FoodTable.VARIETY)
         val brand = getDescriptionData(FoodTable.BRAND)
@@ -129,18 +134,14 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
             }
         } else {
             if (withVariety && hasDescriptionData(FoodTable.VARIETY)) {
-                if (getData(FoodTable.VARIETY_AFTER_NAME)!!) {
-                    prettyName.append(" ").append(variety)
-                } else {
-                    prettyName.insert(0, "$variety ")
-                }
+                prettyName.insert(0, "$variety ")
             }
             if (withBrand && hasDescriptionData(FoodTable.BRAND)) {
                 prettyName.insert(0, "$brand ")
             }
         }
-        if (withNotes && hasDescriptionData(FoodTable.NOTES)) {
-            prettyName.append(" (").append(getDescriptionData(FoodTable.NOTES)).append(")")
+        if (withExtra && hasDescriptionData(FoodTable.EXTRA_DESC)) {
+            prettyName.append(" (").append(getDescriptionData(FoodTable.EXTRA_DESC)).append(")")
         }
         return prettyName.toString()
     }
@@ -164,8 +165,8 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
         defaultServing = s
     }
 
-    fun getServingById(servingId: Long): Serving? {
-        return servings.firstOrNull { it.id == servingId }
+    fun getServingById(id: Long): Serving? {
+        return servings.firstOrNull { it.id == id }
     }
 
     fun getServingByName(name: String): Serving? {

@@ -14,7 +14,6 @@ import com.machfour.macros.objects.*
 
 import com.machfour.macros.core.Schema.FoodTable.Companion.USDA_INDEX
 import com.machfour.macros.core.Schema.FoodTable.Companion.VARIETY
-import com.machfour.macros.core.Schema.FoodTable.Companion.VARIETY_AFTER_NAME
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CALCIUM
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CARBOHYDRATE
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.DATA_SOURCE
@@ -50,7 +49,6 @@ object ExampleFood {
         data.put(BRAND, "Max's")
         data.put(VARIETY, "really good")
         data.put(NAME, "food")
-        data.put(VARIETY_AFTER_NAME, false)
         data.put(NOTES, "notes")
         data.put(CATEGORY, "dairy")
         data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)

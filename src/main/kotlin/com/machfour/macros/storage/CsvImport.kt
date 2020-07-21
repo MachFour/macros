@@ -2,8 +2,10 @@ package com.machfour.macros.storage
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Schema.FoodTable
+import com.machfour.macros.core.Schema.NutritionDataTable
+import com.machfour.macros.core.Schema.IngredientTable
+import com.machfour.macros.core.Schema.ServingTable
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
@@ -60,7 +62,7 @@ object CsvImport {
                     continue  // it's a blank row
                 }
                 val foodData = extractData(csvRow!!, FoodTable.instance)
-                val ndData = extractData(csvRow!!, Schema.NutritionDataTable.instance)
+                val ndData = extractData(csvRow!!, NutritionDataTable.instance)
                 data.add(Pair(foodData, ndData))
             }
         }
@@ -81,7 +83,7 @@ object CsvImport {
                         continue  // it's a blank row
                     }
                     // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                    val ingredientData = extractData(csvRow!!, Schema.IngredientTable.instance)
+                    val ingredientData = extractData(csvRow!!, IngredientTable.instance)
                     val compositeIndexName = csvRow!!.getValue("recipe_index_name")
                             ?: throw RuntimeException("No value for field: composite_index_name")
                     val ingredientIndexName = csvRow!!["ingredient_index_name"]
@@ -89,10 +91,10 @@ object CsvImport {
                     // TODO error handling
                     val ingredientFood = getFoodByIndexName(ds, ingredientIndexName)
                             ?: throw RuntimeException("No ingredient exists with index name: $ingredientIndexName")
-                    ingredientData.put(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientFood.id)
+                    ingredientData.put(IngredientTable.INGREDIENT_FOOD_ID, ingredientFood.id)
                     val i = Ingredient.factory().construct(ingredientData, ObjectSource.IMPORT)
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
-                    i.setFkParentNaturalKey(Schema.IngredientTable.COMPOSITE_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
+                    i.setFkParentNaturalKey(IngredientTable.COMPOSITE_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     i.initIngredientFood(ingredientFood)
 
                     // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
@@ -141,7 +143,7 @@ object CsvImport {
         // now we can finally create the nutrition data
         for (cf in foodMap.values) {
             val csvNutritionData = ndMap[cf.indexName]
-            if (csvNutritionData!!.hasData(Schema.NutritionDataTable.QUANTITY)) {
+            if (csvNutritionData!!.hasData(NutritionDataTable.QUANTITY)) {
                 // assume that there is overriding data
                 val overridingData = NutritionData.factory().construct(csvNutritionData, ObjectSource.IMPORT)
                 cf.setNutritionData(overridingData)
@@ -196,7 +198,7 @@ object CsvImport {
                         ?: throw RuntimeException("Food index name was null for row: $csvRow")
                 val s = Serving.factory().construct(servingData, ObjectSource.IMPORT)
                 // TODO move next line to be run immediately before saving
-                s.setFkParentNaturalKey(Schema.ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
+                s.setFkParentNaturalKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
                 servings.add(s)
             }
         }
@@ -216,7 +218,7 @@ object CsvImport {
         // collect all of the index names to be imported, and check if they're already in the DB.
         val existingIndexNames = findExistingFoodIndexNames(ds, foods.keys)
         // remove entries corresponding to existing foods; this actually modifies the original map
-        val newIndexNames: Set<String> = foods.keys.filter { !existingIndexNames.contains(it) }.toSet()
+        val foodsToSave : Map<String, Food> = foods.filter { entry -> !existingIndexNames.contains(entry.key) }
         /*
         if (allowOverwrite) {
             Map<String, Food> overwriteFoods = new HashMap<>();
@@ -228,19 +230,19 @@ object CsvImport {
          */
 
         // get out the nutrition data
-        val ndObjects: MutableMap<String, NutritionData> = LinkedHashMap(newIndexNames.size, 1.0f)
-        foods.values.forEach { food ->
-            val nd = food.getNutritionData()
-            // link it to the food so that the DB can create the correct foreign key entries
-            nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, FoodTable.INDEX_NAME, food)
-            ndObjects[food.indexName] = nd
+        val ndObjects = foodsToSave.map { (_, food) ->
+            food.getNutritionData().also {
+                // link it to the food so that the DB can create the correct foreign key entries
+                it.setFkParentNaturalKey(NutritionDataTable.FOOD_ID, FoodTable.INDEX_NAME, food)
+            }
         }
+
         if (existingIndexNames.isNotEmpty()) {
             println("The following foods will be imported; others had index names already present in the database:")
-            newIndexNames.forEach { println(it) }
+            foodsToSave.keys.forEach { println(it) }
         }
-        saveObjects(ds, foods.values, ObjectSource.IMPORT)
-        val completedNd = completeForeignKeys(ds, ndObjects.values, Schema.NutritionDataTable.FOOD_ID)
+        saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
+        val completedNd = completeForeignKeys(ds, ndObjects, NutritionDataTable.FOOD_ID)
         saveObjects(ds, completedNd, ObjectSource.IMPORT)
     }
 
@@ -254,7 +256,7 @@ object CsvImport {
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
     fun importServings(ds: MacrosDataSource, servingCsv: Reader, allowOverwrite: Boolean) {
         val csvServings = buildServings(servingCsv)
-        val completedServings = completeForeignKeys(ds, csvServings, Schema.ServingTable.FOOD_ID)
+        val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
         saveObjects(ds, completedServings, ObjectSource.IMPORT)
     }
 
@@ -270,7 +272,7 @@ object CsvImport {
         // add all the ingredients for non-duplicated recipes to one big list, then save them all
         val allIngredients: List<Ingredient> = ingredientsByRecipe.flatMap { it.value }
 
-        val completedIngredients = completeForeignKeys(ds, allIngredients, Schema.IngredientTable.COMPOSITE_FOOD_ID)
+        val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.COMPOSITE_FOOD_ID)
         saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
     }
 }

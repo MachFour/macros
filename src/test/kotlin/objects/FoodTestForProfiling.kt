@@ -41,7 +41,6 @@ class FoodTestForProfiling {
             foodDc.put(Schema.FoodTable.BRAND, "Max's")
             foodDc.put(Schema.FoodTable.VARIETY, "really good")
             foodDc.put(Schema.FoodTable.NAME, "food")
-            foodDc.put(Schema.FoodTable.VARIETY_AFTER_NAME, false)
             foodDc.put(Schema.FoodTable.NOTES, "notes")
             foodDc.put(Schema.FoodTable.CATEGORY, "Dairy")
             foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)

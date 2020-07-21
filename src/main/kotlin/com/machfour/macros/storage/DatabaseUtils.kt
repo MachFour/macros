@@ -163,17 +163,20 @@ object DatabaseUtils {
     // XXX Possible bug if the newline character is different on different platforms.
     @Throws(IOException::class)
     fun createSplitStatements(r: Reader): List<String> {
-        val splitStatements = createStatements(r, "\n").split(";\n\n").toTypedArray()
-        // replace remaining newline characters by spaces and add the semicolon back
-        val statements: MutableList<String> = ArrayList(splitStatements.size)
-        for (statement in splitStatements) {
-            statements.add(statement.replace("\n".toRegex(), " ") + ";")
-        }
-        return statements
+        return createStatements(r, "\n")
+            .split(";\n\n")
+            // a double newline after the last statement will cause an empty final element
+            // in the split list, which turns into a null statement ';' after the map.
+            // The Android SQL library seems to spew at this (throws SQL exception despite the
+            // SQL code being 0 (NOT_AN_ERROR).
+            // Anyway let's just filter everything to ensure we don't end up with any null statements
+            .filter { it.isNotBlank() }
+            // replace remaining newline characters by spaces and add the semicolon back
+            .map { it.replace("\n".toRegex(), " ") + ";" }
     }
 
     @Throws(IOException::class)
-    fun createStatements(r: Reader, linesep: String = " "): String {
+    fun createStatements(r: Reader, lineSep: String = " "): String {
         val trimmedAndDecommented: MutableList<String> = ArrayList(32)
         BufferedReader(r).use { reader ->
             // steps: remove all comment lines, trim, join, split on semicolon
@@ -195,7 +198,7 @@ object DatabaseUtils {
                 }
             }
         }
-        return StringJoiner.of(trimmedAndDecommented).sep(linesep).join()
+        return StringJoiner.of(trimmedAndDecommented).sep(lineSep).join()
     }
 
     @Throws(SQLException::class)

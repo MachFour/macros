@@ -38,10 +38,9 @@ CREATE TABLE Food (
     -- the product name (and maybe even flavour, for something like potato chips)
     -- something like 'Gala' for an apple.
 
-    -- 'variety_after_name' controls the formatting of the food. So you
-    -- can do things like 'John West' 'tuna' 'in olive oil' (brand, name, variety)
-    -- rather than, 'John West' 'olive oil' 'tuna' (brand, variety, name)
-    -- which just looks weird.
+    -- 'extra_desc' is any extra description of the food that can help to identify
+    -- it in a list of similar alternatives. For example it may be a flavour (in olive oil)
+    -- or preparation method (cooked, raw, peeled)
 
     -- 'attributes' are generally any qualifiers that are not specific to the
     -- food, or that identify it but aren't really part of the 'variety'.
@@ -51,9 +50,9 @@ CREATE TABLE Food (
     -- example, search everything tagged 'organic'.
 
     -- 'notes' contains any other useful information about the food. For example,
-    -- information about the ingredients, or preparation method (for tinned fish,
-    -- whether they're in brine or oil), or whether the skin is included in the
-    -- weight, for fruit, or whether meat is weighed uncooked vs cooked.
+    -- information about the ingredients, or origin of the food.
+    -- This information won't be displayed in a list form as there can be a lot of text
+    -- so it shouldn't be relied upon in order to identify the food.
 
     -- 'category' attempts to group foods into broad categories. Feel free to come
     -- up with your own categorisation method, or use mine, or don't use any at all.
@@ -70,7 +69,7 @@ CREATE TABLE Food (
     , brand                TEXT DEFAULT NULL
     , variety              TEXT DEFAULT NULL
     , name                 TEXT NOT NULL
-    , variety_after_name   INTEGER NOT NULL DEFAULT 0
+    , extra_desc           TEXT DEFAULT NULL
     , notes                TEXT DEFAULT NULL
     , category             TEXT NOT NULL DEFAULT 'uncategorised'
     , food_type            TEXT NOT NULL DEFAULT 'primary'
@@ -87,8 +86,8 @@ CREATE TABLE Food (
         REFERENCES FoodCategory (name)
         ON UPDATE CASCADE
         ON DELETE SET DEFAULT
-    , CONSTRAINT zero_one
-        CHECK (variety_after_name IN (0, 1))
+    , CONSTRAINT identifiable
+        UNIQUE (brand, variety, name, extra_desc)
     , CONSTRAINT valid_food_type
         CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
 );

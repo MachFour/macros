@@ -55,7 +55,6 @@ class FoodTest {
             foodData.put(Schema.FoodTable.BRAND, "Max's")
             foodData.put(Schema.FoodTable.VARIETY, "really good")
             foodData.put(Schema.FoodTable.NAME, "food")
-            foodData.put(Schema.FoodTable.VARIETY_AFTER_NAME, false)
             foodData.put(Schema.FoodTable.NOTES, "notes")
             foodData.put(Schema.FoodTable.CATEGORY, "dairy")
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)

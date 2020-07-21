@@ -40,7 +40,7 @@ class EnglishColumnNames private constructor(): ColumnNamer {
                 , FoodTable.INDEX_NAME to "Index name"
                 , FoodTable.BRAND to "Brand"
                 , FoodTable.VARIETY to "Variety"
-                , FoodTable.VARIETY_AFTER_NAME to "Variety after name"
+                , FoodTable.EXTRA_DESC to "Extra description"
                 , FoodTable.NAME to "Name"
                 , FoodTable.NOTES to "Notes"
                 , FoodTable.FOOD_TYPE to "Food Type"

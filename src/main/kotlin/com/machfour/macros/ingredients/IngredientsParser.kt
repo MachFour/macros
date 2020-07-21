@@ -98,7 +98,6 @@ object IngredientsParser {
         builder.setField(Schema.FoodTable.INDEX_NAME, spec.indexName)
         builder.setField(Schema.FoodTable.NAME, spec.name)
         builder.setField(Schema.FoodTable.VARIETY, spec.variety)
-        builder.setField(Schema.FoodTable.VARIETY_AFTER_NAME, false)
         builder.setField(Schema.FoodTable.NOTES, spec.notes)
         builder.setField(Schema.FoodTable.CATEGORY, "recipes") //TODO
         // setting this means that Food.factory().construct() will create a CompositeFood

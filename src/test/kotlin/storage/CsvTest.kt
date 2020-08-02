@@ -53,9 +53,9 @@ class CsvTest {
 
     @BeforeEach
     fun clearDb() {
-        db.clearTable(Ingredient.table())
+        db.clearTable(Ingredient.table)
         db.clearTable(Serving.table())
-        db.clearTable(NutritionData.table())
+        db.clearTable(NutritionData.table)
         db.clearTable(Food.table())
     }
 

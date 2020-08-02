@@ -16,6 +16,7 @@ object FoodQueries {
                 , Schema.FoodTable.NAME
                 , Schema.FoodTable.VARIETY
                 , Schema.FoodTable.BRAND
+                , Schema.FoodTable.EXTRA_DESC
         )
         // match any column prefix
         val prefixResults = Queries.prefixSearch(ds, Food.table(), columns, keyword)
@@ -60,9 +61,9 @@ object FoodQueries {
     fun getAllFoods(ds: MacrosDataSource): List<Food> {
         val allFoods = ds.getAllRawObjects(Food.table())
         val allServings = ds.getAllRawObjects(Serving.table())
-        val allNutritionData = ds.getAllRawObjects(NutritionData.table())
+        val allNutritionData = ds.getAllRawObjects(NutritionData.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = ds.getAllRawObjects(Ingredient.table())
+        val allIngredients = ds.getAllRawObjects(Ingredient.table)
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutritionData, allIngredients, allFoodCategories)
         return ArrayList(allFoods.values)

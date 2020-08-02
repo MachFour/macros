@@ -92,7 +92,7 @@ object CsvImport {
                     val ingredientFood = getFoodByIndexName(ds, ingredientIndexName)
                             ?: throw RuntimeException("No ingredient exists with index name: $ingredientIndexName")
                     ingredientData.put(IngredientTable.INGREDIENT_FOOD_ID, ingredientFood.id)
-                    val i = Ingredient.factory().construct(ingredientData, ObjectSource.IMPORT)
+                    val i = Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT)
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
                     i.setFkParentNaturalKey(IngredientTable.COMPOSITE_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     i.initIngredientFood(ingredientFood)
@@ -145,7 +145,7 @@ object CsvImport {
             val csvNutritionData = ndMap[cf.indexName]
             if (csvNutritionData!!.hasData(NutritionDataTable.QUANTITY)) {
                 // assume that there is overriding data
-                val overridingData = NutritionData.factory().construct(csvNutritionData, ObjectSource.IMPORT)
+                val overridingData = NutritionData.factory.construct(csvNutritionData, ObjectSource.IMPORT)
                 cf.setNutritionData(overridingData)
                 // calling cf.getnData will now correctly give all the values
             }
@@ -160,8 +160,8 @@ object CsvImport {
         // preserve insertion order
         val foodMap: MutableMap<String, Food> = LinkedHashMap()
         for ((foodData, ndData) in getFoodData(foodCsv)) {
-            var f: Food
-            var nd: NutritionData?
+            val f: Food
+            val nd: NutritionData
             f = try {
                 Food.factory().construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
@@ -170,7 +170,7 @@ object CsvImport {
                 //continue;
             }
             nd = try {
-                NutritionData.factory().construct(ndData, ObjectSource.IMPORT)
+                NutritionData.factory.construct(ndData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
                 // TODO make this nicer
                 throw RuntimeException("Schema violation detected in nutrition data: ${e.message} Data: $foodData")

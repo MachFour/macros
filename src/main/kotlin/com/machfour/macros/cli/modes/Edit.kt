@@ -108,7 +108,7 @@ class Edit : CommandImpl(NAME, USAGE) {
                 }
                 'x', 'q', '\u0000' -> return 0
                 else -> {
-                    out.printf("Unrecognised action: '%c'\n", action)
+                    out.println("Unrecognised action: '${action}'")
                     out.println()
                 }
             }// TODO exit if deleted
@@ -130,7 +130,7 @@ class Edit : CommandImpl(NAME, USAGE) {
         val foodPortions = toEdit.getFoodPortions()
         for (i in foodPortions.indices) {
             val fp = foodPortions[i]
-            out.printf("%d: %s\n", i, fp.prettyFormat(true))
+            out.println("$i: ${fp.prettyFormat(true)}")
         }
         out.println()
     }

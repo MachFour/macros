@@ -4,6 +4,7 @@ import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.objects.Food
+import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.QtyUnits
 import com.machfour.macros.queries.FoodQueries
@@ -46,21 +47,21 @@ class DensityTest {
     fun testDensity() {
         val density = chickpeaNd.density
         Assertions.assertNotNull(density)
-        val millilitresNd = chickpeaNd.rescale(100 / density!!, QtyUnits.MILLILITRES)
-        val backConverted = millilitresNd.rescale(100.0, QtyUnits.GRAMS)
+        val millilitresNd = NutritionCalculations.rescale(chickpeaNd, 100 / density!!, QtyUnits.MILLILITRES)
+        val backConverted = NutritionCalculations.rescale(millilitresNd, 100.0, QtyUnits.GRAMS)
         val carbs = NutritionDataTable.CARBOHYDRATE
         Assertions.assertEquals(chickpeaNd.getData(carbs)!!, millilitresNd.getData(carbs)!!, 0.01)
         Assertions.assertEquals(chickpeaNd.getData(carbs)!!, backConverted.getData(carbs)!!, 0.01)
-        println("Default quantity: " + chickpeaNd.quantity + chickpeaNd.qtyUnitAbbr())
-        println("mls quantity: " + millilitresNd.quantity + millilitresNd.qtyUnitAbbr())
-        println("backConverted quantity: " + backConverted.quantity + backConverted.qtyUnitAbbr())
+        println("Default quantity: " + chickpeaNd.quantity + chickpeaNd.qtyUnitAbbr)
+        println("mls quantity: " + millilitresNd.quantity + millilitresNd.qtyUnitAbbr)
+        println("backConverted quantity: " + backConverted.quantity + backConverted.qtyUnitAbbr)
     }
 
     @Test
     fun testDensity2() {
-        val chickPea100mL = chickpeaNd.rescale(100.0, QtyUnits.MILLILITRES)
-        val water100mL = waterNd.rescale(100.0, QtyUnits.MILLILITRES)
-        val combined = NutritionData.sum(listOf(chickPea100mL, water100mL))
+        val chickPea100mL = NutritionCalculations.rescale(chickpeaNd, 100.0, QtyUnits.MILLILITRES)
+        val water100mL = NutritionCalculations.rescale(waterNd, 100.0, QtyUnits.MILLILITRES)
+        val combined = NutritionCalculations.sum(listOf(chickPea100mL, water100mL))
         Assertions.assertEquals(QtyUnits.GRAMS, combined.qtyUnit)
         Assertions.assertEquals(100 + 100 * chickpeaNd.density!!, combined.quantity)
         Assertions.assertTrue(combined.hasCompleteData(NutritionDataTable.QUANTITY))

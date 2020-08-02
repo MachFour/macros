@@ -6,17 +6,12 @@ import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
-import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.Serving
+import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateTimeUtils
 
 import java.io.PrintStream
 import java.sql.SQLException
-import java.time.format.DateTimeFormatter
-import java.util.Objects
 
 
 class ShowFood : CommandImpl(NAME, USAGE) {
@@ -26,13 +21,13 @@ class ShowFood : CommandImpl(NAME, USAGE) {
 
         fun printFoodSummary(f: Food, out: PrintStream) {
             val dateFormat = DateTimeUtils.LOCALIZED_DATETIME_MEDIUM
-            out.printf("Name:          %s\n", f.mediumName)
-            out.printf("Notes:         %s\n", Objects.toString(f.notes, "(no notes)"))
-            out.printf("Category:      %s\n", f.foodCategory)
+            out.println("Name:          ${f.longName}")
+            out.println("Notes:         ${f.notes ?: ""}")
+            out.println("Category:      ${f.foodCategory}")
             out.println()
-            out.printf("Type:          %s\n", f.foodType.niceName)
-            out.printf("Created on:    %s\n", dateFormat.format(f.createInstant))
-            out.printf("Last modified: %s\n", dateFormat.format(f.modifyInstant))
+            out.println("Type:          ${f.foodType}")
+            out.println("Created on:    ${dateFormat.format(f.createInstant)}")
+            out.println("Last modified: ${dateFormat.format(f.modifyInstant)}")
         }
 
         fun printFood(f: Food, verbose: Boolean, out: PrintStream) {
@@ -49,7 +44,7 @@ class ShowFood : CommandImpl(NAME, USAGE) {
              * Nutrition data
              */
             var nd = f.getNutritionData()
-            val unit = nd.qtyUnitAbbr()
+            val unit = nd.qtyUnitAbbr
             out.println("Nutrition data (source: ${nd.getData(Schema.NutritionDataTable.DATA_SOURCE)})")
             out.println()
 
@@ -64,7 +59,7 @@ class ShowFood : CommandImpl(NAME, USAGE) {
                 out.printf("Per %.0f%s:\n", nd.quantity, unit)
                 CliUtils.printNutritionData(nd, verbose, out)
                 out.println()
-                nd = nd.rescale(100.0)
+                nd = NutritionCalculations.rescale(nd, 100.0)
             }
             out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
             CliUtils.printNutritionData(nd, verbose, out)
@@ -79,9 +74,9 @@ class ShowFood : CommandImpl(NAME, USAGE) {
             out.println()
 
             val servings = f.getServings()
-            if (!servings.isEmpty()) {
+            if (servings.isNotEmpty()) {
                 for (s in servings) {
-                    out.printf(" - %s: %.1f%s\n", s.name, s.quantity, s.qtyUnit.abbr)
+                    out.println(" - ${s.name}: %.1f${s.qtyUnitAbbr}".format(s.quantity))
                 }
             } else {
                 out.println("(No servings recorded)")

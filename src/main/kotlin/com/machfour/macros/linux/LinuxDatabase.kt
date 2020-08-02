@@ -397,7 +397,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
 
     @Throws(SQLException::class)
     override fun <M> clearTable(t: Table<M>): Int {
-        var removed = 0
+        val removed: Int
         val c = connection
         try {
             c.prepareStatement(DatabaseUtils.deleteAllTemplate(t)).use { p -> removed = p.executeUpdate() }
@@ -409,7 +409,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
 
     @Throws(SQLException::class)
     override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int {
-        var removed = 0
+        val removed: Int
         val c = connection
         try {
             c.prepareStatement(DatabaseUtils.deleteWhereTemplate(t, whereColumn, whereValues.size)).use { p ->
@@ -426,7 +426,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     override fun <M : MacrosEntity<M>> idExistsInTable(table: Table<M>, id: Long): Boolean {
         val idCol = table.idColumn.sqlName
         val query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name + " WHERE " + idCol + " = " + id
-        var exists = false
+        val exists: Boolean
         val c = connection
         try {
             c.createStatement().use { s ->

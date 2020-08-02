@@ -4,15 +4,16 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Meal
+import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.QtyUnit
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.PrintFormatting.formatQuantityAsVerbose
-import com.machfour.macros.util.StringJoiner.Companion.of
+import com.machfour.macros.util.StringJoiner
 import com.machfour.macros.util.UnicodeUtils.countDoubleWidthChars
 import java.io.PrintStream
-import java.util.*
+import kotlin.collections.ArrayList
 
 object MealPrinter {
     private const val columnSep = "   "
@@ -112,7 +113,7 @@ object MealPrinter {
         // row separator spans all columns plus each separator, but we discount the space
         // after the last separator
         val rowSepLength = rowWidths.sum() + rowWidths.size * columnSep.length - 1
-        val rowSeparator = of(Collections.nCopies(rowSepLength, "=")).join()
+        val rowSeparator = StringJoiner.of("=").copies(rowSepLength).join()
         printRow(headingRow, rowWidths, rightAlign, columnSep, out)
         out.println(rowSeparator)
         // now we get to the actual data
@@ -158,7 +159,7 @@ object MealPrinter {
             for (m in meals) {
                 allNutData.add(m.nutritionTotal)
             }
-            val totalNutData = NutritionData.sum(allNutData)
+            val totalNutData = NutritionCalculations.sum(allNutData)
             out.println("====================")
             out.println("Total for all meals:")
             out.println("====================")

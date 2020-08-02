@@ -9,7 +9,6 @@ import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.queries.FoodQueries.getServingsById
 import com.machfour.macros.storage.MacrosDataSource
 import java.sql.SQLException
-import java.util.*
 
 internal object QueryHelpers {
     @Throws(SQLException::class)
@@ -85,8 +84,8 @@ internal object QueryHelpers {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
             //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
             val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table(), Schema.ServingTable.FOOD_ID)
-            val nutritionData = getRawObjectsForParentFk(ds, foodMap, NutritionData.table(), Schema.NutritionDataTable.FOOD_ID)
-            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table(), Schema.IngredientTable.COMPOSITE_FOOD_ID)
+            val nutritionData = getRawObjectsForParentFk(ds, foodMap, NutritionData.table, Schema.NutritionDataTable.FOOD_ID)
+            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, Schema.IngredientTable.COMPOSITE_FOOD_ID)
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
             processRawIngredients(ds, ingredients)
             processRawFoodMap(foodMap, servings, nutritionData, ingredients, categories)

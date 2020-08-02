@@ -11,7 +11,10 @@ import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.DateStamp.Companion.prettyPrint
 import java.sql.SQLException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 class Meals : CommandImpl(NAME, USAGE) {
     companion object {
@@ -57,9 +60,9 @@ class Meals : CommandImpl(NAME, USAGE) {
                 out.println()
                 out.println(String.format("%-16s %-16s", "Name", "Last Modified"))
                 out.println("=================================")
-                val dateFormat = SimpleDateFormat()
+                val dateFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.LONG)
                 for (m in meals.values) {
-                    val mealDate = Date(m.modifyTime * 1000)
+                    val mealDate = m.modifyInstant.atZone(ZoneId.systemDefault())
                     out.println(String.format("%-16s %16s", m.name, dateFormat.format(mealDate)))
                 }
             }

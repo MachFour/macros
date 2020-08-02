@@ -90,7 +90,7 @@ class MealSpec {
         if (!isMealSpecified) {
             if (mealsForDay.isNotEmpty()) {
                 // use most recently modified meal today
-                processedObject = mealsForDay.values.maxBy { it.modifyTime }
+                processedObject = mealsForDay.values.maxByOrNull { it.modifyTime } !!
             } else {
                 error = "No meals recorded on " + prettyPrint(day)
             }

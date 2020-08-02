@@ -38,9 +38,9 @@ class Export : CommandImpl(NAME, USAGE) {
         val ds = config.dataSourceInstance
         try {
             exportTable(ds, outputDir, Food.table())
-            exportTable(ds, outputDir, NutritionData.table())
+            exportTable(ds, outputDir, NutritionData.table)
             exportTable(ds, outputDir, Serving.table())
-            exportTable(ds, outputDir, Ingredient.table())
+            exportTable(ds, outputDir, Ingredient.table)
             exportTable(ds, outputDir, Meal.table())
             exportTable(ds, outputDir, FoodPortion.table())
         } catch (e: SQLException) {

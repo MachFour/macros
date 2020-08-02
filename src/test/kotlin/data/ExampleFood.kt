@@ -59,7 +59,7 @@ object ExampleFood {
 
     private fun init2(): Food {
         val fData = ColumnData(Food.table())
-        val nData = ColumnData(NutritionData.table())
+        val nData = ColumnData(NutritionData.table)
         fData.put(INDEX_NAME, "generic-oil")
         fData.put(NAME, "Generic Oil")
         fData.put(CATEGORY, "oils")
@@ -80,7 +80,7 @@ object ExampleFood {
         nData.put(DENSITY, 0.92)
         nData.put(QUANTITY, 100.0)
         nData.put(QUANTITY_UNIT, QtyUnits.MILLILITRES.abbr)
-        val nd = NutritionData.table().construct(nData, ObjectSource.USER_NEW)
+        val nd = NutritionData.table.construct(nData, ObjectSource.USER_NEW)
         val f = Food.factory().construct(fData, ObjectSource.IMPORT)
         f.setNutritionData(nd)
         return f

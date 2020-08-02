@@ -3,13 +3,11 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
-import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 
 import java.sql.SQLException
-import java.util.ArrayList
 
 
 /*

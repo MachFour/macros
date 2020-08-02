@@ -6,6 +6,7 @@ import com.machfour.macros.names.ColumnUnits
 import com.machfour.macros.names.DefaultColumnUnits
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
+import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.util.MiscUtils.javaTrim
 import com.machfour.macros.util.PrintFormatting
@@ -30,7 +31,7 @@ object CliUtils {
     )
 
     fun printPer100g(nd: NutritionData, verbose: Boolean, out: PrintStream) {
-        printNutritionData(nd.rescale(100.0), verbose, out)
+        printNutritionData(NutritionCalculations.rescale(nd, 100.0), verbose, out)
     }
 
     // TODO use methods from PrintFormatting here?
@@ -55,13 +56,13 @@ object CliUtils {
 
     fun printEnergyProportions(nd: NutritionData, verbose: Boolean, out: PrintStream) {
         // TODO pass in ColumnUnits and ColumnNamer
-        val colNamer: ColumnNamer = EnglishColumnNames.instance
+        val colNames: ColumnNamer = EnglishColumnNames.instance
         out.println("Energy proportions (approx.)")
         // TODO get these lengths from ColumnNamer / ColumnUnits
-        val proportionMap = nd.makeEnergyProportionsMap()
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
-        for (col in proportionMap.keys) {
-            out.printf(fmt, colNamer.getName(col), proportionMap[col])
+        for (col in NutritionData.energyProportionCols) {
+            val proportion = nd.getEnergyProportion(col)
+            out.printf(fmt, colNames.getName(col), proportion*100)
         }
     }
 
@@ -69,21 +70,22 @@ object CliUtils {
      * Fixed width string format, left aligned
      */
     private fun strFmtL(n: Int): String {
-        return "%-" + n + "s"
+        return "%-${n}s"
     }
 
     /*
      * Fixed width string format
      */
     private fun strFmt(n: Int): String {
-        return "%" + n + "s"
+        return "%${n}s"
     }
 
     /*
      * Fixed width string format
      */
     private fun strFmt(n: Int, leftAlign: Boolean): String {
-        return "%" + (if (leftAlign) "-" else "") + n + "s"
+        val align = if (leftAlign) "-" else ""
+        return "%${align}${n}s"
     }
 
     /*

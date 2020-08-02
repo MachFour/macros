@@ -6,7 +6,7 @@ import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.Unit
-import java.util.*
+import java.util.Formatter;
 
 object PrintFormatting {
     const val nameWidth = 45
@@ -32,13 +32,13 @@ object PrintFormatting {
         require(unitWidth <= 0 || width == 0 || unitWidth in 0 until(width)) { "If width != 0, must have width > unitWidth >= 0" }
 
         val finalUnitWidth = if (unit != null && unitWidth <= 0) unit.abbr.length else unitWidth
-        val f = Formatter(Locale.getDefault())
+        val f = Formatter()
 
         val floatFmt = if (withDp) ".1f" else ".0f"
         val alignFmt = if (alignLeft) "" else "-"
         val unitStr = if (unit == null) "" else String.format("%${alignFmt}${finalUnitWidth}s", unit.abbr)
         return if (alignLeft) {
-            f.format("%${floatFmt}%s${unitStr}", qty)
+            f.format("%${floatFmt}${unitStr}", qty)
             if (width > 0) String.format("%-${width}s", f.toString()) else f.toString()
         } else {
             f.format("%" + (if (width > 0) width - finalUnitWidth else "") + floatFmt, qty)

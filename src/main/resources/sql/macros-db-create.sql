@@ -186,6 +186,7 @@ CREATE TABLE Meal (
     -- timestamps are updated via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
+    , notes                TEXT DEFAULT NULL
 
     -- table restriction
     --, CONSTRAINT valid_meal_description

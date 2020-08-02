@@ -249,7 +249,7 @@ object Schema {
 
     }
 
-    class IngredientTable private constructor() : BaseTable<Ingredient>(TABLE_NAME, Ingredient.factory(), COLUMNS) {
+    class IngredientTable private constructor() : BaseTable<Ingredient>(TABLE_NAME, Ingredient.factory, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Ingredient"
 
@@ -313,7 +313,7 @@ object Schema {
         }
     }
 
-    class NutritionDataTable private constructor() : BaseTable<NutritionData>(TABLE_NAME, NutritionData.factory(), COLUMNS) {
+    class NutritionDataTable private constructor() : BaseTable<NutritionData>(TABLE_NAME, NutritionData.factory, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "NutritionData"
 

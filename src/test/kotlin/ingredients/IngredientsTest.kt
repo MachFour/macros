@@ -40,7 +40,7 @@ class IngredientsTest {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
                 db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
-                db.clearTable(Ingredient.table())
+                db.clearTable(Ingredient.table)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)
@@ -73,7 +73,8 @@ class IngredientsTest {
         CliUtils.printNutritionData(recipe!!.getNutritionData(), false, System.out)
         println()
         println("Nutrition data per 100g")
-        CliUtils.printNutritionData(recipe.getNutritionData().rescale(100.0), false, System.out)
+        val rescaled = NutritionCalculations.rescale(recipe.getNutritionData(), 100.0)
+        CliUtils.printNutritionData(rescaled, false, System.out)
     }
 
 

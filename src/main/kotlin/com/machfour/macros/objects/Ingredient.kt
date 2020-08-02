@@ -22,13 +22,14 @@ class Ingredient private constructor(data: ColumnData<Ingredient>, objectSource:
     val qtyUnit = QtyUnits.fromAbbreviation(data[Schema.IngredientTable.QUANTITY_UNIT]!!)
 
     // this is the only thing that may remain null after all initialisation is complete
-    private var serving: Serving? = null
+    var serving: Serving? = null
+        private set
 
     override val factory: Factory<Ingredient>
-        get() = factory()
+        get() = Companion.factory
 
     override val table: Table<Ingredient>
-        get() = table()
+        get() = Companion.table
 
     val compositeFoodId: Long
         get() = getData(Schema.IngredientTable.COMPOSITE_FOOD_ID)!!
@@ -48,13 +49,16 @@ class Ingredient private constructor(data: ColumnData<Ingredient>, objectSource:
         return other is Ingredient && super.equals(other)
     }
 
+    override fun hashCode(): Int {
+        return super.hashCode()
+    }
+
     fun qtyUnit(): QtyUnit {
         return qtyUnit
     }
 
-    fun qtyUnitAbbr(): String {
-        return getData(Schema.IngredientTable.QUANTITY_UNIT)!!
-    }
+    val qtyUnitAbbr: String
+        get() = getData(Schema.IngredientTable.QUANTITY_UNIT)!!
 
     fun initCompositeFood(f: Food) {
         assert(f is CompositeFood && f.foodType === FoodType.COMPOSITE)
@@ -66,11 +70,7 @@ class Ingredient private constructor(data: ColumnData<Ingredient>, objectSource:
     fun initIngredientFood(f: Food) {
         assert(foreignKeyMatches(this, Schema.IngredientTable.INGREDIENT_FOOD_ID, f))
         ingredientFood = f
-        nutritionData = f.getNutritionData().rescale(quantity(), qtyUnit())
-    }
-
-    fun getServing(): Serving? {
-        return serving
+        nutritionData = NutritionCalculations.rescale(f.getNutritionData(), quantity(), qtyUnit())
     }
 
     fun initServing(s: Serving) {
@@ -87,31 +87,23 @@ class Ingredient private constructor(data: ColumnData<Ingredient>, objectSource:
     // it is formatted as an integer.
     fun servingCountString(): String {
         // test if can round
-        val intVer = servingCount().roundToInt()
-        return if (intVer - servingCount() < 0.001) {
+        val intVer = servingCount.roundToInt()
+        return if (intVer - servingCount < 0.001) {
             intVer.toString()
         } else {
-            servingCount().toString()
+            servingCount.toString()
         }
     }
 
-    fun servingCount(): Double {
-        return serving?.let { quantity() / it.quantity} ?: 0.0
-    }
+    val servingCount: Double
+        get() = serving?.let { quantity() / it.quantity} ?: 0.0
 
     companion object {
+        // factory must come before table due to static initialisation order
+        val factory = Factory<Ingredient> { dataMap, objectSource -> Ingredient(dataMap, objectSource) }
 
-        fun factory(): Factory<Ingredient> {
-            return object : Factory<Ingredient> {
-                override fun construct(dataMap: ColumnData<Ingredient>, objectSource: ObjectSource): Ingredient {
-                    return Ingredient(dataMap, objectSource)
-                }
-            }
-        }
-
-        fun table(): Table<Ingredient> {
-            return Schema.IngredientTable.instance
-        }
+        val table: Table<Ingredient>
+            get() = Schema.IngredientTable.instance
     }
 }
 

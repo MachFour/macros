@@ -10,7 +10,6 @@ import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
-import java.util.*
 
 object MealQueries {
     @Throws(SQLException::class)
@@ -47,14 +46,7 @@ object MealQueries {
     // if no meals exist for the current date, returns null
     @Throws(SQLException::class)
     fun getCurrentMeal(ds: MacrosDataSource): Meal? {
-        val mealsForDay = getMealsForDay(ds, currentDate())
-        return if (mealsForDay.isEmpty()) {
-            null
-        } else {
-            // most recently modified -> largest modification time -> swap compare order
-            Collections.max(mealsForDay.values
-            ) { a: Meal, b: Meal -> java.lang.Long.compare(b.startTime, a.startTime) }
-        }
+        return getMealsForDay(ds, currentDate()).values.maxByOrNull { it.startTime }
     }
 
     @Throws(SQLException::class)
@@ -109,12 +101,6 @@ object MealQueries {
     }
 
     fun findMealWithName(mealMap: Map<Long, Meal>, name: String): Meal? {
-        var found: Meal? = null
-        for (m in mealMap.values) {
-            if (name == m.name) {
-                found = m
-            }
-        }
-        return found
+        return mealMap.values.firstOrNull { it.name == name }
     }
 }

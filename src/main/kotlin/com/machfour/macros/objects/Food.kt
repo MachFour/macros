@@ -2,6 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.FoodTable
+import com.machfour.macros.core.Schema.NutritionDataTable
 import java.lang.StringBuilder
 import java.util.Collections
 
@@ -45,7 +46,7 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
 
     private lateinit var nutritionData: NutritionData
 
-    val foodType: FoodType = FoodType.fromString(dataMap.get(FoodTable.FOOD_TYPE)!!)
+    val foodType: FoodType = FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)
 
     var foodCategory: FoodCategory? = null
         private set
@@ -56,7 +57,7 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
     }
 
     open fun setNutritionData(nd: NutritionData) {
-        assert(foreignKeyMatches(nd, Schema.NutritionDataTable.FOOD_ID, this))
+        assert(foreignKeyMatches(nd, NutritionDataTable.FOOD_ID, this))
         nutritionData = nd
     }
 
@@ -84,8 +85,6 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
 
     val nuttabIndex: String?
         get() = getData(FoodTable.NUTTAB_INDEX)
-    val notes: String?
-        get() = getData(FoodTable.NOTES)
 
     override fun equals(other: Any?): Boolean {
         return other is Food && super.equals(other)
@@ -107,11 +106,17 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
     val mediumName: String
         get() = prettyFormat()
 
+    val extraDesc: String?
+        get() = getData(FoodTable.EXTRA_DESC)
+
+    val notes: String?
+        get() = getData(FoodTable.NOTES)
+
     val indexName: String
         get() = getData(FoodTable.INDEX_NAME)!!
 
     private fun makeSortableName(): String {
-        return prettyFormat(withExtra = true, withVariety = true)
+        return prettyFormat(withExtra = true, sortable = true)
     }
 
     val categoryName: String

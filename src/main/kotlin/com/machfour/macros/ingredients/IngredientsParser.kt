@@ -66,7 +66,7 @@ object IngredientsParser {
             throw RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName))
         }
         val ingredientId = ingredientMap[spec.indexName]
-        val builder = MacrosBuilder(Ingredient.table())
+        val builder = MacrosBuilder(Ingredient.table)
         builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, composite.id)
         builder.setField(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientId)
         builder.setField(Schema.IngredientTable.SERVING_ID, null) // TODO
@@ -171,7 +171,7 @@ object IngredientsParser {
             Queries.insertObjects(ds, newIngredients, false)
 
             // TODO nutrition data object to go along with it, if quantity is known
-            //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table());
+            //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table);
             //nData.setField(Schema.NutritionDataTable.DATA_SOURCE, "recipe");
             //nData.setField(Schema.NutritionDataTable.FOOD_ID, id);
             //nData.setField(Schema.NutritionDataTable.QUANTITY ,";

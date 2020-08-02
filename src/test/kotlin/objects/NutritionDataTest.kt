@@ -6,6 +6,7 @@ import com.machfour.macros.core.Schema.FoodPortionTable.Companion.MEAL_ID
 import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY
 import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY_UNIT
 import com.machfour.macros.objects.FoodPortion
+import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.QtyUnits
 import data.ExampleFood
@@ -71,7 +72,7 @@ class NutritionDataTest {
 
     @Test
     fun testSum() {
-        val sum = NutritionData.sum(listOf(nd1, nd2), true)
+        val sum = NutritionCalculations.sum(listOf(nd1, nd2), true)
         assertEquals(192.0, sum.getData(Schema.NutritionDataTable.FAT) as Double)
     }
 

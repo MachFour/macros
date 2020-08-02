@@ -4,7 +4,8 @@ import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.Schema.MealTable
+import com.machfour.macros.core.Schema.FoodPortionTable
 import com.machfour.macros.core.Table
 import com.machfour.macros.util.DateStamp
 
@@ -17,7 +18,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
             for (m in meals) {
                 totalPerMeal.add(m.nutritionTotal)
             }
-            return NutritionData.sum(totalPerMeal)
+            return NutritionCalculations.sum(totalPerMeal)
         }
 
         fun factory(): Factory<Meal> {
@@ -29,7 +30,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
         }
 
         fun table(): Table<Meal> {
-            return Schema.MealTable.instance
+            return MealTable.instance
         }
     }
 
@@ -46,11 +47,11 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
             for (fp in foodPortions) {
                 nutritionComponents.add(fp.nutritionData)
             }
-            return NutritionData.sum(nutritionComponents)
+            return NutritionCalculations.sum(nutritionComponents)
         }
 
     val name: String
-        get() = getData(Schema.MealTable.NAME)!!
+        get() = getData(MealTable.NAME)!!
 
     /*
      * 'Day' is the day for which the nutrition data should be counted.
@@ -58,7 +59,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
      * for all meals having that Day field
      */
     val day: DateStamp
-        get() = getData(Schema.MealTable.DAY)!!
+        get() = getData(MealTable.DAY)!!
 
     /*
      * Start time is the time that the meal was actually consumed. Note that
@@ -68,11 +69,11 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
      */
     // returns time in Unix time, aka seconds since Jan 1 1970
     val startTime: Long
-        get() = getData(Schema.MealTable.START_TIME)!!
+        get() = getData(MealTable.START_TIME)!!
 
     // in seconds, how long the meal lasted.
     val durationSeconds: Long
-        get() = getData(Schema.MealTable.DURATION)!!
+        get() = getData(MealTable.DURATION)!!
 
     val durationMinutes: Long
         get() = durationSeconds / 60
@@ -80,6 +81,8 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
     val startTimeInstant: Instant
         get() = Instant.ofEpochSecond(startTime)
 
+    val notes: String?
+        get() = getData(MealTable.NOTES)
 
     override fun equals(other: Any?): Boolean {
         return other is Meal && super.equals(other)
@@ -95,7 +98,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
 
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
-        assert(foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this))
+        assert(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
         foodPortions.add(fp)
     }
 

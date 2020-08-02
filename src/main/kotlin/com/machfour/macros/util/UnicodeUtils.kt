@@ -1,7 +1,6 @@
 package com.machfour.macros.util
 
 import java.lang.Character.UnicodeBlock
-import java.util.*
 
 object UnicodeUtils {
     // https://stackoverflow.com/a/41982074/
@@ -36,11 +35,11 @@ object UnicodeUtils {
 
     // Korean / Hangul
     // https://gist.github.com/TheFinestArtist/2fd1b4aa1d4824fcbaef
-    private val hangulBlocks: Collection<UnicodeBlock> = HashSet(Arrays.asList(
+    private val hangulBlocks: Collection<UnicodeBlock> = setOf(
             UnicodeBlock.HANGUL_JAMO
             , UnicodeBlock.HANGUL_COMPATIBILITY_JAMO
             , UnicodeBlock.HANGUL_SYLLABLES
-    ))
+    )
 
     fun isFullWidthChar(codepoint: Int): Boolean {
         if (UnicodeBlock.of(codepoint) !== halfWidthFullWidthBlock) {

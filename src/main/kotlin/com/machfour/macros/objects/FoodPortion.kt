@@ -79,7 +79,7 @@ class FoodPortion private constructor(data: ColumnData<FoodPortion>, objectSourc
     fun initFood(f: Food) {
         assert(foreignKeyMatches(this, Schema.FoodPortionTable.FOOD_ID, f))
         food = f
-        nutritionData = f.getNutritionData().rescale(quantity, qtyUnit)
+        nutritionData = NutritionCalculations.rescale(f.getNutritionData(), quantity, qtyUnit)
     }
 
     // for use during construction

@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.Schema
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
+import com.machfour.macros.storage.CsvException
 import com.machfour.macros.storage.CsvImport.importFoodData
 import com.machfour.macros.storage.CsvImport.importRecipes
 import com.machfour.macros.storage.CsvImport.importServings
@@ -89,7 +90,12 @@ class Import : CommandImpl(NAME, USAGE) {
             err.println("Type cast exception occurred: ${e3.message}")
             err.println("Please check the format of the CSV files")
             return 1
+        } catch (e4: CsvException) {
+            out.println()
+            err.println("CSV import exception occurred: ${e4.message}")
+            err.println("Please check the format of the CSV files")
         }
+
         out.println()
         out.println("Import completed successfully")
         return 0

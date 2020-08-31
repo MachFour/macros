@@ -85,12 +85,12 @@ object CsvImport {
                     // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
                     val ingredientData = extractData(csvRow!!, IngredientTable.instance)
                     val compositeIndexName = csvRow!!.getValue("recipe_index_name")
-                            ?: throw RuntimeException("No value for field: composite_index_name")
+                            ?: throw CsvException("No value for field: composite_index_name")
                     val ingredientIndexName = csvRow!!["ingredient_index_name"]
-                            ?: throw RuntimeException("No value for field: ingredient_index_name")
+                            ?: throw CsvException("No value for field: ingredient_index_name")
                     // TODO error handling
                     val ingredientFood = getFoodByIndexName(ds, ingredientIndexName)
-                            ?: throw RuntimeException("No ingredient exists with index name: $ingredientIndexName")
+                            ?: throw CsvException("No ingredient exists with index name: $ingredientIndexName")
                     ingredientData.put(IngredientTable.INGREDIENT_FOOD_ID, ingredientFood.id)
                     val i = Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT)
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
@@ -127,8 +127,7 @@ object CsvImport {
             val f = Food.factory().construct(foodData, ObjectSource.IMPORT)
             assert(f is CompositeFood)
             if (foodMap.containsKey(f.indexName)) {
-                // TODO make this nicer
-                throw RuntimeException("Imported recipes contained duplicate index name: " + f.indexName)
+                throw CsvException("Imported recipes contained duplicate index name: " + f.indexName)
             }
             foodMap[f.indexName] = f as CompositeFood
             ndMap[f.indexName] = ndData
@@ -165,21 +164,18 @@ object CsvImport {
             f = try {
                 Food.factory().construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
-                // TODO make this nicer
-                throw RuntimeException("Schema violation detected in food: ${e.message} Data: $foodData")
+                throw CsvException("Schema violation detected in food: ${e.message} Data: $foodData")
                 //continue;
             }
             nd = try {
                 NutritionData.factory.construct(ndData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
-                // TODO make this nicer
-                throw RuntimeException("Schema violation detected in nutrition data: ${e.message} Data: $foodData")
+                throw CsvException("Schema violation detected in nutrition data: ${e.message} Data: $foodData")
                 //continue;
             }
             f.setNutritionData(nd) // without pairs, needed to recover nutrition data from return value
             if (foodMap.containsKey(f.indexName)) {
-                // TODO make this nicer
-                throw RuntimeException("Imported foods contained duplicate index name: " + f.indexName)
+                throw CsvException("Imported foods contained duplicate index name: " + f.indexName)
             }
             foodMap[f.indexName] = f
         }
@@ -195,7 +191,7 @@ object CsvImport {
             while (mapReader.read(*header).also { csvRow = it } != null) {
                 val servingData = extractData(csvRow!!, Serving.table())
                 val foodIndexName = csvRow!![FoodTable.INDEX_NAME.sqlName]
-                        ?: throw RuntimeException("Food index name was null for row: $csvRow")
+                        ?: throw CsvException("Food index name was null for row: $csvRow")
                 val s = Serving.factory().construct(servingData, ObjectSource.IMPORT)
                 // TODO move next line to be run immediately before saving
                 s.setFkParentNaturalKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)

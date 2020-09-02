@@ -34,7 +34,7 @@ class Read : CommandImpl(NAME, USAGE) {
 
 
         val fileParser = FileParser()
-        var meals: List<Meal> = emptyList()
+        var meals: List<Meal>
         try {
             FileReader(filename).use { meals = fileParser.parseFile(ds, it) }
         } catch (e1: IOException) {

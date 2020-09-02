@@ -1,11 +1,10 @@
 plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.0-rc'
+    id "java"
+    id "org.jetbrains.kotlin.jvm" version "1.4.0"
 }
 
 group 'com.machfour'
 version '1.0-SNAPSHOT'
-
 repositories {
     mavenCentral()
     jcenter()
@@ -17,7 +16,7 @@ dependencies {
     // CSV support
     implementation "net.sf.supercsv:super-csv:2.4.0"
     // Nullable annotations in Java
-    implementation "org.jetbrains:annotations:19.0.0"
+    implementation "org.jetbrains:annotations:20.0.0"
     // JSON
     implementation "com.google.code.gson:gson:2.8.6"
     // for lanterna and sqlite-jdbc

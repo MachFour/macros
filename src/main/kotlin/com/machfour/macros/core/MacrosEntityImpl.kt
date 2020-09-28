@@ -4,7 +4,6 @@ import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.ValidationError
 import java.time.Instant
 import java.util.Collections;
-import kotlin.RuntimeException
 
 /**
  * parent class for all macros persistable objects

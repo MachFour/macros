@@ -191,34 +191,31 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         return HashMap(completeData)
     }
 
-    fun getProteinEnergyPercentage() : Double {
-        return getEnergyProportion(PROTEIN, true)
-    }
-    fun getProteinEnergyProportion() : Double {
-        return getEnergyProportion(PROTEIN, false)
-    }
+    val proteinEnergyPercentage: Double
+        get() = getEnergyProportion(PROTEIN, true)
 
-    fun getAllCarbsEnergyPercentage() : Double {
-        return getEnergyProportion(CARBOHYDRATE, true) +
-                getEnergyProportion(SUGAR, true) +
-                getEnergyProportion(FIBRE, true)
-    }
+    val proteinEnergyProportion : Double
+        get() = getEnergyProportion(PROTEIN, false)
+
+    val allCarbsEnergyPercentage: Double
+        get() {
+            return getEnergyProportion(CARBOHYDRATE, true) +
+                    getEnergyProportion(SUGAR, true) +
+                    getEnergyProportion(FIBRE, true)
+        }
     // Total (carbs + sugar + fibre) energy proportion
-    fun getAllCarbsEnergyProportion(asPercentage: Boolean = false) : Double {
-        return getEnergyProportion(CARBOHYDRATE, asPercentage) +
-            getEnergyProportion(SUGAR, asPercentage) +
-            getEnergyProportion(FIBRE, asPercentage)
-    }
+    val allCarbsEnergyProportion : Double
+        get() {
+            return getEnergyProportion(CARBOHYDRATE, false) +
+                getEnergyProportion(SUGAR, false) +
+                getEnergyProportion(FIBRE, false)
+        }
 
-    fun getAllFatsEnergyPercentage() : Double {
-        return getEnergyProportion(FAT, true) +
-                getEnergyProportion(SATURATED_FAT, true)
-    }
+    val allFatsEnergyPercentage : Double
+        get() = getEnergyProportion(FAT, true) + getEnergyProportion(SATURATED_FAT, true)
 
-    fun getAllFatsEnergyProportion(asPercentage: Boolean = false) : Double {
-        return getEnergyProportion(FAT, asPercentage) +
-                getEnergyProportion(SATURATED_FAT, asPercentage)
-    }
+    val allFatsEnergyProportion : Double
+        get() = getEnergyProportion(FAT, false) + getEnergyProportion(SATURATED_FAT, false)
 
     fun getEnergyProportion(col: Column<NutritionData, Double>, asPercentage: Boolean = false) : Double {
         if (!energyProportionCols.contains(col)) {

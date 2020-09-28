@@ -395,7 +395,7 @@ object Schema {
                 FOOD_ID = builder("food_id", Types.ID).notEditable().defaultsTo(NO_ID).inSecondaryKey().unique()
                         .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
                 QUANTITY = builder("quantity", Types.REAL).notNull().defaultsTo(100.0).buildAndAdd(COLUMNS)
-                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull()
+                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull().defaultsTo(QtyUnits.GRAMS.abbr)
                         .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
                 DATA_SOURCE = builder("data_source", Types.TEXT).buildAndAdd(COLUMNS)
                 DENSITY = builder("density", Types.REAL).buildAndAdd(COLUMNS)

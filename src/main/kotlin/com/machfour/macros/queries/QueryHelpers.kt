@@ -153,8 +153,10 @@ internal object QueryHelpers {
                 Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.id)
                 .map { requireNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
         if (foodPortionIds.isNotEmpty()) {
-            val foodPortions = getRawObjectsByIds(ds, FoodPortion.table(), foodPortionIds)
-            for (fp in foodPortions.values) {
+            val rawFoodPortionMap = getRawObjectsByIds(ds, FoodPortion.table(), foodPortionIds)
+            // sort by create time
+            val foodPortions = rawFoodPortionMap.values.toList().sortedBy { it.createTime }
+            for (fp in foodPortions) {
                 val portionFood = foodMap.getValue(fp.foodId)
                 fp.initFood(portionFood)
                 fp.servingId?.let {

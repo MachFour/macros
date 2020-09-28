@@ -2,7 +2,7 @@ package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.validation.ValidationError
-import java.util.Collections;
+import java.util.Collections
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         private val table: Table<M>,

@@ -6,7 +6,7 @@ import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.Unit
-import java.util.Formatter;
+import java.util.Formatter
 
 object PrintFormatting {
     const val nameWidth = 45

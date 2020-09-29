@@ -58,7 +58,7 @@ class AddFood : CommandImpl(NAME, USAGE) {
             return 1
         }
 
-        val foodBuilder = MacrosBuilder(Food.table())
+        val foodBuilder = MacrosBuilder(Food.table)
         val nDataBuilder = MacrosBuilder(NutritionData.table)
 
         foodBuilder.setField(Schema.FoodTable.INDEX_NAME, indexName)

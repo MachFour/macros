@@ -1,4 +1,4 @@
-package data
+package com.machfour.macros.sample
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
@@ -54,11 +54,11 @@ object ExampleFood {
         data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
         data.put(USDA_INDEX, null)
         data.put(NUTTAB_INDEX, null)
-        return Food.factory().construct(data, ObjectSource.IMPORT)
+        return Food.factory.construct(data, ObjectSource.IMPORT)
     }
 
     private fun init2(): Food {
-        val fData = ColumnData(Food.table())
+        val fData = ColumnData(Food.table)
         val nData = ColumnData(NutritionData.table)
         fData.put(INDEX_NAME, "generic-oil")
         fData.put(NAME, "Generic Oil")
@@ -81,7 +81,7 @@ object ExampleFood {
         nData.put(QUANTITY, 100.0)
         nData.put(QUANTITY_UNIT, QtyUnits.MILLILITRES.abbr)
         val nd = NutritionData.table.construct(nData, ObjectSource.USER_NEW)
-        val f = Food.factory().construct(fData, ObjectSource.IMPORT)
+        val f = Food.factory.construct(fData, ObjectSource.IMPORT)
         f.setNutritionData(nd)
         return f
     }

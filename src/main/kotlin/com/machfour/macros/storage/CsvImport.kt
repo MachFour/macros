@@ -124,7 +124,7 @@ object CsvImport {
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for ((foodData, ndData) in getFoodData(recipeCsv)) {
             foodData.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
-            val f = Food.factory().construct(foodData, ObjectSource.IMPORT)
+            val f = Food.factory.construct(foodData, ObjectSource.IMPORT)
             assert(f is CompositeFood)
             if (foodMap.containsKey(f.indexName)) {
                 throw CsvException("Imported recipes contained duplicate index name: " + f.indexName)
@@ -162,7 +162,7 @@ object CsvImport {
             val f: Food
             val nd: NutritionData
             f = try {
-                Food.factory().construct(foodData, ObjectSource.IMPORT)
+                Food.factory.construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
                 throw CsvException("Schema violation detected in food: ${e.message} Data: $foodData")
                 //continue;
@@ -189,10 +189,10 @@ object CsvImport {
             val header = mapReader.getHeader(true)
             var csvRow: Map<String, String>?
             while (mapReader.read(*header).also { csvRow = it } != null) {
-                val servingData = extractData(csvRow!!, Serving.table())
+                val servingData = extractData(csvRow!!, Serving.table)
                 val foodIndexName = csvRow!![FoodTable.INDEX_NAME.sqlName]
                         ?: throw CsvException("Food index name was null for row: $csvRow")
-                val s = Serving.factory().construct(servingData, ObjectSource.IMPORT)
+                val s = Serving.factory.construct(servingData, ObjectSource.IMPORT)
                 // TODO move next line to be run immediately before saving
                 s.setFkParentNaturalKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
                 servings.add(s)
@@ -203,7 +203,7 @@ object CsvImport {
 
     @Throws(SQLException::class)
     private fun findExistingFoodIndexNames(ds: MacrosDataSource, indexNames: Collection<String>): Set<String> {
-        return selectColumn(ds, Food.table(), FoodTable.INDEX_NAME, FoodTable.INDEX_NAME, indexNames, false)
+        return selectColumn(ds, Food.table, FoodTable.INDEX_NAME, FoodTable.INDEX_NAME, indexNames, false)
                 .map { requireNotNull(it) { "Null food index name encountered: $it" } }
                 .toSet()
     }

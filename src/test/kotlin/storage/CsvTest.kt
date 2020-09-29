@@ -54,9 +54,9 @@ class CsvTest {
     @BeforeEach
     fun clearDb() {
         db.clearTable(Ingredient.table)
-        db.clearTable(Serving.table())
+        db.clearTable(Serving.table)
         db.clearTable(NutritionData.table)
-        db.clearTable(Food.table())
+        db.clearTable(Food.table)
     }
 
     @Test
@@ -134,8 +134,8 @@ class CsvTest {
     @Test
     fun testCsvWriteFoods() {
         try {
-            val foods = db.getAllRawObjects(Food.table())
-            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(Food.table(), it, foods.values) }
+            val foods = db.getAllRawObjects(Food.table)
+            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(Food.table, it, foods.values) }
         } catch (e: IOException) {
             e.printStackTrace()
             Assertions.fail<Any>("IOException was thrown")
@@ -148,8 +148,8 @@ class CsvTest {
     @Test
     fun testCsvWriteServings() {
         try {
-            val servings = db.getAllRawObjects(Serving.table())
-            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(Serving.table(), it, servings.values) }
+            val servings = db.getAllRawObjects(Serving.table)
+            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(Serving.table, it, servings.values) }
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail<Any>("Exception was thrown")

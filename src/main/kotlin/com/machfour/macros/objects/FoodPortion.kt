@@ -6,6 +6,12 @@ import kotlin.math.roundToInt
 class FoodPortion private constructor(data: ColumnData<FoodPortion>, objectSource: ObjectSource)
     : MacrosEntityImpl<FoodPortion>(data, objectSource) {
 
+    companion object {
+        val factory: Factory<FoodPortion> = Factory { dataMap, objectSource -> FoodPortion(dataMap, objectSource) }
+        val table: Table<FoodPortion>
+            get() = Schema.FoodPortionTable.instance
+    }
+
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.
      */
@@ -24,9 +30,9 @@ class FoodPortion private constructor(data: ColumnData<FoodPortion>, objectSourc
 
 
     override val table: Table<FoodPortion>
-        get() = table()
+        get() = Companion.table
     override val factory: Factory<FoodPortion>
-        get() = factory()
+        get() = Companion.factory
 
     val mealId: Long
         get() = getData(Schema.FoodPortionTable.MEAL_ID)!!
@@ -105,18 +111,5 @@ class FoodPortion private constructor(data: ColumnData<FoodPortion>, objectSourc
         return serving?. let { quantity/ it.quantity } ?: 0.0
     }
 
-    companion object {
-        fun table(): Table<FoodPortion> {
-            return Schema.FoodPortionTable.instance
-        }
-
-        fun factory(): Factory<FoodPortion> {
-            return object : Factory<FoodPortion> {
-                override fun construct(dataMap: ColumnData<FoodPortion>, objectSource: ObjectSource): FoodPortion {
-                    return FoodPortion(dataMap, objectSource)
-                }
-            }
-        }
-    }
 }
 

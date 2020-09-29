@@ -9,7 +9,7 @@ import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.QtyUnits
-import data.ExampleFood
+import com.machfour.macros.sample.ExampleFood
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -23,7 +23,7 @@ class NutritionDataTest {
         private val nd3: NutritionData // mg
 
         init {
-            val fpBuilder = MacrosBuilder(FoodPortion.table())
+            val fpBuilder = MacrosBuilder(FoodPortion.table)
             fpBuilder.setField(FOOD_ID, f.id)
             fpBuilder.setField(MEAL_ID, MacrosEntity.NO_ID)
             fpBuilder.setField(QUANTITY, 100.0)

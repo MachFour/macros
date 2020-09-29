@@ -35,7 +35,7 @@ class FoodEditor constructor(
 
     companion object {
         private val NUM_ACTIONS = Action.values().size
-        private val FOOD_TABLE_COLUMNS = Food.table().columns
+        private val FOOD_TABLE_COLUMNS = Food.table.columns
         private val ND_TABLE_COLUMNS = NutritionData.table.columns
 
         // Layout parameters

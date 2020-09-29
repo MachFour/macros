@@ -24,7 +24,7 @@ class IngredientsParserTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+                db.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
                 db.clearTable(Ingredient.table)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")

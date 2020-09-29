@@ -5,6 +5,13 @@ import com.machfour.macros.core.*
 class Serving internal constructor(data: ColumnData<Serving>, objectSource: ObjectSource)
     : MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
 
+    companion object {
+        // factory has to come before table if it's an instance variable
+        val factory: Factory<Serving> = Factory { dataMap, objectSource -> Serving(dataMap, objectSource) }
+        val table: Table<Serving>
+            get() = Schema.ServingTable.instance
+    }
+
     lateinit var food: Food
         private set
 
@@ -13,10 +20,10 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
 
     val qtyUnit: QtyUnit = QtyUnits.fromAbbreviation(qtyUnitAbbr)
 
-    override val table: Table<Serving>
-        get() = table()
     override val factory: Factory<Serving>
-        get() = factory()
+        get() = Companion.factory
+    override val table: Table<Serving>
+        get() = Companion.table
 
     val foodId: Long
         get() = getData(Schema.ServingTable.FOOD_ID)!!
@@ -53,17 +60,4 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
 
     override val isServing = true
 
-    companion object {
-        fun table(): Table<Serving> {
-            return Schema.ServingTable.instance
-        }
-
-        fun factory(): Factory<Serving> {
-            return object : Factory<Serving> {
-                override fun construct(dataMap: ColumnData<Serving>, objectSource: ObjectSource): Serving {
-                    return Serving(dataMap, objectSource)
-                }
-            }
-        }
-    }
 }

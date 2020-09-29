@@ -94,7 +94,7 @@ object IngredientsParser {
     // creates a composite food and ingredients objects from the given spec
     // NOTE that no IDs are ever created for the objects
     private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<String, Long>): CompositeFood {
-        val builder = MacrosBuilder(Food.table())
+        val builder = MacrosBuilder(Food.table)
         builder.setField(Schema.FoodTable.INDEX_NAME, spec.indexName)
         builder.setField(Schema.FoodTable.NAME, spec.name)
         builder.setField(Schema.FoodTable.VARIETY, spec.variety)

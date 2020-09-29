@@ -17,29 +17,29 @@ object QtyUnits {
     private val ID_MAP: MutableMap<Long, QtyUnit>
 
     init {
-        val gramsData = ColumnData(QtyUnit.table())
+        val gramsData = ColumnData(QtyUnit.table)
         gramsData.put(Schema.QtyUnitTable.ID, 1L)
         gramsData.put(Schema.QtyUnitTable.NAME, "grams")
         gramsData.put(Schema.QtyUnitTable.ABBREVIATION, "g")
         gramsData.put(Schema.QtyUnitTable.METRIC_EQUIVALENT, 1.0)
         gramsData.put(Schema.QtyUnitTable.IS_VOLUME_UNIT, false)
-        GRAMS = QtyUnit.factory().construct(gramsData, ObjectSource.INBUILT)
+        GRAMS = QtyUnit.factory.construct(gramsData, ObjectSource.INBUILT)
 
-        val milsData = ColumnData(QtyUnit.table())
+        val milsData = ColumnData(QtyUnit.table)
         milsData.put(Schema.QtyUnitTable.ID, 2L)
         milsData.put(Schema.QtyUnitTable.NAME, "millilitres")
         milsData.put(Schema.QtyUnitTable.ABBREVIATION, "ml")
         milsData.put(Schema.QtyUnitTable.METRIC_EQUIVALENT, 1.0)
         milsData.put(Schema.QtyUnitTable.IS_VOLUME_UNIT, true)
-        MILLILITRES = QtyUnit.factory().construct(milsData, ObjectSource.INBUILT)
+        MILLILITRES = QtyUnit.factory.construct(milsData, ObjectSource.INBUILT)
 
-        val mgData = ColumnData(QtyUnit.table())
+        val mgData = ColumnData(QtyUnit.table)
         mgData.put(Schema.QtyUnitTable.ID, 3L)
         mgData.put(Schema.QtyUnitTable.NAME, "milligrams")
         mgData.put(Schema.QtyUnitTable.ABBREVIATION, "mg")
         mgData.put(Schema.QtyUnitTable.METRIC_EQUIVALENT, 0.001)
         mgData.put(Schema.QtyUnitTable.IS_VOLUME_UNIT, false)
-        MILLIGRAMS = QtyUnit.factory().construct(mgData, ObjectSource.INBUILT)
+        MILLIGRAMS = QtyUnit.factory.construct(mgData, ObjectSource.INBUILT)
 
         INBUILT = listOf(GRAMS, MILLIGRAMS, MILLILITRES)
 

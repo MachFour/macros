@@ -44,12 +44,12 @@ class Restore : CommandImpl(NAME, USAGE) {
         }
         val ds = config.dataSourceInstance
         try {
-            restoreTable(ds, csvDir, Food.table())
+            restoreTable(ds, csvDir, Food.table)
             restoreTable(ds, csvDir, NutritionData.table)
-            restoreTable(ds, csvDir, Serving.table())
+            restoreTable(ds, csvDir, Serving.table)
             restoreTable(ds, csvDir, Ingredient.table)
-            restoreTable(ds, csvDir, Meal.table())
-            restoreTable(ds, csvDir, FoodPortion.table())
+            restoreTable(ds, csvDir, Meal.table)
+            restoreTable(ds, csvDir, FoodPortion.table)
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

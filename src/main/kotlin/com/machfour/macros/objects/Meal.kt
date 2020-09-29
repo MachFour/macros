@@ -21,25 +21,19 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
             return NutritionCalculations.sum(totalPerMeal)
         }
 
-        fun factory(): Factory<Meal> {
-            return object : Factory<Meal> {
-                override fun construct(dataMap: ColumnData<Meal>, objectSource: ObjectSource): Meal {
-                    return Meal(dataMap, objectSource)
-                }
-            }
-        }
-
-        fun table(): Table<Meal> {
-            return MealTable.instance
-        }
+        // factory before table
+        val factory: Factory<Meal> = Factory { dataMap, objectSource -> Meal(dataMap, objectSource) }
+        val table: Table<Meal>
+            get() = MealTable.instance
     }
 
     private val foodPortions: MutableList<FoodPortion> = ArrayList()
 
     override val factory: Factory<Meal>
-        get() = factory()
+        get() = Companion.factory
+
     override val table: Table<Meal>
-        get() = table()
+        get() = Companion.table
 
     val nutritionTotal: NutritionData
         get() {

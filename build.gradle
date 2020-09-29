@@ -13,7 +13,6 @@ repositories {
 dependencies {
     // Kotlin JVM standard library
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10"
-
     // CSV support
     implementation "net.sf.supercsv:super-csv:2.4.0"
     // Nullable annotations in Java
@@ -34,9 +33,3 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 
-// for Android Studio / Android project
-java {
-    modularity.inferModulePath = true
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}

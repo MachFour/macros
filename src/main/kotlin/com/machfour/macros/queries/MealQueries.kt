@@ -27,10 +27,10 @@ object MealQueries {
         return if (nameMatch != null) {
             nameMatch
         } else {
-            val newMealData = ColumnData(Meal.table())
+            val newMealData = ColumnData(Meal.table)
             newMealData.put(Schema.MealTable.DAY, day)
             newMealData.put(Schema.MealTable.NAME, name)
-            val newMeal = Meal.factory().construct(newMealData, ObjectSource.USER_NEW)
+            val newMeal = Meal.factory.construct(newMealData, ObjectSource.USER_NEW)
             Queries.saveObject(ds, newMeal)
             // get it back again, so that it has an ID and stuff
             mealsForDay = getMealsForDay(ds, day)
@@ -94,7 +94,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: List<Long>): List<Long> {
-        val ids = ds.selectColumn(FoodPortion.table(), Schema.FoodPortionTable.FOOD_ID, Schema.FoodPortionTable.MEAL_ID, mealIds, true)
+        val ids = ds.selectColumn(FoodPortion.table, Schema.FoodPortionTable.FOOD_ID, Schema.FoodPortionTable.MEAL_ID, mealIds, true)
         // ensure no null IDs
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
     }

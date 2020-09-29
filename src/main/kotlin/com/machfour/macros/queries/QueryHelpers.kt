@@ -20,7 +20,7 @@ internal object QueryHelpers {
     // all meals will be returned.
     @Throws(SQLException::class)
     fun getRawMealsById(ds: MacrosDataSource, mealIds: List<Long>): Map<Long, Meal> {
-        return getRawObjectsByKeys(ds, Meal.table(), Schema.MealTable.ID, mealIds)
+        return getRawObjectsByKeys(ds, Meal.table, Schema.MealTable.ID, mealIds)
     }
 
     @Throws(SQLException::class)
@@ -83,7 +83,7 @@ internal object QueryHelpers {
         if (foodMap.isNotEmpty()) {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
             //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
-            val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table(), Schema.ServingTable.FOOD_ID)
+            val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
             val nutritionData = getRawObjectsForParentFk(ds, foodMap, NutritionData.table, Schema.NutritionDataTable.FOOD_ID)
             val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, Schema.IngredientTable.COMPOSITE_FOOD_ID)
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
@@ -149,11 +149,11 @@ internal object QueryHelpers {
      */
     @Throws(SQLException::class)
     fun applyFoodPortionsToRawMeal(ds: MacrosDataSource, meal: Meal, foodMap: Map<Long, Food>) {
-        val foodPortionIds = Queries.selectColumn(ds, FoodPortion.table(),
+        val foodPortionIds = Queries.selectColumn(ds, FoodPortion.table,
                 Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.id)
                 .map { requireNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
         if (foodPortionIds.isNotEmpty()) {
-            val rawFoodPortionMap = getRawObjectsByIds(ds, FoodPortion.table(), foodPortionIds)
+            val rawFoodPortionMap = getRawObjectsByIds(ds, FoodPortion.table, foodPortionIds)
             // sort by create time
             val foodPortions = rawFoodPortionMap.values.toList().sortedBy { it.createTime }
             for (fp in foodPortions) {

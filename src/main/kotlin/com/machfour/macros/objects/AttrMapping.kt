@@ -5,19 +5,16 @@ import com.machfour.macros.core.*
 class AttrMapping private constructor(data: ColumnData<AttrMapping>, objectSource: ObjectSource)
     : MacrosEntityImpl<AttrMapping>(data, objectSource) {
 
-    override val table: Table<AttrMapping>
-        get() = Schema.AttrMappingTable.instance
+    companion object {
+        val factory: Factory<AttrMapping> = Factory { dataMap, objectSource -> AttrMapping(dataMap, objectSource) }
+        val table: Table<AttrMapping>
+            get() = Schema.AttrMappingTable.instance
+    }
 
     override val factory: Factory<AttrMapping>
-        get() = factory()
+        get() = Companion.factory
 
-    companion object {
-        fun factory(): Factory<AttrMapping> {
-            return object : Factory<AttrMapping> {
-                override fun construct(dataMap: ColumnData<AttrMapping>, objectSource: ObjectSource): AttrMapping {
-                    return AttrMapping(dataMap, objectSource)
-                }
-            }
-        }
-    }
+    override val table: Table<AttrMapping>
+        get() = Companion.table
+
 }

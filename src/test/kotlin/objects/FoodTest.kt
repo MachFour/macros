@@ -60,7 +60,7 @@ class FoodTest {
             foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
             foodData.put(Schema.FoodTable.USDA_INDEX, null)
             foodData.put(Schema.FoodTable.NUTTAB_INDEX, null)
-            testFood = Food.factory().construct(foodData, ObjectSource.IMPORT)
+            testFood = Food.factory.construct(foodData, ObjectSource.IMPORT)
         }
     }
 
@@ -68,7 +68,7 @@ class FoodTest {
     fun getFoodFromDb() {
         val modifiedData = foodData.copy()
         modifiedData.put(Schema.FoodTable.ID, 50L)
-        val f = Food.factory().construct(modifiedData, ObjectSource.RESTORE)
+        val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
             assertEquals(1, Queries.saveObject(db, f))
@@ -106,7 +106,7 @@ class FoodTest {
             val modifiedData = foodData.copy()
             modifiedData.put(Schema.FoodTable.ID, i.toLong())
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food$i")
-            val modifiedIndexName = Food.factory().construct(modifiedData, ObjectSource.RESTORE)
+            val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
             lotsOfFoods.add(modifiedIndexName)
         }
         try {
@@ -125,7 +125,7 @@ class FoodTest {
     fun saveFoodFromDb() {
         val modifiedData = foodData.copy()
         modifiedData.put(Schema.FoodTable.ID, 50L)
-        val f = Food.factory().construct(modifiedData, ObjectSource.RESTORE)
+        val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
             assertEquals(1, Queries.saveObject(db, f))
@@ -137,7 +137,7 @@ class FoodTest {
         // now change the data and save with same ID
         val modifiedData2 = modifiedData.copy()
         modifiedData2.put(Schema.FoodTable.NAME, "newName")
-        val f1 = Food.factory().construct(modifiedData2, ObjectSource.DB_EDIT)
+        val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
             assertEquals(1, Queries.saveObject(db, f1))
         } catch (e: SQLException) {
@@ -151,7 +151,7 @@ class FoodTest {
     fun testSaveWithId() {
         val modifiedData = foodData.copy()
         modifiedData.put(Schema.FoodTable.ID, 500L)
-        val f = Food.factory().construct(modifiedData, ObjectSource.RESTORE)
+        val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             assertEquals(1, Queries.saveObject(db, f))
         } catch (e: SQLException) {

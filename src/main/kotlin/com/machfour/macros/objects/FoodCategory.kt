@@ -3,32 +3,22 @@ package com.machfour.macros.objects
 import com.machfour.macros.core.*
 
 class FoodCategory(data: ColumnData<FoodCategory>, objectSource: ObjectSource) : MacrosEntityImpl<FoodCategory>(data, objectSource) {
+    companion object {
+        val factory: Factory<FoodCategory> = Factory { dataMap, objectSource -> FoodCategory(dataMap, objectSource) }
+        val table: Table<FoodCategory>
+            get() = Schema.FoodCategoryTable.instance
+    }
+
+    override val factory: Factory<FoodCategory>
+        get() = Companion.factory
 
     override val table: Table<FoodCategory>
-        get() = table()
+        get() = Companion.table
 
     val name: String
         get() = getData(Schema.FoodCategoryTable.NAME)!!
 
-    override val factory: Factory<FoodCategory>
-        get() = factory()
-
     override fun toString(): String {
         return name
-    }
-
-    companion object {
-
-        fun factory(): Factory<FoodCategory> {
-            return object : Factory<FoodCategory> {
-                override fun construct(dataMap: ColumnData<FoodCategory>, objectSource: ObjectSource): FoodCategory {
-                    return FoodCategory(dataMap, objectSource)
-                }
-            }
-        }
-
-        fun table(): Table<FoodCategory> {
-            return Schema.FoodCategoryTable.instance
-        }
     }
 }

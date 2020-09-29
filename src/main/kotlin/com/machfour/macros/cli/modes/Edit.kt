@@ -189,7 +189,7 @@ class Edit : CommandImpl(NAME, USAGE) {
         try {
             val newData = portions[n].getAllData(false)
             newData.put(Schema.FoodPortionTable.QUANTITY, newQty)
-            Queries.saveObject(ds, FoodPortion.factory().construct(newData, ObjectSource.DB_EDIT))
+            Queries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
             out.println("Error modifying the food portion: " + e3.message)
             return

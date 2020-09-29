@@ -19,22 +19,20 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
             FoodTable.INDEX_NAME
         )
 
-        fun table(): Table<Food> {
-            return FoodTable.instance
-        }
-
         // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
         // Hooray for preferring static constructors over new!!!
-        fun factory(): Factory<Food> {
-            return object : Factory<Food> {
-                override fun construct(dataMap: ColumnData<Food>, objectSource: ObjectSource): Food {
-                    return when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
-                        FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
-                        else -> Food(dataMap, objectSource)
-                    }
+        val factory: Factory<Food> = Factory { dataMap, objectSource ->
+                when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
+                    FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
+                    else -> Food(dataMap, objectSource)
                 }
             }
-        }
+
+        // if factory is saved as an instance variable, then table has to come after
+
+        val table: Table<Food>
+            get() = FoodTable.instance
+
     }
 
     private val servings: MutableList<Serving> = ArrayList()
@@ -67,10 +65,10 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
     }
 
     override val table: Table<Food>
-        get() = table()
+        get() = Companion.table
 
     override val factory: Factory<Food>
-        get() = factory()
+        get() = Companion.factory
 
     fun addServing(s: Serving) {
         assert(!servings.contains(s) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this))

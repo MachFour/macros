@@ -100,11 +100,11 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     override val factory: Factory<NutritionData>
         get() = Companion.factory
 
-    val foodId: Long
-        get() = getData(FOOD_ID)!!
-
     override val table: Table<NutritionData>
         get() = Schema.NutritionDataTable.instance
+
+    val foodId: Long
+        get() = getData(FOOD_ID)!!
 
     val dataSource: String?
         get() = getData(DATA_SOURCE)

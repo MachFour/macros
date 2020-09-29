@@ -12,24 +12,18 @@ import com.machfour.macros.core.Schema.QtyUnitTable.Companion.NAME
 class QtyUnit private constructor(data: ColumnData<QtyUnit>, objectSource: ObjectSource)
     : MacrosEntityImpl<QtyUnit>(data, objectSource), PortionMeasurement, Unit {
     companion object {
-        fun factory(): Factory<QtyUnit> {
-            return object : Factory<QtyUnit> {
-                override fun construct(dataMap: ColumnData<QtyUnit>, objectSource: ObjectSource): QtyUnit {
-                    return QtyUnit(dataMap, objectSource)
-                }
-            }
-        }
+        // factory before table
+        val factory : Factory<QtyUnit> = Factory { dataMap, objectSource -> QtyUnit(dataMap, objectSource) }
 
-        fun table(): Table<QtyUnit> {
-            return Schema.QtyUnitTable.instance
-        }
+        val table: Table<QtyUnit>
+            get() = Schema.QtyUnitTable.instance
     }
 
-    override val table: Table<QtyUnit>
-        get() = table()
-
     override val factory: Factory<QtyUnit>
-        get() = factory()
+        get() = Companion.factory
+
+    override val table: Table<QtyUnit>
+        get() = Companion.table
 
     val isVolumeUnit: Boolean
         get() = getData(IS_VOLUME_UNIT)!!

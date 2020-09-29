@@ -46,7 +46,7 @@ class FoodTestForProfiling {
             foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
             foodDc.put(Schema.FoodTable.USDA_INDEX, null)
             foodDc.put(Schema.FoodTable.NUTTAB_INDEX, null)
-            testFood = Food.factory().construct(foodDc, ObjectSource.IMPORT)
+            testFood = Food.factory.construct(foodDc, ObjectSource.IMPORT)
         }
 
         @JvmStatic
@@ -73,7 +73,7 @@ class FoodTestForProfiling {
             val modifiedData = foodDc.copy()
             modifiedData.put(Schema.FoodTable.ID, i.toLong())
             modifiedData.put(Schema.FoodTable.INDEX_NAME, "food$i")
-            val modifiedIndexName = Food.factory().construct(modifiedData, ObjectSource.IMPORT)
+            val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.IMPORT)
             lotsOfFoods.add(modifiedIndexName)
         }
         try {

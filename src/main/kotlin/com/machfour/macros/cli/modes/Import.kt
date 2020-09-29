@@ -47,13 +47,13 @@ class Import : CommandImpl(NAME, USAGE) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
                     ds.clearTable(Ingredient.table)
-                    ds.clearTable(Serving.table())
+                    ds.clearTable(Serving.table)
                     ds.clearTable(NutritionData.table)
-                    ds.clearTable(Food.table())
+                    ds.clearTable(Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")
                     // have to clear nutrition data first
-                    ds.deleteByColumn(Food.table(), Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+                    ds.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
                     ds.clearTable(Ingredient.table)
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")

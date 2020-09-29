@@ -3,21 +3,16 @@ package com.machfour.macros.objects
 import com.machfour.macros.core.*
 
 class RegularMeal(data: ColumnData<RegularMeal>, objectSource: ObjectSource) : MacrosEntityImpl<RegularMeal>(data, objectSource) {
-
-    override val table: Table<RegularMeal>
-        get() = Schema.RegularMealTable.instance
+    companion object {
+        val table: Table<RegularMeal>
+            get() = Schema.RegularMealTable.instance
+        val factory: Factory<RegularMeal> = Factory { dataMap, objectSource -> RegularMeal(dataMap, objectSource) }
+    }
 
     override val factory: Factory<RegularMeal>
-        get() = factory()
+        get() = Companion.factory
 
-    companion object {
+    override val table: Table<RegularMeal>
+        get() = Companion.table
 
-        fun factory(): Factory<RegularMeal> {
-            return object : Factory<RegularMeal> {
-                override fun construct(dataMap: ColumnData<RegularMeal>, objectSource: ObjectSource): RegularMeal {
-                    return RegularMeal(dataMap, objectSource)
-                }
-            }
-        }
-    }
 }

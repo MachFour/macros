@@ -110,13 +110,13 @@ class FileParser {
                 quantity = fps.quantity
                 unit = fps.unit
             }
-            val fpData = ColumnData(FoodPortion.table())
+            val fpData = ColumnData(FoodPortion.table)
             fpData.put(Schema.FoodPortionTable.FOOD_ID, f.id)
             fpData.put(Schema.FoodPortionTable.SERVING_ID, s?.id)
             fpData.put(Schema.FoodPortionTable.MEAL_ID, m.id)
             fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit!!.abbr)
             fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
-            val fp = FoodPortion.factory().construct(fpData, ObjectSource.USER_NEW)
+            val fp = FoodPortion.factory.construct(fpData, ObjectSource.USER_NEW)
             fp.initFood(f)
             if (s != null) {
                 fp.initServing(s)
@@ -227,10 +227,10 @@ class FileParser {
         }
 
         private fun makeMeal(description: String, day: DateStamp): Meal {
-            val mealData = ColumnData(Meal.table())
+            val mealData = ColumnData(Meal.table)
             mealData.put(Schema.MealTable.NAME, description)
             mealData.put(Schema.MealTable.DAY, day)
-            return Meal.factory().construct(mealData, ObjectSource.USER_NEW)
+            return Meal.factory.construct(mealData, ObjectSource.USER_NEW)
         }
     }
 

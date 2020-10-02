@@ -1,8 +1,22 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CALORIES
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CARBOHYDRATE
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FAT
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FIBRE
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.KILOJOULES
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.PROTEIN
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SATURATED_FAT
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SUGAR
 
 object NutritionCalculations {
+
+    internal const val CAL_TO_KJ_FACTOR = 4.186
+    internal const val CALS_PER_G_PROTEIN = 17 / CAL_TO_KJ_FACTOR
+    internal const val CALS_PER_G_FAT = 37 / CAL_TO_KJ_FACTOR
+    internal const val CALS_PER_G_CARBOHYDRATE = 17 / CAL_TO_KJ_FACTOR
+    internal const val CALS_PER_G_FIBRE = 8 / CAL_TO_KJ_FACTOR
 
     private fun convertToGramsIfNecessary(nd: NutritionData): NutritionData {
         return when (nd.qtyUnit == QtyUnits.GRAMS) {
@@ -14,6 +28,16 @@ object NutritionCalculations {
                 convertQuantityUnit(nd, QtyUnits.GRAMS, density, guessDensity)
             }
         }
+    }
+
+    internal fun getEnergyAs(nd: NutritionData, energyCol: Column<NutritionData, Double>): Double? {
+        require(NutritionData.ENERGY_COLS.contains(energyCol))
+        return nd.getData(energyCol)
+            ?: if (energyCol == CALORIES) {
+                nd.getData(KILOJOULES)?.div(CAL_TO_KJ_FACTOR)
+            } else { // energyCol.equals(KILOJOULES)
+                nd.getData(CALORIES)?.times(CAL_TO_KJ_FACTOR)
+            }
     }
 
     /*
@@ -94,16 +118,13 @@ object NutritionCalculations {
         var sumQuantity = 0.0
         var unnormalisedDensity = 0.0 // need to divide by sumQuantity at the end
 
-        val sumData = HashMap<Column<NutritionData, Double>, Double>(NutritionData.NUTRIENT_COLUMNS.size, 1f)
-        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.NUTRIENT_COLUMNS.size, 1f)
-        for (col in NutritionData.NUTRIENT_COLUMNS) {
+        val sumData = HashMap<Column<NutritionData, Double>, Double>(NutritionData.nutrientColumns.size, 1f)
+        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.nutrientColumns.size, 1f)
+        for (col in NutritionData.nutrientColumns) {
             sumData[col] = 0.0
             combinedHasData[col] = true
         }
-        for (nd in components) {
-            val ndToSum =
-                    convertToGramsIfNecessary(
-                        nd)
+        for (ndToSum in components.map { convertToGramsIfNecessary(it) }) {
             val quantity = ndToSum.quantity
             var density = 1.0 // default guess
             if (ndToSum.density == null || !ndToSum.hasCompleteData(Schema.NutritionDataTable.QUANTITY)) {
@@ -116,7 +137,7 @@ object NutritionCalculations {
             // gradually calculate overall density via weighted sum of densities
             unnormalisedDensity += density * quantity
 
-            for (col in NutritionData.NUTRIENT_COLUMNS) {
+            for (col in NutritionData.nutrientColumns) {
                 // total has correct data for a field if and only if each component does
                 // if the current component has no data for a field, we add nothing to the total,
                 // implicitly treating it as zero
@@ -128,7 +149,7 @@ object NutritionCalculations {
             }
         }
         val combinedDataMap = ColumnData(Schema.NutritionDataTable.instance)
-        for (col in NutritionData.NUTRIENT_COLUMNS) {
+        for (col in NutritionData.nutrientColumns) {
             combinedDataMap.put(col, sumData[col])
         }
         val combinedDensity = unnormalisedDensity / sumQuantity
@@ -161,7 +182,7 @@ object NutritionCalculations {
     fun rescale(nd: NutritionData, newQuantity: Double): NutritionData {
         val conversionRatio = newQuantity / nd.quantity
         val newData = copyDataForNew(nd)
-        for (c in NutritionData.NUTRIENT_COLUMNS) {
+        for (c in NutritionData.nutrientColumns) {
             //if (hasCompleteData(c)) {
             if (nd.hasData(c)) {
                 // hasData() check avoids NullPointerException
@@ -184,9 +205,9 @@ object NutritionCalculations {
         //    secondary = secondary.rescale(primary.getQuantity());
         //}
         val combinedDataMap = copyDataForNew(primary)
-        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.NUTRIENT_COLUMNS.size, 1f)
+        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.nutrientColumns.size, 1f)
 
-        for (col in NutritionData.NUTRIENT_COLUMNS) {
+        for (col in NutritionData.nutrientColumns) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
             // nData object was produced by summation and there was at least one food with missing data.
@@ -204,37 +225,46 @@ object NutritionCalculations {
 
     }
 
-    internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Column<NutritionData, Double>, Double> {
+    // energy from each individual macronutrient
+    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: EnergyUnit = EnergyUnit.Calories): Map<Column<NutritionData, Double>, Double> {
         // preserve iteration order
-        val proportionMap = LinkedHashMap<Column<NutritionData, Double>, Double>()
+        val componentMap = LinkedHashMap<Column<NutritionData, Double>, Double>()
+
+        val unitMultiplier = when (unit) {
+            is EnergyUnit.Kilojoules -> CAL_TO_KJ_FACTOR
+            is EnergyUnit.Calories -> 1.0
+        }
+
         // energy from...
-        val protein = nd.amountOf(Schema.NutritionDataTable.PROTEIN, 0.0) * NutritionData.CALS_PER_G_PROTEIN
-        var fat = nd.amountOf(Schema.NutritionDataTable.FAT, 0.0) * NutritionData.CALS_PER_G_FAT
-        var carb = nd.amountOf(Schema.NutritionDataTable.CARBOHYDRATE, 0.0) * NutritionData.CALS_PER_G_CARBOHYDRATE
-        val sugar = nd.amountOf(Schema.NutritionDataTable.SUGAR, 0.0) * NutritionData.CALS_PER_G_CARBOHYDRATE
-        val fibre = nd.amountOf(Schema.NutritionDataTable.FIBRE, 0.0) * NutritionData.CALS_PER_G_FIBRE
-        val satFat = nd.amountOf(Schema.NutritionDataTable.SATURATED_FAT, 0.0) * NutritionData.CALS_PER_G_FAT
+        val protein = nd.amountOf(PROTEIN, 0.0) * CALS_PER_G_PROTEIN * unitMultiplier
+        var fat = nd.amountOf(FAT, 0.0) * CALS_PER_G_FAT * unitMultiplier
+        val satFat = nd.amountOf(SATURATED_FAT, 0.0) * CALS_PER_G_FAT * unitMultiplier
+        var carb = nd.amountOf(CARBOHYDRATE, 0.0) * CALS_PER_G_CARBOHYDRATE * unitMultiplier
+        val sugar = nd.amountOf(SUGAR, 0.0) * CALS_PER_G_CARBOHYDRATE * unitMultiplier
+        val fibre = nd.amountOf(FIBRE, 0.0) * CALS_PER_G_FIBRE * unitMultiplier
         // correct subtypes (sugar is part of carbs, saturated is part of fat)
         carb = (carb - sugar).coerceAtLeast(0.0)
         fat = (fat - satFat).coerceAtLeast(0.0)
-        // if total energy is missing, fallback to summing over previous energy quantities
-        val totalEnergy = nd.amountOf(Schema.NutritionDataTable.CALORIES, protein + fat + satFat + carb + sugar + fibre)
-        if (totalEnergy > 0) {
-            proportionMap[Schema.NutritionDataTable.PROTEIN] = protein / totalEnergy
-            proportionMap[Schema.NutritionDataTable.FAT] = fat / totalEnergy
-            proportionMap[Schema.NutritionDataTable.SATURATED_FAT] = satFat / totalEnergy
-            proportionMap[Schema.NutritionDataTable.CARBOHYDRATE] = carb / totalEnergy
-            proportionMap[Schema.NutritionDataTable.SUGAR] = sugar / totalEnergy
-            proportionMap[Schema.NutritionDataTable.FIBRE] = fibre / totalEnergy
-        } else {
-            proportionMap[Schema.NutritionDataTable.PROTEIN] = 0.0
-            proportionMap[Schema.NutritionDataTable.FAT] = 0.0
-            proportionMap[Schema.NutritionDataTable.SATURATED_FAT] = 0.0
-            proportionMap[Schema.NutritionDataTable.CARBOHYDRATE] = 0.0
-            proportionMap[Schema.NutritionDataTable.SUGAR] = 0.0
-            proportionMap[Schema.NutritionDataTable.FIBRE] = 0.0
-        }
 
-        return proportionMap
+        componentMap[PROTEIN] = protein
+        componentMap[FAT] = fat
+        componentMap[SATURATED_FAT] = satFat
+        componentMap[CARBOHYDRATE] = carb
+        componentMap[SUGAR] = sugar
+        componentMap[FIBRE] = fibre
+        
+        return componentMap
+    }
+
+    internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Column<NutritionData, Double>, Double> {
+        val componentMap = makeEnergyComponentsMap(nd, EnergyUnit.Calories)
+        // if total energy is missing, fallback to summing over previous energy quantities
+        val totalEnergy = nd.amountOf(CALORIES, componentMap.values.sum())
+
+        return if (totalEnergy > 0) {
+            componentMap.mapValues { it.value/totalEnergy }
+        } else {
+            componentMap.mapValues { 0.0 }
+        }
     }
 }

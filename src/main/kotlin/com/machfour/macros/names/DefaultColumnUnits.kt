@@ -14,43 +14,38 @@ import kotlin.collections.HashMap
  */
 class DefaultColumnUnits private constructor() : ColumnUnits {
     companion object {
-        private val MILLIGRAMS_COLS = Collections.unmodifiableList(listOf(
+        private val milligramsColumns = linkedSetOf(
             NutritionDataTable.SODIUM
             , NutritionDataTable.CALCIUM
             , NutritionDataTable.POTASSIUM
             , NutritionDataTable.IRON
             , NutritionDataTable.OMEGA_3_FAT
             , NutritionDataTable.OMEGA_6_FAT
-        ))
+        )
 
         private fun unitForNutrientCol(col: Column<NutritionData, Double>): Unit {
             return when {
-                MILLIGRAMS_COLS.contains(col) -> QtyUnits.MILLIGRAMS
-                col == NutritionDataTable.CALORIES -> EnergyUnit.CALORIES
-                col == NutritionDataTable.KILOJOULES -> EnergyUnit.KILOJOULES
+                milligramsColumns.contains(col) -> QtyUnits.MILLIGRAMS
+                col == NutritionDataTable.CALORIES -> EnergyUnit.Calories
+                col == NutritionDataTable.KILOJOULES -> EnergyUnit.Kilojoules
                 else -> QtyUnits.GRAMS
             }
         }
 
         // add all the columns and units
         // TODO use buildMap() when it becomes stable API
-        private val UNIT_MAP: Map<Column<NutritionData, Double>, Unit> = run {
-            val map = HashMap<Column<NutritionData, Double>, Unit>()
-            NutritionData.NUTRIENT_COLUMNS.forEach { col ->
-                map[col] = unitForNutrientCol(col)
+        private val unitMap = HashMap<Column<NutritionData, Double>, Unit>().let {
+            for (col in NutritionData.nutrientColumns) {
+                    it[col] = unitForNutrientCol(col)
             }
-            Collections.unmodifiableMap(map)
+            Collections.unmodifiableMap(it)
         }
 
         val instance = DefaultColumnUnits()
     }
 
-    override fun getUnit(col: Column<NutritionData, Double>): Unit {
-        return UNIT_MAP[col]
-                ?: throw IllegalArgumentException("No such nutrient column: ${col.sqlName}")
-    }
+    override fun getUnit(col: Column<NutritionData, Double>): Unit = unitMap.getValue(col)
 
-    override fun columnsWithUnits(): Collection<Column<NutritionData, Double>> {
-        return Collections.unmodifiableCollection(UNIT_MAP.keys)
-    }
+    override val columnsWithUnits: Collection<Column<NutritionData, Double>>
+        get() = Collections.unmodifiableCollection(unitMap.keys)
 }

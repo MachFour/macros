@@ -8,5 +8,5 @@ import com.machfour.macros.objects.Unit
 interface UnitNamer {
     fun getName(unit: Unit): String
     fun getAbbr(unit: Unit): String
-    fun availableUnits(): Collection<Unit>
+    val availableUnits: Collection<Unit>
 }

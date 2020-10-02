@@ -335,6 +335,8 @@ object Schema {
             @JvmField
             val DATA_SOURCE: Column<NutritionData, String>
             @JvmField
+            val NOTES: Column<NutritionData, String>
+            @JvmField
             val QUANTITY: Column<NutritionData, Double>
             @JvmField
             val DENSITY: Column<NutritionData, Double>
@@ -398,6 +400,7 @@ object Schema {
                 QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull().defaultsTo(QtyUnits.GRAMS.abbr)
                         .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
                 DATA_SOURCE = builder("data_source", Types.TEXT).buildAndAdd(COLUMNS)
+                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
                 DENSITY = builder("density", Types.REAL).buildAndAdd(COLUMNS)
                 KILOJOULES = builder("kilojoules", Types.REAL).buildAndAdd(COLUMNS)
                 CALORIES = builder("calories", Types.REAL).buildAndAdd(COLUMNS)

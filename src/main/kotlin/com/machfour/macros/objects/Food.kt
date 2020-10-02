@@ -6,7 +6,7 @@ import com.machfour.macros.core.Schema.NutritionDataTable
 import java.lang.StringBuilder
 import java.util.Collections
 
-open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) :
+open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) :
         MacrosEntityImpl<Food>(dataMap, objectSource) {
 
     companion object {
@@ -35,7 +35,9 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
 
     }
 
-    private val servings: MutableList<Serving> = ArrayList()
+    private val servingsInternal: MutableList<Serving> = ArrayList()
+    val servings: List<Serving>
+        get() = Collections.unmodifiableList(servingsInternal)
 
     val sortableName = makeSortableName()
 
@@ -71,11 +73,25 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
         get() = Companion.factory
 
     fun addServing(s: Serving) {
-        assert(!servings.contains(s) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this))
-        servings.add(s)
+        assert(!servingsInternal.contains(s) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this))
+        servingsInternal.add(s)
         if (s.isDefault) {
             setDefaultServing(s)
         }
+    }
+
+    private fun setDefaultServing(s: Serving) {
+        assert(defaultServing == null) { "Default serving already set" }
+        assert(servingsInternal.contains(s)) { "Serving does not belong to this food" }
+        defaultServing = s
+    }
+
+    fun getServingById(id: Long): Serving? {
+        return servingsInternal.firstOrNull { it.id == id }
+    }
+
+    fun getServingByName(name: String): Serving? {
+        return servingsInternal.firstOrNull { it.name == name }
     }
 
     val usdaIndex: Long?
@@ -162,21 +178,4 @@ open class Food protected constructor(dataMap: ColumnData<Food>, objectSource: O
         return hasData(fieldName)
     }
 
-    private fun setDefaultServing(s: Serving) {
-        assert(defaultServing == null) { "Default serving already set" }
-        assert(servings.contains(s)) { "Serving does not belong to this food" }
-        defaultServing = s
-    }
-
-    fun getServingById(id: Long): Serving? {
-        return servings.firstOrNull { it.id == id }
-    }
-
-    fun getServingByName(name: String): Serving? {
-        return servings.firstOrNull { it.name == name }
-    }
-
-    fun getServings(): List<Serving> {
-        return Collections.unmodifiableList(servings)
-    }
 }

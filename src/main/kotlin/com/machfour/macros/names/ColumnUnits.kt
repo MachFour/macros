@@ -6,5 +6,5 @@ import com.machfour.macros.objects.Unit
 
 interface ColumnUnits {
     fun getUnit(col: Column<NutritionData, Double>): Unit
-    fun columnsWithUnits(): Collection<Column<NutritionData, Double>>
+    val columnsWithUnits: Collection<Column<NutritionData, Double>>
 }

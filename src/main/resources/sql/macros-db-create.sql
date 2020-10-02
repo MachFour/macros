@@ -289,6 +289,7 @@ CREATE TABLE NutritionData (
       id                   INTEGER PRIMARY KEY ASC
     , food_id              INTEGER NOT NULL UNIQUE
     , data_source          TEXT DEFAULT NULL
+    , notes                TEXT DEFAULT NULL
     , quantity             REAL NOT NULL DEFAULT 100
     , quantity_unit        TEXT NOT NULL
     -- for liquids, how to convert between grams and mL

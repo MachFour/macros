@@ -1,7 +1,9 @@
 package com.machfour.macros.util
 
 import com.machfour.macros.core.Column
+import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Schema.NutritionDataTable
+import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.NutritionData
@@ -60,7 +62,8 @@ object PrintFormatting {
         } else {
             //QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitStringForNutrient(field));
             // TODO
-            val unit = DefaultColumnStrings.instance.getUnit(field)
+            val unit = if (field === QUANTITY) nd.qtyUnit
+                else DefaultColumnStrings.instance.getUnit(field)
             formatQuantity(nd.amountOf(field), unit, width = 0, unitWidth = 0)
         }
     }
@@ -85,11 +88,9 @@ object PrintFormatting {
         nd ?: return null
 
         val needsDp = !fieldsWithoutDp.contains(field)
-        return formatQuantity(
-                qty = nd.amountOf(field),
-                unit = ndStrings.getUnit(field),
-                width = if (needsDp) 12 else 10,
-                withDp = needsDp)
+        val qty = nd.amountOf(field)
+        val unit = if (field === QUANTITY) nd.qtyUnit else ndStrings.getUnit(field)
+        return formatQuantity(qty, unit, width = if (needsDp) 12 else 10, withDp = needsDp)
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)

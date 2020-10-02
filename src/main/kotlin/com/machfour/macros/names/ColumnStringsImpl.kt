@@ -16,11 +16,13 @@ abstract class ColumnStringsImpl protected constructor(
     // unitNames
     override fun getName(unit: Unit): String = unitNames.getName(unit)
     override fun getAbbr(unit: Unit): String = unitNames.getAbbr(unit)
-    override fun availableUnits(): Collection<Unit> = unitNames.availableUnits()
+    override val availableUnits: Collection<Unit>
+        get() = unitNames.availableUnits
 
     // columnUnits
     override fun getUnit(col: Column<NutritionData, Double>): Unit = columnUnits.getUnit(col)
-    override fun columnsWithUnits(): Collection<Column<NutritionData, Double>> = columnUnits.columnsWithUnits()
+    override val columnsWithUnits: Collection<Column<NutritionData, Double>>
+        get() = columnUnits.columnsWithUnits
 
     // convenience / linking
     override fun getUnitName(col: Column<NutritionData, Double>): String = getName(getUnit(col))

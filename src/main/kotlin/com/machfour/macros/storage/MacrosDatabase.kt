@@ -28,6 +28,9 @@ abstract class MacrosDatabase : MacrosDataSource {
     abstract fun initDb()
 
     @Throws(SQLException::class)
+    abstract fun execRawSQLString(sql: String)
+
+    @Throws(SQLException::class)
     abstract override fun <M> deleteById(id: Long, t: Table<M>): Int
 
     @Throws(SQLException::class)

@@ -1,7 +1,6 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.datatype.Types
 
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.ALCOHOL
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CALCIUM
@@ -36,11 +35,6 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     : MacrosEntityImpl<NutritionData>(dataMap, objectSource) {
 
     companion object {
-        internal const val CAL_TO_KJ_FACTOR = 4.186
-        internal const val CALS_PER_G_PROTEIN = 17 / CAL_TO_KJ_FACTOR
-        internal const val CALS_PER_G_FAT = 37 / CAL_TO_KJ_FACTOR
-        internal const val CALS_PER_G_CARBOHYDRATE = 17 / CAL_TO_KJ_FACTOR
-        internal const val CALS_PER_G_FIBRE = 8 / CAL_TO_KJ_FACTOR
 
         // measured in the relevant FoodTable's QuantityUnits
         const val DEFAULT_QUANTITY = 100.0
@@ -52,7 +46,7 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         val table: Table<NutritionData>
             get() = Schema.NutritionDataTable.instance
 
-        val NUTRIENT_COLUMNS = listOf(
+        val nutrientColumns = linkedSetOf(
                 QUANTITY,
                 KILOJOULES,
                 CALORIES,
@@ -78,8 +72,14 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
                 SUGAR_ALCOHOL
         )
 
+        // XXX if this is stored as a variable, it will cause an exception in the initialiser
+        // because Schema.NutritionDataTable.instance has not yet been initialised
+        val nonNutrientColumns: Set<Column<NutritionData, *>> by lazy {
+            table.columns.filter { !nutrientColumns.contains(it) }.toSet()
+        }
+
         // For units
-        private val ENERGY_COLS = listOf(CALORIES, KILOJOULES)
+        internal val ENERGY_COLS = listOf(CALORIES, KILOJOULES)
 
         val energyProportionCols = setOf(PROTEIN, FAT, SATURATED_FAT, CARBOHYDRATE, SUGAR, FIBRE)
 
@@ -135,14 +135,18 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     private val energyProportionsMap: Map<Column<NutritionData, Double>, Double> by lazy {
         NutritionCalculations.makeEnergyProportionsMap(this)
     }
+    // map of protein, fat, saturated fat, carbs, sugar, fibre to amount of energy
+    private val energyComponentsMap: Map<Column<NutritionData, Double>, Double> by lazy {
+        NutritionCalculations.makeEnergyComponentsMap(this, EnergyUnit.Calories)
+    }
 
 
     init {
         // food ID is allowed to be null only if this NutritionData is computed from a sum
         assert(objectSource === ObjectSource.COMPUTED || dataMap[FOOD_ID] != null)
-        completeData = HashMap(NUTRIENT_COLUMNS.size)
+        completeData = HashMap(nutrientColumns.size)
         // have to use temporary due to type parameterisation
-        for (c in NUTRIENT_COLUMNS) {
+        for (c in nutrientColumns) {
             completeData[c] = dataMap.hasData(c)
         }
         // account for energy conversion
@@ -157,7 +161,7 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
             dataMap: ColumnData<NutritionData>,
             objectSource: ObjectSource,
             completeData: Map<Column<NutritionData, Double>, Boolean>) : this(dataMap, objectSource) {
-        for (c in NUTRIENT_COLUMNS) {
+        for (c in nutrientColumns) {
             if (!completeData.getValue(c)) {
                 this.completeData[c] = false
             } else {
@@ -171,15 +175,6 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     val qtyUnitAbbr: String
         get() = getData(QUANTITY_UNIT)!!
 
-    private fun getEnergyAs(energyCol: Column<NutritionData, Double>): Double? {
-        assert(ENERGY_COLS.contains(energyCol))
-        return getData(energyCol)
-                ?: if (energyCol == CALORIES) {
-                    getData(KILOJOULES)?.div(CAL_TO_KJ_FACTOR)
-                } else { // energyCol.equals(KILOJOULES)
-                    getData(CALORIES)?.times(CAL_TO_KJ_FACTOR)
-                }
-    }
 
     fun hasCompleteData(col: Column<NutritionData, Double>): Boolean {
         assert(completeData.containsKey(col))
@@ -191,40 +186,49 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         return HashMap(completeData)
     }
 
-    val proteinEnergyPercentage: Double
-        get() = getEnergyProportion(PROTEIN, true)
+    val proteinEnergyComponent: Double
+        get() = getEnergyComponent(PROTEIN)
+
+    val fatsEnergyComponent : Double
+        get() = getEnergyComponent(FAT) + getEnergyComponent(SATURATED_FAT)
+
+    val carbsEnergyComponent: Double
+        get() = getEnergyComponent(CARBOHYDRATE) + getEnergyComponent(SUGAR)
+
+    val fibreEnergyComponent: Double
+        get() = getEnergyComponent(FIBRE)
 
     val proteinEnergyProportion : Double
-        get() = getEnergyProportion(PROTEIN, false)
+        get() = getEnergyProportion(PROTEIN)
 
-    val allCarbsEnergyPercentage: Double
-        get() {
-            return getEnergyProportion(CARBOHYDRATE, true) +
-                    getEnergyProportion(SUGAR, true) +
-                    getEnergyProportion(FIBRE, true)
+    val carbsEnergyProportion : Double
+        get() = getEnergyProportion(CARBOHYDRATE) + getEnergyProportion(SUGAR)
+
+    val fatsEnergyProportion : Double
+        get() = getEnergyProportion(FAT) + getEnergyProportion(SATURATED_FAT)
+
+    val fibreEnergyProportion: Double
+        get() = getEnergyProportion(FIBRE)
+
+    fun getEnergyProportion(col: Column<NutritionData, Double>) : Double {
+        if (!energyProportionCols.contains(col)) {
+            return 0.0
         }
-    // Total (carbs + sugar + fibre) energy proportion
-    val allCarbsEnergyProportion : Double
-        get() {
-            return getEnergyProportion(CARBOHYDRATE, false) +
-                getEnergyProportion(SUGAR, false) +
-                getEnergyProportion(FIBRE, false)
-        }
+        // the map is computed the first time this function is called
+        return energyProportionsMap[col] ?: 0.0
+    }
 
-    val allFatsEnergyPercentage : Double
-        get() = getEnergyProportion(FAT, true) + getEnergyProportion(SATURATED_FAT, true)
-
-    val allFatsEnergyProportion : Double
-        get() = getEnergyProportion(FAT, false) + getEnergyProportion(SATURATED_FAT, false)
-
-    fun getEnergyProportion(col: Column<NutritionData, Double>, asPercentage: Boolean = false) : Double {
+    fun getEnergyComponent(col: Column<NutritionData, Double>, unit: EnergyUnit = EnergyUnit.Calories) : Double {
         if (!energyProportionCols.contains(col)) {
             return 0.0
         }
 
         // the map is computed the first time this function is called
-        val proportion = energyProportionsMap[col] ?: 0.0
-        return if (asPercentage) proportion * 100 else proportion
+        val component = energyComponentsMap[col] ?: 0.0
+        return when (unit) {
+            is EnergyUnit.Kilojoules -> component * NutritionCalculations.CAL_TO_KJ_FACTOR
+            is EnergyUnit.Calories -> component
+        }
     }
 
     fun hasFood(): Boolean {
@@ -240,33 +244,35 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         return super.hashCode()
     }
 
-    fun amountOf(col: Column<NutritionData, Double>): Double? {
-        assert(NUTRIENT_COLUMNS.contains(col))
-        return if (ENERGY_COLS.contains(col)) {
-            // return any energy value, converting if necessary. Return null if neither column.
-            getEnergyAs(col)
-            // TODO sodium/salt
-            // TODO carbs by difference / carbs
+    fun amountOf(col: Column<NutritionData, Double>, tryConvert: Boolean = true): Double? {
+        assert(nutrientColumns.contains(col))
+        if (!tryConvert) {
+            return getData(col)
         } else {
-            getData(col)
+            return if (ENERGY_COLS.contains(col)) {
+                // return any energy value, converting if necessary. Return null if neither column.
+                NutritionCalculations.getEnergyAs(this, col)
+                // TODO sodium/salt
+                // TODO carbs by difference / carbs
+            } else {
+                getData(col)
+            }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun hasData(col: Column<NutritionData, *>): Boolean {
-        if (col.type === Types.REAL) {
-            // ColumnType of REAL ensures the cast will work
-            val doubleCol = col as Column<NutritionData, Double>
-            if (NUTRIENT_COLUMNS.contains(doubleCol)) {
-                return amountOf(doubleCol) != null
-            }
+        (col as? Column<NutritionData, Double>)?.let {
+            if (nutrientColumns.contains(it)) {
+                return amountOf(it, tryConvert = false) != null
+           }
         }
         // fall back to just checking the columnData
         return super.hasData(col)
     }
 
-    fun amountOf(col: Column<NutritionData, Double>, defaultValue: Double): Double {
-        val data = amountOf(col)
+    fun amountOf(col: Column<NutritionData, Double>, defaultValue: Double, tryConvert: Boolean = true): Double {
+        val data = amountOf(col, tryConvert)
         return data ?: defaultValue
     }
 

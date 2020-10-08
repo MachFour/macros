@@ -1,7 +1,6 @@
 package com.machfour.macros.util
 
 import com.machfour.macros.core.Column
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY
 import com.machfour.macros.names.ColumnStrings
@@ -27,24 +26,36 @@ object PrintFormatting {
             unitWidth: Int = 2,
             withDp: Boolean = false,
             alignLeft: Boolean = false,
-            forNullQty: String = ""
+            forNullQty: String = "",
+            abbreviateUnit: (Unit) -> String = { it.abbr },
+            spaceBeforeUnit: Boolean = false
     ): String {
         qty ?: return forNullQty
 
         require(unitWidth <= 0 || width == 0 || unitWidth in 0 until(width)) { "If width != 0, must have width > unitWidth >= 0" }
 
-        val finalUnitWidth = if (unit != null && unitWidth <= 0) unit.abbr.length else unitWidth
-        val f = Formatter()
+        val unitAbbr = unit?.let { abbreviateUnit(it) }
+        val finalUnitWidth = if (unitAbbr != null && unitWidth <= 0) {
+            unitAbbr.length + (if (spaceBeforeUnit) 1 else 0)
+        } else {
+            unitWidth
+        }
 
         val floatFmt = if (withDp) ".1f" else ".0f"
         val alignFmt = if (alignLeft) "" else "-"
-        val unitStr = if (unit == null) "" else String.format("%${alignFmt}${finalUnitWidth}s", unit.abbr)
-        return if (alignLeft) {
-            f.format("%${floatFmt}${unitStr}", qty)
-            if (width > 0) String.format("%-${width}s", f.toString()) else f.toString()
-        } else {
-            f.format("%" + (if (width > 0) width - finalUnitWidth else "") + floatFmt, qty)
-            f.toString() + unitStr
+        val unitFmt = "%${alignFmt}${finalUnitWidth}s"
+        val unitStr = if (unitAbbr == null) ""
+            else unitFmt.format((if (spaceBeforeUnit) " " else "") + unitAbbr)
+
+        return Formatter().let {
+            if (alignLeft) {
+                it.format("%${floatFmt}${unitStr}", qty)
+                if (width > 0) String.format("%-${width}s", it.toString()) else it.toString()
+            } else {
+                it.format("%" + (if (width > 0) width - finalUnitWidth else "") + floatFmt, qty)
+                it.toString() + unitStr
+            }
+
         }
     }
 
@@ -96,10 +107,18 @@ object PrintFormatting {
     // for formatting nutrition data in meal summaries (no decimal places)
     @JvmStatic
     fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
-        nd ?: return null
+        return if (nd == null) null else mealSummaryFormatNotNull(nd, field, ndStrings)
+    }
+    // for formatting nutrition data in meal summaries (no decimal places)
+    fun mealSummaryFormatNotNull(nd: NutritionData, field: Column<NutritionData, Double>, colStrings: ColumnStrings): String {
+        return formatQuantity(
+            qty = nd.amountOf(field),
+            unit = colStrings.getUnit(field),
+            width = 0,
+            abbreviateUnit = { colStrings.getAbbr(it) },
+            spaceBeforeUnit = true
+        )
 
-        val unit = ndStrings.getUnit(field)
-        return formatQuantity(nd.amountOf(field), width = 0) + " ${unit.abbr}"
     }
 }
 

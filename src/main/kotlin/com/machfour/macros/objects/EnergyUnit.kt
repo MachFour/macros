@@ -5,13 +5,13 @@ package com.machfour.macros.objects
  */
 
 // name: Full name of this Unit
-// abbrevaitionh: must be unique among different Units.
+// abbreviation: must be unique among different Units.
 sealed class EnergyUnit private constructor(override val name: String, override val abbr: String) : Unit {
     companion object {
         private const val kjName = "Kilojoules"
         private const val kjAbbr = "kj"
         private const val calName = "Calories"
-        private const val calAbbr = "cal"
+        private const val calAbbr = "kcal"
 
         private val abbreviationMap = linkedMapOf(kjAbbr to Kilojoules, calAbbr to Calories)
 

@@ -13,7 +13,6 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Collections;
 
@@ -128,6 +127,19 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     }
 
     @Throws(SQLException::class)
+    override fun execRawSQLString(sql: String) {
+        val c = connection
+        try {
+            c.createStatement().use {
+                it.execute(sql)
+            }
+
+        } finally {
+            closeIfNecessary(c)
+        }
+    }
+
+    @Throws(SQLException::class)
     override fun <M> deleteById(id: Long, t: Table<M>): Int {
         val c = connection
         try {
@@ -173,10 +185,11 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         return resultList
     }
 
+    // The resulting map is unordered
     @Throws(SQLException::class)
     override fun <M, I, J> selectColumnMap(t: Table<M>, keyColumn: Column<M, I>,
                                            valueColumn: Column<M, J>, keys: Set<I>): Map<I, J?> {
-        val resultMap: MutableMap<I, J?> = LinkedHashMap(keys.size, 1.0f)
+        val unorderedResults: MutableMap<I, J?> = HashMap(keys.size, 1.0f)
         // for batch queries
         //List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
         val selectColumns: List<Column<M, *>> = listOf(valueColumn)
@@ -195,8 +208,8 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
                             val rawValue = rs.getObject(valueColumn.sqlName)
                             try {
                                 val value : J? = valueColumn.type.fromRaw(rawValue)
-                                assert(!resultMap.containsKey(key)) { "Two rows in the DB contained the same data in the key column!" }
-                                resultMap[key] = value
+                                assert(!unorderedResults.containsKey(key)) { "Two rows in the DB contained the same data in the key column!" }
+                                unorderedResults[key] = value
                             } catch (e: TypeCastException) {
                                 DatabaseUtils.rethrowAsSqlException(rawValue, valueColumn)
                             }
@@ -209,7 +222,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         } finally {
             closeIfNecessary(c)
         }
-        return resultMap
+        return unorderedResults
     }
 
     // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
@@ -243,13 +256,13 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
 
     // Constructs a map of key column value to raw object data (i.e. no object references initialised
     // Keys that do not exist in the database will not be contained in the output map
-    // The returned map is never null
+    // The returned map is never null and is unordered
     @Throws(SQLException::class)
     override fun <M, J> getRawObjectsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M> {
         // if the list of keys is empty, every row will be returned
         assert(!keys.isEmpty()) { "List of keys is empty" }
         assert(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
-        val objects: MutableMap<J, M> = LinkedHashMap(keys.size, 1.0f)
+        val unorderedObjects: MutableMap<J, M> = HashMap(keys.size, 1.0f)
         val c = connection
         try {
             c.prepareStatement(DatabaseUtils.selectTemplate(t, t.columns, keyCol, keys.size, false)).use { p ->
@@ -260,9 +273,9 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
                         val data = ColumnData(t)
                         LinuxDatabaseUtils.fillColumnData(data, rs)
                         val key = data[keyCol]!!
-                        assert(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
+                        assert(!unorderedObjects.containsKey(key)) { "Key $key already in returned objects map!" }
                         val newObject = t.factory.construct(data, ObjectSource.DATABASE)
-                        objects[key] = newObject
+                        unorderedObjects[key] = newObject
                         rs.next()
                     }
                 }
@@ -270,19 +283,19 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         } finally {
             closeIfNecessary(c)
         }
-        return objects
+        return unorderedObjects
     }
 
     // Constructs a map of key column value to ID
     // Keys that do not exist in the database will not be contained in the output map
-    // The returned map is never null
+    // The returned map is never null and is unordered
     @Throws(SQLException::class)
     override fun <M, J> getIdsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
         // if the list of keys is empty, every row will be returned
         assert(!keys.isEmpty()) { "List of keys is empty" }
         assert(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
         val keyAndId = listOf(keyCol, t.idColumn) // select the ID column plus the key
-        val idMap: MutableMap<J, Long> = LinkedHashMap(keys.size, 1.0f)
+        val unorderedIdMap: MutableMap<J, Long> = HashMap(keys.size, 1.0f)
         val c = connection
         try {
             c.prepareStatement(DatabaseUtils.selectTemplate(t, keyAndId, keyCol, keys.size, false)).use { p ->
@@ -292,8 +305,8 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
                     while (!rs.isAfterLast) {
                         val id = rs.getLong(t.idColumn.sqlName)
                         val key = keyCol.type.cast(rs.getObject(keyCol.sqlName))!! //XXX wow
-                        assert(!idMap.containsKey(key)) { "Key $key already in returned map!" }
-                        idMap[key] = id
+                        assert(!unorderedIdMap.containsKey(key)) { "Key $key already in returned map!" }
+                        unorderedIdMap[key] = id
                         rs.next()
                     }
                 }
@@ -301,31 +314,39 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         } finally {
             closeIfNecessary(c)
         }
-        return idMap
+        return unorderedIdMap
     }
 
-    @Throws(SQLException::class)  // returns a map of objects by ID
-    // TODO make protected
-    override fun <M> getAllRawObjects(t: Table<M>): Map<Long, M> {
-        val objects: MutableMap<Long, M> = LinkedHashMap()
+    // returns an (optionally ordered) map of objects by ID
+    @Throws(SQLException::class)
+    private fun <M> getAllRawObjects(t: Table<M>, orderBy: Column<M, *>? = null): Map<Long, M> {
+        val allObjects: MutableMap<Long, M> = if (orderBy != null) LinkedHashMap() else HashMap()
         val c = connection
+        val query = DatabaseUtils.selectAllTemplate(t, orderBy)
         try {
-            c.createStatement().executeQuery("SELECT * FROM " + t.name).use { rs ->
+            c.createStatement().executeQuery(query).use { rs ->
                 rs.next()
                 while (!rs.isAfterLast) {
                     val data = ColumnData(t)
                     LinuxDatabaseUtils.fillColumnData(data, rs)
                     val id = data.get(t.idColumn)
-                    assert(!objects.containsKey(id)) { "ID $id already in returned objects map!" }
+                    assert(!allObjects.containsKey(id)) { "ID $id already in returned objects map!" }
                     val newObject = t.factory.construct(data, ObjectSource.DATABASE)
-                    objects[id!!] = newObject
+                    allObjects[id!!] = newObject
                     rs.next()
                 }
             }
         } finally {
             closeIfNecessary(c)
         }
-        return objects
+        return allObjects
+
+    }
+
+    @Throws(SQLException::class)  // returns a map of objects by ID
+    // TODO make protected
+    override fun <M> getAllRawObjects(t: Table<M>): Map<Long, M> {
+        return getAllRawObjects(t, t.idColumn)
     }
 
     @Throws(SQLException::class)
@@ -440,10 +461,11 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         return exists
     }
 
+    // The resulting map is unordered
     @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> idsExistInTable(table: Table<M>, ids: List<Long>): Map<Long, Boolean> {
         val idCol: Column<M, Long> = table.idColumn
-        val idMap: MutableMap<Long, Boolean> = LinkedHashMap(ids.size, 1.0f)
+        val unorderedIdMap: MutableMap<Long, Boolean> = HashMap(ids.size, 1.0f)
         val c = connection
         try {
             c.prepareStatement(DatabaseUtils.selectTemplate(table, idCol, idCol, ids.size)).use { p ->
@@ -452,7 +474,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
                 rs.next()
                 while (!rs.isAfterLast) {
                     val id = rs.getLong(idCol.sqlName)
-                    idMap[id] = true
+                    unorderedIdMap[id] = true
                     rs.next()
                 }
                 rs.next()
@@ -462,10 +484,10 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         }
         // check for missing IDs
         for (id in ids) {
-            if (!idMap.containsKey(id)) {
-                idMap[id] = false
+            if (!unorderedIdMap.containsKey(id)) {
+                unorderedIdMap[id] = false
             }
         }
-        return idMap
+        return unorderedIdMap
     }
 }

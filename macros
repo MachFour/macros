@@ -1,13 +1,15 @@
 #!/bin/sh
 
-unset _JAVA_OPTIONS
+MACROS_VERSION="1.0-SNAPSHOT"
+
+
 DEVEL_DIR="/home/max/devel/macros-kotlin"
-ARTIFACT_DIR="${DEVEL_DIR}/out/artifacts"
-LIB_DIR="${DEVEL_DIR}/libs"
+JAR_DIR="${DEVEL_DIR}/build/libs"
+JAR_FILE="macros-kotlin-${MACROS_VERSION}.jar"
+JAR_PATH="${JAR_DIR}/${JAR_FILE}"
+
 
 #PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
-MAINCLASS=com.machfour.macros.linux.LinuxMain
-
 # AOT things
 #"-XX:+PrintAOT"
 #java -XX:AOTLibrary=${DEVEL_DIR}/macros.so:${DEVEL_DIR}/macros-libs.so -enableassertions -cp "$CLASSPATH" ${MAINCLASS} "$@"
@@ -20,8 +22,11 @@ MAINCLASS=com.machfour.macros.linux.LinuxMain
 #     -XX:+LogTouchedMethods \
 #     -XX:+PrintTouchedMethodsAtExit 
 
-archlinux-java-run --min 13 -- -enableassertions \
-	-cp "${ARTIFACT_DIR}/macros_kotlin_main_jar/macros-kotlin.main.jar" \
+unset _JAVA_OPTIONS
+
+#archlinux-java-run --min 14 -- -jar build/libs/macros-kotlin-1.0-SNAPSHOT.jar
+
+archlinux-java-run --min 14 -- -enableassertions \
     -XX:+UnlockExperimentalVMOptions \
     -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
-    ${MAINCLASS} "$@"
+	-jar "$JAR_PATH" "$@"

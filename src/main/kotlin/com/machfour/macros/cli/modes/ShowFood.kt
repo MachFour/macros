@@ -73,7 +73,7 @@ class ShowFood : CommandImpl(NAME, USAGE) {
             out.println("Servings:")
             out.println()
 
-            val servings = f.getServings()
+            val servings = f.servings
             if (servings.isNotEmpty()) {
                 for (s in servings) {
                     out.println(" - ${s.name}: %.1f${s.qtyUnitAbbr}".format(s.quantity))

@@ -120,6 +120,10 @@ object DatabaseUtils {
         return StringJoiner.of(words).sep(" ").join()
     }
 
+    fun <M> selectAllTemplate(t: Table<M>, orderBy: Column<M, *>? = null) : String {
+        return "SELECT * FROM ${t.name} " + if (orderBy != null) " ORDER BY ${orderBy.sqlName}" else ""
+    }
+
     // columns must be a subset of table.columns()
     fun <M> insertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
         val placeholders = makeInsertPlaceholders(orderedColumns)
@@ -144,7 +148,7 @@ object DatabaseUtils {
     }
 
     fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
-        val idMap: MutableMap<Long, M> = HashMap(objects.size, 1.0f)
+        val idMap: MutableMap<Long, M> = LinkedHashMap(objects.size, 1.0f)
         objects.forEach {
             val id : Long = it.id
             require(!idMap.containsKey(id)) { "Two objects had the same ID" }

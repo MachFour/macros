@@ -18,42 +18,86 @@ object PrintFormatting {
     fun formatQuantityAsVerbose(qty: Double? = null, verbose: Boolean = false): String {
         return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, withDp = verbose)
     }
-
     fun formatQuantity(
-            qty: Double? = null,
-            unit: Unit? = null,
-            width: Int = 0,
-            unitWidth: Int = 2,
-            withDp: Boolean = false,
-            alignLeft: Boolean = false,
-            forNullQty: String = "",
-            abbreviateUnit: (Unit) -> String = { it.abbr },
-            spaceBeforeUnit: Boolean = false
+        nd: NutritionData,
+        col: Column<NutritionData, Double>,
+        colStrings: ColumnStrings,
+        withUnit: Boolean = false,
+        width: Int = 0,
+        unitWidth: Int = 0,
+        withDp: Boolean = false,
+        alignLeft: Boolean = false,
+        forNullQty: String = "",
+        spaceBeforeUnit: Boolean = false
+    ) : String {
+        val qty = nd.amountOf(col)
+        val unit = if (!withUnit) null else if (col === QUANTITY) nd.qtyUnit else colStrings.getUnit(col)
+        val unitString = if (!withUnit) null else colStrings.getAbbr(unit!!)
+
+        // TODO add asterisk to incomplete quantities
+        return formatQuantity(
+             qty,
+             unit,
+             width,
+             unitWidth,
+             withDp,
+             alignLeft,
+             forNullQty,
+             unitString,
+             spaceBeforeUnit
+        )
+    }
+    fun formatQuantity(
+        qty: Double? = null,
+        unit: Unit? = null,
+        width: Int = 0,
+        unitWidth: Int = 2,
+        withDp: Boolean = false,
+        alignLeft: Boolean = false,
+        forNullQty: String = "",
+        unitString: String? = null,
+        spaceBeforeUnit: Boolean = false
     ): String {
         qty ?: return forNullQty
 
-        require(unitWidth <= 0 || width == 0 || unitWidth in 0 until(width)) { "If width != 0, must have width > unitWidth >= 0" }
-
-        val unitAbbr = unit?.let { abbreviateUnit(it) }
-        val finalUnitWidth = if (unitAbbr != null && unitWidth <= 0) {
-            unitAbbr.length + (if (spaceBeforeUnit) 1 else 0)
-        } else {
-            unitWidth
+        var unitString = unitString
+        if (unitString == null && unit != null) {
+            unitString = unit.abbr
         }
+
+        var unitWidth = unitWidth
+        if (unitString != null && unitWidth <= 0) {
+            unitWidth = unitString.length
+            if (spaceBeforeUnit) {
+                unitWidth += 1
+            }
+        } 
+
+        require(unitWidth <= 0 || width == 0 || unitWidth in 0 until(width)) {
+            "If width != 0, must have width > unitWidth >= 0 (including space before unit)"
+        }
+
 
         val floatFmt = if (withDp) ".1f" else ".0f"
         val alignFmt = if (alignLeft) "" else "-"
-        val unitFmt = "%${alignFmt}${finalUnitWidth}s"
-        val unitStr = if (unitAbbr == null) ""
-            else unitFmt.format((if (spaceBeforeUnit) " " else "") + unitAbbr)
+        val unitFmt = "%${alignFmt}${unitWidth}s"
+        
+        if (unitString != null) {
+            if (spaceBeforeUnit) {
+                unitString = " " + unitString
+            }
+            unitString = unitFmt.format((if (spaceBeforeUnit) " " else "") + unitString)
+        } else {
+            unitString = ""
+        }
 
         return Formatter().let {
             if (alignLeft) {
-                it.format("%${floatFmt}${unitStr}", qty)
+                it.format("%${floatFmt}${unitString}", qty)
                 if (width > 0) String.format("%-${width}s", it.toString()) else it.toString()
             } else {
-                it.format("%" + (if (width > 0) width - finalUnitWidth else "") + floatFmt, qty)
-                it.toString() + unitStr
+                it.format("%" + (if (width > 0) width - unitWidth else "") + floatFmt, qty)
+                it.toString() + unitString
             }
 
         }
@@ -63,19 +107,21 @@ object PrintFormatting {
     // Returns null if the input nutrition data is null
     @JvmStatic
     @JvmOverloads
-    fun formatNutrnData(nd: NutritionData?, field: Column<NutritionData, Double>, withUnit: Boolean = false): String? {
+    fun formatNutrnData(
+        nd: NutritionData?,
+        field: Column<NutritionData, Double>,
+        withUnit: Boolean = false,
+        colStrings: ColumnStrings = DefaultColumnStrings.instance
+    ): String? {
         if (nd == null) {
             return null
         }
+        // TODO move this logic somewhere else
         val missing = !nd.hasCompleteData(field)
         return if (!withUnit) {
             formatQuantityAsVerbose(nd.amountOf(field), false) + if (missing) "*" else ""
         } else {
-            //QtyUnit unit = QtyUnit.fromAbbreviation(NutritionData.getUnitStringForNutrient(field));
-            // TODO
-            val unit = if (field === QUANTITY) nd.qtyUnit
-                else DefaultColumnStrings.instance.getUnit(field)
-            formatQuantity(nd.amountOf(field), unit, width = 0, unitWidth = 0)
+            formatQuantity(nd, field, colStrings)
         }
     }
 
@@ -107,18 +153,12 @@ object PrintFormatting {
     // for formatting nutrition data in meal summaries (no decimal places)
     @JvmStatic
     fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
-        return if (nd == null) null else mealSummaryFormatNotNull(nd, field, ndStrings)
-    }
-    // for formatting nutrition data in meal summaries (no decimal places)
-    fun mealSummaryFormatNotNull(nd: NutritionData, field: Column<NutritionData, Double>, colStrings: ColumnStrings): String {
-        return formatQuantity(
-            qty = nd.amountOf(field),
-            unit = colStrings.getUnit(field),
-            width = 0,
-            abbreviateUnit = { colStrings.getAbbr(it) },
+        return if (nd == null) null else formatQuantity(
+            nd = nd,
+            col = field,
+            colStrings = ndStrings,
             spaceBeforeUnit = true
         )
-
     }
 }
 

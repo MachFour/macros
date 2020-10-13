@@ -35,23 +35,34 @@ object CliUtils {
     }
 
     // TODO use methods from PrintFormatting here?
-    fun printNutritionData(nd: NutritionData, verbose: Boolean, out: PrintStream) {
+    fun printNutritionDataString(nd: NutritionData, verbose: Boolean, monoSpaceAligned: Boolean = true) : String {
         // TODO pass in ColumnUnits and ColumnNamer
         val colNamer: ColumnNamer = EnglishColumnNames.instance
         val colUnits: ColumnUnits = DefaultColumnUnits.instance
         // TODO get these lengths from ColumnNamer
-        val lineFormat = if (verbose) "%15s: %6.1f %-2s" else "%15s: %4.0f %-2s"
-        for (col in allNutrientsToPrint) {
-            val value = nd.amountOf(col, 0.0)
-            val unitStr = colUnits.getUnit(col).abbr
-            val colName = colNamer.getName(col)
-            out.print(String.format(lineFormat, colName, value, unitStr))
-            if (!nd.hasCompleteData(col)) {
-                // mark incomplete
-                out.print(" (*)")
-            }
-            out.println()
+        val lineFormat = if (monoSpaceAligned) {
+            if (verbose) "%15s: %6.1f %-2s" else "%15s: %4.0f %-2s"
+        } else {
+            if (verbose) "%s: %.1f %s" else "%s: %.0f %s"
         }
+        return StringBuilder().run {
+            for (col in allNutrientsToPrint) {
+                val value = nd.amountOf(col, 0.0)
+                val unitStr = colUnits.getUnit(col).abbr
+                val colName = colNamer.getName(col)
+                append(lineFormat.format(colName, value, unitStr))
+                if (!nd.hasCompleteData(col)) {
+                    // mark incomplete
+                    append(" (*)")
+                }
+                appendLine()
+            }
+            toString()
+        }
+    }
+
+    fun printNutritionData(nd: NutritionData, verbose: Boolean, out: PrintStream) {
+        out.println(printNutritionDataString(nd, verbose))
     }
 
     fun printEnergyProportions(nd: NutritionData, verbose: Boolean, out: PrintStream) {

@@ -7,25 +7,55 @@ import com.machfour.macros.storage.MacrosDataSource
 import java.sql.SQLException
 
 object FoodQueries {
+
+    // excluding index name
+    val foodSearchColumns = listOf(
+          Schema.FoodTable.NAME
+        , Schema.FoodTable.VARIETY
+        , Schema.FoodTable.BRAND
+        , Schema.FoodTable.EXTRA_DESC
+    )
+
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
     // empty list will be returned if keyword is empty string
+    // If keyword is only 1 or 2 chars, search only by exact match and index name prefix
+    // exact matches will come first, followed by prefix results, followed by matches on substrings of index names
     @Throws(SQLException::class)
     fun foodSearch(ds: MacrosDataSource, keyword: String): Set<Long> {
-        val columns = listOf(
-                Schema.FoodTable.INDEX_NAME
-                , Schema.FoodTable.NAME
-                , Schema.FoodTable.VARIETY
-                , Schema.FoodTable.BRAND
-                , Schema.FoodTable.EXTRA_DESC
+        if (keyword.isEmpty()) {
+            return emptySet()
+        }
+
+        val indexNameCol = listOf(Schema.FoodTable.INDEX_NAME)
+        val foodTable = Food.table
+
+        val results = LinkedHashSet<Long>()
+        results.addAll(
+            // add exact matches on index name
+            Queries.exactStringSearch(ds, foodTable, indexNameCol, keyword).toSet()
         )
-        // match any column prefix
-        val prefixResults = Queries.prefixSearch(ds, Food.table, columns, keyword)
-        // or anywhere in index name
-        val indexResults = Queries.substringSearch(ds, Food.table, listOf(Schema.FoodTable.INDEX_NAME), keyword)
-        val results: MutableSet<Long> = LinkedHashSet(prefixResults.size + indexResults.size)
-        results.addAll(prefixResults)
-        results.addAll(indexResults)
+        results.addAll(
+            // add exact matches on any other column
+            Queries.exactStringSearch(ds, foodTable, foodSearchColumns, keyword).toSet()
+        )
+
+        if (keyword.length <= 2) {
+            results.addAll(
+                // just match prefix of index name
+                Queries.prefixSearch(ds, foodTable, indexNameCol, keyword)
+            )
+        } else {
+            results.addAll(
+                // match any column prefix
+                Queries.prefixSearch(ds, foodTable, foodSearchColumns, keyword)
+            )
+            results.addAll(
+                // match anywhere in index name
+                Queries.substringSearch(ds, foodTable, indexNameCol, keyword)
+            )
+        }
         return results
+
     }
 
     @Throws(SQLException::class)
@@ -70,10 +100,21 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getFoodsById(ds: MacrosDataSource, foodIds: Collection<Long>): Map<Long, Food> {
-        val foods = QueryHelpers.getRawObjectsByIds(ds, Food.table, foodIds)
-        QueryHelpers.processRawFoodMap(ds, foods)
-        return foods
+    fun getFoodsById(ds: MacrosDataSource, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
+        // this map is unordered due to order of database results being unpredictable,
+        // we can sort it later if necessary
+        val unorderedFoods = QueryHelpers.getRawObjectsByIds(ds, Food.table, foodIds)
+        QueryHelpers.processRawFoodMap(ds, unorderedFoods)
+        if (!preserveOrder) {
+            return unorderedFoods
+        } else {
+            // match order of ids in input
+            val orderedFoods: MutableMap<Long, Food> = LinkedHashMap(unorderedFoods.size)
+            for (id in foodIds) {
+                unorderedFoods[id]?.let { orderedFoods[id] = it }
+            }
+            return orderedFoods
+        }
     }
 
     @Throws(SQLException::class)

@@ -27,9 +27,22 @@ dependencies {
 
 // for standalone kotlin project
 compileKotlin {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "14"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "14"
 }
 
+
+jar {
+    from {
+        // This line of code recursively collects and copies all of a project's files
+        // and adds them to the JAR itself. One can extend this task, to skip certain
+        // files or particular types at will
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        //configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes 'Main-Class': 'com.machfour.macros.linux.LinuxMain'
+    }
+}

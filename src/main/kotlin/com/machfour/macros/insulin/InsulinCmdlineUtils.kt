@@ -26,8 +26,10 @@ object InsulinCmdlineUtils {
         out.println("========")
         out.println()
 
-        val forCarbs = insulinForCarbs(nd, icRatio) ?: 0.0
-        val forProtein = proteinFactor?.let { insulinForProtein(nd, icRatio, it) } ?: 0.0
+        val insulinParams = InsulinParams(icRatio, proteinFactor ?: 0.0)
+
+        val forCarbs = insulinForCarbs(nd, insulinParams) ?: 0.0
+        val forProtein = insulinForProtein(nd, insulinParams) ?: 0.0
         val total = forCarbs + forProtein
 
         val values = listOf(forCarbs, forProtein, total)

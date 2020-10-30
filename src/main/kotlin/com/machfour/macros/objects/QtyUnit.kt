@@ -46,6 +46,5 @@ class QtyUnit private constructor(data: ColumnData<QtyUnit>, objectSource: Objec
     override val unitMultiplier = 1.0
     override val baseUnit = this
     override val isVolumeMeasurement = isVolumeUnit
-    override val isServing = false
 
 }

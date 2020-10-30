@@ -122,7 +122,7 @@ object CliUtils {
             val notes = i.notes
             val name = iFood.mediumName
             val noteString = notes ?: ""
-            val quantityString = formatQuantity(i.quantity(), i.qtyUnit(), quantityWidth)
+            val quantityString = formatQuantity(i.quantity(), i.qtyUnit(), width = quantityWidth, unitWidth = 2)
             out.printf(lineFormat, name, quantityString, noteString)
             // TODO replace quantity with serving if specified
             //Serving iServing = i.getServing();

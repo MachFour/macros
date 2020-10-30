@@ -57,14 +57,12 @@ abstract class MacrosDatabase : MacrosDataSource {
 
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
-    // The collection of keys must not be empty; an assertion error is thrown if so
-    // TODO get rid of noEmpty
     @Throws(SQLException::class)
-    abstract override fun <M, J> getRawObjectsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M>
+    abstract override fun <M, J> getRawObjectsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M>
 
     // TODO get rid of noEmpty
     @Throws(SQLException::class)
-    abstract override fun <M, J> getIdsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long>
+    abstract override fun <M, J> getIdsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long>
 
     // returns map of all objects in table, by ID
     // TODO make protected -- but it's useful for CSV export

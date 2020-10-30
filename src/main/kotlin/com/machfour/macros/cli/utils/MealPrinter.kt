@@ -78,7 +78,7 @@ object MealPrinter {
             row += formatQuantityAsVerbose(nd.amountOf(nutrient), verbose)
         }
         // add quantity and unit
-        row.add(formatQuantity(qty, unit, PrintFormatting.servingWidth))
+        row.add(formatQuantity(qty, unit, width = PrintFormatting.servingWidth, unitWidth = 2))
         return row
     }
 

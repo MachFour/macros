@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
@@ -22,22 +23,23 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getOrCreateMeal(ds: MacrosDataSource, day: DateStamp, name: String): Meal {
-        var mealsForDay = getMealsForDay(ds, day)
-        var nameMatch = findMealWithName(mealsForDay, name)
-        return if (nameMatch != null) {
-            nameMatch
-        } else {
-            val newMealData = ColumnData(Meal.table)
-            newMealData.put(Schema.MealTable.DAY, day)
-            newMealData.put(Schema.MealTable.NAME, name)
-            val newMeal = Meal.factory.construct(newMealData, ObjectSource.USER_NEW)
-            Queries.saveObject(ds, newMeal)
-            // get it back again, so that it has an ID and stuff
-            mealsForDay = getMealsForDay(ds, day)
-            nameMatch = findMealWithName(mealsForDay, name)
-            assert(nameMatch != null) { "didn't find saved meal in meals for its day" }
-            nameMatch!!
+        // if it already exists return it
+        getMealsForDay(ds, day).let { searchForName(it, name) }?.let {
+            return it
         }
+
+        // else create a new meal, save and return it
+        val newMeal = ColumnData(Meal.table).run {
+            put(Schema.MealTable.DAY, day)
+            put(Schema.MealTable.NAME, name)
+            Meal.factory.construct(this, ObjectSource.USER_NEW)
+        }
+        
+        Queries.saveObject(ds, newMeal)
+        // get it back again, so that it has an ID and stuff
+        val newlySavedMeal = getMealsForDay(ds, day).let { searchForName(it, name) }
+        check(newlySavedMeal != null) { "Couldn't find newly saved meal in day ${day}" }
+        return newlySavedMeal
     }
 
     // finds whether there is a 'current meal', and returns it if so.
@@ -74,6 +76,28 @@ object MealQueries {
         return resultMeals.getOrDefault(id, null)
     }
 
+    // Creates a new foodportion from the old one, with an updated meal ID.
+    // Old meal will have the old foodPortion removed and provided no other references to it are kept,
+    // it will be garbage collected.
+    // newMeal will have the newly constructed object (with the correct ID) added.
+    // if the food portion already belongs to newMeal, nothing is done
+    @Throws(SQLException::class)
+    fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
+        if (fp.meal != newMeal) {
+            val editedFp = MacrosBuilder(fp).run {
+                setField(Schema.FoodPortionTable.MEAL_ID, newMeal.id)
+                build()
+            }
+            Queries.saveObject(ds, editedFp)
+            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
+
+            assert(updatedFp.size == 1) { "more than 1 new foodpotion returned" }
+            QueryHelpers.processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
+
+            fp.removeFromMeal()
+        }
+    }
+
     @Throws(SQLException::class)
     fun getMealsById(ds: MacrosDataSource, mealIds: List<Long>): Map<Long, Meal> {
         if (mealIds.isEmpty()) {
@@ -99,7 +123,7 @@ object MealQueries {
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
     }
 
-    fun findMealWithName(mealMap: Map<Long, Meal>, name: String): Meal? {
+    fun searchForName(mealMap: Map<Long, Meal>, name: String): Meal? {
         return mealMap.values.firstOrNull { it.name == name }
     }
 }

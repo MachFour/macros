@@ -50,7 +50,7 @@ object Commands {
     }
 
     private fun checkInitialised() {
-        check(initialised) { "Commands not initialised" }
+        assert(initialised) { "Commands not initialised" }
     }
 
     private fun cleanInput(s: String): String {

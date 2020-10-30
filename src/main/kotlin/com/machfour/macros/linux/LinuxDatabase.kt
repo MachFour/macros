@@ -195,7 +195,8 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         val selectColumns: List<Column<M, *>> = listOf(valueColumn)
         val c = connection
         try {
-            c.prepareStatement(DatabaseUtils.selectTemplate(t, selectColumns, keyColumn, 1, false)).use { p ->
+            val sqlTemplate = DatabaseUtils.selectTemplate(t, selectColumns, keyColumn, 1, false)
+            c.prepareStatement(sqlTemplate).use { p ->
                 // should be distinct by default: assert keyColumn.isUnique();
                 for (key in keys) {
                     // do queries one by one so we don't send a huge number of parameters at once
@@ -233,7 +234,8 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         val resultList: MutableList<I?> = ArrayList(0)
         val c = connection
         try {
-            c.prepareStatement(DatabaseUtils.selectTemplate(t, selected, where, whereValues.size, distinct)).use { p ->
+            val sqlTemplate = DatabaseUtils.selectTemplate(t, selected, where, whereValues.size, distinct)
+            c.prepareStatement(sqlTemplate).use { p ->
                 LinuxDatabaseUtils.bindObjects(p, whereValues)
                 p.executeQuery().use { rs ->
                     rs.next()
@@ -258,10 +260,12 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null and is unordered
     @Throws(SQLException::class)
-    override fun <M, J> getRawObjectsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M> {
+    override fun <M, J> getRawObjectsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M> {
         // if the list of keys is empty, every row will be returned
-        assert(!keys.isEmpty()) { "List of keys is empty" }
-        assert(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
+        if (keys.isEmpty()) {
+            return emptyMap()
+        }
+        require(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
         val unorderedObjects: MutableMap<J, M> = HashMap(keys.size, 1.0f)
         val c = connection
         try {
@@ -290,10 +294,12 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null and is unordered
     @Throws(SQLException::class)
-    override fun <M, J> getIdsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+    override fun <M, J> getIdsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
         // if the list of keys is empty, every row will be returned
-        assert(!keys.isEmpty()) { "List of keys is empty" }
-        assert(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
+        if (keys.isEmpty()) {
+            return emptyMap()
+        }
+        require(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
         val keyAndId = listOf(keyCol, t.idColumn) // select the ID column plus the key
         val unorderedIdMap: MutableMap<J, Long> = HashMap(keys.size, 1.0f)
         val c = connection

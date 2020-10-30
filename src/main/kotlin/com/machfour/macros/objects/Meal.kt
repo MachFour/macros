@@ -92,8 +92,14 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
 
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
-        assert(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
+        require(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
         foodPortions.add(fp)
+    }
+
+    internal fun removeFoodPortion(fp: FoodPortion) {
+        val index = foodPortions.indexOf(fp)
+        require(index != -1) { "removeFoodPortion(): FoodPortion (id = ${fp.id}) not found in meal ${id}" }
+        foodPortions.removeAt(index)
     }
 
 }

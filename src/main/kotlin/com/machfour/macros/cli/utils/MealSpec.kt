@@ -97,7 +97,7 @@ class MealSpec {
         } else {
             // if a name was given, try to find a matching meal with that name
             // name cannot be null since it is implied by isMealSpecified
-            val nameMatch = MealQueries.findMealWithName(mealsForDay, name!!)
+            val nameMatch = MealQueries.searchForName(mealsForDay, name!!)
             when {
                 nameMatch != null -> {
                     processedObject = nameMatch

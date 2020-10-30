@@ -128,7 +128,7 @@ object FoodQueries {
      */
     @Throws(SQLException::class)
     fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
-        val foods = QueryHelpers.getRawObjectsByKeys(ds, Schema.FoodTable.instance, Schema.FoodTable.INDEX_NAME, indexNames)
+        val foods = ds.getRawObjectsByKeys(Schema.FoodTable.instance, Schema.FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
         QueryHelpers.processRawFoodMap(ds, idMap)

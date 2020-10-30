@@ -6,10 +6,6 @@ interface PortionMeasurement {
 
     val isVolumeMeasurement: Boolean
 
-    // whether this Measurement is actually a serving or a QtyUnit object
-    // (dirty, I know)
-    val isServing: Boolean
-
     val name: String
 
     val baseUnit: QtyUnit

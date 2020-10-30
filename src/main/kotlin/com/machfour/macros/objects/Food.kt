@@ -10,7 +10,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         MacrosEntityImpl<Food>(dataMap, objectSource) {
 
     companion object {
-        val DESCRIPTION_COLUMNS = listOf(
+        val descriptionColumns = listOf(
             FoodTable.BRAND,
             FoodTable.VARIETY,
             FoodTable.NAME,
@@ -38,8 +38,6 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     private val servingsInternal: MutableList<Serving> = ArrayList()
     val servings: List<Serving>
         get() = Collections.unmodifiableList(servingsInternal)
-
-    val sortableName = makeSortableName()
 
     var defaultServing: Serving? = null
         private set
@@ -94,6 +92,24 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         return servingsInternal.firstOrNull { it.name == name }
     }
 
+    // Returns list of quantity units and servings which can be used to measure this food
+    val validMeasurements: List<PortionMeasurement>
+        get() {
+            val (naturalUnit, density) = getNutritionData().let { Pair(it.qtyUnit, it.density) }
+            return ArrayList<PortionMeasurement>().apply {
+                add(naturalUnit)
+                // allow conversion if density is given
+                if (density != null) {
+                    if (naturalUnit.isVolumeUnit) {
+                        add(QtyUnits.GRAMS)
+                    } else {
+                        add(QtyUnits.MILLILITRES)
+                    }
+                }
+                addAll(servings)
+            }
+        }
+
     val usdaIndex: Long?
         get() = getData(FoodTable.USDA_INDEX)
 
@@ -106,11 +122,6 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
 
     override fun hashCode(): Int = super.hashCode()
 
-    private fun getDescriptionData(fieldName: Column<Food, String>): String? {
-        assert(DESCRIPTION_COLUMNS.contains(fieldName))
-        return getData(fieldName)
-    }
-
     val shortName: String
         get() = prettyFormat(withBrand = false, withVariety = false)
 
@@ -119,6 +130,18 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
 
     val mediumName: String
         get() = prettyFormat()
+
+    val sortableName: String
+        get() = prettyFormat(withExtra = true, sortable = true)
+
+    val basicName: String
+        get() = getData(FoodTable.NAME)!!
+
+    val variety: String?
+        get() = getData(FoodTable.VARIETY)
+
+    val brand: String?
+        get() = getData(FoodTable.BRAND)
 
     val extraDesc: String?
         get() = getData(FoodTable.EXTRA_DESC)
@@ -129,41 +152,8 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     val indexName: String
         get() = getData(FoodTable.INDEX_NAME)!!
 
-    private fun makeSortableName(): String {
-        return prettyFormat(withExtra = true, sortable = true)
-    }
-
     val categoryName: String
         get() = getData(FoodTable.CATEGORY)!!
-
-    private fun prettyFormat(withBrand : Boolean = true,
-                             withVariety : Boolean = true,
-                             withExtra : Boolean = false,
-                             sortable : Boolean = false)
-            : String {
-        val prettyName = StringBuilder(getDescriptionData(FoodTable.NAME))
-        val variety = getDescriptionData(FoodTable.VARIETY)
-        val brand = getDescriptionData(FoodTable.BRAND)
-        if (sortable) {
-            if (withBrand && hasDescriptionData(FoodTable.BRAND)) {
-                prettyName.append(", ").append(brand)
-            }
-            if (hasDescriptionData(FoodTable.VARIETY)) {
-                prettyName.append(", ").append(variety)
-            }
-        } else {
-            if (withVariety && hasDescriptionData(FoodTable.VARIETY)) {
-                prettyName.insert(0, "$variety ")
-            }
-            if (withBrand && hasDescriptionData(FoodTable.BRAND)) {
-                prettyName.insert(0, "$brand ")
-            }
-        }
-        if (withExtra && hasDescriptionData(FoodTable.EXTRA_DESC)) {
-            prettyName.append(" (").append(getDescriptionData(FoodTable.EXTRA_DESC)).append(")")
-        }
-        return prettyName.toString()
-    }
 
     /*
      * Order of fields:
@@ -174,8 +164,32 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
      * else:
      *     <brand> <variety> <name> (<notes>)
      */
-    private fun hasDescriptionData(fieldName: Column<Food, String>): Boolean {
-        return hasData(fieldName)
+    private fun prettyFormat(
+        withBrand : Boolean = true,
+        withVariety : Boolean = true,
+        withExtra : Boolean = false,
+        sortable : Boolean = false
+    ): String {
+        val prettyName = StringBuilder(basicName)
+        if (sortable) {
+            if (withBrand && brand != null) {
+                prettyName.append(", ").append(brand)
+            }
+            if (variety != null) {
+                prettyName.append(", ").append(variety)
+            }
+        } else {
+            if (withVariety && variety != null) {
+                prettyName.insert(0, "$variety ")
+            }
+            if (withBrand && brand != null) {
+                prettyName.insert(0, "$brand ")
+            }
+        }
+        if (withExtra && extraDesc != null) {
+            prettyName.append(" (").append(extraDesc).append(")")
+        }
+        return prettyName.toString()
     }
 
 }

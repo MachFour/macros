@@ -58,6 +58,4 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
     override val isVolumeMeasurement
         get() = qtyUnit.isVolumeUnit
 
-    override val isServing = true
-
 }

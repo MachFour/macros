@@ -16,7 +16,7 @@ object PrintFormatting {
     const val longDataWidth = 6
 
     fun formatQuantityAsVerbose(qty: Double? = null, verbose: Boolean = false): String {
-        return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, withDp = verbose)
+        return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, unitWidth = 2, withDp = verbose)
     }
     fun formatQuantity(
         nd: NutritionData,
@@ -79,12 +79,12 @@ object PrintFormatting {
 
 
         val floatFmt = if (withDp) ".1f" else ".0f"
-        val alignFmt = if (alignLeft) "" else "-"
+        val alignFmt = if (alignLeft) "-" else ""
         val unitFmt = "%${alignFmt}${unitWidth}s"
         
         if (unitString != null) {
             if (spaceBeforeUnit) {
-                unitString = " " + unitString
+                unitString = " $unitString"
             }
             unitString = unitFmt.format((if (spaceBeforeUnit) " " else "") + unitString)
         } else {
@@ -147,7 +147,7 @@ object PrintFormatting {
         val needsDp = !fieldsWithoutDp.contains(field)
         val qty = nd.amountOf(field)
         val unit = if (field === QUANTITY) nd.qtyUnit else ndStrings.getUnit(field)
-        return formatQuantity(qty, unit, width = if (needsDp) 12 else 10, withDp = needsDp)
+        return formatQuantity(qty, unit, width = if (needsDp) 12 else 10, unitWidth = 2,  withDp = needsDp)
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)
@@ -159,6 +159,27 @@ object PrintFormatting {
             colStrings = ndStrings,
             spaceBeforeUnit = true
         )
+    }
+
+    fun nutritionDataToText(
+        nd: NutritionData,
+        colStrings: ColumnStrings,
+        cols: List<Column<NutritionData, Double>>
+    ): String {
+        return StringBuilder().run {
+            for (col in cols) {
+                val colName = colStrings.getName(col)
+                val value = PrintFormatting.formatQuantity(nd, col, colStrings, withUnit = false)
+                val unitStr = colStrings.getUnitAbbr(col)
+                append("$colName: $value $unitStr")
+                if (!nd.hasCompleteData(col)) {
+                    // mark incomplete
+                    append(" (*)")
+                }
+                appendLine()
+            }
+            toString()
+        }
     }
 }
 

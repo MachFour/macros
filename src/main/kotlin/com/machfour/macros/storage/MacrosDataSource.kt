@@ -56,10 +56,10 @@ interface MacrosDataSource {
     fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
 
     @Throws(SQLException::class)
-    fun <M, J> getIdsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long>
+    fun <M, J> getIdsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long>
 
     @Throws(SQLException::class)
-    fun <M, J> getRawObjectsByKeysNoEmpty(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M>
+    fun <M, J> getRawObjectsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M>
 
     @Throws(SQLException::class)
     fun <M> getAllRawObjects(t: Table<M>): Map<Long, M>

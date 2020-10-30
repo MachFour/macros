@@ -95,6 +95,14 @@ class FoodPortion private constructor(data: ColumnData<FoodPortion>, objectSourc
         serving = s
     }
 
+    // only do this when moving Fp from one meal to another
+    fun removeFromMeal() {
+        meal.removeFoodPortion(this)
+
+        // XXX can't do this because of lateinit
+        //this.meal = null
+    }
+
     // returns a string containing the serving count. If the serving count is close to an integer,
     // it is formatted as an integer.
     private fun servingCountString(): String {

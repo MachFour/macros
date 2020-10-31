@@ -105,17 +105,12 @@ object PrintFormatting {
 
     // Converts the given data field into a string. Adds an asterisk if the data is missing.
     // Returns null if the input nutrition data is null
-    @JvmStatic
-    @JvmOverloads
     fun formatNutrnData(
-        nd: NutritionData?,
+        nd: NutritionData,
         field: Column<NutritionData, Double>,
         withUnit: Boolean = false,
         colStrings: ColumnStrings = DefaultColumnStrings.instance
-    ): String? {
-        if (nd == null) {
-            return null
-        }
+    ): String {
         // TODO move this logic somewhere else
         val missing = !nd.hasCompleteData(field)
         return if (!withUnit) {

@@ -16,7 +16,7 @@ object NutritionCalculations {
     internal const val CALS_PER_G_PROTEIN = 17 / CAL_TO_KJ_FACTOR
     internal const val CALS_PER_G_FAT = 37 / CAL_TO_KJ_FACTOR
     internal const val CALS_PER_G_CARBOHYDRATE = 17 / CAL_TO_KJ_FACTOR
-    internal const val CALS_PER_G_FIBRE = 8 / CAL_TO_KJ_FACTOR
+    internal const val CALS_PER_G_FIBRE = 8.27 / CAL_TO_KJ_FACTOR
 
     private fun convertToGramsIfNecessary(nd: NutritionData): NutritionData {
         return when (nd.qtyUnit == QtyUnits.GRAMS) {

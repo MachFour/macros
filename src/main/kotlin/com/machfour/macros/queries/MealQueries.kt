@@ -5,6 +5,7 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
+import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.storage.MacrosDataSource
@@ -85,11 +86,11 @@ object MealQueries {
     fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
         if (fp.meal != newMeal) {
             val editedFp = MacrosBuilder(fp).run {
-                setField(Schema.FoodPortionTable.MEAL_ID, newMeal.id)
+                setField(Schema.FoodQuantityTable.MEAL_ID, newMeal.id)
                 build()
             }
             Queries.saveObject(ds, editedFp)
-            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
+            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodQuantity.table, listOf(fp.id)).mapValues { it.value as FoodPortion }
 
             assert(updatedFp.size == 1) { "more than 1 new foodpotion returned" }
             QueryHelpers.processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
@@ -118,7 +119,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: List<Long>): List<Long> {
-        val ids = ds.selectColumn(FoodPortion.table, Schema.FoodPortionTable.FOOD_ID, Schema.FoodPortionTable.MEAL_ID, mealIds, true)
+        val ids = ds.selectColumn(FoodQuantity.table, Schema.FoodQuantityTable.FOOD_ID, Schema.FoodQuantityTable.MEAL_ID, mealIds, true)
         // ensure no null IDs
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
     }

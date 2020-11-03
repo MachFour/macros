@@ -6,7 +6,7 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.QtyUnit
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.PrintFormatting.formatQuantityAsVerbose
@@ -68,7 +68,7 @@ object MealPrinter {
         out.println()
     }
 
-    private fun nutritionDataToRow(name: String, nd: NutritionData, qty: Double, unit: QtyUnit, verbose: Boolean): List<String> {
+    private fun nutritionDataToRow(name: String, nd: NutritionData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
         val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
         val row: MutableList<String> = ArrayList(nutrientColumns.size + 2)
         // add food name

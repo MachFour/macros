@@ -3,6 +3,7 @@ package com.machfour.macros.core
 import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.util.DateStamp
 
 import java.util.ArrayList
@@ -42,37 +43,37 @@ object Schema {
         return ColumnImpl.Builder(name, type)
     }
 
-    // QtyUnit.factory() causes initialisation of QtyUnit, which depends on this class.
-    // So the columns are initialised as a side effect of calling this function.
-    class QtyUnitTable private constructor()
-        : BaseTable<QtyUnit>(TABLE_NAME, QtyUnit.factory, COLUMNS) {
+    // Unit.factory() causes initialisation of Unit, which depends on this class.
+    // So the columns are initialised as a side effect of calling that function.
+    class UnitTable private constructor()
+        : BaseTable<Unit>(TABLE_NAME, Unit.factory, COLUMNS) {
         companion object {
-            private const val TABLE_NAME = "QtyUnit"
+            private const val TABLE_NAME = "Unit"
 
             // holds the following columns in the order initialised in the static block
-            private val COLUMNS = ArrayList<Column<QtyUnit, *>>()
+            private val COLUMNS = ArrayList<Column<Unit, *>>()
 
             // initialisation order here is the order of iteration of the columns
-            val ID: Column<QtyUnit, Long>
-            val CREATE_TIME: Column<QtyUnit, Long>
-            val MODIFY_TIME: Column<QtyUnit, Long>
-            val NAME: Column<QtyUnit, String>
-            val ABBREVIATION: Column<QtyUnit, String>
-            val IS_VOLUME_UNIT: Column<QtyUnit, Boolean>
-            val METRIC_EQUIVALENT: Column<QtyUnit, Double>
+            val ID: Column<Unit, Long>
+            val CREATE_TIME: Column<Unit, Long>
+            val MODIFY_TIME: Column<Unit, Long>
+            val UNIT_TYPE: Column<Unit, Long>
+            val NAME: Column<Unit, String>
+            val ABBREVIATION: Column<Unit, String>
+            val METRIC_EQUIVALENT: Column<Unit, Double>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
                 CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
+                UNIT_TYPE = builder("unit_type", Types.INTEGER).notEditable().notNull().buildAndAdd(COLUMNS)
                 ABBREVIATION = builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildAndAdd(COLUMNS)
-                IS_VOLUME_UNIT = builder("is_volume_unit", Types.NULLBOOLEAN).notNull().buildAndAdd(COLUMNS)
                 METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL).notNull().buildAndAdd(COLUMNS)
             }
 
             // this declaration has to come last (static initialisation order
-            val instance = QtyUnitTable()
+            val instance = UnitTable()
         }
     }
 
@@ -136,7 +137,7 @@ object Schema {
             val QUANTITY: Column<Serving, Double>
             val IS_DEFAULT: Column<Serving, Boolean>
             val FOOD_ID: Column.Fk<Serving, Long, Food>
-            val QUANTITY_UNIT: Column.Fk<Serving, String, QtyUnit>
+            val QUANTITY_UNIT: Column.Fk<Serving, String, Unit>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
@@ -145,7 +146,7 @@ object Schema {
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
                 QUANTITY = builder("quantity", Types.REAL).notNull().buildAndAdd(COLUMNS)
                 QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull()
-                        .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
+                        .buildAndAddFk(UnitTable.ABBREVIATION, UnitTable.instance, COLUMNS)
                 IS_DEFAULT = builder("is_default", Types.NULLBOOLEAN).notNull().defaultsTo(false).buildAndAdd(COLUMNS)
                 FOOD_ID = builder("food_id", Types.ID).notEditable().notNull().defaultsTo(NO_ID)
                         .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
@@ -156,22 +157,23 @@ object Schema {
         }
     }
 
-    class FoodPortionTable private constructor() : BaseTable<FoodPortion>(TABLE_NAME, FoodPortion.factory, COLUMNS) {
+    class FoodQuantityTable private constructor() : BaseTable<FoodQuantity>(TABLE_NAME, FoodQuantity.factory, COLUMNS) {
         companion object {
-            private const val TABLE_NAME = "FoodPortion"
+            private const val TABLE_NAME = "FoodQuantity"
 
             // holds the following columns in the order initialised in the static block
-            private val COLUMNS = ArrayList<Column<FoodPortion, *>>()
+            private val COLUMNS = ArrayList<Column<FoodQuantity, *>>()
 
-            val ID: Column<FoodPortion, Long>
-            val CREATE_TIME: Column<FoodPortion, Long>
-            val MODIFY_TIME: Column<FoodPortion, Long>
-            val QUANTITY: Column<FoodPortion, Double>
-            val QUANTITY_UNIT: Column.Fk<FoodPortion, String, QtyUnit>
-            val FOOD_ID: Column.Fk<FoodPortion, Long, Food>
-            val MEAL_ID: Column.Fk<FoodPortion, Long, Meal>
-            val SERVING_ID: Column.Fk<FoodPortion, Long, Serving>
-            val NOTES: Column<FoodPortion, String>
+            val ID: Column<FoodQuantity, Long>
+            val CREATE_TIME: Column<FoodQuantity, Long>
+            val MODIFY_TIME: Column<FoodQuantity, Long>
+            val QUANTITY: Column<FoodQuantity, Double>
+            val QUANTITY_UNIT: Column.Fk<FoodQuantity, String, Unit>
+            val FOOD_ID: Column.Fk<FoodQuantity, Long, Food>
+            val MEAL_ID: Column.Fk<FoodQuantity, Long, Meal>
+            val PARENT_FOOD_ID: Column.Fk<FoodQuantity, Long, Food>
+            val SERVING_ID: Column.Fk<FoodQuantity, Long, Serving>
+            val NOTES: Column<FoodQuantity, String>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
@@ -179,18 +181,20 @@ object Schema {
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
                 QUANTITY = builder("quantity", Types.REAL).notNull().buildAndAdd(COLUMNS)
                 QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notEditable().notNull()
-                        .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
+                        .buildAndAddFk(UnitTable.ABBREVIATION, UnitTable.instance, COLUMNS)
                 FOOD_ID = builder("food_id", Types.ID).notEditable().notNull()
                         .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
-                MEAL_ID = builder("meal_id", Types.ID).notEditable().notNull()
+                MEAL_ID = builder("meal_id", Types.ID).notEditable()
                         .buildAndAddFk(MealTable.ID, MealTable.instance, COLUMNS)
+                PARENT_FOOD_ID = builder("parent_food_id", Types.ID).notEditable()
+                        .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
                 SERVING_ID = builder("serving_id", Types.ID).notEditable()
                         .buildAndAddFk(ServingTable.ID, ServingTable.instance, COLUMNS)
                 NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
             }
 
 
-            val instance = FoodPortionTable()
+            val instance = FoodQuantityTable()
         }
     }
 
@@ -247,43 +251,6 @@ object Schema {
             val instance = FoodCategoryTable()
         }
 
-    }
-
-    class IngredientTable private constructor() : BaseTable<Ingredient>(TABLE_NAME, Ingredient.factory, COLUMNS) {
-        companion object {
-            private const val TABLE_NAME = "Ingredient"
-
-            // holds the following columns in the order initialised in the static block
-            private val COLUMNS = ArrayList<Column<Ingredient, *>>()
-
-            val ID: Column<Ingredient, Long>
-            val CREATE_TIME: Column<Ingredient, Long>
-            val MODIFY_TIME: Column<Ingredient, Long>
-            val COMPOSITE_FOOD_ID: Column.Fk<Ingredient, Long, Food>
-            val INGREDIENT_FOOD_ID: Column.Fk<Ingredient, Long, Food>
-            val QUANTITY: Column<Ingredient, Double>
-            val QUANTITY_UNIT: Column.Fk<Ingredient, String, QtyUnit>
-            val SERVING_ID: Column.Fk<Ingredient, Long, Serving>
-            val NOTES: Column<Ingredient, String>
-
-            init {
-                ID = idColumnBuildAndAdd(COLUMNS)
-                CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
-                MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
-                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
-                COMPOSITE_FOOD_ID = builder("composite_food_id", Types.ID).notEditable().notNull()
-                        .defaultsTo(NO_ID).buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
-                INGREDIENT_FOOD_ID = builder("ingredient_food_id", Types.ID).notEditable().notNull()
-                        .defaultsTo(NO_ID).buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
-                QUANTITY = builder("quantity", Types.REAL).notEditable().notNull().buildAndAdd(COLUMNS)
-                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notEditable().notNull()
-                        .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
-                SERVING_ID = builder("serving_id", Types.ID) // nullable
-                        .buildAndAddFk(ServingTable.ID, ServingTable.instance, COLUMNS)
-            }
-
-            val instance = IngredientTable()
-        }
     }
 
     class RegularMealTable private constructor() : BaseTable<RegularMeal>(TABLE_NAME, RegularMeal.factory, COLUMNS) {
@@ -387,7 +354,7 @@ object Schema {
             @JvmField
             val FOOD_ID: Column.Fk<NutritionData, Long, Food>
             @JvmField
-            val QUANTITY_UNIT: Column.Fk<NutritionData, String, QtyUnit>
+            val QUANTITY_UNIT: Column.Fk<NutritionData, String, Unit>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
@@ -397,8 +364,8 @@ object Schema {
                 FOOD_ID = builder("food_id", Types.ID).notEditable().defaultsTo(NO_ID).inSecondaryKey().unique()
                         .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
                 QUANTITY = builder("quantity", Types.REAL).notNull().defaultsTo(100.0).buildAndAdd(COLUMNS)
-                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull().defaultsTo(QtyUnits.GRAMS.abbr)
-                        .buildAndAddFk(QtyUnitTable.ABBREVIATION, QtyUnitTable.instance, COLUMNS)
+                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull().defaultsTo(Units.GRAMS.abbr)
+                        .buildAndAddFk(UnitTable.ABBREVIATION, UnitTable.instance, COLUMNS)
                 DATA_SOURCE = builder("data_source", Types.TEXT).buildAndAdd(COLUMNS)
                 NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
                 DENSITY = builder("density", Types.REAL).buildAndAdd(COLUMNS)

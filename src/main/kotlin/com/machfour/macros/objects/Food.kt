@@ -100,10 +100,10 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
                 add(naturalUnit)
                 // allow conversion if density is given
                 if (density != null) {
-                    if (naturalUnit.isVolumeUnit) {
-                        add(QtyUnits.GRAMS)
+                    if (naturalUnit.unitType === UnitType.VOLUME) {
+                        add(Units.GRAMS)
                     } else {
-                        add(QtyUnits.MILLILITRES)
+                        add(Units.MILLILITRES)
                     }
                 }
                 addAll(servings)

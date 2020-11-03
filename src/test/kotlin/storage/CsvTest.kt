@@ -10,7 +10,8 @@ import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.Ingredient
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.Serving
-import com.machfour.macros.storage.CsvExport.writeObjectsToCsv
+import com.machfour.macros.queries.FoodQuantityQueries
+import com.machfour.macros.storage.CsvBackup.writeObjectsToCsv
 import com.machfour.macros.storage.CsvImport.buildFoodObjectTree
 import com.machfour.macros.storage.CsvImport.buildServings
 import com.machfour.macros.storage.CsvImport.importFoodData
@@ -53,7 +54,7 @@ class CsvTest {
 
     @BeforeEach
     fun clearDb() {
-        db.clearTable(Ingredient.table)
+        FoodQuantityQueries.deleteAllIngredients(db)
         db.clearTable(Serving.table)
         db.clearTable(NutritionData.table)
         db.clearTable(Food.table)

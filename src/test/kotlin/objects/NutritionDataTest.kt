@@ -1,14 +1,11 @@
 package objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.FoodPortionTable.Companion.FOOD_ID
-import com.machfour.macros.core.Schema.FoodPortionTable.Companion.MEAL_ID
-import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY
-import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY_UNIT
-import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.NutritionCalculations
-import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.QtyUnits
+import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.FOOD_ID
+import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.MEAL_ID
+import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY
+import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY_UNIT
+import com.machfour.macros.objects.*
 import com.machfour.macros.sample.ExampleFood
 import org.junit.jupiter.api.Test
 
@@ -23,17 +20,17 @@ class NutritionDataTest {
         private val nd3: NutritionData // mg
 
         init {
-            val fpBuilder = MacrosBuilder(FoodPortion.table)
+            val fpBuilder = MacrosBuilder(FoodQuantity.table)
             fpBuilder.setField(FOOD_ID, f.id)
             fpBuilder.setField(MEAL_ID, MacrosEntity.NO_ID)
             fpBuilder.setField(QUANTITY, 100.0)
-            fpBuilder.setField(QUANTITY_UNIT, QtyUnits.GRAMS.abbr)
-            val fp1 = fpBuilder.build()
-            fpBuilder.setField(QUANTITY_UNIT, QtyUnits.MILLILITRES.abbr)
-            val fp2 = fpBuilder.build()
+            fpBuilder.setField(QUANTITY_UNIT, Units.GRAMS.abbr)
+            val fp1 = fpBuilder.build() as FoodPortion
+            fpBuilder.setField(QUANTITY_UNIT, Units.MILLILITRES.abbr)
+            val fp2 = fpBuilder.build() as FoodPortion
             fpBuilder.setField(QUANTITY, 100000.0)
-            fpBuilder.setField(QUANTITY_UNIT, QtyUnits.MILLIGRAMS.abbr)
-            val fp3 = fpBuilder.build()
+            fpBuilder.setField(QUANTITY_UNIT, Units.MILLIGRAMS.abbr)
+            val fp3 = fpBuilder.build() as FoodPortion
 
 
             fp1.initFood(f)

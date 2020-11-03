@@ -40,6 +40,10 @@ interface MacrosDataSource {
     @Throws(SQLException::class)
     fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
 
+    // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
+    @Throws(SQLException::class)
+    fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
+
     @Throws(SQLException::class)
     fun <M> deleteById(id: Long, t: Table<M>): Int
 

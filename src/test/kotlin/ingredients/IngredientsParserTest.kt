@@ -7,6 +7,8 @@ import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
 import com.machfour.macros.objects.Ingredient
+import com.machfour.macros.queries.FoodQuantityQueries
+import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -24,8 +26,8 @@ class IngredientsParserTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
-                db.clearTable(Ingredient.table)
+                FoodQuantityQueries.deleteAllIngredients(db)
+                FoodQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 Assertions.fail<Any>(e)

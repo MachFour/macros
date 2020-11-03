@@ -10,7 +10,7 @@ import java.io.IOException
 import java.io.Writer
 import java.sql.SQLException
 
-object CsvExport {
+object CsvBackup {
     @Throws(IOException::class)
     fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, csvOut: Writer, objects: Collection<M>) {
         val header = table.columnsByName.keys.toTypedArray()

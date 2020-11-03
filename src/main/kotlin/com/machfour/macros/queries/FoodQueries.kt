@@ -93,7 +93,7 @@ object FoodQueries {
         val allServings = ds.getAllRawObjects(Serving.table)
         val allNutritionData = ds.getAllRawObjects(NutritionData.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = ds.getAllRawObjects(Ingredient.table)
+        val allIngredients = ds.getAllRawObjects(FoodQuantity.table).mapValues { it.value as Ingredient }
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutritionData, allIngredients, allFoodCategories)
         return ArrayList(allFoods.values)
@@ -140,4 +140,8 @@ object FoodQueries {
      * Use prefixOnly to only allow matches at the start of the matching string.
      */
     //List<FoodTable> getMatchingFoods(String searchString, String[] columnNames, boolean prefixOnly);
+
+    fun deleteAllCompositeFoods(ds: MacrosDataSource) : Int {
+        return ds.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+    }
 }

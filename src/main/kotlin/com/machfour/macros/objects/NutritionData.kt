@@ -90,7 +90,7 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     private val completeData: MutableMap<Column<NutritionData, Double>, Boolean>
 
     // measured in grams, per specified quantity
-    val qtyUnit: QtyUnit
+    val qtyUnit: Unit
     var food: Food? = null
         set(f) {
             assert(this.food == null && f != null && foreignKeyMatches(this, FOOD_ID, f))
@@ -137,7 +137,7 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
     }
     // map of protein, fat, saturated fat, carbs, sugar, fibre to amount of energy
     private val energyComponentsMap: Map<Column<NutritionData, Double>, Double> by lazy {
-        NutritionCalculations.makeEnergyComponentsMap(this, EnergyUnit.Calories)
+        NutritionCalculations.makeEnergyComponentsMap(this, Units.CALORIES)
     }
 
 
@@ -153,7 +153,7 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         val hasEnergy = completeData[CALORIES]!! || completeData[KILOJOULES]!!
         completeData[CALORIES] = hasEnergy
         completeData[KILOJOULES] = hasEnergy
-        qtyUnit = QtyUnits.fromAbbreviation(dataMap[QUANTITY_UNIT]!!)
+        qtyUnit = Units.fromAbbreviation(dataMap[QUANTITY_UNIT]!!)
     }
 
     // allows keeping track of missing data when different nData instances are added up
@@ -218,17 +218,15 @@ class NutritionData private constructor(dataMap: ColumnData<NutritionData>, obje
         return energyProportionsMap[col] ?: 0.0
     }
 
-    fun getEnergyComponent(col: Column<NutritionData, Double>, unit: EnergyUnit = EnergyUnit.Calories) : Double {
+    fun getEnergyComponent(col: Column<NutritionData, Double>, unit: Unit = Units.CALORIES) : Double {
         if (!energyProportionCols.contains(col)) {
             return 0.0
         }
 
+        require (unit.unitType == UnitType.ENERGY) { "Invalid energy unit" }
+
         // the map is computed the first time this function is called
-        val component = energyComponentsMap[col] ?: 0.0
-        return when (unit) {
-            is EnergyUnit.Kilojoules -> component * NutritionCalculations.CAL_TO_KJ_FACTOR
-            is EnergyUnit.Calories -> component
-        }
+        return (energyComponentsMap[col] ?: 0.0) * unit.metricEquivalent
     }
 
     fun hasFood(): Boolean {

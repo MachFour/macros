@@ -6,7 +6,7 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.QtyUnits
+import com.machfour.macros.objects.Units
 import com.machfour.macros.queries.FoodQueries
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -47,8 +47,8 @@ class DensityTest {
     fun testDensity() {
         val density = chickpeaNd.density
         Assertions.assertNotNull(density)
-        val millilitresNd = NutritionCalculations.rescale(chickpeaNd, 100 / density!!, QtyUnits.MILLILITRES)
-        val backConverted = NutritionCalculations.rescale(millilitresNd, 100.0, QtyUnits.GRAMS)
+        val millilitresNd = NutritionCalculations.rescale(chickpeaNd, 100 / density!!, Units.MILLILITRES)
+        val backConverted = NutritionCalculations.rescale(millilitresNd, 100.0, Units.GRAMS)
         val carbs = NutritionDataTable.CARBOHYDRATE
         Assertions.assertEquals(chickpeaNd.getData(carbs)!!, millilitresNd.getData(carbs)!!, 0.01)
         Assertions.assertEquals(chickpeaNd.getData(carbs)!!, backConverted.getData(carbs)!!, 0.01)
@@ -59,10 +59,10 @@ class DensityTest {
 
     @Test
     fun testDensity2() {
-        val chickPea100mL = NutritionCalculations.rescale(chickpeaNd, 100.0, QtyUnits.MILLILITRES)
-        val water100mL = NutritionCalculations.rescale(waterNd, 100.0, QtyUnits.MILLILITRES)
+        val chickPea100mL = NutritionCalculations.rescale(chickpeaNd, 100.0, Units.MILLILITRES)
+        val water100mL = NutritionCalculations.rescale(waterNd, 100.0, Units.MILLILITRES)
         val combined = NutritionCalculations.sum(listOf(chickPea100mL, water100mL))
-        Assertions.assertEquals(QtyUnits.GRAMS, combined.qtyUnit)
+        Assertions.assertEquals(Units.GRAMS, combined.qtyUnit)
         Assertions.assertEquals(100 + 100 * chickpeaNd.density!!, combined.quantity)
         Assertions.assertTrue(combined.hasCompleteData(NutritionDataTable.QUANTITY))
     }

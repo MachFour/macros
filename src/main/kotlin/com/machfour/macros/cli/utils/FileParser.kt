@@ -5,6 +5,7 @@ import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
@@ -85,7 +86,7 @@ class FileParser {
             assert(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
             var s: Serving? = null
             val quantity: Double
-            val unit: QtyUnit?
+            val unit: Unit?
             if (fps.isServingMode) {
                 assert(fps.servingName != null && fps.servingCount != 0.0)
                 if (fps.servingName == "") {
@@ -110,13 +111,13 @@ class FileParser {
                 quantity = fps.quantity
                 unit = fps.unit
             }
-            val fpData = ColumnData(FoodPortion.table)
-            fpData.put(Schema.FoodPortionTable.FOOD_ID, f.id)
-            fpData.put(Schema.FoodPortionTable.SERVING_ID, s?.id)
-            fpData.put(Schema.FoodPortionTable.MEAL_ID, m.id)
-            fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit!!.abbr)
-            fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
-            val fp = FoodPortion.factory.construct(fpData, ObjectSource.USER_NEW)
+            val fpData = ColumnData(FoodQuantity.table)
+            fpData.put(Schema.FoodQuantityTable.FOOD_ID, f.id)
+            fpData.put(Schema.FoodQuantityTable.SERVING_ID, s?.id)
+            fpData.put(Schema.FoodQuantityTable.MEAL_ID, m.id)
+            fpData.put(Schema.FoodQuantityTable.QUANTITY_UNIT, unit!!.abbr)
+            fpData.put(Schema.FoodQuantityTable.QUANTITY, quantity)
+            val fp = FoodQuantity.factory.construct(fpData, ObjectSource.USER_NEW) as FoodPortion
             fp.initFood(f)
             if (s != null) {
                 fp.initServing(s)
@@ -151,7 +152,7 @@ class FileParser {
             }
             val indexName = tokens[0]
             var quantity = 0.0
-            var unit: QtyUnit? = null
+            var unit: Unit? = null
             var servingCount = 0.0
             var servingName: String? = null
             var isServingMode = false
@@ -184,9 +185,9 @@ class FileParser {
                         }
                         val unitString = quantityMatch.group("unit")
                         if (unitString == null) {
-                            unit = QtyUnits.GRAMS
+                            unit = Units.GRAMS
                         } else {
-                            val matchUnit = QtyUnits.fromAbbreviationNoThrow(unitString)
+                            val matchUnit = Units.fromAbbreviationNoThrow(unitString)
                             if (matchUnit != null) {
                                 unit = matchUnit
                             } else {

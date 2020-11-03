@@ -65,7 +65,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
     }
 
     fun addIngredient(i: Ingredient) {
-        assert(!ingredients.contains(i) && foreignKeyMatches(i, Schema.IngredientTable.COMPOSITE_FOOD_ID, this))
+        assert(!ingredients.contains(i) && foreignKeyMatches(i, Schema.FoodQuantityTable.PARENT_FOOD_ID, this))
         ingredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients

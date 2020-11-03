@@ -2,10 +2,9 @@ package com.machfour.macros.names
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.Schema.NutritionDataTable
-import com.machfour.macros.objects.EnergyUnit
 import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.QtyUnits
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.objects.Units
+import com.machfour.macros.objects.IUnit
 import java.util.Collections;
 import kotlin.collections.HashMap
 
@@ -23,18 +22,18 @@ class DefaultColumnUnits private constructor() : ColumnUnits {
             , NutritionDataTable.OMEGA_6_FAT
         )
 
-        private fun unitForNutrientCol(col: Column<NutritionData, Double>): Unit {
+        private fun unitForNutrientCol(col: Column<NutritionData, Double>): IUnit {
             return when {
-                milligramsColumns.contains(col) -> QtyUnits.MILLIGRAMS
-                col == NutritionDataTable.CALORIES -> EnergyUnit.Calories
-                col == NutritionDataTable.KILOJOULES -> EnergyUnit.Kilojoules
-                else -> QtyUnits.GRAMS
+                milligramsColumns.contains(col) -> Units.MILLIGRAMS
+                col == NutritionDataTable.CALORIES -> Units.CALORIES
+                col == NutritionDataTable.KILOJOULES -> Units.KILOJOULES
+                else -> Units.GRAMS
             }
         }
 
         // add all the columns and units
         // TODO use buildMap() when it becomes stable API
-        private val unitMap = HashMap<Column<NutritionData, Double>, Unit>().let {
+        private val unitMap = HashMap<Column<NutritionData, Double>, IUnit>().let {
             for (col in NutritionData.nutrientColumns) {
                     it[col] = unitForNutrientCol(col)
             }
@@ -44,7 +43,7 @@ class DefaultColumnUnits private constructor() : ColumnUnits {
         val instance = DefaultColumnUnits()
     }
 
-    override fun getUnit(col: Column<NutritionData, Double>): Unit = unitMap.getValue(col)
+    override fun getUnit(col: Column<NutritionData, Double>): IUnit = unitMap.getValue(col)
 
     override val columnsWithUnits: Collection<Column<NutritionData, Double>>
         get() = Collections.unmodifiableCollection(unitMap.keys)

@@ -44,7 +44,7 @@ internal object QueryHelpers {
         val foodIds: MutableList<Long> = ArrayList(ingredientMap.size)
         val servingIds: MutableList<Long> = ArrayList(ingredientMap.size)
         for (i in ingredientMap.values) {
-            foodIds.add(i.ingredientFoodId)
+            foodIds.add(i.foodId)
             i.servingId?.let { servingIds += it }
         }
         // XXX make sure this doesn't loop infinitely if two composite foods contain each other as ingredients
@@ -53,8 +53,8 @@ internal object QueryHelpers {
         val ingredientServings = getServingsById(ds, servingIds)
         for (i in ingredientMap.values) {
             // applyFoodsToRawIngredients(ingredients, servings
-            val f = ingredientFoods.getValue(i.ingredientFoodId)
-            i.initIngredientFood(f)
+            val f = ingredientFoods.getValue(i.foodId)
+            i.initFood(f)
             // applyServingsToRawIngredients(ingredients, servings)
             i.servingId?.let { id ->
                 val s = ingredientServings.getValue(id)
@@ -80,7 +80,8 @@ internal object QueryHelpers {
             //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
             val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
             val nutritionData = getRawObjectsForParentFk(ds, foodMap, NutritionData.table, Schema.NutritionDataTable.FOOD_ID)
-            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, Schema.IngredientTable.COMPOSITE_FOOD_ID)
+            val ingredients = getRawObjectsForParentFk(ds, foodMap, FoodQuantity.table, Schema.FoodQuantityTable.PARENT_FOOD_ID)
+                    .mapValues { it.value as Ingredient }
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
             processRawIngredients(ds, ingredients)
             processRawFoodMap(foodMap, servings, nutritionData, ingredients, categories)
@@ -123,7 +124,7 @@ internal object QueryHelpers {
     // note not all foods in the map will be composite
     private fun applyIngredientsToRawFoods(foodMap: Map<Long, Food>, ingredientMap: Map<Long, Ingredient>) {
         for (i in ingredientMap.values) {
-            val f = foodMap[i.compositeFoodId]
+            val f = foodMap[i.parentFoodId]
             require(f is CompositeFood && f.foodType == FoodType.COMPOSITE)
             i.initCompositeFood(f)
             f.addIngredient(i)
@@ -158,10 +159,11 @@ internal object QueryHelpers {
 
     @Throws(SQLException::class)
     private fun getRawFoodPortionsForMeal(ds: MacrosDataSource, meal: Meal): Map<Long, FoodPortion> {
-        return Queries.selectColumn(ds, FoodPortion.table, Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.id)
+        return Queries.selectColumn(ds, FoodQuantity.table, Schema.FoodQuantityTable.ID, Schema.FoodQuantityTable.MEAL_ID, meal.id)
             .map { checkNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
             .takeIf { it.isNotEmpty() }
-            ?.let { getRawObjectsByIds(ds, FoodPortion.table, it) }
+            ?.let { getRawObjectsByIds(ds, FoodQuantity.table, it) }
+            ?.mapValues { it.value as FoodPortion }
             ?: emptyMap()
     }
 

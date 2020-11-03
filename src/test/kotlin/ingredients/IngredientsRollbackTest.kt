@@ -6,6 +6,7 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
 import com.machfour.macros.objects.Ingredient
+import com.machfour.macros.queries.FoodQuantityQueries
 import com.machfour.macros.queries.FoodQueries
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -25,8 +26,8 @@ class IngredientsRollbackTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                db.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
-                db.clearTable(Ingredient.table)
+                FoodQuantityQueries.deleteAllIngredients(db)
+                FoodQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)

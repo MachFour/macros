@@ -450,6 +450,21 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     }
 
     @Throws(SQLException::class)
+    override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int {
+        val removed: Int
+        val c = connection
+        val template = DatabaseUtils.deleteWhereNullTemplate(t, whereColumn, isNotNull = trueForNotNulls)
+        try {
+            c.prepareStatement(template).use {
+                removed = it.executeUpdate()
+            }
+        } finally {
+            closeIfNecessary(c)
+        }
+        return removed
+    }
+
+    @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> idExistsInTable(table: Table<M>, id: Long): Boolean {
         val idCol = table.idColumn.sqlName
         val query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name + " WHERE " + idCol + " = " + id

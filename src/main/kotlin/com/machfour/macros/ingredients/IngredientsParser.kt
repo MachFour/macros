@@ -5,10 +5,7 @@ import com.google.gson.JsonIOException
 import com.google.gson.reflect.TypeToken
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.Schema
-import com.machfour.macros.objects.CompositeFood
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.FoodType
-import com.machfour.macros.objects.Ingredient
+import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.storage.MacrosDataSource
@@ -66,18 +63,18 @@ object IngredientsParser {
             throw RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName))
         }
         val ingredientId = ingredientMap[spec.indexName]
-        val builder = MacrosBuilder(Ingredient.table)
-        builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, composite.id)
-        builder.setField(Schema.IngredientTable.INGREDIENT_FOOD_ID, ingredientId)
-        builder.setField(Schema.IngredientTable.SERVING_ID, null) // TODO
-        builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.unit)
-        builder.setField(Schema.IngredientTable.NOTES, spec.notes)
-        builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity)
+        val builder = MacrosBuilder(FoodQuantity.table)
+        builder.setField(Schema.FoodQuantityTable.PARENT_FOOD_ID, composite.id)
+        builder.setField(Schema.FoodQuantityTable.FOOD_ID, ingredientId)
+        builder.setField(Schema.FoodQuantityTable.SERVING_ID, null) // TODO
+        builder.setField(Schema.FoodQuantityTable.QUANTITY_UNIT, spec.unit)
+        builder.setField(Schema.FoodQuantityTable.NOTES, spec.notes)
+        builder.setField(Schema.FoodQuantityTable.QUANTITY, spec.quantity)
         if (builder.hasAnyInvalidFields()) {
             throw SchemaViolation(builder.allErrors)
             // throw SchemaViolation
         }
-        return builder.build()
+        return builder.build() as Ingredient
     }
 
     private fun extractIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>): Set<String> {
@@ -134,7 +131,7 @@ object IngredientsParser {
         for (cf in results) {
             for (i in cf.getIngredients()) {
                 i.initCompositeFood(cf)
-                i.initIngredientFood(ingredientFoods.getValue(i.ingredientFoodId))
+                i.initFood(ingredientFoods.getValue(i.foodId))
             }
         }
         return results
@@ -144,8 +141,8 @@ object IngredientsParser {
         val ingredientsWithId: MutableList<Ingredient> = ArrayList(newIngredients.size)
         for (i in newIngredients) {
             val builder = MacrosBuilder(i)
-            builder.setField(Schema.IngredientTable.COMPOSITE_FOOD_ID, id)
-            ingredientsWithId.add(builder.build())
+            builder.setField(Schema.FoodQuantityTable.PARENT_FOOD_ID, id)
+            ingredientsWithId.add(builder.build() as Ingredient)
         }
         return ingredientsWithId
     }

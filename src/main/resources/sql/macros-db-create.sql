@@ -8,18 +8,24 @@ PRAGMA foreign_keys = ON;
 
 PRAGMA recursive_triggers = ON;
 
-CREATE TABLE QuantityUnit (
+-- Measures mass (weight), volume or energy
+
+-- Unit type id is as follows:
+-- 1 for mass
+-- 2 for volume
+-- 3 for energy
+CREATE TABLE Unit (
       id                   INTEGER PRIMARY KEY ASC
+    , type_id              INTEGER NOT NULL
     , name                 TEXT NOT NULL UNIQUE
     , abbreviation         TEXT NOT NULL UNIQUE
-    , is_volume_unit       INTEGER NOT NULL
-    -- quantity of 1 of this unit in g or ml, as appropriate
+    -- quantity of 1 of this unit in g, ml, or kJ as appropriate
     , metric_equivalent    REAL NOT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
 
-    , CONSTRAINT zero_or_one
-        CHECK (is_volume_unit IN (0, 1))
+    , CONSTRAINT valid_type
+        CHECK (type_id IN (1, 2, 3))
     , CONSTRAINT positive_conversion
         CHECK (metric_equivalent > 0)
 );
@@ -134,9 +140,8 @@ CREATE TABLE Serving (
       id                   INTEGER PRIMARY KEY ASC
     -- name should ideally be pluralisable with 's'
     , name                 TEXT NOT NULL
-    -- in g/mL, depending on quantity_unit
     , quantity             REAL NOT NULL
-    -- grams (0) or ml (1)
+    -- unit abbreviation
     , quantity_unit        TEXT NOT NULL
     -- is this the default serving?
     -- 1 for true, NULL for false, see below.
@@ -155,7 +160,7 @@ CREATE TABLE Serving (
         CHECK (quantity > 0)
     , CONSTRAINT valid_unit
         FOREIGN KEY (quantity_unit)
-        REFERENCES QuantityUnit (abbreviation)
+        REFERENCES Unit (abbreviation)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
     , CONSTRAINT valid_food
@@ -201,15 +206,19 @@ CREATE TABLE Meal (
         CHECK (duration >= 0)
 );
 
-CREATE TABLE FoodPortion (
+-- Encompasses both FoodPortions in meals and Ingredients in Composite foods.
+CREATE TABLE FoodQuantity (
       id                   INTEGER PRIMARY KEY ASC
     , quantity             REAL NOT NULL
     -- XXX what happens if the measured_by_volume changes (i.e. a food once
     --   measured_by_volume is now measured as a solid (for nutrition info)?
     -- 0 for grams, 1 for mL
     , quantity_unit        INTEGER NOT NULL
+    -- food / ingredient ID
     , food_id              INTEGER NOT NULL
-    , meal_id              INTEGER NOT NULL
+    -- exactly one of these must be defined
+    , meal_id              INTEGER DEFAULT NULL
+    , parent_food_id    INTEGER DEFAULT NULL
     -- records whether user entered the quantity as a serving.
     , serving_id           INTEGER DEFAULT NULL
     -- for arbitrary text
@@ -219,7 +228,7 @@ CREATE TABLE FoodPortion (
 
     , CONSTRAINT valid_unit
         FOREIGN KEY (quantity_unit)
-        REFERENCES QuantityUnit (abbreviation)
+        REFERENCES Unit (abbreviation)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
     , CONSTRAINT valid_food
@@ -227,14 +236,22 @@ CREATE TABLE FoodPortion (
         REFERENCES Food (id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
-
-    -- when meal records are deleted, records of foods in that meal
+    , CONSTRAINT food_portion_or_ingredient
+        CHECK (NOT(meal_id IS NULL AND parent_food_id IS NULL))
+    -- when meal or parent food is deleted, records of foods contained
     -- are also deleted.
     , CONSTRAINT valid_meal
         FOREIGN KEY (meal_id)
         REFERENCES Meal (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+    , CONSTRAINT valid_composite_food
+        FOREIGN KEY (parent_food_id)
+        REFERENCES Food (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+    , CONSTRAINT cannot_contain_itself
+        CHECK (parent_food_id != id)
 
     -- we don't really care if servings are deleted, since the
     -- quantity is the important one anyway.
@@ -247,43 +264,6 @@ CREATE TABLE FoodPortion (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE Ingredient (
-      id                   INTEGER PRIMARY KEY ASC
-    , composite_food_id    INTEGER NOT NULL
-    , ingredient_food_id   INTEGER NOT NULL
-    -- same rules for quantity fields as for FoodPortion
-    , quantity             REAL NOT NULL
-    , quantity_unit        INTEGER NOT NULL
-    , serving_id           INTEGER DEFAULT NULL
-    , notes                TEXT DEFAULT NULL
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
-
-    , CONSTRAINT cannot_contain_itself
-        CHECK (composite_food_id != ingredient_food_id)
-    , CONSTRAINT valid_unit
-        FOREIGN KEY (quantity_unit)
-        REFERENCES QuantityUnit (abbreviation)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-    , CONSTRAINT valid_ingredient
-        FOREIGN KEY (ingredient_food_id)
-        REFERENCES Food (id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-    , CONSTRAINT valid_composite_food
-        FOREIGN KEY (composite_food_id)
-        REFERENCES Food (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-    -- copied from FoodPortion
-    , CONSTRAINT valid_serving
-        FOREIGN KEY (serving_id)
-        REFERENCES Serving (id)
-        -- trigger to set only the serving to null
-        ON DELETE SET NULL
-        ON UPDATE CASCADE
-);
 
 CREATE TABLE NutritionData (
       id                   INTEGER PRIMARY KEY ASC
@@ -329,7 +309,7 @@ CREATE TABLE NutritionData (
         CHECK (quantity > 0)
     , CONSTRAINT valid_unit
         FOREIGN KEY (quantity_unit)
-        REFERENCES QuantityUnit (abbreviation)
+        REFERENCES Unit (abbreviation)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 );

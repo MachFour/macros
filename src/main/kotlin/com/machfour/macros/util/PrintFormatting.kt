@@ -6,7 +6,7 @@ import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.objects.IUnit
 import java.util.Formatter
 
 object PrintFormatting {
@@ -48,15 +48,15 @@ object PrintFormatting {
         )
     }
     fun formatQuantity(
-        qty: Double? = null,
-        unit: Unit? = null,
-        width: Int = 0,
-        unitWidth: Int = 2,
-        withDp: Boolean = false,
-        alignLeft: Boolean = false,
-        forNullQty: String = "",
-        unitString: String? = null,
-        spaceBeforeUnit: Boolean = false
+            qty: Double? = null,
+            unit: IUnit? = null,
+            width: Int = 0,
+            unitWidth: Int = 2,
+            withDp: Boolean = false,
+            alignLeft: Boolean = false,
+            forNullQty: String = "",
+            unitString: String? = null,
+            spaceBeforeUnit: Boolean = false
     ): String {
         qty ?: return forNullQty
 

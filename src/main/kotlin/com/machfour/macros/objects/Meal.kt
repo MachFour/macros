@@ -1,12 +1,7 @@
 package com.machfour.macros.objects
 
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.Factory
-import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.MealTable
-import com.machfour.macros.core.Schema.FoodPortionTable
-import com.machfour.macros.core.Table
 import com.machfour.macros.util.DateStamp
 
 import java.time.Instant
@@ -82,7 +77,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
 
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
-        require(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
+        require(foreignKeyMatches(fp, Schema.FoodQuantityTable.MEAL_ID, this))
         foodPortions.add(fp)
     }
 

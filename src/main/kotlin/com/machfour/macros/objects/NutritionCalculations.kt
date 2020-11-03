@@ -12,20 +12,21 @@ import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SUGAR
 
 object NutritionCalculations {
 
+    internal const val KJ_PER_G_PROTEIN = 17.0
+    internal const val KJ_PER_G_FAT = 37.0
+    internal const val KJ_PER_G_CARBOHYDRATE = 17.0
+    internal const val KJ_PER_G_FIBRE = 8.27
+
     internal const val CAL_TO_KJ_FACTOR = 4.186
-    internal const val CALS_PER_G_PROTEIN = 17 / CAL_TO_KJ_FACTOR
-    internal const val CALS_PER_G_FAT = 37 / CAL_TO_KJ_FACTOR
-    internal const val CALS_PER_G_CARBOHYDRATE = 17 / CAL_TO_KJ_FACTOR
-    internal const val CALS_PER_G_FIBRE = 8.27 / CAL_TO_KJ_FACTOR
 
     private fun convertToGramsIfNecessary(nd: NutritionData): NutritionData {
-        return when (nd.qtyUnit == QtyUnits.GRAMS) {
+        return when (nd.qtyUnit == Units.GRAMS) {
             true -> nd
             else -> {
                 // then convert to grams, guessing density if required
                 val guessDensity = nd.density == null
                 val density = nd.density ?: 1.0
-                convertQuantityUnit(nd, QtyUnits.GRAMS, density, guessDensity)
+                convertQuantityUnit(nd, Units.GRAMS, density, guessDensity)
             }
         }
     }
@@ -34,9 +35,9 @@ object NutritionCalculations {
         require(NutritionData.ENERGY_COLS.contains(energyCol))
         return nd.getData(energyCol)
             ?: if (energyCol == CALORIES) {
-                nd.getData(KILOJOULES)?.div(CAL_TO_KJ_FACTOR)
+                nd.getData(KILOJOULES)?.div(Units.CALORIES.metricEquivalent)
             } else { // energyCol.equals(KILOJOULES)
-                nd.getData(CALORIES)?.times(CAL_TO_KJ_FACTOR)
+                nd.getData(CALORIES)?.times(Units.CALORIES.metricEquivalent)
             }
     }
 
@@ -68,7 +69,7 @@ object NutritionCalculations {
     // Unless the target unit is identical to the current unit
     // returns a new NutritionDataTable object (not from DB) with the converted data.
     // nutrient values always remain in grams.
-    internal fun convertQuantityUnit(nd: NutritionData, targetUnit: QtyUnit, density: Double, isDensityGuessed: Boolean): NutritionData {
+    internal fun convertQuantityUnit(nd: NutritionData, targetUnit: Unit, density: Double, isDensityGuessed: Boolean): NutritionData {
         val currentUnit = nd.qtyUnit
         if (currentUnit == targetUnit) {
             // TODO should it be a copy?
@@ -77,10 +78,10 @@ object NutritionCalculations {
         // if converting between volume and mass quantity units, we need to change the quantity value
         // according to the density.
         // e.g. per 100mL is the same as per 92g, when the density is 0.92
-        var ratio = currentUnit.metricEquivalent() / targetUnit.metricEquivalent()
-        if (!currentUnit.isVolumeUnit && targetUnit.isVolumeUnit) {
+        var ratio = currentUnit.metricEquivalent / targetUnit.metricEquivalent
+        if (!currentUnit.isVolumeMeasurement && targetUnit.isVolumeMeasurement) {
             ratio /= density
-        } else if (currentUnit.isVolumeUnit && !targetUnit.isVolumeUnit) { // liquid units to solid units
+        } else if (currentUnit.isVolumeMeasurement && !targetUnit.isVolumeMeasurement) { // liquid units to solid units
             ratio *= density
         }
         // else ratio *= 1.0;
@@ -104,7 +105,7 @@ object NutritionCalculations {
     // For current nutrition values in this object, per given current quantity,
     // returns a new nData object with the nutrition values rescaled to
     // correspond to the new quantity, in the new unit
-    fun rescale(nd: NutritionData, newQuantity: Double, newUnit: QtyUnit): NutritionData {
+    fun rescale(nd: NutritionData, newQuantity: Double, newUnit: Unit): NutritionData {
         // default density for rescaling is 1.0
         val guessDensity = nd.density == null
         val density = nd.density ?: 1.0
@@ -159,7 +160,7 @@ object NutritionCalculations {
             combinedDataMap.put(Schema.NutritionDataTable.DENSITY, null)
         }
         combinedDataMap.put(Schema.NutritionDataTable.QUANTITY, sumQuantity)
-        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY_UNIT, QtyUnits.GRAMS.abbr)
+        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY_UNIT, Units.GRAMS.abbr)
         combinedDataMap.put(Schema.NutritionDataTable.FOOD_ID, null)
         combinedDataMap.put(Schema.NutritionDataTable.DATA_SOURCE, "Sum")
 
@@ -226,22 +227,22 @@ object NutritionCalculations {
     }
 
     // energy from each individual macronutrient
-    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: EnergyUnit = EnergyUnit.Calories): Map<Column<NutritionData, Double>, Double> {
+    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: Unit = Units.CALORIES): Map<Column<NutritionData, Double>, Double> {
         // preserve iteration order
         val componentMap = LinkedHashMap<Column<NutritionData, Double>, Double>()
 
-        val unitMultiplier = when (unit) {
-            is EnergyUnit.Kilojoules -> CAL_TO_KJ_FACTOR
-            is EnergyUnit.Calories -> 1.0
-        }
+        require(unit.unitType == UnitType.ENERGY) { "Invalid energy unit" }
+
+        // have to divide if desired unit is calories
+        val unitDivisor = unit.unitMultiplier
 
         // energy from...
-        val protein = nd.amountOf(PROTEIN, 0.0) * CALS_PER_G_PROTEIN * unitMultiplier
-        var fat = nd.amountOf(FAT, 0.0) * CALS_PER_G_FAT * unitMultiplier
-        val satFat = nd.amountOf(SATURATED_FAT, 0.0) * CALS_PER_G_FAT * unitMultiplier
-        var carb = nd.amountOf(CARBOHYDRATE, 0.0) * CALS_PER_G_CARBOHYDRATE * unitMultiplier
-        val sugar = nd.amountOf(SUGAR, 0.0) * CALS_PER_G_CARBOHYDRATE * unitMultiplier
-        val fibre = nd.amountOf(FIBRE, 0.0) * CALS_PER_G_FIBRE * unitMultiplier
+        val protein = nd.amountOf(PROTEIN, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
+        var fat = nd.amountOf(FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
+        val satFat = nd.amountOf(SATURATED_FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
+        var carb = nd.amountOf(CARBOHYDRATE, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val sugar = nd.amountOf(SUGAR, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val fibre = nd.amountOf(FIBRE, 0.0) * KJ_PER_G_FIBRE / unitDivisor
         // correct subtypes (sugar is part of carbs, saturated is part of fat)
         carb = (carb - sugar).coerceAtLeast(0.0)
         fat = (fat - satFat).coerceAtLeast(0.0)
@@ -257,7 +258,7 @@ object NutritionCalculations {
     }
 
     internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Column<NutritionData, Double>, Double> {
-        val componentMap = makeEnergyComponentsMap(nd, EnergyUnit.Calories)
+        val componentMap = makeEnergyComponentsMap(nd, Units.CALORIES)
         // if total energy is missing, fallback to summing over previous energy quantities
         val totalEnergy = nd.amountOf(CALORIES, componentMap.values.sum())
 

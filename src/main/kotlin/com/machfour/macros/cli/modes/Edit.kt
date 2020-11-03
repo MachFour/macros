@@ -8,6 +8,7 @@ import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
+import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.Queries
@@ -188,8 +189,8 @@ class Edit : CommandImpl(NAME, USAGE) {
 
         try {
             val newData = portions[n].getAllData(false)
-            newData.put(Schema.FoodPortionTable.QUANTITY, newQty)
-            Queries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
+            newData.put(Schema.FoodQuantityTable.QUANTITY, newQty)
+            Queries.saveObject(ds, FoodQuantity.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
             out.println("Error modifying the food portion: " + e3.message)
             return

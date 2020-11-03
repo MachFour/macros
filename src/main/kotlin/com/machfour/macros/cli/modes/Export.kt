@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.objects.*
-import com.machfour.macros.storage.CsvExport
+import com.machfour.macros.storage.CsvBackup
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileWriter
@@ -26,7 +26,7 @@ class Export : CommandImpl(NAME, USAGE) {
     private fun <M : MacrosEntity<M>> exportTable(db: MacrosDataSource, outDir: String, t: Table<M>) {
         out.println("Exporting ${t.name} table...")
         val outCsvPath = joinPath(outDir, t.name + ".csv")
-        FileWriter(outCsvPath).use { CsvExport.exportTable(db, t, it) }
+        FileWriter(outCsvPath).use { CsvBackup.exportTable(db, t, it) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -40,9 +40,8 @@ class Export : CommandImpl(NAME, USAGE) {
             exportTable(ds, outputDir, Food.table)
             exportTable(ds, outputDir, NutritionData.table)
             exportTable(ds, outputDir, Serving.table)
-            exportTable(ds, outputDir, Ingredient.table)
+            exportTable(ds, outputDir, FoodQuantity.table)
             exportTable(ds, outputDir, Meal.table)
-            exportTable(ds, outputDir, FoodPortion.table)
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

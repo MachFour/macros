@@ -1,14 +1,14 @@
 package com.machfour.macros.util
 
 import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.QtyUnit
+import com.machfour.macros.objects.Unit
 
 // records intermediate data during parsing of a food portion spec
 class FoodPortionSpec(
         val foodIndexName: String,
         // for non-serving mode
         val quantity: Double,
-        val unit: QtyUnit?,
+        val unit: Unit?,
         // for serving mode. servingName = "" means default serving
         val servingCount: Double,
         val servingName: String?,

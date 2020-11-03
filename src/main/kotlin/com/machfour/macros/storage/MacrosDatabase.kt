@@ -55,6 +55,9 @@ abstract class MacrosDatabase : MacrosDataSource {
     @Throws(SQLException::class)
     abstract override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
 
+    @Throws(SQLException::class)
+    abstract override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
+
     // Retrives an object by a key column, and constructs it without any FK object instances.
     // Returns null if no row in the corresponding table had a key with the given value
     @Throws(SQLException::class)

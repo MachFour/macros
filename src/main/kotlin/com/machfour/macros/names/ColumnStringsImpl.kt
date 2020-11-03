@@ -2,7 +2,7 @@ package com.machfour.macros.names
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.objects.IUnit
 
 abstract class ColumnStringsImpl protected constructor(
         private val columnNames: ColumnNamer,
@@ -14,13 +14,13 @@ abstract class ColumnStringsImpl protected constructor(
     override fun getAbbreviatedName(col: Column<*, *>): String = columnNames.getAbbreviatedName(col)
 
     // unitNames
-    override fun getName(unit: Unit): String = unitNames.getName(unit)
-    override fun getAbbr(unit: Unit): String = unitNames.getAbbr(unit)
-    override val availableUnits: Collection<Unit>
+    override fun getName(unit: IUnit): String = unitNames.getName(unit)
+    override fun getAbbr(unit: IUnit): String = unitNames.getAbbr(unit)
+    override val availableUnits: Collection<IUnit>
         get() = unitNames.availableUnits
 
     // columnUnits
-    override fun getUnit(col: Column<NutritionData, Double>): Unit = columnUnits.getUnit(col)
+    override fun getUnit(col: Column<NutritionData, Double>): IUnit = columnUnits.getUnit(col)
     override val columnsWithUnits: Collection<Column<NutritionData, Double>>
         get() = columnUnits.columnsWithUnits
 

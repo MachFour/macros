@@ -44,14 +44,23 @@ object DatabaseUtils {
 
     // " WHERE column1 = ?"
     // " WHERE column1 IN (?, ?, ?, ...?)"
+    // " WHERE column1 IS [NOT] NULL
     // if nkeys is 0, no where string will be formed, so all objects will be returned.
     // exception thrown if nValues < 0
-    private fun makeWhereString(whereColumn: Column<*, *>, nValues: Int): String {
-        require(nValues >= 0)
+    private fun makeWhereString(whereColumn: Column<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
+        val colName = whereColumn.sqlName
+        require ((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
+
+        if (isNotNull != null) {
+            val not = if (isNotNull) "NOT" else ""
+            return " WHERE $colName IS $not NULL"
+        }
+
+        require(nValues!! >= 0)
         if (nValues == 0) {
             return ""
         }
-        val colName = whereColumn.sqlName
+
         val placeholder = getSqlPlaceholder(whereColumn.type)
 
         //if (whereColumn.type().equals(DATESTAMP)) {
@@ -69,6 +78,10 @@ object DatabaseUtils {
 
     fun <M> deleteWhereTemplate(table: Table<M>, whereColumn: Column<M, *>, nValues: Int): String {
         return deleteAllTemplate(table) + makeWhereString(whereColumn, nValues)
+    }
+
+    fun <M> deleteWhereNullTemplate(table: Table<M>, whereColumn: Column<M, *>, isNotNull: Boolean): String {
+        return deleteAllTemplate(table) + makeWhereString(whereColumn, isNotNull = isNotNull)
     }
 
     // delete all!

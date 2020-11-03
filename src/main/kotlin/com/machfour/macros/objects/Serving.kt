@@ -18,7 +18,7 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
     val qtyUnitAbbr: String
         get() = getData(Schema.ServingTable.QUANTITY_UNIT)!!
 
-    val qtyUnit: QtyUnit = QtyUnits.fromAbbreviation(qtyUnitAbbr)
+    val qtyUnit: Unit = Units.fromAbbreviation(qtyUnitAbbr)
 
     override val factory: Factory<Serving>
         get() = Companion.factory
@@ -56,6 +56,6 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
         get() = qtyUnit
 
     override val isVolumeMeasurement
-        get() = qtyUnit.isVolumeUnit
+        get() = qtyUnit.isVolumeMeasurement
 
 }

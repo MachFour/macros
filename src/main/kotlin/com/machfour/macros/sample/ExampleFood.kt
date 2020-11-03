@@ -79,7 +79,7 @@ object ExampleFood {
         nData.put(DATA_SOURCE, "Test")
         nData.put(DENSITY, 0.92)
         nData.put(QUANTITY, 100.0)
-        nData.put(QUANTITY_UNIT, QtyUnits.MILLILITRES.abbr)
+        nData.put(QUANTITY_UNIT, Units.MILLILITRES.abbr)
         val nd = NutritionData.table.construct(nData, ObjectSource.USER_NEW)
         val f = Food.factory.construct(fData, ObjectSource.IMPORT)
         f.setNutritionData(nd)

@@ -1,9 +1,10 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
+import com.machfour.macros.queries.FoodQuantityQueries
+import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.storage.CsvException
 import com.machfour.macros.storage.CsvImport.importFoodData
 import com.machfour.macros.storage.CsvImport.importRecipes
@@ -46,15 +47,16 @@ class Import : CommandImpl(NAME, USAGE) {
                 if (!noFoodsServings) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
-                    ds.clearTable(Ingredient.table)
+                    // TODO Ingredients, servings, NutritionData cleared by cascade?
+                    FoodQuantityQueries.deleteAllIngredients(ds)
                     ds.clearTable(Serving.table)
                     ds.clearTable(NutritionData.table)
                     ds.clearTable(Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")
-                    // have to clear nutrition data first
-                    ds.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
-                    ds.clearTable(Ingredient.table)
+                    // nutrition data deleted by cascade
+                    FoodQuantityQueries.deleteAllIngredients(ds)
+                    FoodQueries.deleteAllCompositeFoods(ds)
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }

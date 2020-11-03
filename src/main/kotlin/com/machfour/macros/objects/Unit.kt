@@ -10,7 +10,7 @@ import com.machfour.macros.core.Schema.UnitTable.Companion.NAME
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
 class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSource)
-    : MacrosEntityImpl<Unit>(data, objectSource), PortionMeasurement, IUnit {
+    : MacrosEntityImpl<Unit>(data, objectSource), PortionMeasurement {
     companion object {
         // factory before table
         val factory : Factory<Unit> = Factory { dataMap, objectSource -> Unit(dataMap, objectSource) }
@@ -25,7 +25,7 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
     override val table: Table<Unit>
         get() = Companion.table
 
-    override val unitType: UnitType = UnitType.fromId(getData(UNIT_TYPE)!!)
+    val unitType: UnitType = UnitType.fromId(getData(UNIT_TYPE)!!)
 
     override fun toString(): String {
         return "$name (${abbr}), type ${unitType.name}"
@@ -34,10 +34,10 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
     override val name: String
         get() = getData(NAME)!!
 
-    override val abbr: String
+    val abbr: String
         get() = getData(ABBREVIATION)!!
 
-    override val metricEquivalent: Double
+    val metricEquivalent: Double
         get() = getData(METRIC_EQUIVALENT)!!
 
     // Measurement interface - for interop with Servings

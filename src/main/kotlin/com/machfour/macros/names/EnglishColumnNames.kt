@@ -20,14 +20,14 @@ class EnglishColumnNames private constructor(): ColumnNamer {
         // longer (but really medium name for nutrients printed in verbose mode
         val longerNutrientNames = mapOf(
                   Nutrients.ENERGY to "Energy"
-                , Nutrients.PROTEIN to "Protæn"
+                , Nutrients.PROTEIN to "Protein"
                 , Nutrients.FAT to "Fat"
                 , Nutrients.SATURATED_FAT to "Sat Fat"
                 , Nutrients.CARBOHYDRATE to "Carbs"
                 , Nutrients.SUGAR to "Sugar"
                 , Nutrients.FIBRE to "Fibre"
                 , Nutrients.SODIUM to "Sodium"
-                , Nutrients.CALCIUM to "Ca"
+                , Nutrients.CALCIUM to "Calcium"
                 , Nutrients.QUANTITY to "Qty"
         )
 

@@ -15,9 +15,6 @@ object PrintFormatting {
     const val shortDataWidth = 6
     const val longDataWidth = 7
 
-    fun formatQuantityAsVerbose(qty: Double? = null, verbose: Boolean = false): String {
-        return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, unitWidth = 2, withDp = verbose)
-    }
     fun formatQuantity(
         nd: NutritionData,
         n: Nutrient,
@@ -30,7 +27,7 @@ object PrintFormatting {
         forNullQty: String = "",
         spaceBeforeUnit: Boolean = false
     ) : String {
-        val qty = nd.amountOf(n)
+        val qty = nd.amountOf(n, defaultValue = 0.0)
         val unit = if (!withUnit) null else nd.getUnitOrDefault(n)
         val unitString = if (!withUnit) null else colStrings.getAbbr(unit!!)
 
@@ -101,57 +98,6 @@ object PrintFormatting {
             }
 
         }
-    }
-
-    // Converts the given data field into a string. Adds an asterisk if the data is missing.
-    // Returns null if the input nutrition data is null
-    fun formatNutrnData(
-        nd: NutritionData,
-        nutrient: Nutrient,
-        withUnit: Boolean = false,
-        colStrings: ColumnStrings = DefaultColumnStrings.instance
-    ): String {
-        // TODO move this logic somewhere else
-        val missing = !nd.hasCompleteData(nutrient)
-        return if (!withUnit) {
-            formatQuantityAsVerbose(nd.amountOf(nutrient), false) + if (missing) "*" else ""
-        } else {
-            formatQuantity(nd, nutrient, colStrings)
-        }
-    }
-
-    // list of field that should be formatted without a decimal place (because the values are
-    // typically large (in the default/metric unit)
-    // TODO use unit instead of checking the exact column
-    private val fieldsWithoutDp = setOf(
-            Nutrients.ENERGY,
-            Nutrients.OMEGA_3_FAT,
-            Nutrients.OMEGA_6_FAT,
-            Nutrients.IRON,
-            Nutrients.POTASSIUM,
-            Nutrients.SODIUM,
-            Nutrients.CALCIUM
-    )
-
-    // for formatting nutrition data in food details
-    fun foodDetailsFormat(nd: NutritionData?, nutrient: Nutrient, colStrings: ColumnStrings): String? {
-        nd ?: return null
-
-        val needsDp = !fieldsWithoutDp.contains(nutrient)
-        val qty = nd.amountOf(nutrient)
-        val unit = nd.getUnitOrDefault(nutrient)
-        // TODO pass colStrings for unit abbreviation
-        return formatQuantity(qty, unit, width = if (needsDp) 12 else 10, unitWidth = 2,  withDp = needsDp)
-    }
-
-    // for formatting nutrition data in meal summaries (no decimal places)
-    fun mealSummaryFormat(nd: NutritionData?, n: Nutrient, ndStrings: ColumnStrings): String? {
-        return if (nd == null) null else formatQuantity(
-            nd = nd,
-            n = n,
-            colStrings = ndStrings,
-            spaceBeforeUnit = true
-        )
     }
 
     fun nutritionDataToText(nd: NutritionData, colStrings: ColumnStrings, nutrients: List<Nutrient>): String {

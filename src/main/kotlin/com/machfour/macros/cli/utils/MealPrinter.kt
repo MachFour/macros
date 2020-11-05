@@ -6,7 +6,6 @@ import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
-import com.machfour.macros.util.PrintFormatting.formatQuantityAsVerbose
 import com.machfour.macros.util.StringJoiner
 import com.machfour.macros.util.UnicodeUtils.countDoubleWidthChars
 import java.io.PrintStream

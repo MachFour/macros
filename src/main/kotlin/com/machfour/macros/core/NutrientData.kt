@@ -45,6 +45,10 @@ class NutrientData internal constructor (
         get() {
             return data.filterNotNull()
         }
+    val nutrientValuesExcludingQuantity: List<NutrientValue>
+        get() {
+            return nutrientValues.filter{ it !== quantityObj }
+        }
 
     private fun assertMutable() {
         assert(!isImmutable) { "NutrientData has been made immutable" }

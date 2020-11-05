@@ -18,7 +18,7 @@ object NutritionCalculations {
 
     internal fun getEnergyAs(nd: NutrientData, unit: Unit) : Double? {
         require(unit.type === UnitType.ENERGY) { "Unit $unit is not an energy unit "}
-        return nd[ENERGY]?.convertValue(unit)
+        return nd[ENERGY]?.convertValueTo(unit)
     }
 
     /* ** OLD comment kept here for historical purposes **
@@ -88,9 +88,10 @@ object NutritionCalculations {
         return NutritionData(rescale(data.nutrientData, newQuantity))
     }
 
-    fun convertToDefaultUnits(data: NutrientData) : NutrientData {
+    fun convertToDefaultUnits(data: NutrientData, includingQuantity: Boolean = false) : NutrientData {
         val convertedData = NutrientData(dataCompleteIfNotNull = true)
-        for (nv in data.nutrientValues) {
+        val nutrientsToConvert = if (includingQuantity) data.nutrientValues else data.nutrientValuesExcludingQuantity
+        for (nv in nutrientsToConvert) {
             val n = nv.nutrient
             convertedData[n] = nv.convert(DefaultUnits.get(n))
             convertedData.markCompleteData(n, data.hasCompleteData(n))
@@ -127,14 +128,14 @@ object NutritionCalculations {
                 val qtyUnit = qtyObject.unit
                 val quantity = when (qtyUnit.type) {
                     UnitType.MASS -> {
-                        qtyObject.convertValue(Units.GRAMS)
+                        qtyObject.convertValueTo(Units.GRAMS)
                     }
                     UnitType.VOLUME -> {
                         val density = densities?.get(index) ?: run {
                             densityGuessed = true
                             1.0
                         }
-                        qtyObject.convertValue(Units.GRAMS, density)
+                        qtyObject.convertValueTo(Units.GRAMS, density)
                     }
                     else -> {
                         assert(false) { "Invalid unit type for quantity value object $qtyObject" }
@@ -157,7 +158,7 @@ object NutritionCalculations {
             val unit = DefaultUnits.get(n)
             for (data in items) {
                 data[n]?.let {
-                    sumValue += it.convertValue(unit)
+                    sumValue += it.convertValueTo(unit)
                     existsData = true
                 }
                 if (!data.hasCompleteData(n)) {

@@ -91,13 +91,13 @@ class NutrientValue private constructor(dataMap: ColumnData<NutrientValue>, obje
     }
 
     fun convert(newUnit: Unit, overrideDensity: Double? = null) : NutrientValue {
-        return makeComputedValue(convertValue(this, newUnit, overrideDensity), nutrient, newUnit)
+        return makeComputedValue(convertValueTo(newUnit, overrideDensity), nutrient, newUnit)
     }
 
     // An exception is thrown if the conversion is not possible
-    fun convertValue(newUnit: Unit, overrideDensity: Double? = null) : Double {
+    fun convertValueTo(newUnit: Unit, overrideDensity: Double? = null) : Double {
         val density = overrideDensity ?: food?.density
-        return Companion.convertValue(this, newUnit, density)
+        return convertValue(this, newUnit, density)
     }
 
     var food: Food? = null

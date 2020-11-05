@@ -131,7 +131,7 @@ class NutritionData(val nutrientData: NutrientData = NutrientData(dataCompleteIf
             nutrientValue.value
         } else {
             require(n.isConvertibleTo(unit)) { "Cannot convert nutrient $n to $unit" }
-            nutrientValue.convertValue(unit)
+            nutrientValue.convertValueTo(unit)
         }
     }
 

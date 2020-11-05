@@ -6,18 +6,17 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.*
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.objects.Nutrient
+import com.machfour.macros.objects.NutrientValue
+import com.machfour.macros.objects.inbuilt.DefaultUnits
+import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.util.MiscUtils
 import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.validation.ValidationError
 
@@ -28,15 +27,15 @@ import java.util.ArrayList
 // TODO servings?
 class FoodEditor constructor(
         //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
-        private val ds: MacrosDataSource, private val foodBuilder: MacrosBuilder<Food>,
-        private val nDataBuilder: MacrosBuilder<NutritionData>,
+        private val ds: MacrosDataSource,
+        private val foodBuilder: MacrosBuilder<Food>,
+        private val nutrientBuilder: MacrosBuilder<NutrientValue> = MacrosBuilder(NutrientValue.table),
         private val colStrings: ColumnStrings = DefaultColumnStrings.instance,
         private val screen: Screen = defaultScreen()) {
 
     companion object {
         private val NUM_ACTIONS = Action.values().size
         private val FOOD_TABLE_COLUMNS = Food.table.columns
-        private val ND_TABLE_COLUMNS = NutritionData.table.columns
 
         // Layout parameters
         private const val actionPaddingWidth = 18
@@ -82,6 +81,8 @@ class FoodEditor constructor(
     }
 
 
+    // stores built Nutrient Data objects
+    private val nutrientData = NutrientData()
 
     private val editingValue: StringBuilder
 
@@ -90,7 +91,7 @@ class FoodEditor constructor(
     private val errorMessageForColumnIndex: MutableList<String?>
 
     private val foodColumnsForDisplay: MutableList<Column<Food, *>>
-    private val ndColumnsForDisplay: MutableList<Column<NutritionData, *>>
+    private val nutrientsForDisplay: MutableList<Nutrient>
     private val layoutWidth = 79
 
     // whether the currentAction or the currentField should be highlighted
@@ -122,8 +123,7 @@ class FoodEditor constructor(
     private val isAllValid: Boolean
         get() {
             val foodErrors = foodBuilder.allErrors
-            val nDataErrors = nDataBuilder.allErrors
-            return foodErrors.isEmpty() && nDataErrors.isEmpty()
+            return foodErrors.isEmpty()
         }
 
     // save and validate
@@ -131,10 +131,10 @@ class FoodEditor constructor(
         @Suppress("UNCHECKED_CAST")
         get() {
             return if (isNDataField(currentField)) {
-                val col = columnForFieldIndex(currentField) as Column<NutritionData, *>
-                nDataBuilder.getFieldAsString(col)
+                val nutrient = getColumnOrNutrientWithIndex(currentField) as Nutrient
+                nutrientData[nutrient].toString()
             } else {
-                val col = columnForFieldIndex(currentField) as Column<Food, *>
+                val col = getColumnOrNutrientWithIndex(currentField) as Column<Food, *>
                 foodBuilder.getFieldAsString(col)
             }
         }
@@ -142,11 +142,11 @@ class FoodEditor constructor(
     init {
 
         val numFoodColumns = FOOD_TABLE_COLUMNS.size
-        val numNdColumns = ND_TABLE_COLUMNS.size
+        val numNdColumns = Nutrients.numNutrients
         val totalColumns = numFoodColumns + numNdColumns
 
         this.foodColumnsForDisplay = ArrayList(numFoodColumns)
-        this.ndColumnsForDisplay = ArrayList(numNdColumns)
+        this.nutrientsForDisplay = ArrayList(numNdColumns)
         this.terminalRowForColumnIndex = ArrayList(totalColumns)
         this.errorMessageForColumnIndex = ArrayList(totalColumns)
 
@@ -190,12 +190,6 @@ class FoodEditor constructor(
 
     private fun isNDataField(fieldIndex: Int): Boolean {
         return fieldIndex >= foodColumnsForDisplay.size
-    }
-
-    private fun <M : MacrosEntity<M>, J> acceptColumnInput(b: MacrosBuilder<M>, col: Column<M, J>, input: String) {
-        b.setFieldFromString(col, input)
-        val message = getErrorMessage(b, col)
-        errorMessageForColumnIndex[currentField] = message
     }
 
     private fun clearStatus() {
@@ -246,7 +240,7 @@ class FoodEditor constructor(
 
     private fun reset() {
         foodBuilder.resetFields()
-        nDataBuilder.resetFields()
+        nutrientData.clear()
         clearStatus()
         clearExceptionMessage()
     }
@@ -327,14 +321,12 @@ class FoodEditor constructor(
                 foodColumnsForDisplay.add(col)
             }
         }
-        // TODO display minimal set of nutrient columns first
-        for (col in ND_TABLE_COLUMNS) {
-            if (col.isUserEditable) {
-                ndColumnsForDisplay.add(col)
-            }
+        for (nutrient in Nutrients.nutrients) {
+            // TODO display minimal set of nutrient columns first
+            nutrientsForDisplay.add(nutrient)
         }
 
-        val totalCols = foodColumnsForDisplay.size + ndColumnsForDisplay.size
+        val totalCols = foodColumnsForDisplay.size + nutrientsForDisplay.size
         // fill the Lists with blank data so we can set() them later
         for (i in 0 until totalCols) {
             terminalRowForColumnIndex.add(0)
@@ -419,7 +411,7 @@ class FoodEditor constructor(
 
     @Throws(IOException::class)
     private fun println(o: Any) {
-        print(o, 0, false, true)
+        print(o, 0, rightAlign = false, newline = true)
     }
 
     @Throws(IOException::class)
@@ -439,19 +431,20 @@ class FoodEditor constructor(
         }
     }
 
-    private fun columnForFieldIndex(index: Int): Column<*, *> {
+    private fun getColumnOrNutrientWithIndex(index: Int): Any {
         val numDisplayedFoodCols = foodColumnsForDisplay.size
         return if (index < numDisplayedFoodCols) {
             foodColumnsForDisplay[index]
         } else {
-            ndColumnsForDisplay[index - numDisplayedFoodCols]
+            nutrientsForDisplay[index - numDisplayedFoodCols]
         }
     }
 
+
     @Throws(IOException::class)
-    private fun <M : MacrosEntity<M>, J> printColumn(col: Column<M, J>, builder: MacrosBuilder<M>, columnIndex: Int) {
+    private fun printField(fieldName: String, fieldValue: String, columnIndex: Int) {
         print("|")
-        print(colStrings.getName(col), columnNameWidth, true)
+        print(fieldName, columnNameWidth, true)
         print(": ")
         if (isEditing && columnIndex == currentField) {
             // print out only last fieldValueWidth chars, if the entry is too long
@@ -462,7 +455,7 @@ class FoodEditor constructor(
             }
             print(editValue, fieldValueWidth, false)
         } else {
-            print(builder.getFieldAsString(col), fieldValueWidth, false)
+            print(fieldValue, fieldValueWidth, false)
         }
         print(" ")
         // move cursor (on same line) to print error message
@@ -484,7 +477,17 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printColumn(col, builder, columnIndex)
+            printField(colStrings.getName(col), builder.getFieldAsString(col), columnIndex)
+            columnIndex++
+        }
+        return columnIndex // final column index
+    }
+    @Throws(IOException::class)
+    private fun printNutrients(nutrients: Collection<Nutrient>, initialColumnIndex: Int): Int {
+        var columnIndex = initialColumnIndex
+        for (n in nutrients) {
+            terminalRowForColumnIndex[columnIndex] = terminalRow
+            printField(colStrings.getName(n), nutrientData[n].toString(), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index
@@ -538,7 +541,7 @@ class FoodEditor constructor(
         newline()
         println("Nutrition Details")
         println("|")
-        printColumns(ndColumnsForDisplay, nDataBuilder, numFoodColumns)
+        printNutrients(nutrientsForDisplay, numFoodColumns)
 
         if (exceptionMessage.isNotEmpty()) {
             newline()
@@ -566,12 +569,14 @@ class FoodEditor constructor(
         // TODO print out which columns
         if (isAllValid) {
             val f = foodBuilder.build()
-            val nd = nDataBuilder.build()
             val indexName = f.indexName
             try {
                 try {
-                    // link the food to the nd
-                    nd.setFkParentNaturalKey(Schema.NutritionDataTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, indexName)
+                    val nutrientValues = nutrientData.nutrientValues
+                    for (nv in nutrientValues) {
+                        // link the food to the nd
+                        nv.setFkParentNaturalKey(Schema.NutrientValueTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, indexName)
+                    }
 
                     // gotta do it in one go
                     ds.openConnection()
@@ -579,11 +584,9 @@ class FoodEditor constructor(
                     Queries.saveObject(ds, f)
 
                     // get the food ID into the FOOD_ID field of the NutritionData
-                    val completedNdata = FkCompletion.completeForeignKeys(ds, listOf(nd), Schema.NutritionDataTable.FOOD_ID)
+                    val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, Schema.NutrientValueTable.FOOD_ID)
 
-                    assert(completedNdata.size == 1) { "Completed nutrition data did not have size 1" }
-
-                    Queries.saveObject(ds, completedNdata[0])
+                    Queries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
                     ds.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
                 } finally {
@@ -598,7 +601,7 @@ class FoodEditor constructor(
 
         } else {
             setStatus("Could not save due to validation errors. Check the following columns:",
-                    "${foodBuilder.allErrors.keys} / ${nDataBuilder.allErrors.keys})")
+                    "${foodBuilder.allErrors.keys} / ${nutrientBuilder.allErrors.keys})")
         }
     }
 
@@ -610,16 +613,27 @@ class FoodEditor constructor(
         // save and validate
         @Suppress("UNCHECKED_CAST")
         if (isNDataField(currentField)) {
-            val col = columnForFieldIndex(currentField) as Column<NutritionData, *>
-            acceptColumnInput(nDataBuilder, col, input)
+            val nutrient = getColumnOrNutrientWithIndex(currentField) as Nutrient
+            // try to build and save into NutrientData
+            nutrientBuilder.run {
+                resetFields()
+                setField(Schema.NutrientValueTable.UNIT_ID, DefaultUnits.get(nutrient).id)
+                setField(Schema.NutrientValueTable.NUTRIENT_ID, nutrient.id)
+                setFieldFromString(Schema.NutrientValueTable.VALUE, input)
+                if (canBuild()) {
+                    nutrientData[nutrient] = build()
+                }
+                errorMessageForColumnIndex[currentField] = getErrorMessage(this, Schema.NutrientValueTable.VALUE)
+            }
         } else {
-            val col = columnForFieldIndex(currentField) as Column<Food, *>
-            acceptColumnInput(foodBuilder, col, input)
+            val col = getColumnOrNutrientWithIndex(currentField) as Column<Food, *>
+            foodBuilder.setFieldFromString(col, input)
+            errorMessageForColumnIndex[currentField] = getErrorMessage(foodBuilder, col)
         }
     }
 
     private fun stepField(forward: Boolean, save: Boolean) {
-        val displayedFields = foodColumnsForDisplay.size + ndColumnsForDisplay.size
+        val displayedFields = foodColumnsForDisplay.size + nutrientsForDisplay.size
         if (save) {
             // move to next field
             saveIntoCurrentField(editingValue.toString())

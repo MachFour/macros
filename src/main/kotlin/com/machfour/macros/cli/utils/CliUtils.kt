@@ -1,11 +1,9 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.names.ColumnNamer
-import com.machfour.macros.names.ColumnUnits
-import com.machfour.macros.names.DefaultColumnUnits
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
+import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.NutritionCalculations
 import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.util.MiscUtils.javaTrim
@@ -18,16 +16,15 @@ import java.io.PrintStream
 
 object CliUtils {
     private val allNutrientsToPrint = listOf(
-        NutritionDataTable.KILOJOULES
-        , NutritionDataTable.CALORIES
-        , NutritionDataTable.PROTEIN
-        , NutritionDataTable.FAT
-        , NutritionDataTable.SATURATED_FAT
-        , NutritionDataTable.CARBOHYDRATE
-        , NutritionDataTable.SUGAR
-        , NutritionDataTable.FIBRE
-        , NutritionDataTable.SODIUM
-        , NutritionDataTable.CALCIUM
+          Nutrients.ENERGY
+        , Nutrients.PROTEIN
+        , Nutrients.FAT
+        , Nutrients.SATURATED_FAT
+        , Nutrients.CARBOHYDRATE
+        , Nutrients.SUGAR
+        , Nutrients.FIBRE
+        , Nutrients.SODIUM
+        , Nutrients.CALCIUM
     )
 
     fun printPer100g(nd: NutritionData, verbose: Boolean, out: PrintStream) {
@@ -38,7 +35,6 @@ object CliUtils {
     fun printNutritionDataString(nd: NutritionData, verbose: Boolean, monoSpaceAligned: Boolean = true) : String {
         // TODO pass in ColumnUnits and ColumnNamer
         val colNamer: ColumnNamer = EnglishColumnNames.instance
-        val colUnits: ColumnUnits = DefaultColumnUnits.instance
         // TODO get these lengths from ColumnNamer
         val lineFormat = if (monoSpaceAligned) {
             if (verbose) "%15s: %6.1f %-2s" else "%15s: %4.0f %-2s"
@@ -46,12 +42,12 @@ object CliUtils {
             if (verbose) "%s: %.1f %s" else "%s: %.0f %s"
         }
         return StringBuilder().run {
-            for (col in allNutrientsToPrint) {
-                val value = nd.amountOf(col, 0.0)
-                val unitStr = colUnits.getUnit(col).abbr
-                val colName = colNamer.getName(col)
+            for (nutrient in allNutrientsToPrint) {
+                val value = nd.amountOf(nutrient, 0.0)
+                val unitStr = nd.getUnitOrDefault(nutrient).abbr
+                val colName = colNamer.getName(nutrient)
                 append(lineFormat.format(colName, value, unitStr))
-                if (!nd.hasCompleteData(col)) {
+                if (!nd.hasCompleteData(nutrient)) {
                     // mark incomplete
                     append(" (*)")
                 }
@@ -71,9 +67,9 @@ object CliUtils {
         out.println("Energy proportions (approx.)")
         // TODO get these lengths from ColumnNamer / ColumnUnits
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
-        for (col in NutritionData.energyProportionCols) {
-            val proportion = nd.getEnergyProportion(col)
-            out.printf(fmt, colNames.getName(col), proportion*100)
+        for (nutrient in NutritionData.energyProportionNutrients) {
+            val proportion = nd.getEnergyProportion(nutrient)
+            out.printf(fmt, colNames.getName(nutrient), proportion*100)
         }
     }
 

@@ -57,19 +57,21 @@ object Schema {
             val ID: Column<Unit, Long>
             val CREATE_TIME: Column<Unit, Long>
             val MODIFY_TIME: Column<Unit, Long>
-            val UNIT_TYPE: Column<Unit, Long>
+            val TYPE_ID: Column<Unit, Long>
             val NAME: Column<Unit, String>
             val ABBREVIATION: Column<Unit, String>
             val METRIC_EQUIVALENT: Column<Unit, Double>
+            val INBUILT: Column<Unit, Boolean>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
                 CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
-                UNIT_TYPE = builder("unit_type", Types.INTEGER).notEditable().notNull().buildAndAdd(COLUMNS)
+                TYPE_ID = builder("type_id", Types.INTEGER).notEditable().notNull().buildAndAdd(COLUMNS)
                 ABBREVIATION = builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildAndAdd(COLUMNS)
                 METRIC_EQUIVALENT = builder("metric_equivalent", Types.REAL).notNull().buildAndAdd(COLUMNS)
+                INBUILT = builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildAndAdd(COLUMNS)
             }
 
             // this declaration has to come last (static initialisation order
@@ -96,6 +98,9 @@ object Schema {
             val FOOD_TYPE: Column<Food, String>
             val USDA_INDEX: Column<Food, Long>
             val NUTTAB_INDEX: Column<Food, String>
+            val DATA_SOURCE: Column<Food, String>
+            val DATA_NOTES: Column<Food, String>
+            val DENSITY: Column<Food, Double>
             val CATEGORY: Column.Fk<Food, String, FoodCategory>
 
             init {
@@ -115,6 +120,9 @@ object Schema {
                         .defaultsTo(FoodType.PRIMARY.niceName).buildAndAdd(COLUMNS)
                 USDA_INDEX = builder("usda_index", Types.INTEGER).notEditable().buildAndAdd(COLUMNS)
                 NUTTAB_INDEX = builder("nuttab_index", Types.TEXT).notEditable().buildAndAdd(COLUMNS)
+                DATA_SOURCE = builder("data_source", Types.TEXT).buildAndAdd(COLUMNS)
+                DATA_NOTES = builder("data_notes", Types.TEXT).buildAndAdd(COLUMNS)
+                DENSITY = builder("density", Types.REAL).buildAndAdd(COLUMNS)
             }
 
             // this has to come last (static initialisation order)
@@ -280,121 +288,65 @@ object Schema {
         }
     }
 
-    class NutritionDataTable private constructor() : BaseTable<NutritionData>(TABLE_NAME, NutritionData.factory, COLUMNS) {
+    class NutrientTable private constructor() : BaseTable<Nutrient>(TABLE_NAME, Nutrient.factory, COLUMNS) {
         companion object {
-            private const val TABLE_NAME = "NutritionData"
+            private const val TABLE_NAME = "Nutrient"
 
             // holds the following columns in the order initialised in the static block
-            private val COLUMNS = ArrayList<Column<NutritionData, *>>()
+            private val COLUMNS = ArrayList<Column<Nutrient, *>>()
 
-            /*
-             * When adding new columns here (or to any other table), remember to put
-             *  - the field declaration (obviously)
-             *  - the static initialiser using the builder (won't compile if you don't do this)
-             * And additionally, for NutritionData, add to NutritionData.NUTRIENT_COLUMNS if appropriate
-            */
-            @JvmField
-            val ID: Column<NutritionData, Long>
-            @JvmField
-            val CREATE_TIME: Column<NutritionData, Long>
-            @JvmField
-            val MODIFY_TIME: Column<NutritionData, Long>
-            @JvmField
-            val DATA_SOURCE: Column<NutritionData, String>
-            @JvmField
-            val NOTES: Column<NutritionData, String>
-            @JvmField
-            val QUANTITY: Column<NutritionData, Double>
-            @JvmField
-            val DENSITY: Column<NutritionData, Double>
-            @JvmField
-            val KILOJOULES: Column<NutritionData, Double>
-            @JvmField
-            val CALORIES: Column<NutritionData, Double>
-            @JvmField
-            val PROTEIN: Column<NutritionData, Double>
-            @JvmField
-            val CARBOHYDRATE: Column<NutritionData, Double>
-            @JvmField
-            val CARBOHYDRATE_BY_DIFF: Column<NutritionData, Double>
-            @JvmField
-            val SUGAR: Column<NutritionData, Double>
-            @JvmField
-            val SUGAR_ALCOHOL: Column<NutritionData, Double>
-            @JvmField
-            val STARCH: Column<NutritionData, Double>
-            @JvmField
-            val FAT: Column<NutritionData, Double>
-            @JvmField
-            val SATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
-            val MONOUNSATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
-            val POLYUNSATURATED_FAT: Column<NutritionData, Double>
-            @JvmField
-            val OMEGA_3_FAT: Column<NutritionData, Double>
-            @JvmField
-            val OMEGA_6_FAT: Column<NutritionData, Double>
-            @JvmField
-            val FIBRE: Column<NutritionData, Double>
-            @JvmField
-            val SODIUM: Column<NutritionData, Double>
-            @JvmField
-            val SALT: Column<NutritionData, Double>
-            @JvmField
-            val POTASSIUM: Column<NutritionData, Double>
-            @JvmField
-            val CALCIUM: Column<NutritionData, Double>
-            @JvmField
-            val IRON: Column<NutritionData, Double>
-            @JvmField
-            val WATER: Column<NutritionData, Double>
-            @JvmField
-            val ALCOHOL: Column<NutritionData, Double>
-            @JvmField
-            val FOOD_ID: Column.Fk<NutritionData, Long, Food>
-            @JvmField
-            val QUANTITY_UNIT: Column.Fk<NutritionData, String, Unit>
+            val ID: Column<Nutrient, Long>
+            val CREATE_TIME: Column<Nutrient, Long>
+            val MODIFY_TIME: Column<Nutrient, Long>
+            val NAME: Column<Nutrient, String>
+            val UNIT_TYPES: Column<Nutrient, Long>
+            val INBUILT: Column<Nutrient, Boolean>
 
             init {
                 ID = idColumnBuildAndAdd(COLUMNS)
                 CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
-                // FOOD_ID can be null for computed instances
-                FOOD_ID = builder("food_id", Types.ID).notEditable().defaultsTo(NO_ID).inSecondaryKey().unique()
-                        .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
-                QUANTITY = builder("quantity", Types.REAL).notNull().defaultsTo(100.0).buildAndAdd(COLUMNS)
-                QUANTITY_UNIT = builder("quantity_unit", Types.TEXT).notNull().defaultsTo(Units.GRAMS.abbr)
-                        .buildAndAddFk(UnitTable.ABBREVIATION, UnitTable.instance, COLUMNS)
-                DATA_SOURCE = builder("data_source", Types.TEXT).buildAndAdd(COLUMNS)
-                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
-                DENSITY = builder("density", Types.REAL).buildAndAdd(COLUMNS)
-                KILOJOULES = builder("kilojoules", Types.REAL).buildAndAdd(COLUMNS)
-                CALORIES = builder("calories", Types.REAL).buildAndAdd(COLUMNS)
-                PROTEIN = builder("protein", Types.REAL).buildAndAdd(COLUMNS)
-                FAT = builder("fat", Types.REAL).buildAndAdd(COLUMNS)
-                SATURATED_FAT = builder("saturated_fat", Types.REAL).buildAndAdd(COLUMNS)
-                CARBOHYDRATE = builder("carbohydrate", Types.REAL).buildAndAdd(COLUMNS)
-                SUGAR = builder("sugar", Types.REAL).buildAndAdd(COLUMNS)
-                FIBRE = builder("fibre", Types.REAL).buildAndAdd(COLUMNS)
-                SODIUM = builder("sodium", Types.REAL).buildAndAdd(COLUMNS)
-                POTASSIUM = builder("potassium", Types.REAL).buildAndAdd(COLUMNS)
-                CALCIUM = builder("calcium", Types.REAL).buildAndAdd(COLUMNS)
-                IRON = builder("iron", Types.REAL).buildAndAdd(COLUMNS)
-                MONOUNSATURATED_FAT = builder("monounsaturated_fat", Types.REAL).buildAndAdd(COLUMNS)
-                POLYUNSATURATED_FAT = builder("polyunsaturated_fat", Types.REAL).buildAndAdd(COLUMNS)
-                OMEGA_3_FAT = builder("omega_3", Types.REAL).buildAndAdd(COLUMNS)
-                OMEGA_6_FAT = builder("omega_6", Types.REAL).buildAndAdd(COLUMNS)
-                STARCH = builder("starch", Types.REAL).buildAndAdd(COLUMNS)
-                SALT = builder("salt", Types.REAL).buildAndAdd(COLUMNS)
-                WATER = builder("water", Types.REAL).buildAndAdd(COLUMNS)
-                CARBOHYDRATE_BY_DIFF = builder("carbohydrate_by_diff", Types.REAL).buildAndAdd(COLUMNS)
-                ALCOHOL = builder("alcohol", Types.REAL).buildAndAdd(COLUMNS)
-                SUGAR_ALCOHOL = builder("sugar_alcohol", Types.REAL).buildAndAdd(COLUMNS)
+                NAME = builder("name", Types.TEXT).notNull().unique().inSecondaryKey().buildAndAdd(COLUMNS)
+                UNIT_TYPES = builder("unit_types", Types.INTEGER).notNull().buildAndAdd(COLUMNS)
+                INBUILT = builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildAndAdd(COLUMNS)
             }
 
             // this part has to be last (static initialisation order)
-            val instance = NutritionDataTable()
+            val instance = NutrientTable()
+        }
+
+    }
+
+    class NutrientValueTable private constructor() : BaseTable<NutrientValue>(TABLE_NAME, NutrientValue.factory, COLUMNS) {
+        companion object {
+            private const val TABLE_NAME = "NutrientValue"
+
+            // holds the following columns in the order initialised in the static block
+            private val COLUMNS = ArrayList<Column<NutrientValue, *>>()
+
+            val ID: Column<NutrientValue, Long>
+            val CREATE_TIME: Column<NutrientValue, Long>
+            val MODIFY_TIME: Column<NutrientValue, Long>
+            val NUTRIENT_ID: Column.Fk<NutrientValue, Long, Nutrient>
+            val FOOD_ID: Column.Fk<NutrientValue, Long, Food>
+            val VALUE: Column<NutrientValue, Double>
+            val UNIT_ID: Column.Fk<NutrientValue, Long, Unit>
+
+            init {
+                ID = idColumnBuildAndAdd(COLUMNS)
+                CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
+                MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
+                NUTRIENT_ID = builder("nutrient_id", Types.ID).notNull().notEditable().inSecondaryKey()
+                        .buildAndAddFk(NutrientTable.ID, NutrientTable.instance, COLUMNS)
+                FOOD_ID = builder("food_id", Types.ID).notNull().notEditable().defaultsTo(NO_ID).inSecondaryKey()
+                        .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
+                VALUE = builder("value", Types.REAL).notNull().buildAndAdd(COLUMNS)
+                UNIT_ID = builder("unit_id", Types.ID).notNull().notEditable()
+                        .buildAndAddFk(UnitTable.ID, UnitTable.instance, COLUMNS)
+            }
+
+            // this part has to be last (static initialisation order)
+            val instance = NutrientValueTable()
         }
 
     }

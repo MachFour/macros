@@ -45,12 +45,12 @@ class ShowFood : CommandImpl(NAME, USAGE) {
              */
             var nd = f.getNutritionData()
             val unit = nd.qtyUnitAbbr
-            out.println("Nutrition data (source: ${nd.getData(Schema.NutritionDataTable.DATA_SOURCE)})")
+            out.println("Nutrition data (source: ${f.dataSource})")
             out.println()
 
-            if (nd.density != null) {
+            if (f.density != null) {
                 // width copied from printFoodSummary()
-                out.printf("Density:       %.2f (g/ml)\n", nd.density)
+                out.printf("Density:       %.2f (g/ml)\n", f.density)
                 out.println()
             }
 

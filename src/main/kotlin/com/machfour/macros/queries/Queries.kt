@@ -50,7 +50,7 @@ object Queries {
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> insertObjects(ds: MacrosDataSource, objects: Collection<M>, withId: Boolean): Int {
-        val objectData : List<ColumnData<M>> = objects.map { it.allData }
+        val objectData : List<ColumnData<M>> = objects.map { it.data }
         return ds.insertObjectData(objectData, withId)
     }
 

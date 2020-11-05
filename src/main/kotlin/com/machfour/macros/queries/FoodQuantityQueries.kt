@@ -4,7 +4,7 @@ import com.machfour.macros.core.*
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.Units
+import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.storage.MacrosDataSource
 import java.sql.SQLException
 

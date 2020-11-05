@@ -14,9 +14,8 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     }
 
     val id: Long
-    fun hasId(): Boolean {
-        return id != NO_ID
-    }
+    val hasId: Boolean
+        get() = (id != NO_ID)
 
     val createTime: Long
     val modifyTime: Long
@@ -26,13 +25,15 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     fun <J> getData(col: Column<M, J>): J?
     fun hasData(col: Column<M, *>): Boolean
 
-    // Creates a mapping of column objects to their values for this instance
-    fun getAllData(readOnly: Boolean): ColumnData<M>
-
     // equivalent to getAllData(true)
-    val allData: ColumnData<M>
+    val data: ColumnData<M>
     val table: Table<M>
     val factory: Factory<M>
+
+    // Clone of columnData with full metadata
+    val dataFullCopy: ColumnData<M>
+    // Clone of columnData without ID, create time, modify time
+    val dataCopy: ColumnData<M>
 
     // ... Alternative methods that can be used with unique columns
     fun <N : MacrosEntity<N>, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, parent: N)

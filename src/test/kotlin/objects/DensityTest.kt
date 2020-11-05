@@ -1,12 +1,11 @@
 package objects
 
-import com.machfour.macros.core.Schema.NutritionDataTable
+import com.machfour.macros.core.NutrientData
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.NutritionCalculations
-import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.Units
+import com.machfour.macros.objects.*
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -19,8 +18,8 @@ class DensityTest {
         lateinit var db: LinuxDatabase
         lateinit var chickpeaFlour: Food
         lateinit var water: Food
-        lateinit var chickpeaNd: NutritionData
-        lateinit var waterNd: NutritionData
+        lateinit var chickpeaNd: NutrientData
+        lateinit var waterNd: NutrientData
 
         @BeforeAll
         @JvmStatic
@@ -30,13 +29,13 @@ class DensityTest {
             try {
                 chickpeaFlour = requireNotNull(FoodQueries.getFoodByIndexName(db, "chickpea-flour")) { failMsg }
                 water = requireNotNull(FoodQueries.getFoodByIndexName(db, "water")) { failMsg }
-                chickpeaNd = chickpeaFlour.getNutritionData()
-                waterNd = water.getNutritionData()
+                chickpeaNd = chickpeaFlour.getNutritionData().nutrientData
+                waterNd = water.getNutritionData().nutrientData
                 Assertions.assertNotNull(water, failMsg)
                 Assertions.assertNotNull(chickpeaNd)
                 Assertions.assertNotNull(waterNd)
-                Assertions.assertNotNull(chickpeaNd.density)
-                Assertions.assertNotNull(waterNd.density)
+                Assertions.assertNotNull(chickpeaFlour.density)
+                Assertions.assertNotNull(water.density)
             } catch (e: SQLException) {
                 println(failMsg)
                 Assertions.fail<Any>(e)
@@ -45,26 +44,26 @@ class DensityTest {
     }
     @Test
     fun testDensity() {
-        val density = chickpeaNd.density
+        val density = chickpeaFlour.density
         Assertions.assertNotNull(density)
-        val millilitresNd = NutritionCalculations.rescale(chickpeaNd, 100 / density!!, Units.MILLILITRES)
-        val backConverted = NutritionCalculations.rescale(millilitresNd, 100.0, Units.GRAMS)
-        val carbs = NutritionDataTable.CARBOHYDRATE
-        Assertions.assertEquals(chickpeaNd.getData(carbs)!!, millilitresNd.getData(carbs)!!, 0.01)
-        Assertions.assertEquals(chickpeaNd.getData(carbs)!!, backConverted.getData(carbs)!!, 0.01)
-        println("Default quantity: " + chickpeaNd.quantity + chickpeaNd.qtyUnitAbbr)
-        println("mls quantity: " + millilitresNd.quantity + millilitresNd.qtyUnitAbbr)
-        println("backConverted quantity: " + backConverted.quantity + backConverted.qtyUnitAbbr)
+        val millilitresNd = NutritionCalculations.rescale(chickpeaNd, 100 / density!!, Units.MILLILITRES, chickpeaFlour.density)
+        val backConverted = NutritionCalculations.rescale(millilitresNd, 100.0, Units.GRAMS, chickpeaFlour.density)
+        val carbs = Nutrients.CARBOHYDRATE
+        println("Default quantity: " + chickpeaNd.quantityObj)
+        println("mls quantity: " + millilitresNd.quantityObj)
+        println("backConverted quantity: " + backConverted.quantityObj)
+        Assertions.assertEquals(chickpeaNd.amountOf(carbs)!!, millilitresNd.amountOf(carbs)!!, 0.01)
+        Assertions.assertEquals(chickpeaNd.amountOf(carbs)!!, backConverted.amountOf(carbs)!!, 0.01)
     }
 
     @Test
     fun testDensity2() {
-        val chickPea100mL = NutritionCalculations.rescale(chickpeaNd, 100.0, Units.MILLILITRES)
-        val water100mL = NutritionCalculations.rescale(waterNd, 100.0, Units.MILLILITRES)
-        val combined = NutritionCalculations.sum(listOf(chickPea100mL, water100mL))
-        Assertions.assertEquals(Units.GRAMS, combined.qtyUnit)
-        Assertions.assertEquals(100 + 100 * chickpeaNd.density!!, combined.quantity)
-        Assertions.assertTrue(combined.hasCompleteData(NutritionDataTable.QUANTITY))
+        val chickPea100mL = NutritionCalculations.rescale(chickpeaNd, 100.0, Units.MILLILITRES, chickpeaFlour.density)
+        val water100mL = NutritionCalculations.rescale(waterNd, 100.0, Units.MILLILITRES, 1.0)
+        val combined = NutritionCalculations.sum(listOf(chickPea100mL, water100mL), listOf(chickpeaFlour.density!!, 1.0))
+        Assertions.assertEquals(Units.GRAMS, combined.quantityObj.unit)
+        Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)
+        Assertions.assertTrue(combined.hasCompleteData(Nutrients.QUANTITY))
     }
 
 }

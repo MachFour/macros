@@ -6,18 +6,16 @@ import java.time.Instant
 import java.util.Collections;
 
 /**
- * parent class for all macros persistable objects
+ * parent class for all Macros persistable objects
  */
 abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
-        data: ColumnData<M>,
-        override val objectSource: ObjectSource
+        final override val data: ColumnData<M>,
+        final override val objectSource: ObjectSource
 ) : MacrosEntity<M> {
 
 
     abstract override val table: Table<M>
     abstract override val factory: Factory<M>
-
-    private val dataMap: ColumnData<M>
 
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)
@@ -39,10 +37,9 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
             throw SchemaViolation(errors)
         }
         //this.dataMap = new ColumnData<>(data);
-        dataMap = data
-        dataMap.setImmutable()
-        createInstant = Instant.ofEpochSecond(data.get(data.table.createTimeColumn)!!)
-        modifyInstant = Instant.ofEpochSecond(data.get(data.table.modifyTimeColumn)!!)
+        this.data.setImmutable()
+        createInstant = Instant.ofEpochSecond(data[data.table.createTimeColumn]!!)
+        modifyInstant = Instant.ofEpochSecond(data[data.table.modifyTimeColumn]!!)
         checkObjectSource()
     }
 
@@ -57,10 +54,10 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     private fun checkObjectSource() {
         when (objectSource) {
             ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED -> {
-                assert(!hasId()) { "Object should not have an ID" }
+                assert(!hasId) { "Object should not have an ID" }
             }
             ObjectSource.DB_EDIT, ObjectSource.RESTORE, ObjectSource.DATABASE, ObjectSource.INBUILT -> {
-                assert(hasId()) { "Object should have an ID" }
+                assert(hasId) { "Object should have an ID" }
             }
         }
     }
@@ -75,12 +72,11 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         get() = getData(table.modifyTimeColumn)!!
 
     override fun hashCode(): Int {
-        //return getAllData().hashCode() + getObjectSource().ordinal();
-        return allData.hashCode()
+        return data.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
-        return (other is MacrosEntityImpl<*> && dataMap == other.dataMap) //&& isFromDb == ((MacrosEntity) o).isFromDb
+        return (other is MacrosEntityImpl<*> && this.data == other.data) //&& isFromDb == ((MacrosEntity) o).isFromDb
     }
 
     fun equalsWithoutMetadata(o: MacrosEntity<M>): Boolean {
@@ -88,30 +84,33 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         columnsToCheck.remove(table.idColumn)
         columnsToCheck.remove(table.createTimeColumn)
         columnsToCheck.remove(table.modifyTimeColumn)
-        return ColumnData.columnsAreEqual(dataMap, o.allData, columnsToCheck)
+        return ColumnData.columnsAreEqual(this.data, o.data, columnsToCheck)
     }
 
     override fun <J> getData(col: Column<M, J>): J? {
-        val data = dataMap[col]
-        assert(col.isNullable || data != null) { "null data retrieved from not-nullable column" }
-        return data
+        val value = data[col]
+        assert(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
+        return value
     }
 
     override fun hasData(col: Column<M, *>): Boolean {
-        return dataMap.hasData(col)
+        return data.hasData(col)
     }
+
+    override val dataFullCopy: ColumnData<M>
+        get() = data.copy()
 
     // returns immutable copy of data map
-    override val allData: ColumnData<M>
-        get() = getAllData(true)
+    override val dataCopy: ColumnData<M>
+        get() = dataFullCopy.apply {
+                // have to remove ID since it's now a computed value
+                //copy.setDefaultData(listOf(table.idColumn, table.createTimeColumn, table.modifyTimeColumn))
+                put(table.idColumn, MacrosEntity.NO_ID)
+                put(table.createTimeColumn, 0L)
+                put(table.modifyTimeColumn, 0L)
+            }
 
-    override fun getAllData(readOnly: Boolean): ColumnData<M> {
-        return if (readOnly) {
-            dataMap
-        } else {
-            dataMap.copy()
-        }
-    }
+
 
     // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
     // shares the same parameter as the wildcard being captured.
@@ -138,7 +137,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     }
 
     override fun toString(): String {
-        return "${table.name} id=${id}, objSrc=${objectSource}, data=${dataMap}"
+        return "${table.name} id=${id}, objSrc=${objectSource}, data=${data}"
     }
 
     // this also works for import (without IDs) because both columns are NO_ID

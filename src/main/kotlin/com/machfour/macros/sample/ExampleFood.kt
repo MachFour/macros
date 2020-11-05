@@ -14,22 +14,8 @@ import com.machfour.macros.objects.*
 
 import com.machfour.macros.core.Schema.FoodTable.Companion.USDA_INDEX
 import com.machfour.macros.core.Schema.FoodTable.Companion.VARIETY
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CALCIUM
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CARBOHYDRATE
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.DATA_SOURCE
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.DENSITY
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FIBRE
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.IRON
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.KILOJOULES
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.MONOUNSATURATED_FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.POLYUNSATURATED_FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY_UNIT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SATURATED_FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SODIUM
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SUGAR
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.WATER
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Units
 
 object ExampleFood {
 
@@ -59,30 +45,32 @@ object ExampleFood {
 
     private fun init2(): Food {
         val fData = ColumnData(Food.table)
-        val nData = ColumnData(NutritionData.table)
         fData.put(INDEX_NAME, "generic-oil")
         fData.put(NAME, "Generic Oil")
         fData.put(CATEGORY, "oils")
         fData.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
-        nData.put(KILOJOULES, 3400.0)
-        nData.put(CARBOHYDRATE, 0.0)
-        nData.put(FAT, 92.0)
-        nData.put(SATURATED_FAT, 12.0)
-        nData.put(SUGAR, 0.0)
-        nData.put(SODIUM, 0.0)
-        nData.put(POLYUNSATURATED_FAT, 23.0)
-        nData.put(MONOUNSATURATED_FAT, 56.0)
-        nData.put(WATER, 0.0)
-        nData.put(FIBRE, 0.0)
-        nData.put(CALCIUM, 34.0)
-        nData.put(IRON, 10.0)
-        nData.put(DATA_SOURCE, "Test")
-        nData.put(DENSITY, 0.92)
-        nData.put(QUANTITY, 100.0)
-        nData.put(QUANTITY_UNIT, Units.MILLILITRES.abbr)
-        val nd = NutritionData.table.construct(nData, ObjectSource.USER_NEW)
         val f = Food.factory.construct(fData, ObjectSource.IMPORT)
-        f.setNutritionData(nd)
+
+        val nutritionData = listOf(
+              NutrientValue.makeObject(3400.0, Nutrients.ENERGY, Units.KILOJOULES, food = f)
+            , NutrientValue.makeObject(20.0, Nutrients.CARBOHYDRATE, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(90.0, Nutrients.FAT, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(12.0, Nutrients.SATURATED_FAT, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(50.0, Nutrients.SUGAR, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(20.0, Nutrients.POLYUNSATURATED_FAT, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(10.0, Nutrients.MONOUNSATURATED_FAT, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(100.0, Nutrients.WATER, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(2.0, Nutrients.FIBRE, Units.GRAMS, food = f)
+            , NutrientValue.makeObject(1000.0, Nutrients.SODIUM, Units.MILLIGRAMS, food = f)
+            , NutrientValue.makeObject(200.0, Nutrients.CALCIUM, Units.MILLIGRAMS, food = f)
+            , NutrientValue.makeObject(40.0, Nutrients.IRON, Units.MILLIGRAMS, food = f)
+            , NutrientValue.makeObject(1000.0, Nutrients.QUANTITY, Units.MILLILITRES, food = f)
+        )
+
+        for (nv in nutritionData) {
+            f.addNutrientValue(nv)
+        }
+
         return f
     }
 

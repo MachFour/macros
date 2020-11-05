@@ -6,6 +6,8 @@ import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.MEAL_ID
 import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY
 import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY_UNIT
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.sample.ExampleFood
 import org.junit.jupiter.api.Test
 
@@ -45,11 +47,11 @@ class NutritionDataTest {
 
     @Test
     fun testScaling() {
-        assertNotNull(f.getNutritionData().density)
-        val density = f.getNutritionData().density!!
-        val fat = f.getNutritionData().getData(Schema.NutritionDataTable.FAT)!!
-        val fat1 = nd1.getData(Schema.NutritionDataTable.FAT)!!
-        val fat2 = nd2.getData(Schema.NutritionDataTable.FAT)!!
+        assertNotNull(f.density)
+        val density = f.density!!
+        val fat = f.getNutritionData().amountOf(Nutrients.FAT)!!
+        val fat1 = nd1.amountOf(Nutrients.FAT)!!
+        val fat2 = nd2.amountOf(Nutrients.FAT)!!
 
         assertEquals(density, 0.92)
         assertEquals(fat, fat2)
@@ -58,9 +60,9 @@ class NutritionDataTest {
 
     @Test
     fun testScaling2() {
-        assertNotNull(f.getNutritionData().density)
-        val fat1 = nd1.getData(Schema.NutritionDataTable.FAT)!!
-        val fat3 = nd3.getData(Schema.NutritionDataTable.FAT)!!
+        assertNotNull(f.density)
+        val fat1 = nd1.amountOf(Nutrients.FAT)!!
+        val fat3 = nd3.amountOf(Nutrients.FAT)!!
 
         assertEquals(fat1, fat3)
     }
@@ -69,8 +71,8 @@ class NutritionDataTest {
 
     @Test
     fun testSum() {
-        val sum = NutritionCalculations.sum(listOf(nd1, nd2), true)
-        assertEquals(192.0, sum.getData(Schema.NutritionDataTable.FAT) as Double)
+        val sum = NutritionCalculations.sum(listOf(nd1, nd2))
+        assertEquals(192.0, sum.amountOf(Nutrients.FAT) as Double)
     }
 
 

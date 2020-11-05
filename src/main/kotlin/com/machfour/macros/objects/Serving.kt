@@ -1,6 +1,9 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Nutrients.QUANTITY
+import com.machfour.macros.objects.inbuilt.Units
 
 class Serving internal constructor(data: ColumnData<Serving>, objectSource: ObjectSource)
     : MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
@@ -12,13 +15,17 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
             get() = Schema.ServingTable.instance
     }
 
-    lateinit var food: Food
-        private set
-
     val qtyUnitAbbr: String
         get() = getData(Schema.ServingTable.QUANTITY_UNIT)!!
 
-    val qtyUnit: Unit = Units.fromAbbreviation(qtyUnitAbbr)
+    val qtyUnit = Units.fromAbbreviation(qtyUnitAbbr)
+
+    init {
+        Nutrient.checkCompatible(QUANTITY, qtyUnit)
+    }
+
+    lateinit var food: Food
+        private set
 
     override val factory: Factory<Serving>
         get() = Companion.factory

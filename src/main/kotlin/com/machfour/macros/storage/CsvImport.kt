@@ -3,10 +3,15 @@ package com.machfour.macros.storage
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.FoodTable
 import com.machfour.macros.core.Schema.FoodQuantityTable
-import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.core.Schema.ServingTable
 import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.names.ENERGY_NAME
+import com.machfour.macros.names.ENERGY_UNIT_NAME
+import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.inbuilt.DefaultUnits
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.Queries.saveObjects
@@ -25,42 +30,78 @@ object CsvImport {
     // don't edit csvRow keyset!
     @Throws(TypeCastException::class)
     fun <M> extractData(csvRow: Map<String, String?>, table: Table<M>): ColumnData<M> {
-        val relevantCols = csvRow.keys.filter { table.columnsByName.keys.contains(it) }
-        return ColumnData(table).apply {
-            relevantCols.forEach { colName ->
-                val value = csvRow[colName]
-                val col = table.columnsByName.getValue(colName)
-                // map empty strings in CSV to null
-                if (value == null) {
-                    putFromRaw(col, null)
-                } else {
-                    putFromString(col, value.javaTrim())
+        val relevantCols = table.columnsByName.filter { csvRow.keys.contains(it.key) }
+        var extractedSomething = false
+        val data = ColumnData(table).apply {
+            for ((colName, col) in relevantCols) {
+                when (val valueString = csvRow[colName]) {
+                    null -> putFromRaw(col, null)
+                    else -> putFromString(col, valueString.javaTrim())
+                }
+                // check if anything actually got through
+                if (hasData(col)) {
+                    extractedSomething = true
                 }
             }
         }
+        assert(extractedSomething) { "No data extracted from CSV row: $csvRow. Has the file been saved with comma delimiters?" }
+        return data
     }
+
+    @Throws(TypeCastException::class)
+    fun extractNutritionData(csvRow: Map<String, String?>): List<ColumnData<NutrientValue>> {
+        val data = ArrayList<ColumnData<NutrientValue>>()
+
+        for (nutrient in Nutrients.nutrients) {
+            // we skip adding the nutrient if it's not present in the CSV
+            val valueString = csvRow[nutrient.csvName]?.takeIf { it.isNotBlank() } ?: continue
+
+            val unitString = when(nutrient) {
+                Nutrients.QUANTITY -> csvRow[QUANTITY_UNIT_NAME]
+                Nutrients.ENERGY -> csvRow[ENERGY_UNIT_NAME]
+                else -> null // default unit
+            }
+            val unit = unitString?.let { Units.fromAbbreviation(it) } ?: DefaultUnits.get(nutrient)
+
+            val nutrientValueData = ColumnData(NutrientValue.table).apply {
+                putFromString(Schema.NutrientValueTable.VALUE, valueString)
+                put(Schema.NutrientValueTable.UNIT_ID, unit.id)
+                put(Schema.NutrientValueTable.NUTRIENT_ID, nutrient.id)
+            }
+            assert(nutrientValueData.hasData(Schema.NutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
+
+            data.add(nutrientValueData)
+        }
+        return data
+    }
+
+
 
     // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
     fun getMapReader(r: Reader): ICsvMapReader = CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE)
 
     // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
-    private fun allValuesEmpty(csvRow: Map<String, String?>): Boolean {
-        return csvRow.values.firstOrNull { s -> !s.isNullOrBlank() } == null
-    }
+    private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { it.isNullOrBlank() }
+    //private fun allValuesEmpty(csvRow: Map<String, String?>): Boolean {
+    //    return csvRow.values.firstOrNull { s -> !s.isNullOrBlank() } == null
+    //}
 
     // Returns map of food index name to parsed food and nutrition columnData objects
     @Throws(IOException::class, TypeCastException::class)
-    private fun getFoodData(foodCsv: Reader): List<Pair<ColumnData<Food>, ColumnData<NutritionData>>> {
-        val data: MutableList<Pair<ColumnData<Food>, ColumnData<NutritionData>>> = ArrayList()
+    private fun getFoodData(foodCsv: Reader): List<Pair<ColumnData<Food>, List<ColumnData<NutrientValue>>>> {
+        val data: MutableList<Pair<ColumnData<Food>, List<ColumnData<NutrientValue>>>> = ArrayList()
         getMapReader(foodCsv).use { mapReader ->
             val header = mapReader.getHeader(true)
-            var csvRow: Map<String, String?>?
-            while (mapReader.read(*header).also { csvRow = it } != null) {
-                if (allValuesEmpty(csvRow!!)) {
+            var csvRow: Map<String, String?> = emptyMap()
+            while (mapReader.read(*header)?.also { csvRow = it } != null) {
+                if (allValuesEmpty(csvRow)) {
                     continue  // it's a blank row
                 }
-                val foodData = extractData(csvRow!!, FoodTable.instance)
-                val ndData = extractData(csvRow!!, NutritionDataTable.instance)
+                val foodData = extractData(csvRow, FoodTable.instance)
+                val ndData = extractNutritionData(csvRow)
+
+                //assert(foodData.hasData(FoodTable.NAME)) { "Food is missing its name" }
+
                 data.add(Pair(foodData, ndData))
             }
         }
@@ -75,16 +116,16 @@ object CsvImport {
         try {
             getMapReader(ingredientCsv).use { mapReader ->
                 val header = mapReader.getHeader(true)
-                var csvRow: Map<String, String?>?
-                while (mapReader.read(*header).also { csvRow = it } != null) {
-                    if (allValuesEmpty(csvRow!!)) {
+                var csvRow: Map<String, String?> = emptyMap()
+                while (mapReader.read(*header)?.also { csvRow = it } != null) {
+                    if (allValuesEmpty(csvRow)) {
                         continue  // it's a blank row
                     }
                     // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                    val ingredientData = extractData(csvRow!!, FoodQuantity.table)
-                    val compositeIndexName = csvRow!!.getValue("recipe_index_name")
+                    val ingredientData = extractData(csvRow, FoodQuantity.table)
+                    val compositeIndexName = csvRow.getValue("recipe_index_name")
                             ?: throw CsvException("No value for field: composite_index_name")
-                    val ingredientIndexName = csvRow!!["ingredient_index_name"]
+                    val ingredientIndexName = csvRow["ingredient_index_name"]
                             ?: throw CsvException("No value for field: ingredient_index_name")
                     // TODO error handling
                     val ingredientFood = getFoodByIndexName(ds, ingredientIndexName)
@@ -119,9 +160,9 @@ object CsvImport {
     fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, MutableList<Ingredient>>): Map<String, CompositeFood> {
         // preserve insertion order
         val foodMap: MutableMap<String, CompositeFood> = LinkedHashMap()
-        val ndMap: MutableMap<String, ColumnData<NutritionData>> = LinkedHashMap()
+        val ndMap: MutableMap<String, List<ColumnData<NutrientValue>>> = LinkedHashMap()
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
-        for ((foodData, ndData) in getFoodData(recipeCsv)) {
+        for ((foodData, nutrientValues) in getFoodData(recipeCsv)) {
             foodData.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
             val f = Food.factory.construct(foodData, ObjectSource.IMPORT)
             assert(f is CompositeFood)
@@ -129,7 +170,7 @@ object CsvImport {
                 throw CsvException("Imported recipes contained duplicate index name: " + f.indexName)
             }
             foodMap[f.indexName] = f as CompositeFood
-            ndMap[f.indexName] = ndData
+            ndMap[f.indexName] = nutrientValues
         }
         for ((key, value) in ingredients) {
             val recipeFood = foodMap.getValue(key)
@@ -139,13 +180,11 @@ object CsvImport {
             }
         }
         // now we can finally create the nutrition data
-        for (cf in foodMap.values) {
-            val csvNutritionData = ndMap[cf.indexName]
-            if (csvNutritionData!!.hasData(NutritionDataTable.QUANTITY)) {
-                // assume that there is overriding data
-                val overridingData = NutritionData.factory.construct(csvNutritionData, ObjectSource.IMPORT)
-                cf.setNutritionData(overridingData)
-                // calling cf.getnData will now correctly give all the values
+        for ((indexName, nutrientValueData) in ndMap.entries) {
+            val compositeFood = foodMap.getValue(indexName)
+            for (nvData in nutrientValueData) {
+                val nv = NutrientValue.factory.construct(nvData, ObjectSource.IMPORT)
+                compositeFood.addNutrientValue(nv)
             }
         }
         return foodMap
@@ -157,22 +196,24 @@ object CsvImport {
     fun buildFoodObjectTree(foodCsv: Reader): Map<String, Food> {
         // preserve insertion order
         val foodMap: MutableMap<String, Food> = LinkedHashMap()
-        for ((foodData, ndData) in getFoodData(foodCsv)) {
+        for ((foodData, nutrientValueData) in getFoodData(foodCsv)) {
             val f: Food
-            val nd: NutritionData
             f = try {
                 Food.factory.construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
                 throw CsvException("Schema violation detected in food: ${e.message} Data: $foodData")
                 //continue;
             }
-            nd = try {
-                NutritionData.factory.construct(ndData, ObjectSource.IMPORT)
-            } catch (e: SchemaViolation) {
-                throw CsvException("Schema violation detected in nutrition data: ${e.message} Data: $foodData")
-                //continue;
+            nutrientValueData.forEach {
+                try {
+                    val nv = NutrientValue.factory.construct(it, ObjectSource.IMPORT)
+                    // without pairs, needed to recover nutrition data from return value
+                    f.addNutrientValue(nv)
+                } catch (e: SchemaViolation) {
+                    throw CsvException("Schema violation detected in nutrition data: ${e.message} Data: $it")
+                    //continue;
+                }
             }
-            f.setNutritionData(nd) // without pairs, needed to recover nutrition data from return value
             if (foodMap.containsKey(f.indexName)) {
                 throw CsvException("Imported foods contained duplicate index name: " + f.indexName)
             }
@@ -186,10 +227,10 @@ object CsvImport {
         val servings: MutableList<Serving> = ArrayList()
         getMapReader(servingCsv).use { mapReader ->
             val header = mapReader.getHeader(true)
-            var csvRow: Map<String, String>?
-            while (mapReader.read(*header).also { csvRow = it } != null) {
-                val servingData = extractData(csvRow!!, Serving.table)
-                val foodIndexName = csvRow!![FoodTable.INDEX_NAME.sqlName]
+            var csvRow: Map<String, String> = emptyMap()
+            while (mapReader.read(*header)?.also { csvRow = it } != null) {
+                val servingData = extractData(csvRow, Serving.table)
+                val foodIndexName = csvRow[FoodTable.INDEX_NAME.sqlName]
                         ?: throw CsvException("Food index name was null for row: $csvRow")
                 val s = Serving.factory.construct(servingData, ObjectSource.IMPORT)
                 // TODO move next line to be run immediately before saving
@@ -207,7 +248,7 @@ object CsvImport {
                 .toSet()
     }
 
-    // foods maps from index name to food object. Food object must have nutrition data attached by way of getnData()
+    // foods maps from index name to food object. Food object must have nutrition data attached
     @Throws(SQLException::class)
     private fun saveImportedFoods(ds: MacrosDataSource, foods: Map<String, Food>) {
         // collect all of the index names to be imported, and check if they're already in the DB.
@@ -225,10 +266,12 @@ object CsvImport {
          */
 
         // get out the nutrition data
-        val ndObjects = foodsToSave.map { (_, food) ->
-            food.getNutritionData().also {
-                // link it to the food so that the DB can create the correct foreign key entries
-                it.setFkParentNaturalKey(NutritionDataTable.FOOD_ID, FoodTable.INDEX_NAME, food)
+        val nvObjects = foodsToSave.flatMap { (_, food) ->
+            food.getNutritionData().nutrientData.nutrientValues.also {
+                for (nv in it) {
+                    // link it to the food so that the DB can create the correct foreign key entries
+                    nv.setFkParentNaturalKey(Schema.NutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
+                }
             }
         }
 
@@ -237,8 +280,8 @@ object CsvImport {
             foodsToSave.keys.forEach { println(it) }
         }
         saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
-        val completedNd = completeForeignKeys(ds, ndObjects, NutritionDataTable.FOOD_ID)
-        saveObjects(ds, completedNd, ObjectSource.IMPORT)
+        val completedNv = completeForeignKeys(ds, nvObjects, Schema.NutrientValueTable.FOOD_ID)
+        saveObjects(ds, completedNv, ObjectSource.IMPORT)
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)

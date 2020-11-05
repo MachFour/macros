@@ -6,10 +6,7 @@ import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.objects.NutritionData
-import com.machfour.macros.objects.Serving
+import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodQuantityQueries
 import com.machfour.macros.storage.CsvBackup.writeObjectsToCsv
 import com.machfour.macros.storage.CsvImport.buildFoodObjectTree
@@ -56,7 +53,7 @@ class CsvTest {
     fun clearDb() {
         FoodQuantityQueries.deleteAllIngredients(db)
         db.clearTable(Serving.table)
-        db.clearTable(NutritionData.table)
+        db.clearTable(NutrientValue.table)
         db.clearTable(Food.table)
     }
 

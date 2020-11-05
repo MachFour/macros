@@ -2,7 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.FoodTable
-import com.machfour.macros.core.Schema.NutritionDataTable
+import com.machfour.macros.objects.inbuilt.Units
 import java.lang.StringBuilder
 import java.util.Collections
 
@@ -42,7 +42,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     var defaultServing: Serving? = null
         private set
 
-    private lateinit var nutritionData: NutritionData
+    private val nutritionData: NutritionData = NutritionData()
 
     val foodType: FoodType = FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)
 
@@ -54,9 +54,10 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         return nutritionData
     }
 
-    open fun setNutritionData(nd: NutritionData) {
-        assert(foreignKeyMatches(nd, NutritionDataTable.FOOD_ID, this))
-        nutritionData = nd
+    open fun addNutrientValue(nv: NutrientValue) {
+        // TODO check ID matches
+        nv.setFood(this)
+        nutritionData.nutrientData[nv.nutrient] = nv
     }
 
     fun setFoodCategory(c: FoodCategory) {
@@ -95,12 +96,12 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     // Returns list of quantity units and servings which can be used to measure this food
     val validMeasurements: List<PortionMeasurement>
         get() {
-            val (naturalUnit, density) = getNutritionData().let { Pair(it.qtyUnit, it.density) }
+            val naturalUnit = getNutritionData().qtyUnit
             return ArrayList<PortionMeasurement>().apply {
                 add(naturalUnit)
                 // allow conversion if density is given
                 if (density != null) {
-                    if (naturalUnit.unitType === UnitType.VOLUME) {
+                    if (naturalUnit.type === UnitType.VOLUME) {
                         add(Units.GRAMS)
                     } else {
                         add(Units.MILLILITRES)
@@ -115,6 +116,17 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
 
     val nuttabIndex: String?
         get() = getData(FoodTable.NUTTAB_INDEX)
+
+    val dataSource: String?
+        get() = getData(FoodTable.DATA_SOURCE)
+
+    val dataNotes: String?
+        get() = getData(FoodTable.DATA_NOTES)
+
+    val density: Double?
+        get() = getData(FoodTable.DENSITY)
+
+
 
     override fun equals(other: Any?): Boolean {
         return other is Food && super.equals(other)

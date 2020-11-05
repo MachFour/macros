@@ -50,7 +50,7 @@ class Import : CommandImpl(NAME, USAGE) {
                     // TODO Ingredients, servings, NutritionData cleared by cascade?
                     FoodQuantityQueries.deleteAllIngredients(ds)
                     ds.clearTable(Serving.table)
-                    ds.clearTable(NutritionData.table)
+                    ds.clearTable(NutrientValue.table)
                     ds.clearTable(Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")

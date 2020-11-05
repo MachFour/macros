@@ -1,14 +1,11 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CALORIES
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.CARBOHYDRATE
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.FIBRE
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.KILOJOULES
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.PROTEIN
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SATURATED_FAT
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.SUGAR
+import com.machfour.macros.objects.inbuilt.DefaultUnits
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Nutrients.ENERGY
+import com.machfour.macros.objects.inbuilt.Nutrients.QUANTITY
+import com.machfour.macros.objects.inbuilt.Units
 
 object NutritionCalculations {
 
@@ -19,29 +16,13 @@ object NutritionCalculations {
 
     internal const val CAL_TO_KJ_FACTOR = 4.186
 
-    private fun convertToGramsIfNecessary(nd: NutritionData): NutritionData {
-        return when (nd.qtyUnit == Units.GRAMS) {
-            true -> nd
-            else -> {
-                // then convert to grams, guessing density if required
-                val guessDensity = nd.density == null
-                val density = nd.density ?: 1.0
-                convertQuantityUnit(nd, Units.GRAMS, density, guessDensity)
-            }
-        }
+    internal fun getEnergyAs(nd: NutrientData, unit: Unit) : Double? {
+        require(unit.type === UnitType.ENERGY) { "Unit $unit is not an energy unit "}
+        return nd[ENERGY]?.convertValue(unit)
     }
 
-    internal fun getEnergyAs(nd: NutritionData, energyCol: Column<NutritionData, Double>): Double? {
-        require(NutritionData.ENERGY_COLS.contains(energyCol))
-        return nd.getData(energyCol)
-            ?: if (energyCol == CALORIES) {
-                nd.getData(KILOJOULES)?.div(Units.CALORIES.metricEquivalent)
-            } else { // energyCol.equals(KILOJOULES)
-                nd.getData(CALORIES)?.times(Units.CALORIES.metricEquivalent)
-            }
-    }
-
-    /*
+    /* ** OLD comment kept here for historical purposes **
+     *
      * WONTFIX fundamental problem with unit conversion
      * In the database, nutrient quantities are always considered by-weight, while quantities
      * of a food (or serving, FoodPortionTable, etc.) can be either by-weight or by volume.
@@ -66,201 +47,196 @@ object NutritionCalculations {
      *    (e.g. 30g nutrient X / 120g quantity --> 1 oz nutrient X / 4 oz quantity.)
      *    This only works for mass units, not when the quantity unit is in ml
      */
-    // Unless the target unit is identical to the current unit
-    // returns a new NutritionDataTable object (not from DB) with the converted data.
-    // nutrient values always remain in grams.
-    internal fun convertQuantityUnit(nd: NutritionData, targetUnit: Unit, density: Double, isDensityGuessed: Boolean): NutritionData {
-        val currentUnit = nd.qtyUnit
-        if (currentUnit == targetUnit) {
-            // TODO should it be a copy?
-            return nd
-        }
-        // if converting between volume and mass quantity units, we need to change the quantity value
-        // according to the density.
-        // e.g. per 100mL is the same as per 92g, when the density is 0.92
-        var ratio = currentUnit.metricEquivalent / targetUnit.metricEquivalent
-        if (!currentUnit.isVolumeMeasurement && targetUnit.isVolumeMeasurement) {
-            ratio /= density
-        } else if (currentUnit.isVolumeMeasurement && !targetUnit.isVolumeMeasurement) { // liquid units to solid units
-            ratio *= density
-        }
-        // else ratio *= 1.0;
-        val newQuantity = nd.quantity * ratio
-        val newData = copyDataForNew(nd)
-        newData.put(Schema.NutritionDataTable.QUANTITY, newQuantity)
-        newData.put(Schema.NutritionDataTable.QUANTITY_UNIT, targetUnit.abbr)
-        newData.put(Schema.NutritionDataTable.DENSITY, density)
-        // all other data remains the same
-        val newHasData = nd.completeDataMap()
-        if (isDensityGuessed) {
-            newHasData[Schema.NutritionDataTable.QUANTITY] = false
-        }
-        val converted = NutritionData(newData, ObjectSource.COMPUTED, newHasData)
-        if (nd.hasFood()) {
-            converted.food = nd.food
-        }
-        return converted
-    }
 
     // For current nutrition values in this object, per given current quantity,
     // returns a new nData object with the nutrition values rescaled to
     // correspond to the new quantity, in the new unit
-    fun rescale(nd: NutritionData, newQuantity: Double, newUnit: Unit): NutritionData {
-        // default density for rescaling is 1.0
-        val guessDensity = nd.density == null
-        val density = nd.density ?: 1.0
-        val convertedUnit = convertQuantityUnit(nd, newUnit, density, guessDensity)
-        return rescale(convertedUnit, newQuantity)
+
+    // mutates the NutrientData
+    fun convertQuantityUnit(nd: NutrientData, newUnit: Unit, density: Double? = null, guessDensity: Boolean = false) {
+        // TODO do we need to duplicate the NutrientData too?
+        nd.quantityObj = nd.quantityObj.convert(newUnit, density)
+        nd.markCompleteData(QUANTITY, density == null || guessDensity)
+    }
+
+    @Deprecated("Do rescaling and unit conversion separately")
+    fun rescale(nd: NutrientData, newQuantity: Double, newUnit: Unit, density: Double? = null): NutrientData {
+        convertQuantityUnit(nd, newUnit, density, density == null)
+        return rescale(nd, newQuantity)
+    }
+
+    @Deprecated("Use NutrientData")
+    fun rescale(nd: NutritionData, newQuantity: Double, newUnit: Unit, density: Double? = null): NutritionData {
+        convertQuantityUnit(nd.nutrientData, newUnit, density, density == null)
+        return NutritionData(rescale(nd.nutrientData, newQuantity))
     }
 
 
-    /* Result is always converted to grams. */
-    fun sum(components: List<NutritionData>, combineDensities: Boolean = false): NutritionData {
-        var sumQuantity = 0.0
-        var unnormalisedDensity = 0.0 // need to divide by sumQuantity at the end
+    @Deprecated("Use NutrientData")
+    fun combine(one: NutritionData, other: NutritionData): NutritionData {
+        return NutritionData(combine(one.nutrientData, other.nutrientData))
 
-        val sumData = HashMap<Column<NutritionData, Double>, Double>(NutritionData.nutrientColumns.size, 1f)
-        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.nutrientColumns.size, 1f)
-        for (col in NutritionData.nutrientColumns) {
-            sumData[col] = 0.0
-            combinedHasData[col] = true
+    }
+
+    @Deprecated("Use NutrientData")
+    fun sum(items: List<NutritionData>): NutritionData {
+        return NutritionData(sum(items.map { it.nutrientData }, null))
+    }
+
+    @Deprecated("Use NutrientData")
+    fun rescale(data: NutritionData, newQuantity: Double) : NutritionData {
+        return NutritionData(rescale(data.nutrientData, newQuantity))
+    }
+
+    fun convertToDefaultUnits(data: NutrientData) : NutrientData {
+        val convertedData = NutrientData(dataCompleteIfNotNull = true)
+        for (nv in data.nutrientValues) {
+            val n = nv.nutrient
+            convertedData[n] = nv.convert(DefaultUnits.get(n))
+            convertedData.markCompleteData(n, data.hasCompleteData(n))
         }
-        for (ndToSum in components.map { convertToGramsIfNecessary(it) }) {
-            val quantity = ndToSum.quantity
-            var density = 1.0 // default guess
-            if (ndToSum.density == null || !ndToSum.hasCompleteData(Schema.NutritionDataTable.QUANTITY)) {
-                // means we guessed the density
-                combinedHasData[Schema.NutritionDataTable.QUANTITY] = false
-            } else {
-                density = ndToSum.density!!
-            }
-            sumQuantity += quantity
-            // gradually calculate overall density via weighted sum of densities
-            unnormalisedDensity += density * quantity
+        return convertedData
+    }
 
-            for (col in NutritionData.nutrientColumns) {
-                // total has correct data for a field if and only if each component does
-                // if the current component has no data for a field, we add nothing to the total,
-                // implicitly treating it as zero
-                if (!ndToSum.hasCompleteData(col)) {
-                    combinedHasData[col] = false
+    fun rescale(data: NutrientData, newQuantity: Double) : NutrientData {
+        val conversionRatio = newQuantity / data.quantityObj.value
+
+        val newData = NutrientData(dataCompleteIfNotNull = true)
+        // completeData is false by default so we can just skip the iteration for null nutrients
+        for (n in Nutrients.nutrients) {
+            data[n]?.let {
+                newData[n] = it.rescale(conversionRatio)
+            }
+        }
+        return newData
+    }
+
+    // Sums each nutrition component
+    // converts to default unit for each nutrient
+    // Quantity is converted to mass using density provided, or using a default guess of 1
+    fun sum(items: List<NutrientData>, densities: List<Double>?) : NutrientData {
+        val sumData = NutrientData(dataCompleteIfNotNull = false)
+
+        // treat quantity first
+        run {
+            var sumQuantity = 0.0
+            var densityGuessed = false
+            //var unnormalisedDensity = 0.0
+            for ((index, data) in items.withIndex()) {
+                val qtyObject = data.quantityObj
+                val qtyUnit = qtyObject.unit
+                val quantity = when (qtyUnit.type) {
+                    UnitType.MASS -> {
+                        qtyObject.convertValue(Units.GRAMS)
+                    }
+                    UnitType.VOLUME -> {
+                        val density = densities?.get(index) ?: run {
+                            densityGuessed = true
+                            1.0
+                        }
+                        qtyObject.convertValue(Units.GRAMS, density)
+                    }
+                    else -> {
+                        assert(false) { "Invalid unit type for quantity value object $qtyObject" }
+                        0.0
+                    }
                 }
-                val colData = ndToSum.amountOf(col, 0.0)
-                sumData[col] = sumData[col]!! + colData
+                sumQuantity += quantity
+                // gradually calculate overall density via weighted sum of densities
+                //unnormalisedDensity += density * quantity
             }
+
+            sumData.quantityObj = NutrientValue.makeComputedValue(sumQuantity, QUANTITY, Units.GRAMS)
+            sumData.markCompleteData(QUANTITY, !densityGuessed)
         }
-        val combinedDataMap = ColumnData(Schema.NutritionDataTable.instance)
-        for (col in NutritionData.nutrientColumns) {
-            combinedDataMap.put(col, sumData[col])
-        }
-        val combinedDensity = unnormalisedDensity / sumQuantity
-        if (combineDensities) {
-            combinedDataMap.put(Schema.NutritionDataTable.DENSITY, combinedDensity)
-        } else {
-            combinedDataMap.put(Schema.NutritionDataTable.DENSITY, null)
-        }
-        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY, sumQuantity)
-        combinedDataMap.put(Schema.NutritionDataTable.QUANTITY_UNIT, Units.GRAMS.abbr)
-        combinedDataMap.put(Schema.NutritionDataTable.FOOD_ID, null)
-        combinedDataMap.put(Schema.NutritionDataTable.DATA_SOURCE, "Sum")
 
-        // TODO add food if all of the ingredients were the same food?
-        return NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData)
-    }
-
-
-    private fun copyDataForNew(nd: NutritionData): ColumnData<NutritionData> {
-        val copy = nd.allData.copy()
-        // have to remove ID since it's now a computed value
-        copy.put(Schema.NutritionDataTable.ID, MacrosEntity.NO_ID)
-        return copy
-    }
-
-
-    // For current nutrition values in this object, per given current quantity,
-    // returns a new nData object with the nutrition values rescaled to
-    // correspond to the new quantity, in the same unit
-    fun rescale(nd: NutritionData, newQuantity: Double): NutritionData {
-        val conversionRatio = newQuantity / nd.quantity
-        val newData = copyDataForNew(nd)
-        for (c in NutritionData.nutrientColumns) {
-            //if (hasCompleteData(c)) {
-            if (nd.hasData(c)) {
-                // hasData() check avoids NullPointerException
-                newData.put(c, nd.amountOf(c)!! * conversionRatio)
+        for (n in Nutrients.nutrientsExceptQuantity) {
+            var completeData = true
+            var existsData = false
+            var sumValue = 0.0
+            val unit = DefaultUnits.get(n)
+            for (data in items) {
+                data[n]?.let {
+                    sumValue += it.convertValue(unit)
+                    existsData = true
+                }
+                if (!data.hasCompleteData(n)) {
+                    completeData = false
+                }
             }
-        }
 
-        val rescaled = NutritionData.factory.construct(newData, ObjectSource.COMPUTED)
-        if (nd.hasFood()) {
-            rescaled.food = nd.food
+            if (existsData) {
+                sumData[n] = NutrientValue.makeComputedValue(sumValue, n, unit)
+                sumData.markCompleteData(n, completeData)
+            }
+
         }
-        return rescaled
+        return sumData
     }
 
-    // Uses data from the secondary object to fill in missing values from the first
-    // Any mismatches are ignored; the primary data is used
-    fun combine(primary: NutritionData, secondary: NutritionData): NutritionData {
-        // TODO check this logic
-        //if (secondary.getQuantity() != primary.getQuantity()) {
-        //    secondary = secondary.rescale(primary.getQuantity());
-        //}
-        val combinedDataMap = copyDataForNew(primary)
-        val combinedHasData = HashMap<Column<NutritionData, Double>, Boolean>(NutritionData.nutrientColumns.size, 1f)
+    // Use data from the another NutrientObject object to complete missing values from this one
+    // Any mismatches are ignored; this object's data is preferred in all cases
+    // Nothing is mutated; a new NutrientData object is returned with data copies
+    fun combine(one: NutrientData, other: NutrientData): NutrientData {
+        //assert(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
+        val result = NutrientData(dataCompleteIfNotNull = false)
 
-        for (col in NutritionData.nutrientColumns) {
+        val createNewNutrientValue: (ColumnData<NutrientValue>) -> NutrientValue = {
+            NutrientValue.factory.construct(it, ObjectSource.COMPUTED)
+        }
+
+        for (n in Nutrients.nutrients) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
             // nData object was produced by summation and there was at least one food with missing data.
             // for this purpose, we'll only replace the primary data if it was null
-            if (!primary.hasData(col) && secondary.hasData(col)) {
-                combinedDataMap.put(col, secondary.getData(col))
-                // !hasData implies !hasCompleteData, so we use the secondary value
-                combinedHasData[col] = secondary.hasCompleteData(col)
-            } else {
-                combinedHasData[col] = primary.hasCompleteData(col)
-            }
+
+            val thisValue = one[n]
+            val otherValue = other[n]
+
+            val resultValue = (thisValue?.dataCopy ?: otherValue?.dataCopy)?.let { createNewNutrientValue(it) }
+            val resultIsDataComplete = if (thisValue != null) one.hasCompleteData(n) else other.hasCompleteData(n)
+
+            result[n] = resultValue
+            result.markCompleteData(n, resultIsDataComplete)
         }
-        combinedDataMap.put(Schema.NutritionDataTable.DATA_SOURCE, "Composite data")
-        return NutritionData(combinedDataMap, ObjectSource.COMPUTED, combinedHasData)
-
+        return result
     }
-
     // energy from each individual macronutrient
-    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: Unit = Units.CALORIES): Map<Column<NutritionData, Double>, Double> {
+    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: Unit = Units.CALORIES): Map<Nutrient, Double> {
         // preserve iteration order
-        val componentMap = LinkedHashMap<Column<NutritionData, Double>, Double>()
+        val componentMap = LinkedHashMap<Nutrient, Double>()
 
-        require(unit.unitType == UnitType.ENERGY) { "Invalid energy unit" }
+        require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
 
         // have to divide if desired unit is calories
         val unitDivisor = unit.unitMultiplier
 
         // energy from...
-        val protein = nd.amountOf(PROTEIN, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
-        var fat = nd.amountOf(FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
-        val satFat = nd.amountOf(SATURATED_FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
-        var carb = nd.amountOf(CARBOHYDRATE, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
-        val sugar = nd.amountOf(SUGAR, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
-        val fibre = nd.amountOf(FIBRE, 0.0) * KJ_PER_G_FIBRE / unitDivisor
+        val protein = nd.amountOf(Nutrients.PROTEIN, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
+        var fat = nd.amountOf(Nutrients.FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
+        val satFat = nd.amountOf(Nutrients.SATURATED_FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
+        var carb = nd.amountOf(Nutrients.CARBOHYDRATE, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val sugar = nd.amountOf(Nutrients.SUGAR, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val fibre = nd.amountOf(Nutrients.FIBRE, 0.0) * KJ_PER_G_FIBRE / unitDivisor
         // correct subtypes (sugar is part of carbs, saturated is part of fat)
         carb = (carb - sugar).coerceAtLeast(0.0)
         fat = (fat - satFat).coerceAtLeast(0.0)
 
-        componentMap[PROTEIN] = protein
-        componentMap[FAT] = fat
-        componentMap[SATURATED_FAT] = satFat
-        componentMap[CARBOHYDRATE] = carb
-        componentMap[SUGAR] = sugar
-        componentMap[FIBRE] = fibre
+        componentMap[Nutrients.PROTEIN] = protein
+        componentMap[Nutrients.FAT] = fat
+        componentMap[Nutrients.SATURATED_FAT] = satFat
+        componentMap[Nutrients.CARBOHYDRATE] = carb
+        componentMap[Nutrients.SUGAR] = sugar
+        componentMap[Nutrients.FIBRE] = fibre
         
         return componentMap
     }
 
-    internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Column<NutritionData, Double>, Double> {
+    internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Nutrient, Double> {
         val componentMap = makeEnergyComponentsMap(nd, Units.CALORIES)
         // if total energy is missing, fallback to summing over previous energy quantities
-        val totalEnergy = nd.amountOf(CALORIES, componentMap.values.sum())
+        val totalEnergy = nd.amountOf(Nutrients.ENERGY, componentMap.values.sum(), Units.CALORIES)
 
         return if (totalEnergy > 0) {
             componentMap.mapValues { it.value/totalEnergy }

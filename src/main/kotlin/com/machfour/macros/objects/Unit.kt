@@ -1,10 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.UnitTable.Companion.ABBREVIATION
-import com.machfour.macros.core.Schema.UnitTable.Companion.UNIT_TYPE
-import com.machfour.macros.core.Schema.UnitTable.Companion.METRIC_EQUIVALENT
-import com.machfour.macros.core.Schema.UnitTable.Companion.NAME
+import com.machfour.macros.core.Schema.UnitTable
 
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
@@ -16,7 +13,7 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
         val factory : Factory<Unit> = Factory { dataMap, objectSource -> Unit(dataMap, objectSource) }
 
         val table: Table<Unit>
-            get() = Schema.UnitTable.instance
+            get() = UnitTable.instance
     }
 
     override val factory: Factory<Unit>
@@ -25,24 +22,23 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
     override val table: Table<Unit>
         get() = Companion.table
 
-    val unitType: UnitType = UnitType.fromId(getData(UNIT_TYPE)!!)
+    // values are cached here instead of using get() because there aren't many units and they're used a lot
 
-    override fun toString(): String {
-        return "$name (${abbr}), type ${unitType.name}"
-    }
+    val type: UnitType = UnitType.fromId(getData(UnitTable.TYPE_ID)!!)
 
-    override val name: String
-        get() = getData(NAME)!!
+    override fun toString(): String = "$name (${abbr}), type ${type.name}"
 
-    val abbr: String
-        get() = getData(ABBREVIATION)!!
+    override val name: String = getData(UnitTable.NAME)!!
 
-    val metricEquivalent: Double
-        get() = getData(METRIC_EQUIVALENT)!!
+    val abbr: String = getData(UnitTable.ABBREVIATION)!!
+
+    val metricEquivalent = getData(UnitTable.METRIC_EQUIVALENT)!!
+
+    val isInbuilt = getData(UnitTable.INBUILT)!!
 
     // Measurement interface - for interop with Servings
     override val unitMultiplier = 1.0
     override val baseUnit = this
-    override val isVolumeMeasurement = unitType === UnitType.VOLUME // TODO make into enum
+    override val isVolumeMeasurement = type === UnitType.VOLUME
 
 }

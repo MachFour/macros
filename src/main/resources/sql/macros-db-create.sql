@@ -9,23 +9,20 @@ PRAGMA foreign_keys = ON;
 PRAGMA recursive_triggers = ON;
 
 -- Measures mass (weight), volume or energy
-
--- Unit type id is as follows:
--- 1 for mass
--- 2 for volume
--- 3 for energy
 CREATE TABLE Unit (
       id                   INTEGER PRIMARY KEY ASC
+    -- indicates which types can be converted between
     , type_id              INTEGER NOT NULL
     , name                 TEXT NOT NULL UNIQUE
     , abbreviation         TEXT NOT NULL UNIQUE
     -- quantity of 1 of this unit in g, ml, or kJ as appropriate
     , metric_equivalent    REAL NOT NULL
+    , inbuilt              INTEGER NOT NULL DEFAULT 0
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
 
-    , CONSTRAINT valid_type
-        CHECK (type_id IN (1, 2, 3))
+    , CONSTRAINT boolean_inbuilt
+        CHECK (inbuilt IN (0, 1))
     , CONSTRAINT positive_conversion
         CHECK (metric_equivalent > 0)
 );
@@ -82,6 +79,12 @@ CREATE TABLE Food (
     -- miscellaneous metadata
     , usda_index           INTEGER DEFAULT NULL
     , nuttab_index         TEXT DEFAULT NULL
+    -- old NutritionData fields
+    , data_source          TEXT DEFAULT NULL
+    , data_notes           TEXT DEFAULT NULL
+    -- for liquids, how to convert between grams and mL
+    -- in g/cm^3
+    , density              REAL DEFAULT NULL
     -- timestamps are stored in unix time, and set via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
@@ -210,10 +213,9 @@ CREATE TABLE Meal (
 CREATE TABLE FoodQuantity (
       id                   INTEGER PRIMARY KEY ASC
     , quantity             REAL NOT NULL
-    -- XXX what happens if the measured_by_volume changes (i.e. a food once
-    --   measured_by_volume is now measured as a solid (for nutrition info)?
-    -- 0 for grams, 1 for mL
-    , quantity_unit        INTEGER NOT NULL
+    -- XXX what happens if the unit changes (i.e. a food once measured by volume
+    -- is now measured as a solid (for nutrition info)?
+    , quantity_unit        TEXT NOT NULL
     -- food / ingredient ID
     , food_id              INTEGER NOT NULL
     -- exactly one of these must be defined
@@ -236,8 +238,8 @@ CREATE TABLE FoodQuantity (
         REFERENCES Food (id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
-    , CONSTRAINT food_portion_or_ingredient
-        CHECK (NOT(meal_id IS NULL AND parent_food_id IS NULL))
+    , CONSTRAINT food_portion_xor_ingredient
+        CHECK ((meal_id IS NULL) <> (parent_food_id IS NULL))
     -- when meal or parent food is deleted, records of foods contained
     -- are also deleted.
     , CONSTRAINT valid_meal
@@ -264,54 +266,46 @@ CREATE TABLE FoodQuantity (
         ON UPDATE CASCADE
 );
 
-
-CREATE TABLE NutritionData (
+CREATE TABLE Nutrient (
       id                   INTEGER PRIMARY KEY ASC
-    , food_id              INTEGER NOT NULL UNIQUE
-    , data_source          TEXT DEFAULT NULL
-    , notes                TEXT DEFAULT NULL
-    , quantity             REAL NOT NULL DEFAULT 100
-    , quantity_unit        TEXT NOT NULL
-    -- for liquids, how to convert between grams and mL
-    , density              REAL DEFAULT NULL
-    -- storing both kilojoules and calories is pretty redundant
-    , kilojoules           REAL DEFAULT NULL
-    , calories             REAL DEFAULT NULL
-    , protein              REAL DEFAULT NULL
-    , carbohydrate         REAL DEFAULT NULL
-    , carbohydrate_by_diff REAL DEFAULT NULL
-    , sugar                REAL DEFAULT NULL
-    , sugar_alcohol        REAL DEFAULT NULL
-    , starch               REAL DEFAULT NULL
-    , fat                  REAL DEFAULT NULL
-    , saturated_fat        REAL DEFAULT NULL
-    , monounsaturated_fat  REAL DEFAULT NULL
-    , polyunsaturated_fat  REAL DEFAULT NULL
-    , omega_3              REAL DEFAULT NULL
-    , omega_6              REAL DEFAULT NULL
-    , fibre                REAL DEFAULT NULL
-    , sodium               REAL DEFAULT NULL
-    , salt                 REAL DEFAULT NULL
-    , potassium            REAL DEFAULT NULL
-    , calcium              REAL DEFAULT NULL
-    , iron                 REAL DEFAULT NULL
-    , water                REAL DEFAULT NULL
-    , alcohol              REAL DEFAULT NULL
+    , name                 TEXT NOT NULL UNIQUE
+    , unit_types           INTEGER NOT NULL
+    , inbuilt              INTEGER NOT NULL DEFAULT 0
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    , CONSTRAINT boolean_inbuilt
+        CHECK (inbuilt IN (0, 1))
+);
+
+CREATE TABLE NutrientValue (
+      id                   INTEGER PRIMARY KEY ASC
+    , nutrient_id          INTEGER NOT NULL
+    , food_id              INTEGER NOT NULL
+    , value                REAL NOT NULL
+    , unit_id              INTEGER NOT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
 
+    , CONSTRAINT valid_nutrient
+        FOREIGN KEY (nutrient_id)
+        REFERENCES Nutrient (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
     , CONSTRAINT valid_food
         FOREIGN KEY (food_id)
         REFERENCES Food (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-    , CONSTRAINT quantity_positive
-        CHECK (quantity > 0)
+    , CONSTRAINT single_nutrient_per_food
+        -- TODO this might change if versions are added
+        UNIQUE (food_id, nutrient_id)
     , CONSTRAINT valid_unit
-        FOREIGN KEY (quantity_unit)
-        REFERENCES Unit (abbreviation)
+        -- have to make sure that unit has the correct type in code/trigger
+        FOREIGN KEY (unit_id)
+        REFERENCES Unit (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
+
 );
 
 CREATE TABLE RegularMeal (

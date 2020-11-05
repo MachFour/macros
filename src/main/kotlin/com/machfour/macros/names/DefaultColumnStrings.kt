@@ -1,10 +1,6 @@
 package com.machfour.macros.names
 
-class DefaultColumnStrings : ColumnStringsImpl(
-        EnglishColumnNames.instance,
-        EnglishUnitNames.instance,
-        DefaultColumnUnits.instance) {
-
+class DefaultColumnStrings private constructor(): ColumnStringsImpl(EnglishColumnNames.instance, EnglishUnitNames.instance) {
     companion object {
         val instance: DefaultColumnStrings = DefaultColumnStrings()
     }

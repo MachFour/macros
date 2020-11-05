@@ -66,7 +66,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var draftData: ColumnData<M> = editInstance?.allData?.copy() ?: ColumnData(table)
+    private var draftData: ColumnData<M> = editInstance?.dataCopy ?: ColumnData(table)
     private val validationErrors: MutableMap<Column<M, *>, MutableList<ValidationError>> = HashMap(table.columns.size, 1.0f)
 
 
@@ -90,7 +90,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     // only resets settable fields
     fun resetFields() {
         if (editInstance != null) {
-            ColumnData.copyData(editInstance.allData, draftData, settableColumns)
+            ColumnData.copyData(editInstance.data, draftData, settableColumns)
         } else {
             draftData.setDefaultData(settableColumns)
         }

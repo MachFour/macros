@@ -26,14 +26,12 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
             nutritionComponents.add(i.nutritionData)
         }
         // don't combine densities of the foods
-        return NutritionCalculations.sum(nutritionComponents, false)
+        return NutritionCalculations.sum(nutritionComponents)
     }
 
-    // Sets this Composite food's (overriding) nutrition data
-    // TODO call this
-    override fun setNutritionData(nd: NutritionData) {
-        super.setNutritionData(nd)
+    override fun addNutrientValue(nv: NutrientValue) {
         hasOverridingNutritionData = true
+        super.addNutrientValue(nv)
     }
 
     /*

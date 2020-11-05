@@ -4,7 +4,6 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.objects.Serving
 import com.machfour.macros.storage.MacrosDataSource
 import java.sql.SQLException
 
@@ -53,7 +52,7 @@ object FkCompletion {
                 ?: error("Table " + fkCol.parentTable.name + " has no natural key defined")
         val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentNaturalKeyCol, naturalKeyData)
         for (obj in objects) {
-            val newData = obj.allData.copy()
+            val newData = obj.dataFullCopy
             // TODO might be able to remove one level of indirection here because the ColumnData object
             // only contains data for the parentNaturalKeyCol
             val fkParentNaturalKey : ColumnData<N> = obj.getFkParentNaturalKey(fkCol)
@@ -97,7 +96,7 @@ object FkCompletion {
             // Check everything's fine and (not yet implemented) change source to ObjectSource.IMPORT_FK_PRESENT
             for (obj in partiallyCompletedObjects) {
                 assert(fkIdsPresent(obj))
-                completedObjects.add(factory.construct(obj.allData, obj.objectSource))
+                completedObjects.add(factory.construct(obj.data, obj.objectSource))
             }
         }
         return completedObjects

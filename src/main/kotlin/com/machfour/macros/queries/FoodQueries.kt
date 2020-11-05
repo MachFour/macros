@@ -91,7 +91,7 @@ object FoodQueries {
     fun getAllFoods(ds: MacrosDataSource): List<Food> {
         val allFoods = ds.getAllRawObjects(Food.table)
         val allServings = ds.getAllRawObjects(Serving.table)
-        val allNutritionData = ds.getAllRawObjects(NutritionData.table)
+        val allNutritionData = ds.getAllRawObjects(NutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
         val allIngredients = ds.getAllRawObjects(FoodQuantity.table).mapValues { it.value as Ingredient }
         QueryHelpers.processRawIngredients(ds, allIngredients)

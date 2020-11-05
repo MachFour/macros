@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.storage.CsvBackup
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
@@ -38,10 +39,12 @@ class Export : CommandImpl(NAME, USAGE) {
         val ds = config.dataSourceInstance
         try {
             exportTable(ds, outputDir, Food.table)
-            exportTable(ds, outputDir, NutritionData.table)
+            exportTable(ds, outputDir, NutrientValue.table)
             exportTable(ds, outputDir, Serving.table)
             exportTable(ds, outputDir, FoodQuantity.table)
             exportTable(ds, outputDir, Meal.table)
+            exportTable(ds, outputDir, Unit.table)
+            exportTable(ds, outputDir, Nutrient.table)
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

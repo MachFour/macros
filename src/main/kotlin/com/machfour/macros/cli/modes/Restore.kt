@@ -6,6 +6,7 @@ import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.storage.CsvRestore
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
@@ -45,8 +46,10 @@ class Restore : CommandImpl(NAME, USAGE) {
         }
         val ds = config.dataSourceInstance
         try {
+            restoreTable(ds, csvDir, Unit.table)
+            restoreTable(ds, csvDir, Nutrient.table)
             restoreTable(ds, csvDir, Food.table)
-            restoreTable(ds, csvDir, NutritionData.table)
+            restoreTable(ds, csvDir, NutrientValue.table)
             restoreTable(ds, csvDir, Serving.table)
             restoreTable(ds, csvDir, Meal.table)
             restoreTable(ds, csvDir, FoodQuantity.table)

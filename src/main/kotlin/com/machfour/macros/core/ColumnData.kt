@@ -12,10 +12,8 @@ class ColumnData<M> private constructor(
         existing: ColumnData<M>?
 ) {
 
-    constructor(t: Table<M>, cols: List<Column<M, *>>) : this(t, cols, null) {}
-
-    constructor(t: Table<M>) : this(t, t.columns, null) {}
-
+    constructor(t: Table<M>, cols: List<Column<M, *>>) : this(t, cols, null)
+    constructor(t: Table<M>) : this(t, t.columns, null)
 
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
     // hold columns of any index, up to the number of columns in the table minus 1.
@@ -24,15 +22,16 @@ class ColumnData<M> private constructor(
     // which columns have data stored in this ColumnData object;
     val columns: Set<Column<M, *>> = LinkedHashSet(cols)
 
-    var isImmutable: Boolean = false
-        private set
-
     init {
         setDefaultData()
         if (existing != null) {
             copyData(existing, this, cols)
         }
     }
+
+    var isImmutable: Boolean = false
+        private set
+
 
     internal fun setImmutable() {
         this.isImmutable = true

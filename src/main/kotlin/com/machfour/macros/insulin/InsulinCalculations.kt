@@ -1,6 +1,6 @@
 package com.machfour.macros.insulin
 
-import com.machfour.macros.core.Schema
+import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.NutritionData
 
 object InsulinCalculations {
@@ -18,14 +18,14 @@ object InsulinCalculations {
 
     // returns insulinFromCarbs for nd's amount of carbs, or null if it does not have any data for carbs
     fun insulinForCarbs(nd: NutritionData, params: InsulinParams) : Double? {
-        val carbs = nd.getData(Schema.NutritionDataTable.CARBOHYDRATE)
+        val carbs = nd.amountOf(Nutrients.CARBOHYDRATE)
         return carbs?.let { insulinForCarbs(it, params) }
     }
 
 
     // returns insulinFromProtein for nd's amount of protein, or null if it does not have any data for protein
     fun insulinForProtein(nd: NutritionData, params: InsulinParams) : Double? {
-        val protein = nd.getData(Schema.NutritionDataTable.PROTEIN)
+        val protein = nd.amountOf(Nutrients.PROTEIN)
         return protein?.let { insulinForProtein(it, params) }
     }
 

@@ -107,6 +107,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
 
     @Throws(SQLException::class, IOException::class)
     override fun initDb() {
+        // TODO insert data from Units and Nutrients classes instead of DATA_SQL
         val getSqlFromFile : (File) -> String = { FileReader(it).use { reader -> DatabaseUtils.createStatements(reader) } }
         val c = connection
         try {
@@ -407,7 +408,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         try {
             c.prepareStatement(DatabaseUtils.updateTemplate(table, table.columns, table.idColumn)).use { p ->
                 for (obj in objects) {
-                    LinuxDatabaseUtils.bindData(p, obj.allData, table.columns, obj.id)
+                    LinuxDatabaseUtils.bindData(p, obj.data, table.columns, obj.id)
                     saved += p.executeUpdate()
                     p.clearParameters()
                 }

@@ -1,12 +1,9 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.Schema.NutritionDataTable
 import com.machfour.macros.names.EnglishColumnNames
-import com.machfour.macros.objects.Meal
-import com.machfour.macros.objects.NutritionCalculations
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
+import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.PrintFormatting.formatQuantityAsVerbose
@@ -17,23 +14,23 @@ import kotlin.collections.ArrayList
 
 object MealPrinter {
     private const val columnSep = "   "
-    private val conciseTableCols: List<Column<NutritionData, Double>> = listOf(
-          NutritionDataTable.CALORIES
-        , NutritionDataTable.PROTEIN
-        , NutritionDataTable.FAT
-        , NutritionDataTable.CARBOHYDRATE
+    private val conciseTableCols = listOf(
+          Nutrients.ENERGY
+        , Nutrients.PROTEIN
+        , Nutrients.FAT
+        , Nutrients.CARBOHYDRATE
     )
 
-    private val verboseTableCols: List<Column<NutritionData, Double>> = listOf(
-          NutritionDataTable.CALORIES
-        , NutritionDataTable.PROTEIN
-        , NutritionDataTable.FAT
-        , NutritionDataTable.SATURATED_FAT
-        , NutritionDataTable.CARBOHYDRATE
-        , NutritionDataTable.SUGAR
-        , NutritionDataTable.FIBRE
-        , NutritionDataTable.SODIUM
-        , NutritionDataTable.CALCIUM
+    private val verboseTableCols = listOf(
+          Nutrients.ENERGY
+        , Nutrients.PROTEIN
+        , Nutrients.FAT
+        , Nutrients.SATURATED_FAT
+        , Nutrients.CARBOHYDRATE
+        , Nutrients.SUGAR
+        , Nutrients.FIBRE
+        , Nutrients.SODIUM
+        , Nutrients.CALCIUM
     )
 
     /*
@@ -51,14 +48,14 @@ object MealPrinter {
 
             // displayed length of text appears to be length() + numDoubleWidthChars characters long.
             // Equivalently, we can reduce width by this amount, to get the printing right
-            width = Math.max(width - numDoubleWidthChars, 0)
+            width = maxOf(width - numDoubleWidthChars, 0)
 
 
             // prevent long strings from overrunning the width:
             // replace "This is a really long string"
             // with    "This is a really lo.."
             if (text.length > width) {
-                val newWidth = Math.max(width - 2, 0)
+                val newWidth = maxOf(width - 2, 0)
                 // TODO this may reduce by too much, with double width chars
                 text = text.substring(0, newWidth - 2) + ".."
             }
@@ -73,9 +70,10 @@ object MealPrinter {
         val row: MutableList<String> = ArrayList(nutrientColumns.size + 2)
         // add food name
         row += name
+        val nutrientWidth = if (verbose) PrintFormatting.longDataWidth else PrintFormatting.shortDataWidth
         // add nutrients, formatting to be the appropriate width
         for (nutrient in nutrientColumns) {
-            row += formatQuantityAsVerbose(nd.amountOf(nutrient), verbose)
+            row += formatQuantity(nd, nutrient, width = nutrientWidth, unitWidth = 2, withDp = verbose)
         }
         // add quantity and unit
         row.add(formatQuantity(qty, unit, width = PrintFormatting.servingWidth, unitWidth = 2))
@@ -106,7 +104,7 @@ object MealPrinter {
             rightAlign.add(true)
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(NutritionDataTable.QUANTITY))
+        headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(Nutrients.QUANTITY))
         rowWidths.add(PrintFormatting.servingWidth)
         rightAlign.add(true)
 
@@ -120,7 +118,7 @@ object MealPrinter {
         val dataRows: MutableList<List<String>> = ArrayList()
         for (fp in meal.getFoodPortions()) {
             val name = fp.food.mediumName
-            val nd = fp.nutritionData
+            val nd = fp.nutritionData.withDefaultUnits()
             dataRows.add(nutritionDataToRow(name, nd, fp.quantity, fp.qtyUnit, verbose))
         }
         for (row in dataRows) {

@@ -19,7 +19,7 @@ object CsvBackup {
             writer.writeHeader(*header)
             // iterate over objects, each one becomes 1 line of CSV
             objects.forEach {
-                val dataStrings = prepareDataForExport(it.allData)
+                val dataStrings = prepareDataForExport(it.data)
                 writer.write(dataStrings, *header)
             }
         }

@@ -58,17 +58,16 @@ class AddFood : CommandImpl(NAME, USAGE) {
             return 1
         }
 
-        val foodBuilder = MacrosBuilder(Food.table)
-        val nDataBuilder = MacrosBuilder(NutritionData.table)
-
-        foodBuilder.setField(Schema.FoodTable.INDEX_NAME, indexName)
-        foodBuilder.markFixed(Schema.FoodTable.INDEX_NAME)
+        val foodBuilder = MacrosBuilder(Food.table).apply {
+            setField(Schema.FoodTable.INDEX_NAME, indexName)
+            markFixed(Schema.FoodTable.INDEX_NAME)
+        }
 
         var editor: FoodEditor? = null
         var editorInitialised = false
         try {
             try {
-                editor = FoodEditor(ds, foodBuilder, nDataBuilder)
+                editor = FoodEditor(ds, foodBuilder)
                 editor.init()
                 editorInitialised = true
                 editor.run()

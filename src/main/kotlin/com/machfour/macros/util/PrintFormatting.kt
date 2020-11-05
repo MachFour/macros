@@ -1,27 +1,27 @@
 package com.machfour.macros.util
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.Schema.NutritionDataTable
-import com.machfour.macros.core.Schema.NutritionDataTable.Companion.QUANTITY
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
+import com.machfour.macros.objects.inbuilt.DefaultUnits
+import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.inbuilt.Units
 import java.util.Formatter
 
 object PrintFormatting {
-    const val nameWidth = 45
+    const val nameWidth = 42
     const val servingWidth = 6
-    const val shortDataWidth = 4
-    const val longDataWidth = 6
+    const val shortDataWidth = 6
+    const val longDataWidth = 7
 
     fun formatQuantityAsVerbose(qty: Double? = null, verbose: Boolean = false): String {
         return formatQuantity(qty, width = if (verbose) longDataWidth else shortDataWidth, unitWidth = 2, withDp = verbose)
     }
     fun formatQuantity(
         nd: NutritionData,
-        col: Column<NutritionData, Double>,
-        colStrings: ColumnStrings,
+        n: Nutrient,
+        colStrings: ColumnStrings = DefaultColumnStrings.instance,
         withUnit: Boolean = false,
         width: Int = 0,
         unitWidth: Int = 0,
@@ -30,8 +30,8 @@ object PrintFormatting {
         forNullQty: String = "",
         spaceBeforeUnit: Boolean = false
     ) : String {
-        val qty = nd.amountOf(col)
-        val unit = if (!withUnit) null else if (col === QUANTITY) nd.qtyUnit else colStrings.getUnit(col)
+        val qty = nd.amountOf(n)
+        val unit = if (!withUnit) null else nd.getUnitOrDefault(n)
         val unitString = if (!withUnit) null else colStrings.getAbbr(unit!!)
 
         // TODO add asterisk to incomplete quantities
@@ -107,67 +107,61 @@ object PrintFormatting {
     // Returns null if the input nutrition data is null
     fun formatNutrnData(
         nd: NutritionData,
-        field: Column<NutritionData, Double>,
+        nutrient: Nutrient,
         withUnit: Boolean = false,
         colStrings: ColumnStrings = DefaultColumnStrings.instance
     ): String {
         // TODO move this logic somewhere else
-        val missing = !nd.hasCompleteData(field)
+        val missing = !nd.hasCompleteData(nutrient)
         return if (!withUnit) {
-            formatQuantityAsVerbose(nd.amountOf(field), false) + if (missing) "*" else ""
+            formatQuantityAsVerbose(nd.amountOf(nutrient), false) + if (missing) "*" else ""
         } else {
-            formatQuantity(nd, field, colStrings)
+            formatQuantity(nd, nutrient, colStrings)
         }
     }
 
     // list of field that should be formatted without a decimal place (because the values are
     // typically large (in the default/metric unit)
     // TODO use unit instead of checking the exact column
-    private val fieldsWithoutDp: Set<Column<NutritionData, Double>> = setOf(
-            NutritionDataTable.CALORIES,
-            NutritionDataTable.KILOJOULES,
-            NutritionDataTable.OMEGA_3_FAT,
-            NutritionDataTable.OMEGA_6_FAT,
-            NutritionDataTable.IRON,
-            NutritionDataTable.POTASSIUM,
-            NutritionDataTable.SODIUM,
-            NutritionDataTable.CALCIUM
+    private val fieldsWithoutDp = setOf(
+            Nutrients.ENERGY,
+            Nutrients.OMEGA_3_FAT,
+            Nutrients.OMEGA_6_FAT,
+            Nutrients.IRON,
+            Nutrients.POTASSIUM,
+            Nutrients.SODIUM,
+            Nutrients.CALCIUM
     )
 
     // for formatting nutrition data in food details
-    @JvmStatic
-    fun foodDetailsFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
+    fun foodDetailsFormat(nd: NutritionData?, nutrient: Nutrient, colStrings: ColumnStrings): String? {
         nd ?: return null
 
-        val needsDp = !fieldsWithoutDp.contains(field)
-        val qty = nd.amountOf(field)
-        val unit = if (field === QUANTITY) nd.qtyUnit else ndStrings.getUnit(field)
+        val needsDp = !fieldsWithoutDp.contains(nutrient)
+        val qty = nd.amountOf(nutrient)
+        val unit = nd.getUnitOrDefault(nutrient)
+        // TODO pass colStrings for unit abbreviation
         return formatQuantity(qty, unit, width = if (needsDp) 12 else 10, unitWidth = 2,  withDp = needsDp)
     }
 
     // for formatting nutrition data in meal summaries (no decimal places)
-    @JvmStatic
-    fun mealSummaryFormat(nd: NutritionData?, field: Column<NutritionData, Double>, ndStrings: ColumnStrings): String? {
+    fun mealSummaryFormat(nd: NutritionData?, n: Nutrient, ndStrings: ColumnStrings): String? {
         return if (nd == null) null else formatQuantity(
             nd = nd,
-            col = field,
+            n = n,
             colStrings = ndStrings,
             spaceBeforeUnit = true
         )
     }
 
-    fun nutritionDataToText(
-        nd: NutritionData,
-        colStrings: ColumnStrings,
-        cols: List<Column<NutritionData, Double>>
-    ): String {
+    fun nutritionDataToText(nd: NutritionData, colStrings: ColumnStrings, nutrients: List<Nutrient>): String {
         return StringBuilder().run {
-            for (col in cols) {
-                val colName = colStrings.getName(col)
-                val value = PrintFormatting.formatQuantity(nd, col, colStrings, withUnit = false)
-                val unitStr = colStrings.getUnitAbbr(col)
+            for (n in nutrients) {
+                val colName = colStrings.getName(n)
+                val value = formatQuantity(nd, n, colStrings, withUnit = false)
+                val unitStr = colStrings.getAbbr(nd.getUnitOrDefault(n))
                 append("$colName: $value $unitStr")
-                if (!nd.hasCompleteData(col)) {
+                if (!nd.hasCompleteData(n)) {
                     // mark incomplete
                     append(" (*)")
                 }

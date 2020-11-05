@@ -64,10 +64,10 @@ internal object QueryHelpers {
     }
 
     internal fun processRawFoodMap(foods: Map<Long, Food>, servings: Map<Long, Serving>,
-                          nutritionData: Map<Long, NutritionData>, ingredients: Map<Long, Ingredient>,
+                          nutritionData: Map<Long, NutrientValue>, ingredients: Map<Long, Ingredient>,
                           categories: Map<String, FoodCategory>) {
         applyServingsToRawFoods(foods, servings)
-        applyNutritionDataToRawFoods(foods, nutritionData)
+        applyNutrientValuesToRawFoods(foods, nutritionData)
         applyIngredientsToRawFoods(foods, ingredients)
         applyFoodCategoriesToRawFoods(foods, categories)
     }
@@ -79,18 +79,22 @@ internal object QueryHelpers {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
             //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
             val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
-            val nutritionData = getRawObjectsForParentFk(ds, foodMap, NutritionData.table, Schema.NutritionDataTable.FOOD_ID)
+            val nutrientValues = getRawObjectsForParentFk(ds, foodMap, NutrientValue.table, Schema.NutrientValueTable.FOOD_ID)
             val ingredients = getRawObjectsForParentFk(ds, foodMap, FoodQuantity.table, Schema.FoodQuantityTable.PARENT_FOOD_ID)
                     .mapValues { it.value as Ingredient }
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
             processRawIngredients(ds, ingredients)
-            processRawFoodMap(foodMap, servings, nutritionData, ingredients, categories)
+            processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)
         }
     }
 
     @Throws(SQLException::class)
-    internal fun <M, N> getRawObjectsForParentFk(ds: MacrosDataSource,
-                                        parentObjectMap: Map<Long, N>, childTable: Table<M>, fkCol: Column.Fk<M, Long, N>): Map<Long, M> {
+    internal fun <M, N> getRawObjectsForParentFk(
+            ds: MacrosDataSource,
+            parentObjectMap: Map<Long, N>,
+            childTable: Table<M>,
+            fkCol: Column.Fk<M, Long, N>
+    ): Map<Long, M> {
         var objectMap: Map<Long, M> = emptyMap()
         if (parentObjectMap.isNotEmpty()) {
             val childIdCol = childTable.idColumn
@@ -112,12 +116,10 @@ internal object QueryHelpers {
         }
     }
 
-    private fun applyNutritionDataToRawFoods(foodMap: Map<Long, Food>, nutritionDataMap: Map<Long, NutritionData>) {
-        for (nd in nutritionDataMap.values) {
+    private fun applyNutrientValuesToRawFoods(foodMap: Map<Long, Food>, nutrientValueMap: Map<Long, NutrientValue>) {
+        for (nv in nutrientValueMap.values) {
             // this lookup should never fail, due to database constraints
-            val f = foodMap[nd.foodId]!!
-            nd.food = f
-            f.setNutritionData(nd)
+            foodMap.getValue(nv.foodId).addNutrientValue(nv)
         }
     }
 
@@ -125,7 +127,7 @@ internal object QueryHelpers {
     private fun applyIngredientsToRawFoods(foodMap: Map<Long, Food>, ingredientMap: Map<Long, Ingredient>) {
         for (i in ingredientMap.values) {
             val f = foodMap[i.parentFoodId]
-            require(f is CompositeFood && f.foodType == FoodType.COMPOSITE)
+            require(f is CompositeFood && f.foodType === FoodType.COMPOSITE)
             i.initCompositeFood(f)
             f.addIngredient(i)
         }

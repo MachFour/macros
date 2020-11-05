@@ -1,6 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.objects.inbuilt.Units
 import kotlin.math.roundToInt
 
 open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, objectSource: ObjectSource)
@@ -84,7 +85,7 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
     fun initFood(f: Food) {
         assert(foreignKeyMatches(this, Schema.FoodQuantityTable.FOOD_ID, f))
         food = f
-        nutritionData = NutritionCalculations.rescale(f.getNutritionData(), quantity, qtyUnit)
+        nutritionData = NutritionCalculations.rescale(f.getNutritionData(), quantity, qtyUnit, f.density)
     }
 
     // for use during construction

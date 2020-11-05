@@ -43,7 +43,7 @@ object CliUtils {
         }
         return StringBuilder().run {
             for (nutrient in allNutrientsToPrint) {
-                val value = nd.amountOf(nutrient, 0.0)
+                val value = nd.amountOf(nutrient, defaultValue = 0.0)
                 val unitStr = nd.getUnitOrDefault(nutrient).abbr
                 val colName = colNamer.getName(nutrient)
                 append(lineFormat.format(colName, value, unitStr))

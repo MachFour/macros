@@ -203,22 +203,23 @@ object NutritionCalculations {
         return result
     }
     // energy from each individual macronutrient
-    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: Unit = Units.CALORIES): Map<Nutrient, Double> {
+    internal fun makeEnergyComponentsMap(nd: NutritionData, unit: Unit): Map<Nutrient, Double> {
         // preserve iteration order
         val componentMap = LinkedHashMap<Nutrient, Double>()
 
         require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
 
-        // have to divide if desired unit is calories
-        val unitDivisor = unit.unitMultiplier
+        // have to divide by kJ/calories ratio if desired unit is calories
+        val unitDivisor = unit.metricEquivalent
 
+        val g = Units.GRAMS
         // energy from...
-        val protein = nd.amountOf(Nutrients.PROTEIN, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
-        var fat = nd.amountOf(Nutrients.FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
-        val satFat = nd.amountOf(Nutrients.SATURATED_FAT, 0.0) * KJ_PER_G_FAT / unitDivisor
-        var carb = nd.amountOf(Nutrients.CARBOHYDRATE, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
-        val sugar = nd.amountOf(Nutrients.SUGAR, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
-        val fibre = nd.amountOf(Nutrients.FIBRE, 0.0) * KJ_PER_G_FIBRE / unitDivisor
+        val protein = nd.amountOf(Nutrients.PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
+        var fat = nd.amountOf(Nutrients.FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
+        val satFat = nd.amountOf(Nutrients.SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
+        var carb = nd.amountOf(Nutrients.CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val sugar = nd.amountOf(Nutrients.SUGAR, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val fibre = nd.amountOf(Nutrients.FIBRE, g, 0.0) * KJ_PER_G_FIBRE / unitDivisor
         // correct subtypes (sugar is part of carbs, saturated is part of fat)
         carb = (carb - sugar).coerceAtLeast(0.0)
         fat = (fat - satFat).coerceAtLeast(0.0)
@@ -234,9 +235,15 @@ object NutritionCalculations {
     }
 
     internal fun makeEnergyProportionsMap(nd: NutritionData) : Map<Nutrient, Double> {
-        val componentMap = makeEnergyComponentsMap(nd, Units.CALORIES)
+        // shouldn't matter whether we use KJ or calories here, as long as the amountOf() call below
+        // uses the same unit
+        val componentMap = makeEnergyComponentsMap(nd, Units.KILOJOULES)
+
         // if total energy is missing, fallback to summing over previous energy quantities
-        val totalEnergy = nd.amountOf(Nutrients.ENERGY, componentMap.values.sum(), Units.CALORIES)
+        //val totalEnergy = nd.amountOf(ENERGY, unit, componentMap.values.sum())
+
+        // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
+        val totalEnergy = componentMap.values.sum()
 
         return if (totalEnergy > 0) {
             componentMap.mapValues { it.value/totalEnergy }

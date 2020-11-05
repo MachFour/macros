@@ -139,7 +139,7 @@ class NutritionData(val nutrientData: NutrientData = NutrientData(dataCompleteIf
         return nutrientData[n] != null
     }
 
-    fun amountOf(n: Nutrient, defaultValue: Double, unit: Unit? = null): Double {
+    fun amountOf(n: Nutrient, unit: Unit? = null, defaultValue: Double): Double {
         val data = amountOf(n, unit)
         return data ?: defaultValue
     }

@@ -19,7 +19,7 @@ import java.sql.SQLException
 
 class IngredientsParserTest {
     companion object {
-        private const val TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test-ingredients.sqlite"
+        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
 
         @BeforeAll

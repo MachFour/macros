@@ -27,9 +27,9 @@ class CsvTest {
 
         // TODO make test config
         val config: MacrosConfig = LinuxConfig()
-        const val TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test.sqlite"
-        const val REAL_DB_LOCATION = "/home/max/devel/macros-kotlin/macros.sqlite"
-        const val TEST_WRITE_DIR = "/home/max/devel/macros-kotlin/test"
+        const val TEST_DB_LOCATION = "/home/max/devel/macros/test.sqlite"
+        const val REAL_DB_LOCATION = "/home/max/devel/macros/macros.sqlite"
+        const val TEST_WRITE_DIR = "/home/max/devel/macros/test"
 
         @JvmStatic
         @BeforeAll

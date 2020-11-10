@@ -3,9 +3,9 @@
 MACROS_VERSION="1.0-SNAPSHOT"
 
 
-DEVEL_DIR="/home/max/devel/macros-kotlin"
+DEVEL_DIR="/home/max/devel/macros"
 JAR_DIR="${DEVEL_DIR}/build/libs"
-JAR_FILE="macros-kotlin-${MACROS_VERSION}.jar"
+JAR_FILE="macros-${MACROS_VERSION}.jar"
 JAR_PATH="${JAR_DIR}/${JAR_FILE}"
 
 
@@ -24,7 +24,7 @@ JAR_PATH="${JAR_DIR}/${JAR_FILE}"
 
 unset _JAVA_OPTIONS
 
-#archlinux-java-run --min 14 -- -jar build/libs/macros-kotlin-1.0-SNAPSHOT.jar
+#archlinux-java-run --min 14 -- -jar build/libs/macros-1.0-SNAPSHOT.jar
 
 archlinux-java-run --min 14 -- -enableassertions \
     -XX:+UnlockExperimentalVMOptions \

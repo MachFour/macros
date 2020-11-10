@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Assertions.*
 
 class IngredientsRollbackTest {
     companion object {
-        private val TEST_DB_LOCATION = "/home/max/devel/macros-kotlin/test-ingredients.sqlite"
+        private val TEST_DB_LOCATION = "/home/max/devel/macros/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
 
         @BeforeAll

@@ -11,11 +11,11 @@ import java.io.PrintStream
 
 class LinuxConfig : MacrosConfig {
     companion object {
-        private const val PROJECT_DIR = "/home/max/devel/macros-kotlin"
+        private const val PROJECT_DIR = "/home/max/devel/macros"
 
         private const val programName = "macros"
         private const val dbName = "macros.sqlite"
-        private const val DATA_DIR = "/home/max/devel/macros/macros-data"
+        private const val DATA_DIR = "/home/max/devel/macros-data"
         private const val DB_DIR = PROJECT_DIR
         private const val FOOD_CSV_NAME = "foods.csv"
         private const val SERVING_CSV_NAME = "servings.csv"

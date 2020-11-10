@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Assertions.*
 
 class IngredientsTest {
     companion object {
-        private val DB_LOCATION = "/home/max/devel/macros-kotlin/test/test-ingredients.sqlite"
+        private val DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
         private val foodData: ColumnData<Food>? = null
 

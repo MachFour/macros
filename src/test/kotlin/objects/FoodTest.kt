@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Assertions.*
 
 class FoodTest {
     companion object {
-        private val DB_LOCATION = "/home/max/devel/macros-kotlin/test.sqlite"
+        private val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
         private lateinit var db: LinuxDatabase
         private lateinit var foodData: ColumnData<Food>
         private lateinit var testFood: Food

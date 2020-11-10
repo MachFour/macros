@@ -10,6 +10,7 @@ import com.machfour.macros.util.MiscUtils.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.StringJoiner.Companion.of
+import com.machfour.macros.util.UnicodeUtils
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintStream
@@ -56,6 +57,8 @@ object CliUtils {
             toString()
         }
     }
+
+
 
     fun printNutritionData(nd: NutritionData, verbose: Boolean, out: PrintStream) {
         out.println(printNutritionDataString(nd, verbose))

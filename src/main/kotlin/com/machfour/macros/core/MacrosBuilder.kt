@@ -4,60 +4,21 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.validation.ValidationError
 import java.util.Collections
 
+
+typealias ErrorList = MutableList<ValidationError>
+
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(
-        private val table: Table<M>,
-        private val editInstance: M? = null) {
+        table: Table<M>,
+        private val editInstance: M?) {
 
     constructor(table: Table<M>) : this(table, null)
     constructor(editInstance: M) : this(editInstance.table, editInstance)
 
-    companion object {
-        /*
-           Checks that:
-           - Non null constraints as defined by the columns are upheld
-           - If any violations are found, the affected column as well as an enum value describing the violation are recorded
-             in a map, which is returned at the end, after all columns have been processed.
-         */
-        // method used by MacrosEntity
-        fun <M : MacrosEntity<M>, J> validate(data: ColumnData<M>, col: Column<M, J>): List<ValidationError> {
-            val errorList: MutableList<ValidationError> = ArrayList()
-            if (data[col] == null && !col.isNullable /*&& col.defaultData() == null*/) {
-                errorList.add(ValidationError.NON_NULL)
-            }
-            // TODO add custom validations
-            // TODO add check for unique: needs DB access
-            //List<Validation> validationsToPerform = field.getValidations();
-            /*
-            for (Validation v : validationsToPerform) {
-                if (!v.validate(draftData, field)) {
-                    failedValidations.add(v);
-                }
-            }
-            */
-            return errorList
-        }
-
-        // method used by MacrosEntity
-        // returns a map of ONLY the columns with errors, mapping to list of validation errors
-        fun <M : MacrosEntity<M>> validate(data: ColumnData<M>): Map<Column<M, *>, List<ValidationError>> {
-            val allErrors: MutableMap<Column<M, *>, List<ValidationError>> = HashMap(data.columns.size, 1.0f)
-            for (col in data.columns) {
-                val colErrors = validate(data, col)
-                if (colErrors.isNotEmpty()) {
-                    allErrors[col] = colErrors
-                }
-            }
-            return allErrors
-        }
-    }
-
     // columns that are available for editing
     private val settableColumns: MutableSet<Column<M, *>> = LinkedHashSet(table.columns)
-
     // columns that are not available for editing; initially empty
     private val unsettableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
-
-    // invariant: union of settableColumns and unsettableColumns is table.columns()
+    // invariant: settableColumns ⋃ unsettableColumns == table.columns()
     private val objectFactory: Factory<M> = table.factory
 
     /*
@@ -66,15 +27,18 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var draftData: ColumnData<M> = editInstance?.dataCopy ?: ColumnData(table)
-    private val validationErrors: MutableMap<Column<M, *>, MutableList<ValidationError>> = HashMap(table.columns.size, 1.0f)
+    private var draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
 
 
-    init {
+    private val validationErrors = HashMap<Column<M, *>, ErrorList>(table.columns.size, 1f).also {
         // init with empty lists
         for (col in table.columns) {
-            validationErrors[col] = ArrayList()
+            it[col] = ArrayList()
         }
+    }
+
+    init {
+        // requires draftData to be initialised
         validateAll()
     }
 
@@ -147,7 +111,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     //
-    private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
+    private fun <J> getErrorsInternal(field: Column<M, J>): ErrorList {
         return validationErrors.getValue(field)
     }
 
@@ -222,6 +186,48 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     fun canBuild(): Boolean {
         return !hasAnyInvalidFields()
+    }
+
+
+
+    companion object {
+        /*
+           Checks that:
+           - Non null constraints as defined by the columns are upheld
+           - If any violations are found, the affected column as well as an enum value describing the violation are recorded
+             in a map, which is returned at the end, after all columns have been processed.
+         */
+        // method used by MacrosEntity
+        fun <M : MacrosEntity<M>, J> validate(data: ColumnData<M>, col: Column<M, J>): List<ValidationError> {
+            val errorList: MutableList<ValidationError> = ArrayList()
+            if (data[col] == null && !col.isNullable /*&& col.defaultData() == null*/) {
+                errorList.add(ValidationError.NON_NULL)
+            }
+            // TODO add custom validations
+            // TODO add check for unique: needs DB access
+            //List<Validation> validationsToPerform = field.getValidations();
+            /*
+            for (Validation v : validationsToPerform) {
+                if (!v.validate(draftData, field)) {
+                    failedValidations.add(v);
+                }
+            }
+            */
+            return errorList
+        }
+
+        // method used by MacrosEntity
+        // returns a map of ONLY the columns with errors, mapping to list of validation errors
+        fun <M : MacrosEntity<M>> validate(data: ColumnData<M>): Map<Column<M, *>, List<ValidationError>> {
+            val allErrors: MutableMap<Column<M, *>, List<ValidationError>> = HashMap(data.columns.size, 1.0f)
+            for (col in data.columns) {
+                val colErrors = validate(data, col)
+                if (colErrors.isNotEmpty()) {
+                    allErrors[col] = colErrors
+                }
+            }
+            return allErrors
+        }
     }
 
 }

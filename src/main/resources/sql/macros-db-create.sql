@@ -186,6 +186,7 @@ CREATE TABLE Meal (
     -- which day to associate the meal with. Dependent on user's time zone.
     -- only year, month and day stored, in ISO8601 format.
     , day                  TEXT NOT NULL DEFAULT (date('now', 'localtime'))
+    , notes                TEXT DEFAULT NULL
     -- start time when meal was eaten. Defaults to creation time via trigger.
     -- Measured in unix time
     , start_time           INTEGER NOT NULL DEFAULT 0
@@ -194,7 +195,6 @@ CREATE TABLE Meal (
     -- timestamps are updated via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
-    , notes                TEXT DEFAULT NULL
 
     -- table restriction
     --, CONSTRAINT valid_meal_description

@@ -97,20 +97,18 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return data.hasData(col)
     }
 
-    override val dataFullCopy: ColumnData<M>
-        get() = data.copy()
-
-    // returns immutable copy of data map
-    override val dataCopy: ColumnData<M>
-        get() = dataFullCopy.apply {
-                // have to remove ID since it's now a computed value
+    override fun dataCopy(withMetadata: Boolean): ColumnData<M> {
+        val copy = data.copy()
+        return when (withMetadata) {
+            true -> copy
+            false -> copy.apply {
                 //copy.setDefaultData(listOf(table.idColumn, table.createTimeColumn, table.modifyTimeColumn))
                 put(table.idColumn, MacrosEntity.NO_ID)
                 put(table.createTimeColumn, 0L)
                 put(table.modifyTimeColumn, 0L)
             }
-
-
+        }
+    }
 
     // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
     // shares the same parameter as the wildcard being captured.

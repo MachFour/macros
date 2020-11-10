@@ -1,6 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
 import com.machfour.macros.objects.inbuilt.DefaultUnits
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Nutrients.ENERGY
@@ -9,12 +10,12 @@ import com.machfour.macros.objects.inbuilt.Units
 
 object NutritionCalculations {
 
-    internal const val KJ_PER_G_PROTEIN = 17.0
-    internal const val KJ_PER_G_FAT = 37.0
-    internal const val KJ_PER_G_CARBOHYDRATE = 17.0
-    internal const val KJ_PER_G_FIBRE = 8.27
+    private const val KJ_PER_G_PROTEIN = 17.0
+    private const val KJ_PER_G_FAT = 37.0
+    private const val KJ_PER_G_CARBOHYDRATE = 17.0
+    private const val KJ_PER_G_FIBRE = 8.27
 
-    internal const val CAL_TO_KJ_FACTOR = 4.186
+    private const val CAL_TO_KJ_FACTOR = 4.186
 
     internal fun getEnergyAs(nd: NutrientData, unit: Unit) : Double? {
         require(unit.type === UnitType.ENERGY) { "Unit $unit is not an energy unit "}
@@ -48,29 +49,13 @@ object NutritionCalculations {
      *    This only works for mass units, not when the quantity unit is in ml
      */
 
-    // For current nutrition values in this object, per given current quantity,
-    // returns a new nData object with the nutrition values rescaled to
-    // correspond to the new quantity, in the new unit
-
     // mutates the NutrientData
-    fun convertQuantityUnit(nd: NutrientData, newUnit: Unit, density: Double? = null, guessDensity: Boolean = false) {
-        // TODO do we need to duplicate the NutrientData too?
-        nd.quantityObj = nd.quantityObj.convert(newUnit, density)
-        nd.markCompleteData(QUANTITY, density == null || guessDensity)
+    fun NutrientData.withQuantityUnit(newUnit: Unit, density: Double? = null, guessDensity: Boolean = false) : NutrientData {
+        return copy().also {
+            it.quantityObj = quantityObj.convert(newUnit, density)
+            it.markCompleteData(QUANTITY, density == null || guessDensity)
+        }
     }
-
-    @Deprecated("Do rescaling and unit conversion separately")
-    fun rescale(nd: NutrientData, newQuantity: Double, newUnit: Unit, density: Double? = null): NutrientData {
-        convertQuantityUnit(nd, newUnit, density, density == null)
-        return rescale(nd, newQuantity)
-    }
-
-    @Deprecated("Use NutrientData")
-    fun rescale(nd: NutritionData, newQuantity: Double, newUnit: Unit, density: Double? = null): NutritionData {
-        convertQuantityUnit(nd.nutrientData, newUnit, density, density == null)
-        return NutritionData(rescale(nd.nutrientData, newQuantity))
-    }
-
 
     @Deprecated("Use NutrientData")
     fun combine(one: NutritionData, other: NutritionData): NutritionData {
@@ -85,7 +70,7 @@ object NutritionCalculations {
 
     @Deprecated("Use NutrientData")
     fun rescale(data: NutritionData, newQuantity: Double) : NutritionData {
-        return NutritionData(rescale(data.nutrientData, newQuantity))
+        return NutritionData(data.nutrientData.rescale(newQuantity))
     }
 
     fun convertToDefaultUnits(data: NutrientData, includingQuantity: Boolean = false) : NutrientData {
@@ -99,13 +84,13 @@ object NutritionCalculations {
         return convertedData
     }
 
-    fun rescale(data: NutrientData, newQuantity: Double) : NutrientData {
-        val conversionRatio = newQuantity / data.quantityObj.value
+    fun NutrientData.rescale(newQuantity: Double) : NutrientData {
+        val conversionRatio = newQuantity / quantityObj.value
 
         val newData = NutrientData(dataCompleteIfNotNull = true)
         // completeData is false by default so we can just skip the iteration for null nutrients
         for (n in Nutrients.nutrients) {
-            data[n]?.let {
+            this[n]?.let {
                 newData[n] = it.rescale(conversionRatio)
             }
         }
@@ -182,9 +167,7 @@ object NutritionCalculations {
         //assert(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
         val result = NutrientData(dataCompleteIfNotNull = false)
 
-        val createNewNutrientValue: (ColumnData<NutrientValue>) -> NutrientValue = {
-            NutrientValue.factory.construct(it, ObjectSource.COMPUTED)
-        }
+        val factory = NutrientValue.factory
 
         for (n in Nutrients.nutrients) {
             // note: hasCompleteData is a stricter condition than hasData:
@@ -195,7 +178,7 @@ object NutritionCalculations {
             val thisValue = one[n]
             val otherValue = other[n]
 
-            val resultValue = (thisValue?.dataCopy ?: otherValue?.dataCopy)?.let { createNewNutrientValue(it) }
+            val resultValue = (thisValue?: otherValue)?.let { factory.cloneWithoutMetadata(it) }
             val resultIsDataComplete = if (thisValue != null) one.hasCompleteData(n) else other.hasCompleteData(n)
 
             result[n] = resultValue
@@ -240,11 +223,10 @@ object NutritionCalculations {
         // uses the same unit
         val componentMap = makeEnergyComponentsMap(nd, Units.KILOJOULES)
 
-        // if total energy is missing, fallback to summing over previous energy quantities
-        //val totalEnergy = nd.amountOf(ENERGY, unit, componentMap.values.sum())
-
         // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
         val totalEnergy = componentMap.values.sum()
+        // previously: use total energy is missing, falling back to sum of energy components
+        //val totalEnergy = nd.amountOf(ENERGY, unit, componentMap.values.sum())
 
         return if (totalEnergy > 0) {
             componentMap.mapValues { it.value/totalEnergy }

@@ -120,20 +120,21 @@ CREATE TRIGGER update_serving_timestamp
     END;
 
 -- Meal
+CREATE TRIGGER init_meal_start_time
+    AFTER INSERT ON Meal
+    WHEN (NEW.start_time = 0)
+    BEGIN
+        UPDATE Meal
+        SET start_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
 CREATE TRIGGER init_meal_timestamp
     AFTER INSERT ON Meal
     WHEN (NEW.create_time = 0)
     BEGIN
         UPDATE Meal
         SET create_time = strftime('%s', 'now')
-        WHERE id = NEW.id;
-    END;
-CREATE TRIGGER init_meal_time_column
-    AFTER INSERT ON Meal
-    WHEN (NEW.start_time = 0)
-    BEGIN
-        UPDATE Meal
-        SET start_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
 

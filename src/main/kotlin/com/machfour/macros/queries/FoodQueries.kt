@@ -93,7 +93,9 @@ object FoodQueries {
         val allServings = ds.getAllRawObjects(Serving.table)
         val allNutritionData = ds.getAllRawObjects(NutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = ds.getAllRawObjects(FoodQuantity.table).mapValues { it.value as Ingredient }
+        val allIngredients = ds.getAllRawObjects(FoodQuantity.table)
+            .filterValues { it is Ingredient }
+            .mapValues { it.value as Ingredient }
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutritionData, allIngredients, allFoodCategories)
         return ArrayList(allFoods.values)

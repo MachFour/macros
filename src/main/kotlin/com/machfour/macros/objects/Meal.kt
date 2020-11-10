@@ -27,7 +27,10 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
         get() = Companion.table
 
     val nutritionTotal: NutritionData
-        get() = NutritionCalculations.sum(foodPortions.map { it.nutritionData })
+        get() {
+            val allNutrientData = foodPortions.map { it.nutritionData.nutrientData }
+            return NutritionData(NutritionCalculations.sum(allNutrientData, null))
+        }
 
     val name: String
         get() = getData(MealTable.NAME)!!

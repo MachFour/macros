@@ -1,6 +1,8 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.objects.NutritionCalculations.rescale
+import com.machfour.macros.objects.NutritionCalculations.withQuantityUnit
 import com.machfour.macros.objects.inbuilt.Units
 import kotlin.math.roundToInt
 
@@ -85,7 +87,14 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
     fun initFood(f: Food) {
         assert(foreignKeyMatches(this, Schema.FoodQuantityTable.FOOD_ID, f))
         food = f
-        nutritionData = NutritionCalculations.rescale(f.getNutritionData(), quantity, qtyUnit, f.density)
+        var nd = f.getNutritionData().nutrientData
+        assert (nd.qtyUnit.type === qtyUnit.type || f.density != null ) {
+            "Quantity unit conversion required but food has no density."
+        }
+        if (nd.qtyUnit != qtyUnit) {
+            nd = nd.withQuantityUnit(qtyUnit, f.density ?: 1.0, f.density == null)
+        }
+        nutritionData = NutritionData(nd.rescale(quantity))
     }
 
     // for use during construction

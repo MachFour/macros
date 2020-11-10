@@ -1,10 +1,11 @@
 package com.machfour.macros.objects
 
 enum class UnitType(val id: Long, val niceName: String) {
+    NONE(0, "none"),
     MASS(1, "grams"),
     VOLUME(2, "volume"),
     ENERGY(4, "energy"),
-    DENSITY(8, "density")
+    DENSITY(8, "density"),
     ;
 
     companion object {

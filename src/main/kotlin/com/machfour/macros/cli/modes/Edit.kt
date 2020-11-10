@@ -187,7 +187,7 @@ class Edit : CommandImpl(NAME, USAGE) {
         }
 
         try {
-            val newData = portions[n].dataCopy
+            val newData = portions[n].dataCopy(withMetadata = false)
             newData.put(Schema.FoodQuantityTable.QUANTITY, newQty)
             Queries.saveObject(ds, FoodQuantity.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {

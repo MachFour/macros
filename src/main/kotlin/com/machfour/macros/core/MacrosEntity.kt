@@ -11,6 +11,10 @@ interface MacrosEntity<M : MacrosEntity<M>> {
         const val UNIT_SERVING: Long = -101
         const val NO_DATE: Long = -99
         val UNSET = Double.NaN
+
+        fun <M: MacrosEntity<M>> Factory<M>.cloneWithoutMetadata(obj: MacrosEntity<M>): M {
+            return construct(obj.dataCopy(withMetadata = false), ObjectSource.COMPUTED)
+        }
     }
 
     val id: Long
@@ -25,15 +29,13 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     fun <J> getData(col: Column<M, J>): J?
     fun hasData(col: Column<M, *>): Boolean
 
-    // equivalent to getAllData(true)
     val data: ColumnData<M>
     val table: Table<M>
     val factory: Factory<M>
 
-    // Clone of columnData with full metadata
+    fun dataCopy(withMetadata: Boolean): ColumnData<M>
     val dataFullCopy: ColumnData<M>
-    // Clone of columnData without ID, create time, modify time
-    val dataCopy: ColumnData<M>
+        get() = dataCopy(withMetadata = true)
 
     // ... Alternative methods that can be used with unique columns
     fun <N : MacrosEntity<N>, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, parent: N)

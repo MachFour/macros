@@ -1,6 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Nutrients.QUANTITY
 
@@ -34,6 +35,16 @@ class NutrientData internal constructor (
         return str.toString()
     }
 
+    // creates a mutable copy
+    fun copy() : NutrientData {
+        return NutrientData(this.dataCompleteIfNotNull).also { copy ->
+            for (i in data.indices) {
+                copy.data[i] = this.data[i]
+                copy.isDataComplete[i] = this.isDataComplete[i]
+            }
+        }
+    }
+
     fun clear() {
         for (i in data.indices) {
             data[i] = null
@@ -47,7 +58,7 @@ class NutrientData internal constructor (
         }
     val nutrientValuesExcludingQuantity: List<NutrientValue>
         get() {
-            return nutrientValues.filter{ it !== quantityObj }
+            return nutrientValues.filter { it !== quantityObj }
         }
 
     private fun assertMutable() {
@@ -63,6 +74,9 @@ class NutrientData internal constructor (
         set(value) {
             this[QUANTITY] = value
         }
+
+    val qtyUnit: Unit
+        get() = quantityObj.unit
 
     operator fun get(n: Nutrient): NutrientValue? = data[n.index]
 

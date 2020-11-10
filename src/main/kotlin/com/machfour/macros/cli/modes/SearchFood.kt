@@ -1,9 +1,11 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.objects.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.UnicodeUtils
 import java.io.PrintStream
 import java.sql.SQLException
 
@@ -14,20 +16,20 @@ class SearchFood : CommandImpl(NAME, USAGE) {
 
         fun printFoodList(foods: Collection<Food>, out: PrintStream) {
             // work out how wide the column should be
-            var maxNameLength = 0
-            for (f in foods) {
-                val nameLength = f.mediumName.length
-                if (nameLength > maxNameLength) {
-                    maxNameLength = nameLength
-                }
-            }
-            val formatStr = "%-" + maxNameLength + "s        %s\n"
+            val nameLength = foods.maxOf { UnicodeUtils.displayLength(it.mediumName) }
+            val space = "        "
+            val formatStr = "%-${nameLength}s${space}%s\n"
             // horizontal line - extra spaces are for whitespace + index name length
-            val hline = StringJoiner.of("=").copies(maxNameLength + 8 + 14).join()
-            out.printf(formatStr, "Food name", "index name")
-            out.println(hline)
-            for (f in foods) {
-                out.printf(formatStr, f.mediumName, f.indexName)
+            val hline = StringJoiner.of("=").copies(nameLength + 8 + 14).join()
+
+            out.apply {
+                printf(formatStr, "Food name", "index name")
+                println(hline)
+                for (f in foods) {
+                    print(UnicodeUtils.formatString(f.mediumName, nameLength, true))
+                    print(space)
+                    println(f.indexName)
+                }
             }
         }
     }

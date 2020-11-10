@@ -7,6 +7,7 @@ import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.util.UnicodeUtils.countDoubleWidthChars
 import java.io.PrintStream
 import kotlin.collections.ArrayList
@@ -38,28 +39,7 @@ object MealPrinter {
     private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Boolean>, sep: String, out: PrintStream) {
         assert(row.size == widths.size && row.size == rightAlign.size)
         for (i in row.indices) {
-            val align = if (rightAlign[i]) "" else "-"
-            var width = widths[i]
-            var text = row[i]
-            // fullwidth characters are printed as two characters in a terminal, so we should reduce width by the
-            // number of fullwidth characters in the string
-            val numDoubleWidthChars = countDoubleWidthChars(text)
-
-            // displayed length of text appears to be length() + numDoubleWidthChars characters long.
-            // Equivalently, we can reduce width by this amount, to get the printing right
-            width = maxOf(width - numDoubleWidthChars, 0)
-
-
-            // prevent long strings from overrunning the width:
-            // replace "This is a really long string"
-            // with    "This is a really lo.."
-            if (text.length > width) {
-                val newWidth = maxOf(width - 2, 0)
-                // TODO this may reduce by too much, with double width chars
-                text = text.substring(0, newWidth - 2) + ".."
-            }
-            //String widthStr = String.valueOf(width);
-            out.printf("%" + align + width + "s%s", text, sep)
+            out.print(UnicodeUtils.formatString(row[i], widths[i], !rightAlign[i]) + sep)
         }
         out.println()
     }

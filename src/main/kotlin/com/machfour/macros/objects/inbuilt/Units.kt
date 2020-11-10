@@ -5,6 +5,8 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.UnitType
+import java.util.*
+import kotlin.collections.LinkedHashMap
 
 // Class of inbuilt quantity units
 // These definitions need to be outside the Unit class itself,
@@ -24,7 +26,7 @@ object Units {
 
     // this is lowercase so that CSV units can be lower case
     private val String.toMapKey: String
-        get() = this.toLowerCase()
+        get() = this.toLowerCase(Locale.ROOT)
 
     private fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType, inbuilt: Boolean): Unit {
         val id = nextIndex++

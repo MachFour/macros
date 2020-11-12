@@ -96,8 +96,8 @@ object Queries {
             ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(ds, objects, false)
             ObjectSource.DB_EDIT -> updateObjects(ds, objects)
             ObjectSource.DATABASE -> {
-                // it's unchanged we don't need to do anything at all!
-                1
+                assert(false) { "Saving unmodified database object" }
+                0
             }
             ObjectSource.RESTORE -> {
                 // will have ID. Assume database has been cleared?

@@ -25,7 +25,7 @@ object MealQueries {
     @Throws(SQLException::class)
     fun getOrCreateMeal(ds: MacrosDataSource, day: DateStamp, name: String): Meal {
         // if it already exists return it
-        val matchingMeal = getMealsForDayWithName(ds, day, name).values.firstOrNull()
+        val matchingMeal = getMealsForDayWithName(ds, day, name).firstOrNull()
         if (matchingMeal != null) {
             return matchingMeal
         }
@@ -39,7 +39,7 @@ object MealQueries {
         
         Queries.saveObject(ds, newMeal)
         // get it back again, so that it has an ID and stuff
-        val newlySavedMeal = getMealsForDayWithName(ds, day, name).values.firstOrNull()
+        val newlySavedMeal = getMealsForDayWithName(ds, day, name).firstOrNull()
         check(newlySavedMeal != null) { "Couldn't find newly saved meal in day ${day}" }
         return newlySavedMeal
     }
@@ -59,9 +59,9 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getMealsForDayWithName(ds: MacrosDataSource, day: DateStamp, name: String): Map<Long, Meal> {
+    fun getMealsForDayWithName(ds: MacrosDataSource, day: DateStamp, name: String): Collection<Meal> {
         val mealIds = getMealIdsForDay(ds, day)
-        return getMealsById(ds, mealIds).filter { it.value.name == name }
+        return getMealsById(ds, mealIds).filter { it.value.name == name }.values
     }
 
 

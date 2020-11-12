@@ -17,28 +17,17 @@ class NutrientValue private constructor(dataMap: ColumnData<NutrientValue>, obje
         val table: Table<NutrientValue>
             get() = NutrientValueTable.instance
 
-        fun makeObject(
-                value: Double,
-                nutrient: Nutrient,
-                unit: Unit,
-                id: Long? = null,
-                food: Food? = null,
-                objectSource: ObjectSource = ObjectSource.USER_NEW,
-        ) : NutrientValue {
+        // makes an object without ID or food
+        fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit) : NutrientValue {
             val data = ColumnData(table).apply {
-                put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
-                put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
+                //put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
+                //put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
+                put(NutrientValueTable.ID, MacrosEntity.NO_ID)
                 put(NutrientValueTable.VALUE, value)
                 put(NutrientValueTable.NUTRIENT_ID, nutrient.id)
                 put(NutrientValueTable.UNIT_ID, unit.id)
             }
-            return factory.construct(data, objectSource).apply {
-                food?.let{ setFood(it) }
-            }
-        }
-
-        fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit) : NutrientValue {
-            return makeObject(value, nutrient, unit, objectSource = ObjectSource.COMPUTED)
+            return factory.construct(data, ObjectSource.COMPUTED)
         }
 
         // Converts this value into the given unit, if possible.

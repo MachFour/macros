@@ -65,6 +65,8 @@ internal open class ColumnImpl<M, J> private constructor(
 
         fun defaultsTo(value: J?) = apply { defaultValue = { value } }
 
+        fun default(getValue: () -> J?) = apply { defaultValue = getValue }
+
         private fun <M> build(): ColumnImpl<M, J> {
             return ColumnImpl(name, type, defaultValue, editable, nullable, inSecondaryKey, unique)
         }

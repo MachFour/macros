@@ -8,8 +8,9 @@ import java.util.Collections
 typealias ErrorList = MutableList<ValidationError>
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(
-        table: Table<M>,
-        private val editInstance: M?) {
+    table: Table<M>,
+    private val editInstance: M?
+) {
 
     constructor(table: Table<M>) : this(table, null)
     constructor(editInstance: M) : this(editInstance.table, editInstance)

@@ -5,7 +5,6 @@
 
 -- note that these pragmas need to be set every time a database connection is made
 PRAGMA foreign_keys = ON;
-
 PRAGMA recursive_triggers = ON;
 
 -- Measures mass (weight), volume or energy
@@ -187,9 +186,10 @@ CREATE TABLE Meal (
     -- only year, month and day stored, in ISO8601 format.
     , day                  TEXT NOT NULL DEFAULT (date('now', 'localtime'))
     , notes                TEXT DEFAULT NULL
-    -- start time when meal was eaten. Defaults to creation time via trigger.
-    -- Measured in unix time
-    , start_time           INTEGER NOT NULL DEFAULT 0
+    -- start time when meal was eaten, measured in unix time
+    -- for some reason, things go wild with recursive triggers when you try to 
+    -- init this field as well as create_time with an AFTER INSERT trigger
+    , start_time           INTEGER NOT NULL
     -- duration of meal, in seconds from the start_time
     , duration             INTEGER NOT NULL DEFAULT 0
     -- timestamps are updated via triggers

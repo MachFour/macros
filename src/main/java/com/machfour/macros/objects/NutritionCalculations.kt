@@ -2,6 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
+import com.machfour.macros.objects.NutrientValue.Companion.makeComputedValue
 import com.machfour.macros.objects.inbuilt.DefaultUnits
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Nutrients.ENERGY
@@ -132,7 +133,7 @@ object NutritionCalculations {
                 //unnormalisedDensity += density * quantity
             }
 
-            sumData.quantityObj = NutrientValue.makeComputedValue(sumQuantity, QUANTITY, Units.GRAMS)
+            sumData.quantityObj = makeComputedValue(sumQuantity, QUANTITY, Units.GRAMS)
             sumData.markCompleteData(QUANTITY, !densityGuessed)
         }
 
@@ -152,7 +153,7 @@ object NutritionCalculations {
             }
 
             if (existsData) {
-                sumData[n] = NutrientValue.makeComputedValue(sumValue, n, unit)
+                sumData[n] = makeComputedValue(sumValue, n, unit)
                 sumData.markCompleteData(n, completeData)
             }
 

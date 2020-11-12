@@ -9,6 +9,7 @@ import com.machfour.macros.util.DateStamp
 import java.util.ArrayList
 
 import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
+import java.time.Instant
 
 
 // @formatter:off
@@ -227,8 +228,8 @@ object Schema {
                 CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
                 MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
                 NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
-                DAY = builder("day", Types.DATESTAMP).notNull().buildAndAdd(COLUMNS)
-                START_TIME = builder("start_time", Types.TIMESTAMP).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
+                DAY = builder("day", Types.DATESTAMP).notNull().default { DateStamp.currentDate() }.buildAndAdd(COLUMNS)
+                START_TIME = builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildAndAdd(COLUMNS)
                 DURATION = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
                 NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
             }

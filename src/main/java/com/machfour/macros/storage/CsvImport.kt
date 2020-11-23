@@ -5,7 +5,6 @@ import com.machfour.macros.core.Schema.FoodTable
 import com.machfour.macros.core.Schema.FoodQuantityTable
 import com.machfour.macros.core.Schema.ServingTable
 import com.machfour.macros.core.datatype.TypeCastException
-import com.machfour.macros.names.ENERGY_NAME
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.objects.*
@@ -49,7 +48,7 @@ object CsvImport {
     }
 
     @Throws(TypeCastException::class)
-    fun extractNutritionData(csvRow: Map<String, String?>): List<ColumnData<NutrientValue>> {
+    fun extractNutrientData(csvRow: Map<String, String?>): List<ColumnData<NutrientValue>> {
         val data = ArrayList<ColumnData<NutrientValue>>()
 
         for (nutrient in Nutrients.nutrients) {
@@ -98,7 +97,7 @@ object CsvImport {
                     continue  // it's a blank row
                 }
                 val foodData = extractData(csvRow, FoodTable.instance)
-                val ndData = extractNutritionData(csvRow)
+                val ndData = extractNutrientData(csvRow)
 
                 //assert(foodData.hasData(FoodTable.NAME)) { "Food is missing its name" }
 
@@ -135,7 +134,7 @@ object CsvImport {
                     val i = FoodQuantity.factory.construct(ingredientData, ObjectSource.IMPORT) as Ingredient
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
                     i.setFkParentNaturalKey(FoodQuantityTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
-                    i.initFood(ingredientFood)
+                    i.initFoodAndNd(ingredientFood)
 
                     // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
                     if (data.containsKey(compositeIndexName)) {
@@ -267,7 +266,7 @@ object CsvImport {
 
         // get out the nutrition data
         val nvObjects = foodsToSave.flatMap { (_, food) ->
-            food.getNutritionData().nutrientData.nutrientValues.also {
+            food.nutrientData.nutrientValues.also {
                 for (nv in it) {
                     // link it to the food so that the DB can create the correct foreign key entries
                     nv.setFkParentNaturalKey(Schema.NutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)

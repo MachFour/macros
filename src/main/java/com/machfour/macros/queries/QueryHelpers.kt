@@ -54,7 +54,7 @@ internal object QueryHelpers {
         for (i in ingredientMap.values) {
             // applyFoodsToRawIngredients(ingredients, servings
             val f = ingredientFoods.getValue(i.foodId)
-            i.initFood(f)
+            i.initFoodAndNd(f)
             // applyServingsToRawIngredients(ingredients, servings)
             i.servingId?.let { id ->
                 val s = ingredientServings.getValue(id)
@@ -77,7 +77,7 @@ internal object QueryHelpers {
     internal fun processRawFoodMap(ds: MacrosDataSource, foodMap: Map<Long, Food>) {
         if (foodMap.isNotEmpty()) {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
-            //Map<Long, NutritionData> nData = getRawNutritionDataForFoods(idMap);
+            //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
             val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
             val nutrientValues = getRawObjectsForParentFk(ds, foodMap, NutrientValue.table, Schema.NutrientValueTable.FOOD_ID)
             val ingredients = getRawObjectsForParentFk(ds, foodMap, FoodQuantity.table, Schema.FoodQuantityTable.PARENT_FOOD_ID)
@@ -148,7 +148,7 @@ internal object QueryHelpers {
         for (fp in fpList) {
             val portionFood = foodMap[fp.foodId]
             require(portionFood != null) { "foodMap did not contain food with ID ${fp.foodId}" }
-            fp.initFood(portionFood)
+            fp.initFoodAndNd(portionFood)
             fp.servingId?.let {
                 val serving = portionFood.getServingById(it)
                 checkNotNull(serving) { "Serving specified by FoodPortion not found in its food!" }

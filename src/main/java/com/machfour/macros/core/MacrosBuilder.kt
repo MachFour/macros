@@ -1,6 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 import java.util.Collections
 
@@ -22,6 +23,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     // invariant: settableColumns ⋃ unsettableColumns == table.columns()
     private val objectFactory: Factory<M> = table.factory
 
+    private val customValidations: MutableList<Validation<M>> = ArrayList()
+
     /*
      * If editing, fields are initialised to the field values of editInstance.
      * editInstance is assumed to have been created by the Database, and thus *should*
@@ -40,6 +43,11 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     init {
         // requires draftData to be initialised
+        validateAll()
+    }
+
+    fun addValidation(v: Validation<M>) {
+        customValidations += v
         validateAll()
     }
 
@@ -136,11 +144,13 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      */
     private fun <J> validateSingle(col: Column<M, J>) {
         assert(validationErrors.containsKey(col)) { "ValidationErrors not initialised properly" }
-        val errorList = validationErrors.getValue(col)
-        errorList.clear()
-        errorList.addAll(validate(draftData, col))
+        validationErrors.getValue(col).let { errorList ->
+            errorList.clear()
+            errorList.addAll(validate(draftData, col, customValidations))
+        }
     }
 
+    // TODO this reruns the custom validation once for each column - inefficient
     private fun validateAll() {
         for (col in validationErrors.keys) {
             validateSingle(col)
@@ -199,33 +209,39 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
              in a map, which is returned at the end, after all columns have been processed.
          */
         // method used by MacrosEntity
-        fun <M : MacrosEntity<M>, J> validate(data: ColumnData<M>, col: Column<M, J>): List<ValidationError> {
+        fun <M : MacrosEntity<M>, J> validate(
+            data: ColumnData<M>,
+            col: Column<M, J>,
+            customValidations: List<Validation<M>> = emptyList()
+        ): List<ValidationError> {
             val errorList: MutableList<ValidationError> = ArrayList()
             if (data[col] == null && !col.isNullable /*&& col.defaultData() == null*/) {
                 errorList.add(ValidationError.NON_NULL)
             }
-            // TODO add custom validations
             // TODO add check for unique: needs DB access
-            //List<Validation> validationsToPerform = field.getValidations();
-            /*
-            for (Validation v : validationsToPerform) {
-                if (!v.validate(draftData, field)) {
-                    failedValidations.add(v);
-                }
-            }
-            */
+            customValidations
+                .map { it.validate(data) }
+                .filter { it.containsKey(col) }
+                .forEach { errorList.addAll(it.getValue(col)) }
+
             return errorList
         }
 
         // method used by MacrosEntity
         // returns a map of ONLY the columns with errors, mapping to list of validation errors
-        fun <M : MacrosEntity<M>> validate(data: ColumnData<M>): Map<Column<M, *>, List<ValidationError>> {
+        fun <M : MacrosEntity<M>> validate(
+            data: ColumnData<M>,
+            customValidation: Validation<M>? = null
+        ): Map<Column<M, *>, List<ValidationError>> {
             val allErrors: MutableMap<Column<M, *>, List<ValidationError>> = HashMap(data.columns.size, 1.0f)
             for (col in data.columns) {
                 val colErrors = validate(data, col)
                 if (colErrors.isNotEmpty()) {
                     allErrors[col] = colErrors
                 }
+            }
+            if (customValidation != null) {
+                allErrors.putAll(customValidation.validate(data))
             }
             return allErrors
         }

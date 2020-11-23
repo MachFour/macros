@@ -1,7 +1,8 @@
 package ingredients
 
-import com.machfour.macros.cli.utils.CliUtils
+import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.core.Schema
 import com.machfour.macros.ingredients.CompositeFoodSpec
 import com.machfour.macros.ingredients.IngredientSpec
@@ -61,22 +62,22 @@ class IngredientsTest {
         val oilSpec = IngredientSpec("olive-oil-cobram", 60.0, "ml", null)
         spec.addIngredients(listOf(waterSpec, chickpeaSpec, cookingSpec, oilSpec))
 
-        var recipe: CompositeFood? = null
-        try {
+        val recipe = try {
             val recipes = IngredientsParser.createCompositeFoods(listOf(spec), db)
             assertEquals(1, recipes.size)
-            recipe = recipes.iterator().next()
+            recipes.firstOrNull()
         } catch (e: SQLException) {
             fail<Any>("SQL exception processing composite food spec: $e")
+            null
         }
 
-        assertNotNull(recipe)
+        checkNotNull(recipe)
         println("Nutrition data total")
-        CliUtils.printNutritionData(recipe!!.getNutritionData(), false, System.out)
+        recipe.nutrientData.printNutrientData(false, System.out)
         println()
         println("Nutrition data per 100g")
-        val rescaled = NutritionCalculations.rescale(recipe.getNutritionData(), 100.0)
-        CliUtils.printNutritionData(rescaled, false, System.out)
+        val rescaled = recipe.nutrientData.rescale100()
+        rescaled.printNutrientData(false, System.out)
     }
 
 

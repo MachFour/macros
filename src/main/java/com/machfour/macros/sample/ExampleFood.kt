@@ -64,7 +64,7 @@ object ExampleFood {
             , NutrientValue.makeComputedValue(1000.0, Nutrients.SODIUM, Units.MILLIGRAMS)
             , NutrientValue.makeComputedValue(200.0, Nutrients.CALCIUM, Units.MILLIGRAMS)
             , NutrientValue.makeComputedValue(40.0, Nutrients.IRON, Units.MILLIGRAMS)
-            , NutrientValue.makeComputedValue(1000.0, Nutrients.QUANTITY, Units.MILLILITRES)
+            , NutrientValue.makeComputedValue(100.0, Nutrients.QUANTITY, Units.MILLILITRES)
         )
 
         for (nv in nutritionData) {

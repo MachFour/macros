@@ -42,22 +42,18 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     var defaultServing: Serving? = null
         private set
 
-    private val nutritionData: NutritionData = NutritionData()
+    // TODO check nutrient data is initialised
+    open val nutrientData: NutrientData = NutrientData()
 
     val foodType: FoodType = FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)
 
     var foodCategory: FoodCategory? = null
         private set
 
-    // quantity corresponds to that contained in the Schema.NutritionDataTable.QUANTITY table
-    open fun getNutritionData(): NutritionData {
-        return nutritionData
-    }
-
     open fun addNutrientValue(nv: NutrientValue) {
         // TODO check ID matches
         nv.setFood(this)
-        nutritionData.nutrientData[nv.nutrient] = nv
+        nutrientData[nv.nutrient] = nv
     }
 
     fun setFoodCategory(c: FoodCategory) {
@@ -96,7 +92,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     // Returns list of quantity units and servings which can be used to measure this food
     val validMeasurements: List<PortionMeasurement>
         get() {
-            val naturalUnit = getNutritionData().qtyUnit
+            val naturalUnit = nutrientData.qtyUnit
             return ArrayList<PortionMeasurement>().apply {
                 add(naturalUnit)
                 // allow conversion if density is given

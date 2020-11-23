@@ -1,7 +1,6 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.MacrosType
-import com.machfour.macros.validation.Validation
 
 /**
  * Created by max on 4/11/17.
@@ -36,5 +35,4 @@ interface Column<M, J> {
 
     // is SQL UNIQUE column
     val isUnique: Boolean
-    val validations: List<Validation>
 }

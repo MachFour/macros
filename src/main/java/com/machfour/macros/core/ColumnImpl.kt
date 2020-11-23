@@ -1,10 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.MacrosType
-import com.machfour.macros.validation.Validation
 
-import java.util.ArrayList
-import java.util.function.Supplier
 import kotlin.properties.Delegates
 
 internal open class ColumnImpl<M, J> private constructor(
@@ -23,10 +20,6 @@ internal open class ColumnImpl<M, J> private constructor(
 
     override val defaultData: J?
         get() = defaultValue()
-
-    override val validations: List<Validation>
-        // TODO
-        get() = ArrayList()
 
     override fun toString(): String {
         return sqlName

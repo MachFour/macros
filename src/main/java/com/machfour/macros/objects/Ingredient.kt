@@ -1,9 +1,22 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.validation.Validation
+import com.machfour.macros.validation.ValidationError
 
 class Ingredient internal constructor(data: ColumnData<FoodQuantity>, objectSource: ObjectSource)
     : FoodQuantity(data, objectSource) {
+
+    companion object {
+        val validation = Validation<FoodQuantity> {
+            val parentFoodCol = Schema.FoodQuantityTable.PARENT_FOOD_ID
+            HashMap<Column<FoodQuantity, *>, List<ValidationError>>().apply {
+                if (!it.hasData(parentFoodCol)) {
+                    put(parentFoodCol, listOf(ValidationError.NON_NULL))
+                }
+            }
+        }
+    }
 
     init {
         assert (getData(Schema.FoodQuantityTable.PARENT_FOOD_ID) != null) { "Parent Food ID cannot be null for FoodPortion" }

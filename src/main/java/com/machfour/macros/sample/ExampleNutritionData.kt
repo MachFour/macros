@@ -5,16 +5,16 @@ import com.machfour.macros.objects.inbuilt.Nutrients.CARBOHYDRATE
 import com.machfour.macros.objects.inbuilt.Nutrients.ENERGY
 import com.machfour.macros.objects.inbuilt.Nutrients.FAT
 import com.machfour.macros.objects.inbuilt.Nutrients.PROTEIN
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.core.NutrientData
 import com.machfour.macros.objects.inbuilt.Units
 
 
-object ExampleNutritionData {
+object ExampleNutrientData {
 
-    val nd = NutritionData().apply {
-        nutrientData[ENERGY] = NutrientValue.makeComputedValue(1000.0, ENERGY, Units.CALORIES)
-        nutrientData[PROTEIN] = NutrientValue.makeComputedValue(200.0, PROTEIN, Units.GRAMS)
-        nutrientData[FAT] = NutrientValue.makeComputedValue(100.0, FAT, Units.GRAMS)
-        nutrientData[CARBOHYDRATE] = NutrientValue.makeComputedValue(220.0, CARBOHYDRATE, Units.GRAMS)
+    val nd = NutrientData().apply {
+        this[ENERGY] = NutrientValue.makeComputedValue(1000.0, ENERGY, Units.CALORIES)
+        this[PROTEIN] = NutrientValue.makeComputedValue(200.0, PROTEIN, Units.GRAMS)
+        this[FAT] = NutrientValue.makeComputedValue(100.0, FAT, Units.GRAMS)
+        this[CARBOHYDRATE] = NutrientValue.makeComputedValue(220.0, CARBOHYDRATE, Units.GRAMS)
     }
 }

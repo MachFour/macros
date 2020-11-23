@@ -2,9 +2,12 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.CliUtils
+import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.objects.CompositeFood
-import com.machfour.macros.objects.NutritionCalculations
+import com.machfour.macros.core.NutritionCalculations
+import com.machfour.macros.core.NutritionCalculations.rescale
+import com.machfour.macros.core.NutritionCalculations.rescale100
 
 import java.io.FileReader
 import java.io.IOException
@@ -60,17 +63,16 @@ class Recipe : CommandImpl(NAME, USAGE) {
             out.println()
             out.println("Nutrition Information:")
             out.println()
-            var nd = cf.getNutritionData()
+            val nd = cf.nutrientData
             val unit = nd.qtyUnitAbbr
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
                 out.printf("Per %.0f%s:\n", nd.quantity, unit)
-                CliUtils.printNutritionData(nd, false, out)
+                nd.printNutrientData(false, out)
                 out.println()
-                nd = NutritionCalculations.rescale(nd, 100.0)
             }
             out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
-            CliUtils.printNutritionData(nd, false, out)
+            nd.rescale100().printNutrientData(false, out)
             out.println()
             out.println("================================================")
             out.println()

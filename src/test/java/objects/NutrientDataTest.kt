@@ -13,13 +13,13 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 
-class NutritionDataTest {
+class NutrientDataTest {
     companion object {
 
         private val f = ExampleFood.food2
-        private val nd1: NutritionData // grams
-        private val nd2: NutritionData // ml
-        private val nd3: NutritionData // mg
+        private val nd1: NutrientData // grams
+        private val nd2: NutrientData // ml
+        private val nd3: NutrientData // mg
 
         init {
             val fpBuilder = MacrosBuilder(FoodQuantity.table)
@@ -35,13 +35,13 @@ class NutritionDataTest {
             val fp3 = fpBuilder.build() as FoodPortion
 
 
-            fp1.initFood(f)
-            fp2.initFood(f)
-            fp3.initFood(f)
+            fp1.initFoodAndNd(f)
+            fp2.initFoodAndNd(f)
+            fp3.initFoodAndNd(f)
 
-            nd1 = fp1.nutritionData
-            nd2 = fp2.nutritionData
-            nd3 = fp3.nutritionData
+            nd1 = fp1.nutrientData
+            nd2 = fp2.nutrientData
+            nd3 = fp3.nutrientData
         }
     }
 
@@ -49,7 +49,7 @@ class NutritionDataTest {
     fun testScaling() {
         assertNotNull(f.density)
         val density = f.density!!
-        val fat = f.getNutritionData().amountOf(Nutrients.FAT)!!
+        val fat = f.nutrientData.amountOf(Nutrients.FAT)!!
         val fat1 = nd1.amountOf(Nutrients.FAT)!!
         val fat2 = nd2.amountOf(Nutrients.FAT)!!
 

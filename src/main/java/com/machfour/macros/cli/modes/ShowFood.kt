@@ -2,11 +2,11 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.CliUtils
-import com.machfour.macros.core.Schema
+import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
-import com.machfour.macros.objects.NutritionCalculations
+import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.DateTimeUtils
 
@@ -43,7 +43,7 @@ class ShowFood : CommandImpl(NAME, USAGE) {
             /*
              * Nutrition data
              */
-            var nd = f.getNutritionData()
+            val nd = f.nutrientData
             val unit = nd.qtyUnitAbbr
             out.println("Nutrition data (source: ${f.dataSource})")
             out.println()
@@ -57,12 +57,11 @@ class ShowFood : CommandImpl(NAME, USAGE) {
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
                 out.printf("Per %.0f%s:\n", nd.quantity, unit)
-                CliUtils.printNutritionData(nd, verbose, out)
+                nd.printNutrientData(verbose, out)
                 out.println()
-                nd = NutritionCalculations.rescale(nd, 100.0)
             }
             out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
-            CliUtils.printNutritionData(nd, verbose, out)
+            nd.rescale100().printNutrientData(verbose, out)
             out.println()
 
             /*

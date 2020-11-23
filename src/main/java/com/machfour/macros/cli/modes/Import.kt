@@ -47,7 +47,7 @@ class Import : CommandImpl(NAME, USAGE) {
                 if (!noFoodsServings) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
-                    // TODO Ingredients, servings, NutritionData cleared by cascade?
+                    // TODO Ingredients, servings, NutrientValues cleared by cascade?
                     FoodQuantityQueries.deleteAllIngredients(ds)
                     ds.clearTable(Serving.table)
                     ds.clearTable(NutrientValue.table)

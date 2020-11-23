@@ -6,13 +6,11 @@ import com.machfour.macros.cli.interactive.FoodEditor
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.storage.MacrosDataSource
 
 import java.io.IOException
 import java.sql.SQLException
-import java.util.Collections
 
 
 class AddFood : CommandImpl(NAME, USAGE) {

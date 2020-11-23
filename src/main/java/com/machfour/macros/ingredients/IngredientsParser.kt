@@ -131,7 +131,7 @@ object IngredientsParser {
         for (cf in results) {
             for (i in cf.getIngredients()) {
                 i.initCompositeFood(cf)
-                i.initFood(ingredientFoods.getValue(i.foodId))
+                i.initFoodAndNd(ingredientFoods.getValue(i.foodId))
             }
         }
         return results
@@ -168,10 +168,10 @@ object IngredientsParser {
             Queries.insertObjects(ds, newIngredients, false)
 
             // TODO nutrition data object to go along with it, if quantity is known
-            //MacrosBuilder<NutritionData> nData = new MacrosBuilder<>(NutritionData.table);
-            //nData.setField(Schema.NutritionDataTable.DATA_SOURCE, "recipe");
-            //nData.setField(Schema.NutritionDataTable.FOOD_ID, id);
-            //nData.setField(Schema.NutritionDataTable.QUANTITY ,";
+            //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientData.table);
+            //nData.setField(Schema.NutrientDataTable.DATA_SOURCE, "recipe");
+            //nData.setField(Schema.NutrientDataTable.FOOD_ID, id);
+            //nData.setField(Schema.NutrientDataTable.QUANTITY ,";
             ds.endTransaction()
         } finally {
             ds.closeConnection()

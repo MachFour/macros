@@ -8,6 +8,7 @@ class FoodPortionSpec(
         val foodIndexName: String,
         // for non-serving mode
         val quantity: Double,
+        // null meals use teh default for the the food's nutrition data
         val unit: Unit?,
         // for serving mode. servingName = "" means default serving
         val servingCount: Double,

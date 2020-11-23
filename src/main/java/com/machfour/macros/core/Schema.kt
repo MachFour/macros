@@ -166,6 +166,39 @@ object Schema {
         }
     }
 
+    class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Meal.factory, COLUMNS) {
+        companion object {
+            private const val TABLE_NAME = "Meal"
+
+            // holds the following columns in the order initialised in the static block
+            private val COLUMNS = ArrayList<Column<Meal, *>>()
+
+            val ID: Column<Meal, Long>
+            val CREATE_TIME: Column<Meal, Long>
+            val MODIFY_TIME: Column<Meal, Long>
+            val NAME: Column<Meal, String>
+            val DAY: Column<Meal, DateStamp>
+            val START_TIME: Column<Meal, Long>
+            val DURATION: Column<Meal, Long>
+            val NOTES: Column<Meal, String>
+
+            init {
+                ID = idColumnBuildAndAdd(COLUMNS)
+                CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
+                MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
+                NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
+                DAY = builder("day", Types.DATESTAMP).notNull().default { DateStamp.currentDate() }.buildAndAdd(COLUMNS)
+                START_TIME = builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildAndAdd(COLUMNS)
+                DURATION = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
+                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
+            }
+
+            val instance = MealTable()
+        }
+    }
+
+
+    // needs to come after FoodTable, ServingTable, MealTable
     class FoodQuantityTable private constructor() : BaseTable<FoodQuantity>(TABLE_NAME, FoodQuantity.factory, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "FoodQuantity"
@@ -204,37 +237,6 @@ object Schema {
 
 
             val instance = FoodQuantityTable()
-        }
-    }
-
-    class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Meal.factory, COLUMNS) {
-        companion object {
-            private const val TABLE_NAME = "Meal"
-
-            // holds the following columns in the order initialised in the static block
-            private val COLUMNS = ArrayList<Column<Meal, *>>()
-
-            val ID: Column<Meal, Long>
-            val CREATE_TIME: Column<Meal, Long>
-            val MODIFY_TIME: Column<Meal, Long>
-            val NAME: Column<Meal, String>
-            val DAY: Column<Meal, DateStamp>
-            val START_TIME: Column<Meal, Long>
-            val DURATION: Column<Meal, Long>
-            val NOTES: Column<Meal, String>
-
-            init {
-                ID = idColumnBuildAndAdd(COLUMNS)
-                CREATE_TIME = createTimeColumnBuildAndAdd(COLUMNS)
-                MODIFY_TIME = modifyTimeColumnBuildAndAdd(COLUMNS)
-                NAME = builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
-                DAY = builder("day", Types.DATESTAMP).notNull().default { DateStamp.currentDate() }.buildAndAdd(COLUMNS)
-                START_TIME = builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildAndAdd(COLUMNS)
-                DURATION = builder("duration", Types.INTEGER).notNull().defaultsTo(0L).buildAndAdd(COLUMNS)
-                NOTES = builder("notes", Types.TEXT).buildAndAdd(COLUMNS)
-            }
-
-            val instance = MealTable()
         }
     }
 

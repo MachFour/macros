@@ -583,7 +583,7 @@ class FoodEditor constructor(
                     ds.beginTransaction()
                     Queries.saveObject(ds, f)
 
-                    // get the food ID into the FOOD_ID field of the NutritionData
+                    // get the food ID into the FOOD_ID field of the NutrientValues
                     val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, Schema.NutrientValueTable.FOOD_ID)
 
                     Queries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)

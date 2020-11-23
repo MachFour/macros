@@ -1,77 +1,40 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.names.ColumnNamer
+import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.objects.inbuilt.Nutrients
-import com.machfour.macros.objects.NutritionCalculations
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.core.NutrientData
+import com.machfour.macros.core.NutritionCalculations.rescale
 import com.machfour.macros.util.MiscUtils.javaTrim
 import com.machfour.macros.util.PrintFormatting
-import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.StringJoiner.Companion.of
-import com.machfour.macros.util.UnicodeUtils
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintStream
 
 object CliUtils {
-    private val allNutrientsToPrint = listOf(
-          Nutrients.ENERGY
-        , Nutrients.PROTEIN
-        , Nutrients.FAT
-        , Nutrients.SATURATED_FAT
-        , Nutrients.CARBOHYDRATE
-        , Nutrients.SUGAR
-        , Nutrients.FIBRE
-        , Nutrients.SODIUM
-        , Nutrients.CALCIUM
-    )
-
-    fun printPer100g(nd: NutritionData, verbose: Boolean, out: PrintStream) {
-        printNutritionData(NutritionCalculations.rescale(nd, 100.0), verbose, out)
+    fun NutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
+        val string = PrintFormatting.nutritionDataToText(
+            nd = this,
+            colStrings = DefaultColumnStrings.instance,
+            nutrients = PrintFormatting.defaultNutrientsToPrint,
+            withDp = verbose,
+            monoSpaceAligned = true
+        )
+        out.println(string)
     }
 
-    // TODO use methods from PrintFormatting here?
-    fun printNutritionDataString(nd: NutritionData, verbose: Boolean, monoSpaceAligned: Boolean = true) : String {
-        // TODO pass in ColumnUnits and ColumnNamer
-        val colNamer: ColumnNamer = EnglishColumnNames.instance
-        // TODO get these lengths from ColumnNamer
-        val lineFormat = if (monoSpaceAligned) {
-            if (verbose) "%15s: %6.1f %-2s" else "%15s: %4.0f %-2s"
-        } else {
-            if (verbose) "%s: %.1f %s" else "%s: %.0f %s"
-        }
-        return StringBuilder().run {
-            for (nutrient in allNutrientsToPrint) {
-                val value = nd.amountOf(nutrient, defaultValue = 0.0)
-                val unitStr = nd.getUnitOrDefault(nutrient).abbr
-                val colName = colNamer.getName(nutrient)
-                append(lineFormat.format(colName, value, unitStr))
-                if (!nd.hasCompleteData(nutrient)) {
-                    // mark incomplete
-                    append(" (*)")
-                }
-                appendLine()
-            }
-            toString()
-        }
-    }
-
-
-
-    fun printNutritionData(nd: NutritionData, verbose: Boolean, out: PrintStream) {
-        out.println(printNutritionDataString(nd, verbose))
-    }
-
-    fun printEnergyProportions(nd: NutritionData, verbose: Boolean, out: PrintStream) {
-        // TODO pass in ColumnUnits and ColumnNamer
-        val colNames: ColumnNamer = EnglishColumnNames.instance
+    fun NutrientData.printEnergyProportions(
+        verbose: Boolean,
+        out: PrintStream,
+        colNames: ColumnNamer = EnglishColumnNames.instance
+    ) {
         out.println("Energy proportions (approx.)")
         // TODO get these lengths from ColumnNamer / ColumnUnits
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
-        for (nutrient in NutritionData.energyProportionNutrients) {
-            val proportion = nd.getEnergyProportion(nutrient)
+        for (nutrient in NutrientData.energyProportionNutrients) {
+            val proportion = getEnergyProportion(nutrient)
             out.printf(fmt, colNames.getName(nutrient), proportion*100)
         }
     }
@@ -121,7 +84,7 @@ object CliUtils {
             val notes = i.notes
             val name = iFood.mediumName
             val noteString = notes ?: ""
-            val quantityString = formatQuantity(i.quantity, i.qtyUnit, width = quantityWidth, unitWidth = 2)
+            val quantityString = PrintFormatting.formatQuantity(i.quantity, i.qtyUnit, width = quantityWidth, unitWidth = 2)
             out.printf(lineFormat, name, quantityString, noteString)
             // TODO replace quantity with serving if specified
             //Serving iServing = i.getServing();

@@ -1,16 +1,20 @@
 package com.machfour.macros.cli.utils
 
+import com.machfour.macros.cli.utils.CliUtils.printEnergyProportions
+import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.core.NutritionCalculations
+import com.machfour.macros.core.NutrientData
+import com.machfour.macros.core.NutritionCalculations.rescale
+import com.machfour.macros.core.NutritionCalculations.rescale100
+import com.machfour.macros.core.NutritionCalculations.withDefaultUnits
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
-import com.machfour.macros.util.PrintFormatting.formatQuantity
 import com.machfour.macros.util.StringJoiner
 import com.machfour.macros.util.UnicodeUtils
-import com.machfour.macros.util.UnicodeUtils.countDoubleWidthChars
 import java.io.PrintStream
-import kotlin.collections.ArrayList
 
 object MealPrinter {
     private const val columnSep = "   "
@@ -44,19 +48,31 @@ object MealPrinter {
         out.println()
     }
 
-    private fun nutritionDataToRow(name: String, nd: NutritionData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
+    private fun nutritionDataToRow(name: String, nd: NutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
         val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
-        val row: MutableList<String> = ArrayList(nutrientColumns.size + 2)
-        // add food name
-        row += name
         val nutrientWidth = if (verbose) PrintFormatting.longDataWidth else PrintFormatting.shortDataWidth
-        // add nutrients, formatting to be the appropriate width
-        for (nutrient in nutrientColumns) {
-            row += formatQuantity(nd, nutrient, width = nutrientWidth, unitWidth = 2, withDp = verbose)
+
+        return ArrayList<String>(nutrientColumns.size + 2).apply {
+            // add food name
+            this += name
+            // add nutrients, formatting to be the appropriate width
+            for (nutrient in nutrientColumns) {
+                this += PrintFormatting.formatQuantity(
+                    nd = nd,
+                    n = nutrient,
+                    width = nutrientWidth,
+                    withDp = verbose
+                )
+            }
+            // add quantity and unit
+            this += PrintFormatting.formatQuantity(
+                qty = qty,
+                unit = unit,
+                width = PrintFormatting.servingWidth,
+                unitWidth = 2,
+                unitAlignLeft = false
+            )
         }
-        // add quantity and unit
-        row.add(formatQuantity(qty, unit, width = PrintFormatting.servingWidth, unitWidth = 2))
-        return row
     }
 
     fun printMeal(meal: Meal, verbose: Boolean, out: PrintStream) {
@@ -97,7 +113,7 @@ object MealPrinter {
         val dataRows: MutableList<List<String>> = ArrayList()
         for (fp in meal.getFoodPortions()) {
             val name = fp.food.mediumName
-            val nd = fp.nutritionData.withDefaultUnits()
+            val nd = fp.nutrientData.withDefaultUnits()
             dataRows.add(nutritionDataToRow(name, nd, fp.quantity, fp.qtyUnit, verbose))
         }
         for (row in dataRows) {
@@ -106,7 +122,7 @@ object MealPrinter {
         // now print total
         out.println(rowSeparator)
         val totalName = "Total for ${meal.name}"
-        val totalNd = meal.nutritionTotal
+        val totalNd = meal.nutrientTotal
         // for total data, just use the quantity and unit from the sum
         val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
         printRow(totalRow, rowWidths, rightAlign, columnSep, out)
@@ -125,24 +141,21 @@ object MealPrinter {
                 out.println()
                 if (per100) {
                     out.println("== Nutrient total per 100g ==")
-                    CliUtils.printPer100g(m.nutritionTotal, verbose, out)
+                    m.nutrientTotal.rescale100().printNutrientData(verbose, out)
                     out.println("=============================")
                     out.println()
                 }
             }
         }
         if (grandTotal) {
-            val allNutData: MutableList<NutritionData> = ArrayList()
-            for (m in meals) {
-                allNutData.add(m.nutritionTotal)
-            }
-            val totalNutData = NutritionCalculations.sum(allNutData)
             out.println("====================")
             out.println("Total for all meals:")
             out.println("====================")
-            CliUtils.printNutritionData(totalNutData, verbose, out)
-            out.println()
-            CliUtils.printEnergyProportions(totalNutData, verbose, out)
+            NutritionCalculations.sum(meals.map { it.nutrientTotal }).let {
+                it.printNutrientData(verbose, out)
+                out.println()
+                it.printEnergyProportions(verbose, out)
+            }
         }
     }
 

@@ -1,9 +1,10 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.objects.NutritionCalculations.rescale
-import com.machfour.macros.objects.NutritionCalculations.withQuantityUnit
+import com.machfour.macros.core.NutritionCalculations.rescale
+import com.machfour.macros.core.NutritionCalculations.withQuantityUnit
 import com.machfour.macros.objects.inbuilt.Units
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, objectSource: ObjectSource)
@@ -30,7 +31,7 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
      */
     lateinit var food: Food
         private set
-    lateinit var nutritionData: NutritionData
+    lateinit var nutrientData: NutrientData
         private set
     val qtyUnit = Units.fromAbbreviation(data[Schema.FoodQuantityTable.QUANTITY_UNIT]!!)
 
@@ -57,21 +58,12 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
         get() = getData(Schema.FoodQuantityTable.NOTES)
 
     fun prettyFormat(withNotes: Boolean): String {
-        val sb = StringBuilder()
-        sb.append(food.mediumName)
-        sb.append(", ")
-        sb.append(String.format("%.1f", getData(Schema.FoodQuantityTable.QUANTITY)))
-        sb.append(qtyUnit.abbr)
-        if (serving != null) {
-            sb.append(" (").append(servingCountString()).append(" ").append(serving!!.name).append(")")
+        val quantityStr = "%.1f".format(quantity)
+        return buildString {
+            append("${food.mediumName}, ${quantityStr}${qtyUnit.abbr}")
+            servingString?.let { append(" ($it)") }
+            notes?.takeIf { withNotes && it.isNotEmpty() }?.let { append(" [$it]") }
         }
-        if (withNotes) {
-            val notes = notes
-            if (notes != null && notes.isNotEmpty()) {
-                sb.append(" [").append(notes).append("]")
-            }
-        }
-        return sb.toString()
     }
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
@@ -84,17 +76,16 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
         return super.hashCode()
     }
 
-    fun initFood(f: Food) {
+    fun initFoodAndNd(f: Food) {
         assert(foreignKeyMatches(this, Schema.FoodQuantityTable.FOOD_ID, f))
         food = f
-        var nd = f.getNutritionData().nutrientData
-        assert (nd.qtyUnit.type === qtyUnit.type || f.density != null ) {
-            "Quantity unit conversion required but food has no density."
-        }
-        if (nd.qtyUnit != qtyUnit) {
-            nd = nd.withQuantityUnit(qtyUnit, f.density ?: 1.0, f.density == null)
-        }
-        nutritionData = NutritionData(nd.rescale(quantity))
+        nutrientData = f.nutrientData.let {
+            if (it.qtyUnit != qtyUnit) {
+                it.withQuantityUnit(qtyUnit, f.density, allowDefaultDensity = true)
+            } else {
+                it
+            }
+        }.rescale(quantity)
     }
 
     // for use during construction
@@ -104,21 +95,22 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
         serving = s
     }
 
+    val servingString: String?
+        get() = serving?.let { "$servingCountString ${it.name}" }
+
     // returns a string containing the serving count. If the serving count is close to an integer,
     // it is formatted as an integer.
-    private fun servingCountString(): String {
-        // test if can round
-        val intVersion = servingCount().roundToInt()
-        return if (intVersion - servingCount() < 0.001) {
-            intVersion.toString()
-        } else {
-            servingCount().toString()
+    private val servingCountString: String
+        get() {
+            // test if can round
+            servingCount.let {
+                val asInt = it.roundToInt()
+                return (if (abs(it - asInt) < 0.001) asInt else it).toString()
+            }
         }
-    }
 
-    private fun servingCount(): Double {
-        return serving?. let { quantity/ it.quantity } ?: 0.0
-    }
+    val servingCount: Double
+        get() = serving?.let { quantity/ it.quantity } ?: 0.0
 
 }
 

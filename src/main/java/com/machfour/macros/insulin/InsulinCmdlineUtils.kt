@@ -2,7 +2,7 @@ package com.machfour.macros.insulin
 
 import com.machfour.macros.insulin.InsulinCalculations.insulinForCarbs
 import com.machfour.macros.insulin.InsulinCalculations.insulinForProtein
-import com.machfour.macros.objects.NutritionData
+import com.machfour.macros.core.NutrientData
 import java.io.PrintStream
 
 object InsulinCmdlineUtils {
@@ -20,7 +20,7 @@ object InsulinCmdlineUtils {
     private const val unitsPrintWidth = "6"
     private val labels = listOf("Carbs", "Protein", "Total")
 
-    fun printInsulin(out: PrintStream, nd: NutritionData, icRatio: Double, proteinFactor: Double?) {
+    fun printInsulin(out: PrintStream, nd: NutrientData, icRatio: Double, proteinFactor: Double?) {
         out.println("========")
         out.println("Insulin:")
         out.println("========")

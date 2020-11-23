@@ -2,7 +2,6 @@ package com.machfour.macros.names
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.NutritionData
 import com.machfour.macros.objects.Unit
 
 abstract class ColumnStringsImpl protected constructor(

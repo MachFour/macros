@@ -1,11 +1,13 @@
 package objects
 
-import com.machfour.macros.core.NutrientData
+import com.machfour.macros.core.NutritionCalculations
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.objects.*
-import com.machfour.macros.objects.NutritionCalculations.rescale
-import com.machfour.macros.objects.NutritionCalculations.withQuantityUnit
+import com.machfour.macros.core.NutritionCalculations.rescale
+import com.machfour.macros.core.NutritionCalculations.withQuantityUnit
+import com.machfour.macros.core.NutrientData
+import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
@@ -31,8 +33,8 @@ class DensityTest {
             try {
                 chickpeaFlour = requireNotNull(FoodQueries.getFoodByIndexName(db, "chickpea-flour")) { failMsg }
                 water = requireNotNull(FoodQueries.getFoodByIndexName(db, "water")) { failMsg }
-                chickpeaNd = chickpeaFlour.getNutritionData().nutrientData
-                waterNd = water.getNutritionData().nutrientData
+                chickpeaNd = chickpeaFlour.nutrientData
+                waterNd = water.nutrientData
                 Assertions.assertNotNull(water, failMsg)
                 Assertions.assertNotNull(chickpeaNd)
                 Assertions.assertNotNull(waterNd)
@@ -50,7 +52,7 @@ class DensityTest {
         Assertions.assertNotNull(density)
         requireNotNull(density)
         val millilitresNd = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale(100 / density)
-        val backConverted = millilitresNd.withQuantityUnit(Units.GRAMS, density).rescale(100.0)
+        val backConverted = millilitresNd.withQuantityUnit(Units.GRAMS, density).rescale100()
         val carbs = Nutrients.CARBOHYDRATE
         println("Default quantity: " + chickpeaNd.quantityObj)
         println("mls quantity: " + millilitresNd.quantityObj)
@@ -64,8 +66,8 @@ class DensityTest {
         val density = chickpeaFlour.density
         Assertions.assertNotNull(density)
         requireNotNull(density)
-        val chickPea100mL = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale(100.0)
-        val water100mL = waterNd.withQuantityUnit(Units.MILLILITRES, 1.0).rescale(100.0)
+        val chickPea100mL = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale100()
+        val water100mL = waterNd.withQuantityUnit(Units.MILLILITRES, 1.0).rescale100()
         val combined = NutritionCalculations.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
         Assertions.assertEquals(Units.GRAMS, combined.quantityObj.unit)
         Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)

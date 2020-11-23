@@ -1,10 +1,27 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.validation.Validation
+import com.machfour.macros.validation.ValidationError
 import kotlin.math.roundToInt
 
 class FoodPortion internal constructor(data: ColumnData<FoodQuantity>, objectSource: ObjectSource)
     : FoodQuantity(data, objectSource) {
+
+    companion object {
+        // has to be lazy because of static init dependencies
+        // OR move to another class file
+        val validation : Validation<FoodQuantity> by lazy {
+            Validation<FoodQuantity> {
+                val mealIdCol = Schema.FoodQuantityTable.MEAL_ID
+                HashMap<Column<FoodQuantity, *>, List<ValidationError>>().apply {
+                    if (!it.hasData(mealIdCol)) {
+                        put(mealIdCol, listOf(ValidationError.NON_NULL))
+                    }
+                }
+            }
+        }
+    }
 
     init {
         assert (getData(Schema.FoodQuantityTable.MEAL_ID) != null) { "Meal ID cannot be null for FoodPortion" }
@@ -28,7 +45,6 @@ class FoodPortion internal constructor(data: ColumnData<FoodQuantity>, objectSou
         // XXX can't do this because of lateinit
         //this.meal = null
     }
-
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
     // the only thing that it misses out is checking that o is actually an instance of the subclass.

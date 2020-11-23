@@ -8,8 +8,8 @@ import java.time.Instant
 
 class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
     companion object {
-        fun sumNutritionData(meals: Collection<Meal>): NutritionData {
-            return NutritionCalculations.sum(meals.map { it.nutritionTotal })
+        fun sumNutrientData(meals: Collection<Meal>): NutrientData {
+            return NutritionCalculations.sum(meals.map { it.nutrientTotal })
         }
 
         // factory before table
@@ -26,10 +26,10 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
     override val table: Table<Meal>
         get() = Companion.table
 
-    val nutritionTotal: NutritionData
+    val nutrientTotal: NutrientData
         get() {
-            val allNutrientData = foodPortions.map { it.nutritionData.nutrientData }
-            return NutritionData(NutritionCalculations.sum(allNutrientData, null))
+            val allNutrientData = foodPortions.map { it.nutrientData }
+            return NutritionCalculations.sum(allNutrientData, null)
         }
 
     val name: String

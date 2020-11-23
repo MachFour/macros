@@ -12,6 +12,7 @@ import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
+import com.machfour.macros.util.MiscUtils.javaTrim
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.Reader
@@ -41,7 +42,7 @@ class FileParser {
             // have to instantiate a dummy meal to hold it
             var currentFpSpecs: MutableList<FoodPortionSpec>? = null
             for (index in fileLines.indices) {
-                val line = fileLines[index].trim { it <= ' ' }
+                val line = fileLines[index].javaTrim()
                 val mealTitle = mealPattern.matcher(line)
                 if (mealTitle.find()) {
                     // make a new meal
@@ -85,7 +86,7 @@ class FileParser {
 
         fun processFpSpec(fps: FoodPortionSpec, m: Meal, f: Food) {
             assert(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
-            var s: Serving? = null
+            val s: Serving?
             val quantity: Double
             val unit: Unit?
             if (fps.isServingMode) {
@@ -107,19 +108,19 @@ class FileParser {
                 quantity = fps.servingCount * s.quantity
                 unit = s.qtyUnit
             } else {
-                // not serving mode
-                assert(fps.unit != null)
+                // not serving mode - use unit if specified, otherwise default unit of food's nutrition data
+                s = null
+                unit = fps.unit ?: f.nutrientData.qtyUnit
                 quantity = fps.quantity
-                unit = fps.unit
             }
             val fpData = ColumnData(FoodQuantity.table)
             fpData.put(Schema.FoodQuantityTable.FOOD_ID, f.id)
             fpData.put(Schema.FoodQuantityTable.SERVING_ID, s?.id)
             fpData.put(Schema.FoodQuantityTable.MEAL_ID, m.id)
-            fpData.put(Schema.FoodQuantityTable.QUANTITY_UNIT, unit!!.abbr)
+            fpData.put(Schema.FoodQuantityTable.QUANTITY_UNIT, unit.abbr)
             fpData.put(Schema.FoodQuantityTable.QUANTITY, quantity)
             val fp = FoodQuantity.factory.construct(fpData, ObjectSource.USER_NEW) as FoodPortion
-            fp.initFood(f)
+            fp.initFoodAndNd(f)
             if (s != null) {
                 fp.initServing(s)
             }
@@ -131,7 +132,7 @@ class FileParser {
         // 1.
         //   egg         ,          60
         //    ^          ^          ^
-        //index name  separator  quantity (default metric units)
+        //index name  separator  quantity (default metric unit for food)
         //
         // 2.
         //   egg         ,        large     ,       1
@@ -149,7 +150,7 @@ class FileParser {
             // if you don't specify an array length limit, it won't match empty strings between commas
             val tokens = line.split(",".toRegex(), 4).toTypedArray()
             for (i in tokens.indices) {
-                tokens[i] = tokens[i].trim { it <= ' ' }
+                tokens[i] = tokens[i].javaTrim()
             }
             val indexName = tokens[0]
             var quantity = 0.0
@@ -169,7 +170,7 @@ class FileParser {
                         servingName = ""
                     }
                     2 -> {
-                        // vanilla food and quantity, with optional unit, defaulting to grams
+                        // vanilla food and quantity, with optional unit defaulting to whatever food's nutrition data uses
                         isServingMode = false
                         val quantityMatch = quantityAndUnitPattern.matcher(tokens[1])
                         if (!quantityMatch.find()) {
@@ -186,7 +187,7 @@ class FileParser {
                         }
                         val unitString = quantityMatch.group("unit")
                         if (unitString == null) {
-                            unit = Units.GRAMS
+                            unit = null
                         } else {
                             val matchUnit = Units.fromAbbreviationNoThrow(unitString)
                             if (matchUnit != null) {

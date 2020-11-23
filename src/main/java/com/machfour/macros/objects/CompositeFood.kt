@@ -1,41 +1,37 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.NutritionCalculations.fillMissingData
 
 import java.util.Collections
 
 class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
-    private var ingredientNutritionData: NutritionData? = null
-    private var hasOverridingNutritionData: Boolean = false
+    private lateinit var ingredientNutrientData: NutrientData
+    private var hasOverridingNutrientData: Boolean = false
     private val ingredients: MutableList<Ingredient>
 
     init {
         assert(FoodType.fromString(dataMap[Schema.FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
 
         ingredients = ArrayList()
-        ingredientNutritionData = null
-        hasOverridingNutritionData = false
+        hasOverridingNutrientData = false
     }
 
-    // uses data from the ingredients to add to the existing nutrition data
-    private fun calculateIngredientsNutritionData(): NutritionData {
-        val nutritionComponents = ArrayList<NutritionData>(ingredients.size)
-        for (i in ingredients) {
-            nutritionComponents.add(i.nutritionData)
-        }
-        // don't combine densities of the foods
-        return NutritionCalculations.sum(nutritionComponents)
-    }
-
+    // add overriding nutrient value
     override fun addNutrientValue(nv: NutrientValue) {
-        hasOverridingNutritionData = true
+        hasOverridingNutrientData = true
         super.addNutrientValue(nv)
     }
 
+    private fun updateIngredientsNutrientData() {
+        // don't combine densities of the foods
+        ingredientNutrientData = NutritionCalculations.sum(ingredients.map { it.nutrientData })
+    }
+
     /*
-     * TODO save the result of this into the database
+     * TODO save the result of this into the database?
      *
      *//*
       NOTE: combined density is estimated using a weighted sum of the densities of the components.
@@ -44,17 +40,20 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
       (e.g dry ingredients absorbing moisture).
       So really, it probably doesn't make sense to propagate the combined ingredients density value
      */
-    override fun getNutritionData(): NutritionData {
-        if (ingredientNutritionData == null) {
-            ingredientNutritionData = calculateIngredientsNutritionData()
+    override val nutrientData: NutrientData
+        get() {
+        // cache mutable property value
+
+        if (!this::ingredientNutrientData.isInitialized) {
+            updateIngredientsNutrientData()
         }
 
-        if (hasOverridingNutritionData) {
+        return if (hasOverridingNutrientData) {
             // combine missing data from the foods nData with the overriding data
-            val overridingData = super.getNutritionData()
-            return NutritionCalculations.combine(overridingData, ingredientNutritionData!!)
+            val overridingData = super.nutrientData
+            overridingData.fillMissingData(ingredientNutrientData)
         } else {
-            return ingredientNutritionData!!
+            ingredientNutrientData
         }
     }
 

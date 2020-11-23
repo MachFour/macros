@@ -79,7 +79,7 @@ object Queries {
 
     // deletes objects with the given ID from
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> deleteObjectsById(ds: MacrosDataSource, table: Table<M>, ids: List<Long>): Int {
+    fun <M : MacrosEntity<M>> deleteObjectsById(ds: MacrosDataSource, table: Table<M>, ids: Collection<Long>): Int {
         return ds.deleteByColumn(table, table.idColumn, ids)
     }
 

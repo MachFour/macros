@@ -13,6 +13,22 @@ import com.machfour.macros.objects.inbuilt.Units
 class NutrientData(
     val dataCompleteIfNotNull: Boolean = true
 ) {
+    companion object {
+        val Nutrient.index : Int
+            get() = id.toInt()
+
+        val energyProportionNutrients = setOf(
+            Nutrients.PROTEIN,
+            Nutrients.FAT,
+            Nutrients.SATURATED_FAT,
+            Nutrients.CARBOHYDRATE,
+            Nutrients.SUGAR,
+            Nutrients.FIBRE
+        )
+
+        val dummyQuantity = NutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, Units.GRAMS)
+
+    }
 
     private val data: Array<NutrientValue?> = arrayOfNulls(Nutrients.numNutrients)
     private val isDataComplete: Array<Boolean> = Array(Nutrients.numNutrients) { false }
@@ -24,11 +40,10 @@ class NutrientData(
         this.isImmutable = true
     }
 
+    // using null coalescing means that hasData(QUANTITY) will still return false
     var quantityObj: NutrientValue
         get() {
-            val quantityValue = this[Nutrients.QUANTITY]
-            checkNotNull(quantityValue) { "Error - quantity value not initialised" }
-            return quantityValue
+            return this[Nutrients.QUANTITY] ?: dummyQuantity
         }
         set(value) {
             this[Nutrients.QUANTITY] = value
@@ -188,7 +203,7 @@ class NutrientData(
         return energyProportionsMap[n] ?: 0.0
     }
 
-    fun getEnergyComponent(n: Nutrient, unit: Unit = Units.CALORIES) : Double {
+    private fun getEnergyComponent(n: Nutrient, unit: Unit = Units.CALORIES) : Double {
         if (!energyProportionNutrients.contains(n)) {
             return 0.0
         }
@@ -199,23 +214,6 @@ class NutrientData(
         return (energyComponentsMap[n] ?: 0.0) * unit.metricEquivalent
     }
 
-    companion object {
-        val Nutrient.index : Int
-            get() = id.toInt()
-
-        // measured in the relevant FoodTable's QuantityUnits
-        const val DEFAULT_QUANTITY = 100.0
-
-        val energyProportionNutrients = setOf(
-                Nutrients.PROTEIN,
-                Nutrients.FAT,
-                Nutrients.SATURATED_FAT,
-                Nutrients.CARBOHYDRATE,
-                Nutrients.SUGAR,
-                Nutrients.FIBRE
-        )
-
-    }
 
 }
 

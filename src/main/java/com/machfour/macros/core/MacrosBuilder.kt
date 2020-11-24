@@ -8,13 +8,21 @@ import java.util.Collections
 
 typealias ErrorList = MutableList<ValidationError>
 
-class MacrosBuilder<M : MacrosEntity<M>> private constructor(
-    table: Table<M>,
-    private val editInstance: M?
-) {
+class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fromInstance: M?) {
 
-    constructor(table: Table<M>) : this(table, null)
-    constructor(editInstance: M) : this(editInstance.table, editInstance)
+    constructor(table: Table<M>): this(table, null)
+    constructor(fromInstance: M): this(fromInstance.table, fromInstance)
+
+    var finishedInit = false
+
+    var editInstance: M? = fromInstance
+        set(value) {
+            field = value
+            // if this setter is called during init {}, we can skip this call
+            if (finishedInit) {
+                resetFields()
+            }
+        }
 
     // columns that are available for editing
     private val settableColumns: MutableSet<Column<M, *>> = LinkedHashSet(table.columns)
@@ -31,8 +39,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
-
+    private val draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
 
     private val validationErrors = HashMap<Column<M, *>, ErrorList>(table.columns.size, 1f).also {
         // init with empty lists
@@ -44,6 +51,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     init {
         // requires draftData to be initialised
         validateAll()
+        finishedInit = true
     }
 
     fun addValidation(v: Validation<M>) {
@@ -60,12 +68,15 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         }
     }
 
+    private fun copyFromEditInstance(editInstance: M) {
+        ColumnData.copyData(editInstance.data, draftData, settableColumns)
+    }
+
     // only resets settable fields
     fun resetFields() {
-        if (editInstance != null) {
-            ColumnData.copyData(editInstance.data, draftData, settableColumns)
-        } else {
-            draftData.setDefaultData(settableColumns)
+        when (val it = editInstance) {
+            null -> draftData.setDefaultData(settableColumns)
+            else -> copyFromEditInstance(it)
         }
         validateAll()
     }
@@ -167,14 +178,16 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     // computes what the data source of the newly build object should be
     private fun newObjectSource(): ObjectSource {
-        if (editInstance == null) {
-            return ObjectSource.USER_NEW
+        val editSource = when (val it = editInstance) {
+            null -> ObjectSource.USER_NEW
+            else -> it.objectSource
         }
-        return when (val editedObjectSource = editInstance.objectSource) {
-            ObjectSource.DATABASE, ObjectSource.DB_EDIT -> ObjectSource.DB_EDIT
+        return when (editSource) {
+            // database objects are edited
+            ObjectSource.DATABASE -> ObjectSource.DB_EDIT
             // don't allow creating new inbuilt objects
             ObjectSource.INBUILT -> ObjectSource.COMPUTED
-            else -> editedObjectSource
+            else -> editSource
         }
     }
 

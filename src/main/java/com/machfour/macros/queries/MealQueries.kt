@@ -100,7 +100,7 @@ object MealQueries {
             Queries.saveObject(ds, editedFp)
             val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodQuantity.table, listOf(fp.id)).mapValues { it.value as FoodPortion }
 
-            assert(updatedFp.size == 1) { "more than 1 new foodpotion returned" }
+            assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
             QueryHelpers.processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
 
             fp.removeFromMeal()

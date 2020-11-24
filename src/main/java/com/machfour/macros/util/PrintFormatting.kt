@@ -58,8 +58,7 @@ object PrintFormatting {
         }
 
         val unitAbbr = if (unit != null) {
-            requireNotNull(unitNamer) { "If units are needed, unitNamer must be given" }
-            unitNamer.getAbbr(unit)
+            unitNamer?.getAbbr(unit) ?: unit.abbr
         } else {
             ""
         }

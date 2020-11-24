@@ -6,6 +6,7 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
 import com.machfour.macros.core.NutrientData
 import com.machfour.macros.core.NutritionCalculations.rescale
+import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.util.MiscUtils.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.StringJoiner.Companion.of
@@ -66,7 +67,7 @@ object CliUtils {
      */
     private const val quantityWidth = 10
     private const val notesWidth = 25
-    private const val nameWidth = PrintFormatting.nameWidth
+    private const val nameWidth = MealPrinter.nameWidth
     private const val start = " | "
     private const val sep = "  "
     private const val end = " |\n"
@@ -84,7 +85,12 @@ object CliUtils {
             val notes = i.notes
             val name = iFood.mediumName
             val noteString = notes ?: ""
-            val quantityString = PrintFormatting.formatQuantity(i.quantity, i.qtyUnit, width = quantityWidth, unitWidth = 2)
+            val quantityString = PrintFormatting.formatQuantity(
+                    qty = i.quantity,
+                    unit = i.qtyUnit,
+                    unitNamer = EnglishUnitNames.instance,
+                    width = quantityWidth,
+                    unitWidth = 2)
             out.printf(lineFormat, name, quantityString, noteString)
             // TODO replace quantity with serving if specified
             //Serving iServing = i.getServing();

@@ -2,17 +2,13 @@ package com.machfour.macros.util
 
 import com.machfour.macros.core.NutrientData
 import com.machfour.macros.names.ColumnStrings
+import com.machfour.macros.names.UnitNamer
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
 import java.util.Formatter
 
 object PrintFormatting {
-    const val nameWidth = 42
-    const val servingWidth = 6
-    const val shortDataWidth = 6
-    const val longDataWidth = 7
-
     fun formatQuantity(
             nd: NutrientData,
             n: Nutrient,
@@ -23,87 +19,72 @@ object PrintFormatting {
             withDp: Boolean = false,
             alignLeft: Boolean = false,
             unitAlignLeft: Boolean = false,
-            forNullQty: String = "",
             spaceBeforeUnit: Boolean = false
     ) : String {
         val qty = nd.amountOf(n, defaultValue = 0.0)
-        val unit: Unit?
-        val unitString: String?
-        if (withUnit) {
+        val unit = if (withUnit) {
             requireNotNull(colStrings) { "If units are needed, colStrings must be given" }
-            unit = nd.getUnitOrDefault(n)
-            unitString = colStrings.getAbbr(unit)
+            nd.getUnitOrDefault(n)
         } else {
-            unit = null
-            unitString = null
+            null
         }
 
         // TODO add asterisk to incomplete quantities
         return formatQuantity(
-                qty,
-                unit,
-                width,
-                unitWidth,
-                withDp,
-                alignLeft,
-                unitAlignLeft,
-                forNullQty,
-                unitString,
-                spaceBeforeUnit
+                qty = qty,
+                unit = unit,
+                unitNamer = colStrings,
+                width = width,
+                unitWidth = unitWidth,
+                withDp = withDp,
+                alignLeft = alignLeft,
+                unitAlignLeft = unitAlignLeft,
+                spaceBeforeUnit = spaceBeforeUnit
         )
     }
     fun formatQuantity(
-            qty: Double? = null,
+            qty: Double,
             unit: Unit? = null,
+            unitNamer: UnitNamer? = null,
             width: Int = 0,
             unitWidth: Int = 0,
             withDp: Boolean = false,
             alignLeft: Boolean = false,
             unitAlignLeft: Boolean = false,
-            forNullQty: String = "",
-            unitString: String? = null,
             spaceBeforeUnit: Boolean = false
     ): String {
-        qty ?: return forNullQty
-
-        var unitString = unitString
-        if (unitString == null && unit != null) {
-            unitString = unit.abbr
+        require(unitWidth <= 0 || width == 0 || (unitWidth + if (spaceBeforeUnit) 1 else 0) in 0 until width) {
+            "If width != 0, must have width > unitWidth >= 0 (unitWidth excludes space before unit)"
         }
 
-        var unitWidth = unitWidth
-        if (unitString != null && unitWidth <= 0) {
-            unitWidth = unitString.length
-            if (spaceBeforeUnit) {
-                unitWidth += 1
-            }
-        } 
-
-        require(unitWidth <= 0 || width == 0 || unitWidth in 0 until width) {
-            "If width != 0, must have width > unitWidth >= 0 (including space before unit)"
+        val unitAbbr = if (unit != null) {
+            requireNotNull(unitNamer) { "If units are needed, unitNamer must be given" }
+            unitNamer.getAbbr(unit)
+        } else {
+            ""
         }
-
+        // first format the unit, recording final unit width
+        val finalUnitWidth: Int
+        val formattedUnitString = if (unit != null && unitAbbr.isNotEmpty()) {
+            val space = if (spaceBeforeUnit) " " else ""
+            val unitString = space + unitAbbr
+            finalUnitWidth = if (unitWidth <= 0) unitString.length else (unitWidth + space.length)
+            val left = if (unitAlignLeft) "-" else ""
+            "%${left}${finalUnitWidth}s".format(unitString)
+        } else {
+            finalUnitWidth = 0
+            ""
+        }
 
         val floatFmt = if (withDp) ".1f" else ".0f"
-        val unitAlign = if (unitAlignLeft) "-" else ""
-        val unitFmt = "%${unitAlign}${unitWidth}s"
-        
-        if (unitString != null) {
-            if (spaceBeforeUnit) {
-                unitString = " $unitString"
-            }
-            unitString = unitFmt.format((if (spaceBeforeUnit) " " else "") + unitString)
-        } else {
-            unitString = ""
-        }
-
         return Formatter().let {
             if (alignLeft) {
-                it.format("%${floatFmt}${unitString}", qty)
+                it.format("%${floatFmt}${formattedUnitString}", qty)
                 if (width > 0) String.format("%-${width}s", it.toString()) else it.toString()
             } else {
-                it.format("%" + (if (width > 0) width - unitWidth else "") + floatFmt, qty)
-                it.toString() + unitString
+                val qtyWidthStr = if (width > 0) "${width - finalUnitWidth}" else ""
+                it.format("%$qtyWidthStr$floatFmt", qty)
+                it.toString() + formattedUnitString
             }
 
         }

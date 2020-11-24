@@ -8,6 +8,7 @@ import com.machfour.macros.core.NutritionCalculations.rescale
 import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.core.NutritionCalculations.withDefaultUnits
 import com.machfour.macros.names.EnglishColumnNames
+import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
@@ -17,7 +18,14 @@ import com.machfour.macros.util.UnicodeUtils
 import java.io.PrintStream
 
 object MealPrinter {
-    private const val columnSep = "   "
+    // printing widths
+    const val nameWidth = 41
+    const val servingWidth = 7
+    const val shortDataWidth = 6
+    const val longDataWidth = 7
+
+
+    private const val columnSep = "  "
     private val conciseTableCols = listOf(
           Nutrients.ENERGY
         , Nutrients.PROTEIN
@@ -50,7 +58,7 @@ object MealPrinter {
 
     private fun nutritionDataToRow(name: String, nd: NutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
         val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
-        val nutrientWidth = if (verbose) PrintFormatting.longDataWidth else PrintFormatting.shortDataWidth
+        val nutrientWidth = if (verbose) longDataWidth else shortDataWidth
 
         return ArrayList<String>(nutrientColumns.size + 2).apply {
             // add food name
@@ -66,11 +74,14 @@ object MealPrinter {
             }
             // add quantity and unit
             this += PrintFormatting.formatQuantity(
-                qty = qty,
-                unit = unit,
-                width = PrintFormatting.servingWidth,
-                unitWidth = 2,
-                unitAlignLeft = false
+                    qty = qty,
+                    unit = unit,
+                    unitNamer = EnglishUnitNames.instance,
+                    width = servingWidth,
+                    unitWidth = 2,
+                    alignLeft = false,
+                    spaceBeforeUnit = true,
+                    unitAlignLeft = true
             )
         }
     }
@@ -85,22 +96,22 @@ object MealPrinter {
         val rightAlign: MutableList<Boolean> = ArrayList(numCols)
         // first column has meal name (heading) and food names for other rows
         headingRow.add(meal.name)
-        rowWidths.add(PrintFormatting.nameWidth)
+        rowWidths.add(nameWidth)
         rightAlign.add(false)
         // next columns have names for each nutrient (heading) then corresponding data
         for (col in nutrientCols) {
             if (verbose) {
                 headingRow.add(EnglishColumnNames.longerNutrientNames.getValue(col))
-                rowWidths.add(PrintFormatting.longDataWidth)
+                rowWidths.add(longDataWidth)
             } else {
                 headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(col))
-                rowWidths.add(PrintFormatting.shortDataWidth)
+                rowWidths.add(shortDataWidth)
             }
             rightAlign.add(true)
         }
         // last column is quantity, so is a bit longer
         headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(Nutrients.QUANTITY))
-        rowWidths.add(PrintFormatting.servingWidth)
+        rowWidths.add(servingWidth)
         rightAlign.add(true)
 
         // row separator spans all columns plus each separator, but we discount the space

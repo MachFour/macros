@@ -135,7 +135,7 @@ class FoodEditor constructor(
                 nutrientData[nutrient].toString()
             } else {
                 val col = getColumnOrNutrientWithIndex(currentField) as Column<Food, *>
-                foodBuilder.getFieldAsString(col)
+                foodBuilder.getAsString(col)
             }
         }
 
@@ -477,7 +477,7 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printField(colStrings.getName(col), builder.getFieldAsString(col), columnIndex)
+            printField(colStrings.getName(col), builder.getAsString(col), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index

@@ -5,8 +5,8 @@ import com.machfour.macros.objects.Nutrient
 import com.machfour.macros.objects.Unit
 
 abstract class ColumnStringsImpl protected constructor(
-        private val columnNames: ColumnNamer,
-        private val unitNames: UnitNamer
+    private val columnNames: ColumnNamer,
+    private val unitNames: UnitNamer
 ) : ColumnStrings {
 
     // columnNames

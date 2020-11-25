@@ -89,14 +89,14 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             return
         }
         assert(settableColumns.contains(col))
-        val oldValue: J? = getField(col)
+        val oldValue: J? = get(col)
         draftData.put(col, value)
-        // validation
+
+        // don't revalidate unless the value changed
         val isChangedValue = oldValue != value
-        // if there was a type cast exception then there was an attempt to change the value
-        // which failed ... so it's like a pseudo-changed value
-        val wasTypeCastException = getErrorsInternal(col).contains(ValidationError.TYPE_MISMATCH)
-        if (isChangedValue || wasTypeCastException) {
+        // but if there was a type mismatch, we also don't revalidate because it would erase the error
+        val isTypeMismatch = getErrorsInternal(col).contains(ValidationError.TYPE_MISMATCH)
+        if (isChangedValue && !isTypeMismatch) {
             validateSingle(col)
         }
     }
@@ -112,21 +112,22 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             val castValue = col.type.fromRawString(value)
             setField(col, castValue)
         } catch (e: TypeCastException) {
-            // TODO this sets an error for the field... but technically its actual value wasn't changed.
-            // but I guess it's okay because the user should set the value once more (correctly) anyway
-            val errorList = getErrorsInternal(col)
-            errorList.clear()
-            errorList.add(ValidationError.TYPE_MISMATCH)
+            // record the type mismatch and then set field to null
+            getErrorsInternal(col).run {
+                clear()
+                add(ValidationError.TYPE_MISMATCH)
+            }
+            setField(col, null)
         }
     }
 
-    fun <J> getField(col: Column<M, J>): J? {
+    fun <J> get(col: Column<M, J>): J? {
         return draftData[col]
     }
 
     // null data represented as blank strings
-    fun <J> getFieldAsString(col: Column<M, J>): String {
-        val data = getField(col)
+    fun <J> getAsString(col: Column<M, J>): String {
+        val data = get(col)
         return data?.toString() ?: ""
     }
 
@@ -134,6 +135,10 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     private fun <J> getErrorsInternal(field: Column<M, J>): ErrorList {
         return validationErrors.getValue(field)
     }
+
+
+    fun <J> hasNoErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isEmpty()
+    fun <J> hasErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isNotEmpty()
 
     /*
      * Returns an immutable list containing identifiers of each failing

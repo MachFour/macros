@@ -92,4 +92,8 @@ class EnglishColumnNames private constructor(): ColumnNamer {
                 ?: throw UnsupportedOperationException("Name for $n not yet added, sorry!")
     }
 
+    override fun getAbbreviatedName(n: Nutrient): String {
+        return longerNutrientNames[n] ?: getName(n)
+    }
+
 }

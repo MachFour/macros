@@ -12,7 +12,7 @@ import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
-import com.machfour.macros.util.MiscUtils.javaTrim
+import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.Reader

@@ -5,9 +5,8 @@ import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
 import com.machfour.macros.core.NutrientData
-import com.machfour.macros.core.NutritionCalculations.rescale
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.util.MiscUtils.javaTrim
+import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.StringJoiner.Companion.of
 import java.io.BufferedReader

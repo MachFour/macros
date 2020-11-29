@@ -15,7 +15,7 @@ import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.Queries.saveObjects
 import com.machfour.macros.queries.Queries.selectColumn
-import com.machfour.macros.util.MiscUtils.javaTrim
+import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.Pair
 import com.machfour.macros.validation.SchemaViolation
 import org.supercsv.io.CsvMapReader

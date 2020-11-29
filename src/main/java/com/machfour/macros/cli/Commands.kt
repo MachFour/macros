@@ -2,7 +2,7 @@ package com.machfour.macros.cli
 
 import com.machfour.macros.cli.modes.*
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.util.MiscUtils.javaTrim
+import com.machfour.macros.util.javaTrim
 import java.util.Collections;
 
 /*

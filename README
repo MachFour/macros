@@ -1,0 +1,24 @@
+About:
+
+This project aims to develop software for calorie and nutrition counting that:
+1. Can be run locally (aka offline) and hence does not require registration or data collection
+2. Is personalised to each user, in particular allowing for easy curation of a customised food database
+3. Uses an open data format so that users may employ arbitrary tools to store and process their own data.
+
+This software is not really ready for public release, and does not have any documentation on how to use it. But I have published my code here for those who are interested, or may find something I have done to be useful for them.
+
+Data:
+
+Sample data for use with this app (which is pretty much foods that I have eaten at some time or other over the last three years) can be found at https://github.com/MachFour/macros-data
+
+Dependencies (current versions):
+
+ - Kotlin (1.4)
+ - SuperCSV (2.4.0)
+ - Google GSON (2.8.6)
+ - lanterna (3.1.0-alpha1)
+ - Xerial sqlite-jdbc (3.30.1)
+
+License:
+
+The Software and Source Code contained in this repository is subject to the terms of the GNU General Public License, version 3. You can find the terms of the GPLv3 in the LICENSE file, located at the root of this repository, or https://www.gnu.org/licenses/.

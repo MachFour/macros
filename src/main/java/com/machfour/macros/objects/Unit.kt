@@ -24,21 +24,20 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
 
     // values are cached here instead of using get() because there aren't many units and they're used a lot
 
-    val type: UnitType = UnitType.fromId(getData(UnitTable.TYPE_ID)!!)
-
-    override fun toString(): String = "$name (${abbr}), type ${type.name}"
-
     override val name: String = getData(UnitTable.NAME)!!
 
     val abbr: String = getData(UnitTable.ABBREVIATION)!!
-
+    val type: UnitType = UnitType.fromId(getData(UnitTable.TYPE_ID)!!)
     val metricEquivalent = getData(UnitTable.METRIC_EQUIVALENT)!!
-
     val isInbuilt = getData(UnitTable.INBUILT)!!
 
     // Measurement interface - for interop with Servings
     override val unitMultiplier = 1.0
     override val baseUnit = this
     override val isVolumeMeasurement = type === UnitType.VOLUME
+
+    private val string = "$name (${abbr}) [${type.name.firstOrNull() ?: "?"}]"
+    override fun toString(): String = string
+
 
 }

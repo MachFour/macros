@@ -90,4 +90,5 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
         foodPortions.removeAt(index)
     }
 
+    override fun toString(): String = "$name, $day"
 }

@@ -10,7 +10,8 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
 
     companion object {
         // factory has to come before table if it's an instance variable
-        val factory: Factory<Serving> = Factory { dataMap, objectSource -> Serving(dataMap, objectSource) }
+        val factory: Factory<Serving>
+            get() = Factories.serving
         val table: Table<Serving>
             get() = Schema.ServingTable.instance
     }

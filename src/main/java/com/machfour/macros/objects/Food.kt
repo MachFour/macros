@@ -21,21 +21,16 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
 
         // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
         // Hooray for preferring static constructors over new!!!
-        val factory: Factory<Food> = Factory { dataMap, objectSource ->
-                when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
-                    FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
-                    else -> Food(dataMap, objectSource)
-                }
-            }
-
-        // if factory is saved as an instance variable, then table has to come after
-
+        val factory: Factory<Food>
+            get() = Factories.food
+        
         val table: Table<Food>
             get() = FoodTable.instance
 
     }
 
     private val servingsInternal: MutableList<Serving> = ArrayList()
+
     val servings: List<Serving>
         get() = Collections.unmodifiableList(servingsInternal)
 

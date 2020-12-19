@@ -2,11 +2,7 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.CliUtils.printEnergyProportions
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
-import com.machfour.macros.core.NutritionCalculations
 import com.machfour.macros.core.NutrientData
-import com.machfour.macros.core.NutritionCalculations.rescale
-import com.machfour.macros.core.NutritionCalculations.rescale100
-import com.machfour.macros.core.NutritionCalculations.withDefaultUnits
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.objects.*
@@ -162,7 +158,7 @@ object MealPrinter {
             out.println("====================")
             out.println("Total for all meals:")
             out.println("====================")
-            NutritionCalculations.sum(meals.map { it.nutrientTotal }).let {
+            NutrientData.sum(meals.map { it.nutrientTotal }).let {
                 it.printNutrientData(verbose, out)
                 out.println()
                 it.printEnergyProportions(verbose, out)

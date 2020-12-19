@@ -7,25 +7,40 @@ import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.util.DateStamp
-import java.time.Instant
 
 object ExampleMeal {
-    val foodPortion = MacrosBuilder(FoodQuantity.table).run {
-        setField(Schema.FoodQuantityTable.MEAL_ID, MacrosEntity.NO_ID)
-        setField(Schema.FoodQuantityTable.FOOD_ID, ExampleFood.food2.id) // who knows what food this is haha
-        setField(Schema.FoodQuantityTable.QUANTITY, 100.0)
-        setField(Schema.FoodQuantityTable.QUANTITY_UNIT, "g")
-        setField(Schema.FoodQuantityTable.NOTES, "This is an example food portion")
-        build() as FoodPortion
-    }.also {
-        it.initFoodAndNd(ExampleFood.food2)
+    private val food = ExampleFood.food2
+
+    val foodPortion by lazy {
+        initFoodPortion()
     }
-    
-    val meal = MacrosBuilder(Meal.table).run {
-        setField(Schema.MealTable.DAY, DateStamp(2020, 10, 28))
-        setField(Schema.MealTable.NAME, "Example meal")
-        build()
-    }.also {
-        it.addFoodPortion(foodPortion)
+    val meal: Meal by lazy {
+        initMeal()
+    }
+
+    private fun initFoodPortion() : FoodPortion {
+        val fp = MacrosBuilder(FoodQuantity.table).run {
+            setField(Schema.FoodQuantityTable.MEAL_ID, MacrosEntity.NO_ID)
+            setField(Schema.FoodQuantityTable.FOOD_ID, food.id) // who knows what food this is haha
+            setField(Schema.FoodQuantityTable.QUANTITY, 100.0)
+            setField(Schema.FoodQuantityTable.QUANTITY_UNIT, "g")
+            setField(Schema.FoodQuantityTable.NOTES, "This is an example food portion")
+            build() as FoodPortion
+        }
+
+        fp.initFoodAndNd(food)
+        return fp
+    }
+
+    private fun initMeal(): Meal {
+        val meal = MacrosBuilder(Meal.table).run {
+            setField(Schema.MealTable.DAY, DateStamp(2020, 10, 28))
+            setField(Schema.MealTable.NAME, "Example meal")
+            setField(Schema.MealTable.NOTES, "Notable notes")
+            build()
+        }
+        
+        meal.addFoodPortion(foodPortion)
+        return meal
     }
 }

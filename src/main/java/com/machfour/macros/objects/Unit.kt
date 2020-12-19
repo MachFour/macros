@@ -6,11 +6,12 @@ import com.machfour.macros.core.Schema.UnitTable
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
-class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSource)
+class Unit internal constructor(data: ColumnData<Unit>, objectSource: ObjectSource)
     : MacrosEntityImpl<Unit>(data, objectSource), PortionMeasurement {
     companion object {
         // factory before table
-        val factory : Factory<Unit> = Factory { dataMap, objectSource -> Unit(dataMap, objectSource) }
+        val factory : Factory<Unit>
+            get() = Factories.unit
 
         val table: Table<Unit>
             get() = UnitTable.instance
@@ -22,7 +23,7 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
     override val table: Table<Unit>
         get() = Companion.table
 
-    // values are cached here instead of using get() because there aren't many units and they're used a lot
+    // values are cached here instead of using get() because there aren't many units but they're used a lot
 
     override val name: String = getData(UnitTable.NAME)!!
 
@@ -36,8 +37,9 @@ class Unit private constructor(data: ColumnData<Unit>, objectSource: ObjectSourc
     override val baseUnit = this
     override val isVolumeMeasurement = type === UnitType.VOLUME
 
-    private val string = "$name (${abbr}) [${type.name.firstOrNull() ?: "?"}]"
+    private val string = "$name (${abbr})" // [${type.name.firstOrNull() ?: "?"}]"
     override fun toString(): String = string
+
 
 
 }

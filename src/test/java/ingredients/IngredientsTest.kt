@@ -2,7 +2,6 @@ package ingredients
 
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.core.Schema
 import com.machfour.macros.ingredients.CompositeFoodSpec
 import com.machfour.macros.ingredients.IngredientSpec

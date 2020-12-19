@@ -2,7 +2,6 @@ package com.machfour.macros.sample
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Schema.FoodTable.Companion.BRAND
 import com.machfour.macros.core.Schema.FoodTable.Companion.CATEGORY
 import com.machfour.macros.core.Schema.FoodTable.Companion.FOOD_TYPE
@@ -18,19 +17,25 @@ import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Units
 
 object ExampleFood {
+    private val foodTable = Food.table
+
 
     /*
      * Food with no nutrition data
      */
-    val food1: Food = init1()
+    val food1: Food by lazy {
+        init1()
+    }
 
     /*
      * Food with nutrition data that has nonunit density
      */
-    val food2: Food = init2()
+    val food2: Food by lazy {
+        init2()
+    }
 
     private fun init1(): Food {
-        val data = ColumnData(Schema.FoodTable.instance)
+        val data = ColumnData(foodTable)
         data.put(INDEX_NAME, "food1")
         data.put(BRAND, "Max's")
         data.put(VARIETY, "really good")
@@ -44,7 +49,7 @@ object ExampleFood {
     }
 
     private fun init2(): Food {
-        val fData = ColumnData(Food.table)
+        val fData = ColumnData(foodTable)
         fData.put(INDEX_NAME, "generic-oil")
         fData.put(NAME, "Generic Oil")
         fData.put(CATEGORY, "oils")

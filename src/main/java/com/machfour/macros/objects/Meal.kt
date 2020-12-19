@@ -6,14 +6,15 @@ import com.machfour.macros.util.DateStamp
 
 import java.time.Instant
 
-class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
+class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
     companion object {
         fun sumNutrientData(meals: Collection<Meal>): NutrientData {
-            return NutritionCalculations.sum(meals.map { it.nutrientTotal })
+            return NutrientData.sum(meals.map { it.nutrientTotal })
         }
 
         // factory before table
-        val factory: Factory<Meal> = Factory { dataMap, objectSource -> Meal(dataMap, objectSource) }
+        val factory: Factory<Meal>
+            get() = Factories.meal
         val table: Table<Meal>
             get() = MealTable.instance
     }
@@ -29,7 +30,7 @@ class Meal private constructor(data: ColumnData<Meal>, objectSource: ObjectSourc
     val nutrientTotal: NutrientData
         get() {
             val allNutrientData = foodPortions.map { it.nutrientData }
-            return NutritionCalculations.sum(allNutrientData, null)
+            return NutrientData.sum(allNutrientData, null)
         }
 
     val name: String

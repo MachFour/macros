@@ -81,9 +81,10 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         validateAll()
     }
 
-    // Sets a field to the given value, unless it has been marked unsettable
-    // In the latter case, this function will do nothing
-    fun <J> setField(col: Column<M, J>, value: J?) {
+
+    // when setting null values, wasTypeMismatch differentiates between null as a value and null
+    // as an error value during a setFromString
+    private fun <J> setFieldInternal(col: Column<M, J>, value: J?, wasTypeMismatch: Boolean) {
         if (unsettableColumns.contains(col)) {
             // TODO throw exception?
             return
@@ -92,13 +93,16 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         val oldValue: J? = get(col)
         draftData.put(col, value)
 
-        // don't revalidate unless the value changed
-        val isChangedValue = oldValue != value
-        // but if there was a type mismatch, we also don't revalidate because it would erase the error
-        val isTypeMismatch = getErrorsInternal(col).contains(ValidationError.TYPE_MISMATCH)
-        if (isChangedValue && !isTypeMismatch) {
-            validateSingle(col)
+        if (oldValue != value || wasTypeMismatch || hasErrors(col)) {
+            validateSingle(col, wasTypeMismatch)
         }
+    }
+
+    // Sets a field to the given value, unless it has been marked unsettable
+    // In the latter case, this function will do nothing
+    fun <J> setField(col: Column<M, J>, value: J?) {
+        // can't be a type mismatch because the value is already of the correct type
+        setFieldInternal(col, value, wasTypeMismatch = false)
     }
 
     // empty strings treated as null
@@ -110,14 +114,9 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         assert(settableColumns.contains(col))
         try {
             val castValue = col.type.fromRawString(value)
-            setField(col, castValue)
+            setFieldInternal(col, castValue, wasTypeMismatch = false)
         } catch (e: TypeCastException) {
-            // record the type mismatch and then set field to null
-            getErrorsInternal(col).run {
-                clear()
-                add(ValidationError.TYPE_MISMATCH)
-            }
-            setField(col, null)
+            setFieldInternal(col, null, wasTypeMismatch = true)
         }
     }
 
@@ -158,17 +157,23 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     /* Saves a list of columns whose non-null constraints have been violated, or an empty list otherwise,
      * into the validationErrors map.
      */
-    private fun <J> validateSingle(col: Column<M, J>) {
+    private fun <J> validateSingle(col: Column<M, J>, wasTypeMismatch: Boolean = false) {
         assert(validationErrors.containsKey(col)) { "ValidationErrors not initialised properly" }
-        validationErrors.getValue(col).let { errorList ->
-            errorList.clear()
-            errorList.addAll(validate(draftData, col, customValidations))
+        validationErrors.getValue(col).let {
+            it.clear()
+            if (wasTypeMismatch) {
+                it.add(ValidationError.TYPE_MISMATCH)
+            } else {
+                it.addAll(validate(draftData, col, customValidations))
+            }
+
         }
     }
 
     // TODO this reruns the custom validation once for each column - inefficient
     private fun validateAll() {
         for (col in validationErrors.keys) {
+            // XXX note this will erase type mismatch errors
             validateSingle(col)
         }
     }

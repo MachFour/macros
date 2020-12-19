@@ -1,7 +1,6 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.NutritionCalculations.fillMissingData
 
 import java.util.Collections
 
@@ -27,7 +26,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
 
     private fun updateIngredientsNutrientData() {
         // don't combine densities of the foods
-        ingredientNutrientData = NutritionCalculations.sum(ingredients.map { it.nutrientData })
+        ingredientNutrientData = NutrientData.sum(ingredients.map { it.nutrientData })
     }
 
     /*

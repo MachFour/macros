@@ -6,7 +6,6 @@ import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
-import com.machfour.macros.core.NutritionCalculations.rescale100
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.DateTimeUtils
 

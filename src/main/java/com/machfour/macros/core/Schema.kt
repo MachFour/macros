@@ -46,8 +46,7 @@ object Schema {
 
     // Unit.factory() causes initialisation of Unit, which depends on this class.
     // So the columns are initialised as a side effect of calling that function.
-    class UnitTable private constructor()
-        : BaseTable<Unit>(TABLE_NAME, Unit.factory, COLUMNS) {
+    class UnitTable private constructor() : BaseTable<Unit>(TABLE_NAME, Factories.unit, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Unit"
 
@@ -80,7 +79,7 @@ object Schema {
         }
     }
 
-    class FoodTable private constructor() : BaseTable<Food>(TABLE_NAME, Food.factory, COLUMNS) {
+    class FoodTable private constructor() : BaseTable<Food>(TABLE_NAME, Factories.food, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Food"
 
@@ -132,7 +131,7 @@ object Schema {
 
     }
 
-    class ServingTable private constructor() : BaseTable<Serving>(TABLE_NAME, Serving.factory, COLUMNS) {
+    class ServingTable private constructor() : BaseTable<Serving>(TABLE_NAME, Factories.serving, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Serving"
 
@@ -166,7 +165,7 @@ object Schema {
         }
     }
 
-    class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Meal.factory, COLUMNS) {
+    class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Factories.meal, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Meal"
 
@@ -199,7 +198,7 @@ object Schema {
 
 
     // needs to come after FoodTable, ServingTable, MealTable
-    class FoodQuantityTable private constructor() : BaseTable<FoodQuantity>(TABLE_NAME, FoodQuantity.factory, COLUMNS) {
+    class FoodQuantityTable private constructor() : BaseTable<FoodQuantity>(TABLE_NAME, Factories.foodQuantity, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "FoodQuantity"
 
@@ -291,7 +290,7 @@ object Schema {
         }
     }
 
-    class NutrientTable private constructor() : BaseTable<Nutrient>(TABLE_NAME, Nutrient.factory, COLUMNS) {
+    class NutrientTable private constructor() : BaseTable<Nutrient>(TABLE_NAME, Factories.nutrient, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "Nutrient"
 
@@ -320,7 +319,7 @@ object Schema {
 
     }
 
-    class NutrientValueTable private constructor() : BaseTable<NutrientValue>(TABLE_NAME, NutrientValue.factory, COLUMNS) {
+    class NutrientValueTable private constructor() : BaseTable<NutrientValue>(TABLE_NAME, Factories.nutrientValue, COLUMNS) {
         companion object {
             private const val TABLE_NAME = "NutrientValue"
 

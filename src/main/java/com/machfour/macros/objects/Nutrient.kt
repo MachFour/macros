@@ -2,14 +2,15 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 
-class Nutrient private constructor(dataMap: ColumnData<Nutrient>, objectSource: ObjectSource)
+class Nutrient internal constructor(dataMap: ColumnData<Nutrient>, objectSource: ObjectSource)
     : MacrosEntityImpl<Nutrient>(dataMap, objectSource) {
 
     companion object {
 
         // Factory has to be initialised first before table is referenced.
         // This is a problem only if the factory is cached as an instance variable
-        val factory = Factory<Nutrient> { dataMap, objectSource -> Nutrient(dataMap, objectSource) }
+        val factory : Factory<Nutrient>
+            get() = Factories.nutrient
 
         val table: Table<Nutrient>
             get() = Schema.NutrientTable.instance

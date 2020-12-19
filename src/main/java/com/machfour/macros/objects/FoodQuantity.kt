@@ -1,8 +1,6 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.NutritionCalculations.rescale
-import com.machfour.macros.core.NutritionCalculations.withQuantityUnit
 import com.machfour.macros.objects.inbuilt.Units
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -11,17 +9,9 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
     : MacrosEntityImpl<FoodQuantity>(data, objectSource) {
 
     companion object {
-        val factory: Factory<FoodQuantity> = Factory {
-            dataMap, objectSource ->
-            val parentFoodId = dataMap[Schema.FoodQuantityTable.PARENT_FOOD_ID]
-            val mealId = dataMap[Schema.FoodQuantityTable.MEAL_ID]
-            require((parentFoodId != null) xor (mealId != null)) { "Exactly one of mealId and parentFoodId must be defined" }
-            when {
-                parentFoodId != null -> Ingredient(dataMap, objectSource)
-                mealId != null -> FoodPortion(dataMap, objectSource)
-                else -> throw IllegalArgumentException("Both meal id and parent food id are null")
-            }
-        }
+        val factory: Factory<FoodQuantity>
+            get() = Factories.foodQuantity
+
         val table: Table<FoodQuantity>
             get() = Schema.FoodQuantityTable.instance
     }
@@ -96,21 +86,27 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
     }
 
     val servingString: String?
-        get() = serving?.let { "$servingCountString ${it.name}" }
+        get() {
+            val s = serving
+            return if (s != null) "$servingCountString ${s.name}" else null
+        }
 
     // returns a string containing the serving count. If the serving count is close to an integer,
     // it is formatted as an integer.
     private val servingCountString: String
+        // test if can round
         get() {
-            // test if can round
-            servingCount.let {
-                val asInt = it.roundToInt()
-                return (if (abs(it - asInt) < 0.001) asInt else it).toString()
-            }
+            val c = servingCount
+            val asInt = c.roundToInt()
+            val error = c - asInt
+            return (if (abs(error) < 0.001) asInt else c).toString()
         }
 
     val servingCount: Double
-        get() = serving?.let { quantity/ it.quantity } ?: 0.0
+        get() {
+            val s = serving
+            return if (s != null) quantity / s.quantity else 0.0
+        }
 
 }
 

@@ -71,7 +71,7 @@ class NutrientDataTest {
 
     @Test
     fun testSum() {
-        val sum = NutritionCalculations.sum(listOf(nd1, nd2))
+        val sum = NutrientData.sum(listOf(nd1, nd2))
         assertEquals(192.0, sum.amountOf(Nutrients.FAT) as Double)
     }
 

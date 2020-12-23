@@ -85,6 +85,13 @@ object FoodQueries {
     fun getFoodIdsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Long> {
         return QueryHelpers.getIdsFromKeys(ds, Food.table, Schema.FoodTable.INDEX_NAME, indexNames)
     }
+    
+    @Throws(SQLException::class)
+    fun getFoodIdByIndexName(ds: MacrosDataSource, indexName: String): Long? {
+        val idMap = QueryHelpers.getIdsFromKeys(ds, Food.table, Schema.FoodTable.INDEX_NAME, listOf(indexName))
+        assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
+        return idMap.values.firstOrNull()
+    }
 
     // The proper way to get all foods
     @Throws(SQLException::class)

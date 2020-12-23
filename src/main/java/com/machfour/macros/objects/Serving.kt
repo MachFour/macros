@@ -1,7 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.objects.inbuilt.Nutrients.QUANTITY
 import com.machfour.macros.objects.inbuilt.Units
 

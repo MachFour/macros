@@ -2,6 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.MealTable
+import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.util.DateStamp
 
 import java.time.Instant

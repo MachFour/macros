@@ -4,7 +4,9 @@ enum class ValidationError(private val str: String) {
     NON_NULL("non-null"),
     TYPE_MISMATCH("type mismatch"),
     DATA_NOT_FOUND("data not found"),
-    UNIQUE("value must be unique")
+    UNIQUE("value must be unique"),
+    POSITIVE("value must be positive"),
+    NON_NEGATIVE("value cannot be negative"),
     ;
 
     override fun toString(): String = str

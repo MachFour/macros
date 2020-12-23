@@ -6,9 +6,11 @@ import com.machfour.macros.validation.ValidationError
 import java.util.Collections
 
 
-typealias ErrorList = MutableList<ValidationError>
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fromInstance: M?) {
+    fun interface ValueChangeListener<J> {
+        fun onValueChanged(newValue: J?, errors: List<ValidationError>)
+    }
 
     constructor(table: Table<M>): this(table, null)
     constructor(fromInstance: M): this(fromInstance.table, fromInstance)
@@ -41,12 +43,15 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      */
     private val draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
 
-    private val validationErrors = HashMap<Column<M, *>, ErrorList>(table.columns.size, 1f).also {
+    private val validationErrors = HashMap<Column<M, *>, MVErrorList>(table.columns.size, 1f).also {
         // init with empty lists
         for (col in table.columns) {
             it[col] = ArrayList()
         }
     }
+
+    // value change listeners
+    private val listeners: MutableMap<Column<M, *>, ValueChangeListener<*>> = HashMap()
 
     init {
         // requires draftData to be initialised
@@ -81,6 +86,19 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         validateAll()
     }
 
+    fun <J> setValueChangeListener(col: Column<M, J>, listener: ValueChangeListener<J>) {
+        listeners[col] = listener
+    }
+
+    private fun <J> getListener(col: Column<M, J>): ValueChangeListener<J>? {
+        return if (!listeners.containsKey(col)) null else listeners[col] as ValueChangeListener<J>
+    }
+
+    private fun <J> fireValueChangeListener(col: Column<M, J>) {
+        val newValue = get(col)
+        val errors = getErrorsInternal(col)
+        getListener(col)?.onValueChanged(newValue, errors)
+    }
 
     // when setting null values, wasTypeMismatch differentiates between null as a value and null
     // as an error value during a setFromString
@@ -95,6 +113,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
 
         if (oldValue != value || wasTypeMismatch || hasErrors(col)) {
             validateSingle(col, wasTypeMismatch)
+            fireValueChangeListener(col)
         }
     }
 
@@ -131,7 +150,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     }
 
     //
-    private fun <J> getErrorsInternal(field: Column<M, J>): ErrorList {
+    private fun <J> getErrorsInternal(field: Column<M, J>): MVErrorList {
         return validationErrors.getValue(field)
     }
 
@@ -164,7 +183,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             if (wasTypeMismatch) {
                 it.add(ValidationError.TYPE_MISMATCH)
             } else {
-                it.addAll(validate(draftData, col, customValidations))
+                val errors = validate(draftData, col, customValidations)
+                it.addAll(errors)
             }
 
         }
@@ -268,6 +288,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             }
             return allErrors
         }
+
     }
 
 }

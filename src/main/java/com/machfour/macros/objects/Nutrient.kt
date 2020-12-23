@@ -1,6 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.objects.helpers.Factories
 
 class Nutrient internal constructor(dataMap: ColumnData<Nutrient>, objectSource: ObjectSource)
     : MacrosEntityImpl<Nutrient>(dataMap, objectSource) {

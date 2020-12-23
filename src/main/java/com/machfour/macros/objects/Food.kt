@@ -2,6 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.FoodTable
+import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.objects.inbuilt.Units
 import java.lang.StringBuilder
 import java.util.Collections

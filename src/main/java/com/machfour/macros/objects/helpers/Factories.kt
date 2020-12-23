@@ -1,7 +1,9 @@
-package com.machfour.macros.objects
+package com.machfour.macros.objects.helpers
 
 import com.machfour.macros.core.Factory
 import com.machfour.macros.core.Schema
+import com.machfour.macros.objects.*
+import com.machfour.macros.objects.Unit
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues

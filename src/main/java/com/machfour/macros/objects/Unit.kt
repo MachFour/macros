@@ -2,6 +2,7 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.UnitTable
+import com.machfour.macros.objects.helpers.Factories
 
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.

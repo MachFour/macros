@@ -13,7 +13,7 @@ Sample data for use with this app (which is pretty much foods that I have eaten 
 
 Dependencies (current versions):
 
- - Kotlin (1.4)
+ - Kotlin (1.4.20)
  - SuperCSV (2.4.0)
  - Google GSON (2.8.6)
  - lanterna (3.1.0-alpha1)
@@ -22,3 +22,6 @@ Dependencies (current versions):
 License:
 
 The Software and Source Code contained in this repository is subject to the terms of the GNU General Public License, version 3. You can find the terms of the GPLv3 in the LICENSE file, located at the root of this repository, or https://www.gnu.org/licenses/.
+
+To discuss other licensing options, please contact me at <my github username>+macros@protonmail.com (the + sign is included).
+

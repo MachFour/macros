@@ -1,21 +1,21 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.objects.inbuilt.Units
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, objectSource: ObjectSource)
-    : MacrosEntityImpl<FoodQuantity>(data, objectSource) {
-
-    companion object {
-        val factory: Factory<FoodQuantity>
-            get() = Factories.foodQuantity
-
-        val table: Table<FoodQuantity>
-            get() = Schema.FoodQuantityTable.instance
-    }
+abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
+    data: ColumnData<M>,
+    objectSource: ObjectSource,
+    private val foodIdCol: Column.Fk<M, Long, Food>,
+    private val servingIdCol: Column.Fk<M, Long, Serving>,
+    private val quantityCol: Column<M, Double>,
+    private val quantityUnitCol: Column<M, String>,
+    private val notesCol: Column<M, String>,
+    private val maxNutrientVersionCol: Column<M, Long>
+)
+    : MacrosEntityImpl<M>(data, objectSource) {
 
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.
@@ -24,29 +24,27 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
         private set
     lateinit var nutrientData: NutrientData
         private set
-    val qtyUnit = Units.fromAbbreviation(data[Schema.FoodQuantityTable.QUANTITY_UNIT]!!)
+
+    val qtyUnit = Units.fromAbbreviation(data[quantityUnitCol]!!)
 
     // this is the only thing that may remain null after all initialisation is complete
     var serving: Serving? = null
         private set
 
-
-    override val table: Table<FoodQuantity>
-        get() = Companion.table
-    override val factory: Factory<FoodQuantity>
-        get() = Companion.factory
-
     val foodId: Long
-        get() = getData(Schema.FoodQuantityTable.FOOD_ID)!!
+        get() = getData(foodIdCol)!!
 
     val servingId: Long?
-        get() = getData(Schema.FoodQuantityTable.SERVING_ID)
+        get() = getData(servingIdCol)
 
     val quantity: Double
-        get() = getData(Schema.FoodQuantityTable.QUANTITY)!!
+        get() = getData(quantityCol)!!
+
+    val maxNutrientVersion: Long
+        get() = getData(maxNutrientVersionCol)!!
 
     val notes: String?
-        get() = getData(Schema.FoodQuantityTable.NOTES)
+        get() = getData(notesCol)
 
     fun prettyFormat(withNotes: Boolean): String {
         val quantityStr = "%.1f".format(quantity)
@@ -57,18 +55,8 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
         }
     }
 
-    // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
-    // the only thing that it misses out is checking that o is actually an instance of the subclass.
-    override fun equals(other: Any?): Boolean {
-        return other is FoodQuantity && super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
-
     fun initFoodAndNd(f: Food) {
-        assert(foreignKeyMatches(this, Schema.FoodQuantityTable.FOOD_ID, f))
+        assert(foreignKeyMatches(this, foodIdCol, f))
         food = f
         nutrientData = f.nutrientData.let {
             if (it.qtyUnit != qtyUnit) {
@@ -81,7 +69,7 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
 
     // for use during construction
     fun initServing(s: Serving) {
-        assert(serving == null && foreignKeyMatches(this, Schema.FoodQuantityTable.SERVING_ID, s))
+        assert(serving == null && foreignKeyMatches(this, servingIdCol, s))
         assert(foodId == s.foodId)
         serving = s
     }
@@ -100,7 +88,11 @@ open class FoodQuantity internal constructor(data: ColumnData<FoodQuantity>, obj
             val c = servingCount
             val asInt = c.roundToInt()
             val error = c - asInt
-            return (if (abs(error) < 0.001) asInt else c).toString()
+            return if (abs(error) < 0.001) {
+                asInt.toString()
+            } else {
+                "%.2f".format(c)
+            }
         }
 
     val servingCount: Double

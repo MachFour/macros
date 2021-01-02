@@ -82,7 +82,7 @@ class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSour
 
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
-        require(foreignKeyMatches(fp, Schema.FoodQuantityTable.MEAL_ID, this))
+        require(foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this))
         foodPortions.add(fp)
     }
 

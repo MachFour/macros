@@ -1,7 +1,7 @@
 
--- food quantity servings match foods
-CREATE TRIGGER check_food_quantity_servings_match_foods
-    BEFORE INSERT ON FoodQuantity
+-- food portion servings match foods
+CREATE TRIGGER check_food_portion_servings_match_foods
+    BEFORE INSERT ON FoodPortion
     WHEN (
         NEW.serving_id IS NOT NULL
         AND NOT EXISTS (
@@ -10,11 +10,11 @@ CREATE TRIGGER check_food_quantity_servings_match_foods
         )
     )
     BEGIN
-        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodQuantity');
+        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodPortion');
     END;
 
-CREATE TRIGGER check_food_quantity_servings_match_foods_2
-    BEFORE UPDATE ON FoodQuantity
+CREATE TRIGGER check_food_portion_servings_match_foods_2
+    BEFORE UPDATE ON FoodPortion
     WHEN (
         NEW.serving_id IS NOT NULL
         AND NOT EXISTS (
@@ -23,8 +23,35 @@ CREATE TRIGGER check_food_quantity_servings_match_foods_2
         )
     )
     BEGIN
-        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodQuantity');
+        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodPortion');
     END;
+
+-- ingredient servings match foods
+CREATE TRIGGER check_ingredient_servings_match_foods
+    BEFORE INSERT ON Ingredient
+    WHEN (
+            NEW.serving_id IS NOT NULL
+            AND NOT EXISTS (
+                SELECT * FROM Serving
+                WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
+            )
+        )
+BEGIN
+    SELECT RAISE (ABORT, 'Invalid food / serving combination for Ingredient');
+END;
+
+CREATE TRIGGER check_ingredient_servings_match_foods_2
+    BEFORE UPDATE ON Ingredient
+    WHEN (
+            NEW.serving_id IS NOT NULL
+            AND NOT EXISTS (
+                SELECT * FROM Serving
+                WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
+            )
+        )
+BEGIN
+    SELECT RAISE (ABORT, 'Invalid food / serving combination for Ingredient');
+END;
 
 CREATE TRIGGER check_valid_nutrient_value_units
     BEFORE INSERT ON NutrientValue
@@ -139,25 +166,45 @@ CREATE TRIGGER update_meal_timestamp
         WHERE id = NEW.id;
     END;
 
--- FoodQuantity
-CREATE TRIGGER init_food_quantity_timestamp
-    AFTER INSERT ON FoodQuantity
+-- FoodPortion
+CREATE TRIGGER init_food_portion_timestamp
+    AFTER INSERT ON FoodPortion
     WHEN (NEW.create_time = 0)
-    BEGIN
-        UPDATE FoodQuantity
-        SET create_time = strftime('%s', 'now')
-        WHERE id = NEW.id;
-    END;
+BEGIN
+    UPDATE FoodPortion
+    SET create_time = strftime('%s', 'now')
+    WHERE id = NEW.id;
+END;
 
-CREATE TRIGGER update_food_quantity_timestamp
-    AFTER UPDATE ON FoodQuantity
+CREATE TRIGGER update_food_portion_timestamp
+    AFTER UPDATE ON FoodPortion
     WHEN (NEW.modify_time = OLD.modify_time
         OR NEW.modify_time = 0)
-    BEGIN
-        UPDATE FoodQuantity
-        SET modify_time = strftime('%s', 'now')
-        WHERE id = NEW.id;
-    END;
+BEGIN
+    UPDATE FoodPortion
+    SET modify_time = strftime('%s', 'now')
+    WHERE id = NEW.id;
+END;
+
+-- Ingredient
+CREATE TRIGGER init_ingredient_timestamp
+    AFTER INSERT ON Ingredient
+    WHEN (NEW.create_time = 0)
+BEGIN
+    UPDATE Ingredient
+    SET create_time = strftime('%s', 'now')
+    WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER update_ingredient_timestamp
+    AFTER UPDATE ON Ingredient
+    WHEN (NEW.modify_time = OLD.modify_time
+        OR NEW.modify_time = 0)
+BEGIN
+    UPDATE Ingredient
+    SET modify_time = strftime('%s', 'now')
+    WHERE id = NEW.id;
+END;
 
 -- FoodCategory
 CREATE TRIGGER init_food_category_timestamp

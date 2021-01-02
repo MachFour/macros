@@ -5,7 +5,6 @@ import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.util.DateStamp
 
 import java.sql.SQLException
 
@@ -81,7 +80,7 @@ class Total : CommandImpl(NAME, USAGE) {
             try {
                 val mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.day!!)
                 if (mealsForDay.isEmpty()) {
-                    out.println("No meals recorded on " + DateStamp.prettyPrint(mealSpec.day))
+                    out.println("No meals recorded on " + mealSpec.day.prettyPrint())
                 } else {
                     MealPrinter.printMeals(mealsForDay.values, out, verbose, per100, true)
                 }

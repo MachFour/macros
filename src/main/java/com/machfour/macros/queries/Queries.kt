@@ -61,7 +61,7 @@ object Queries {
 
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> deleteObject(ds: MacrosDataSource, o: M): Int {
-        return ds.deleteById(o.id, o.table)
+        return ds.deleteById(o.table, o.id)
     }
 
     // TODO make this the general one
@@ -71,7 +71,7 @@ object Queries {
         if (objects.isNotEmpty()) {
             val table = objects[0].table
             objects.forEach {
-                deleted += ds.deleteById(it.id, table)
+                deleted += ds.deleteById(table, it.id)
             }
         }
         return deleted

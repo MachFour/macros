@@ -31,7 +31,7 @@ abstract class MacrosDatabase : MacrosDataSource {
     abstract fun execRawSQLString(sql: String)
 
     @Throws(SQLException::class)
-    abstract override fun <M> deleteById(id: Long, t: Table<M>): Int
+    abstract override fun <M> deleteById(t: Table<M>, id: Long): Int
 
     @Throws(SQLException::class)
     abstract override fun <M> stringSearch(

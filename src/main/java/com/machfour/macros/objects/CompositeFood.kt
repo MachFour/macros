@@ -7,15 +7,14 @@ import java.util.Collections
 class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
-    private lateinit var ingredientNutrientData: NutrientData
+    private var ingredientNutrientData = NutrientData()
     private var hasOverridingNutrientData: Boolean = false
-    private val ingredients: MutableList<Ingredient>
+    private val ingredients: MutableList<Ingredient> = ArrayList()
+
+    private var ingredientsNutrientDataNeedsUpdate = false
 
     init {
         assert(FoodType.fromString(dataMap[Schema.FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
-
-        ingredients = ArrayList()
-        hasOverridingNutrientData = false
     }
 
     // add overriding nutrient value
@@ -27,6 +26,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
     private fun updateIngredientsNutrientData() {
         // don't combine densities of the foods
         ingredientNutrientData = NutrientData.sum(ingredients.map { it.nutrientData })
+        ingredientsNutrientDataNeedsUpdate = false
     }
 
     /*
@@ -43,7 +43,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
         get() {
         // cache mutable property value
 
-        if (!this::ingredientNutrientData.isInitialized) {
+        if (ingredientsNutrientDataNeedsUpdate) {
             updateIngredientsNutrientData()
         }
 
@@ -61,11 +61,12 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
     }
 
     fun addIngredient(i: Ingredient) {
-        assert(!ingredients.contains(i) && foreignKeyMatches(i, Schema.FoodQuantityTable.PARENT_FOOD_ID, this))
+        assert(!ingredients.contains(i) && foreignKeyMatches(i, Schema.IngredientTable.PARENT_FOOD_ID, this))
         ingredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients
         ingredients.sortBy { it.id }
+        ingredientsNutrientDataNeedsUpdate = true
     }
 
 }

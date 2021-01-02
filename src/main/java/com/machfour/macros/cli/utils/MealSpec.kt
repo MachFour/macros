@@ -6,7 +6,6 @@ import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.prettyPrint
 import java.sql.SQLException
 
 /*
@@ -92,7 +91,7 @@ class MealSpec {
                 // use most recently modified meal today
                 processedObject = mealsForDay.values.maxByOrNull { it.modifyTime } !!
             } else {
-                error = "No meals recorded on " + prettyPrint(day)
+                error = "No meals recorded on " + day.prettyPrint()
             }
         } else {
             // if a name was given, try to find a matching meal with that name
@@ -114,7 +113,7 @@ class MealSpec {
                 }
                 else -> {
                     // meal doesn't exist and not allowed to create new meal
-                    error = "No meal with name '$name' found on ${prettyPrint(day)}"
+                    error = "No meal with name '$name' found on ${day.prettyPrint()}"
                 }
             }
         }

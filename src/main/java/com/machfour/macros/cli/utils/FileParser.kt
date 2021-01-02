@@ -10,7 +10,6 @@ import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
 import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
@@ -113,13 +112,13 @@ class FileParser {
                 unit = fps.unit ?: f.nutrientData.qtyUnit
                 quantity = fps.quantity
             }
-            val fpData = ColumnData(FoodQuantity.table)
-            fpData.put(Schema.FoodQuantityTable.FOOD_ID, f.id)
-            fpData.put(Schema.FoodQuantityTable.SERVING_ID, s?.id)
-            fpData.put(Schema.FoodQuantityTable.MEAL_ID, m.id)
-            fpData.put(Schema.FoodQuantityTable.QUANTITY_UNIT, unit.abbr)
-            fpData.put(Schema.FoodQuantityTable.QUANTITY, quantity)
-            val fp = FoodQuantity.factory.construct(fpData, ObjectSource.USER_NEW) as FoodPortion
+            val fpData = ColumnData(FoodPortion.table)
+            fpData.put(Schema.FoodPortionTable.FOOD_ID, f.id)
+            fpData.put(Schema.FoodPortionTable.SERVING_ID, s?.id)
+            fpData.put(Schema.FoodPortionTable.MEAL_ID, m.id)
+            fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.abbr)
+            fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
+            val fp = FoodPortion.factory.construct(fpData, ObjectSource.USER_NEW)
             fp.initFoodAndNd(f)
             if (s != null) {
                 fp.initServing(s)
@@ -248,7 +247,7 @@ class FileParser {
         val foodIndexNames = getAllIndexNames(mealSpecs.values)
         val meals: MutableList<Meal> = ArrayList()
         val foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames)
-        val currentDay = currentDate()
+        val currentDay = DateStamp.currentDate
         for ((key, value) in mealSpecs) {
             val m = makeMeal(key.name!!, currentDay)
             for (fps in value) {

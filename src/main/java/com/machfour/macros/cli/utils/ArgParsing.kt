@@ -66,7 +66,7 @@ object ArgParsing {
     fun dayStringParse(dayString: String?): DateStamp? {
         // default values
         if (dayString == null) {
-            return DateStamp.currentDate()
+            return DateStamp.currentDate
         }
         try {
             // enter day as '-1' for yesterday, '0' for today, '1' for tomorrow, etc.

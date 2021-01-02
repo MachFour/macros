@@ -3,8 +3,6 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.MealSpec
-import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.util.DateStamp
 
 
 class NewMeal : CommandImpl(NAME, USAGE) {
@@ -34,7 +32,7 @@ class NewMeal : CommandImpl(NAME, USAGE) {
             return 1
         }
         if (mealSpec.isCreated) {
-            val prettyDay = DateStamp.prettyPrint(mealSpec.day!!)
+            val prettyDay = mealSpec.day!!.prettyPrint()
             out.println("Created meal '${mealSpec.name}' on $prettyDay")
         }
         //Meal toEdit = mealSpec.processedObject();

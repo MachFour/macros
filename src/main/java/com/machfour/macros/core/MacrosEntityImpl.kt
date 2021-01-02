@@ -87,7 +87,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return ColumnData.columnsAreEqual(this.data, o.data, columnsToCheck)
     }
 
-    override fun <J> getData(col: Column<M, J>): J? {
+    final override fun <J> getData(col: Column<M, J>): J? {
         val value = data[col]
         assert(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
         return value

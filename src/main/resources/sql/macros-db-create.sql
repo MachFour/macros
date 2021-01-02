@@ -209,8 +209,8 @@ CREATE TABLE Meal (
         CHECK (duration >= 0)
 );
 
--- Encompasses both FoodPortions in meals and Ingredients in Composite foods.
-CREATE TABLE FoodQuantity (
+CREATE TABLE FoodPortion (
+    -- Columns shared with Ingredient
       id                   INTEGER PRIMARY KEY ASC
     , quantity             REAL NOT NULL
     -- XXX what happens if the unit changes (i.e. a food once measured by volume
@@ -218,9 +218,8 @@ CREATE TABLE FoodQuantity (
     , quantity_unit        TEXT NOT NULL
     -- food / ingredient ID
     , food_id              INTEGER NOT NULL
-    -- exactly one of these must be defined
-    , meal_id              INTEGER DEFAULT NULL
-    , parent_food_id    INTEGER DEFAULT NULL
+    -- used for versioning of food nutrients
+    , nutrient_max_version INTEGER NOT NULL
     -- records whether user entered the quantity as a serving.
     , serving_id           INTEGER DEFAULT NULL
     -- for arbitrary text
@@ -228,42 +227,107 @@ CREATE TABLE FoodQuantity (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
 
-    , CONSTRAINT valid_unit
-        FOREIGN KEY (quantity_unit)
-        REFERENCES Unit (abbreviation)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-    , CONSTRAINT valid_food
-        FOREIGN KEY (food_id)
-        REFERENCES Food (id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-    , CONSTRAINT food_portion_xor_ingredient
-        CHECK ((meal_id IS NULL) <> (parent_food_id IS NULL))
-    -- when meal or parent food is deleted, records of foods contained
-    -- are also deleted.
-    , CONSTRAINT valid_meal
-        FOREIGN KEY (meal_id)
-        REFERENCES Meal (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-    , CONSTRAINT valid_composite_food
-        FOREIGN KEY (parent_food_id)
-        REFERENCES Food (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-    , CONSTRAINT cannot_contain_itself
-        CHECK (parent_food_id != id)
+    -- FoodPortion specific
 
+    , meal_id              INTEGER NOT NULL
+    , recipe_max_version   INTEGER NOT NULL
+
+    -- Constraints shared with Ingredient
+    , CONSTRAINT valid_unit
+          FOREIGN KEY (quantity_unit)
+              REFERENCES Unit (abbreviation)
+              ON UPDATE CASCADE
+              ON DELETE RESTRICT
+    , CONSTRAINT valid_food
+          FOREIGN KEY (food_id)
+              REFERENCES Food (id)
+              ON DELETE RESTRICT
+              ON UPDATE CASCADE
     -- we don't really care if servings are deleted, since the
     -- quantity is the important one anyway.
     -- can always be set to a different serving of that food
     , CONSTRAINT valid_serving
-        FOREIGN KEY (serving_id)
-        REFERENCES Serving (id)
-        -- trigger to set only the serving to null
-        ON DELETE SET NULL
-        ON UPDATE CASCADE
+          FOREIGN KEY (serving_id)
+              REFERENCES Serving (id)
+              -- trigger to set only the serving to null
+              ON DELETE SET NULL
+              ON UPDATE CASCADE
+    , CONSTRAINT valid_nutrient_version
+          CHECK (nutrient_max_version >= 1)
+
+    -- Constraints not shared with Ingredient
+
+    -- when meal or parent food is deleted, records of foods contained
+    -- are also deleted.
+    , CONSTRAINT valid_meal
+          FOREIGN KEY (meal_id)
+              REFERENCES Meal (id)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
+    , CONSTRAINT valid_recipe_version
+          CHECK (recipe_max_version >= 1)
+
+);
+
+CREATE TABLE Ingredient (
+    -- Columns shared with FoodPortion
+      id                   INTEGER PRIMARY KEY ASC
+    , quantity             REAL NOT NULL
+    -- XXX what happens if the unit changes (i.e. a food once measured by volume
+    -- is now measured as a solid (for nutrition info)?
+    , quantity_unit        TEXT NOT NULL
+    -- food / ingredient ID
+    , food_id              INTEGER NOT NULL
+    -- used for versioning of food nutrients
+    -- records whether user entered the quantity as a serving.
+    , serving_id           INTEGER DEFAULT NULL
+    , nutrient_max_version INTEGER NOT NULL
+    -- for arbitrary text
+    , notes                TEXT DEFAULT NULL
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+
+    -- Ingredient specific columns
+    , parent_food_id       INTEGER NOT NULL
+    -- used for versioning of recipes
+    , recipe_version       INTEGER NOT NULL
+
+    -- Constraints shared with FoodPortion
+    , CONSTRAINT valid_unit
+          FOREIGN KEY (quantity_unit)
+              REFERENCES Unit (abbreviation)
+              ON UPDATE CASCADE
+              ON DELETE RESTRICT
+    , CONSTRAINT valid_food
+          FOREIGN KEY (food_id)
+              REFERENCES Food (id)
+              ON DELETE RESTRICT
+              ON UPDATE CASCADE
+    -- we don't really care if servings are deleted, since the
+    -- quantity is the important one anyway.
+    -- can always be set to a different serving of that food
+    , CONSTRAINT valid_serving
+          FOREIGN KEY (serving_id)
+              REFERENCES Serving (id)
+              -- trigger to set only the serving to null
+              ON DELETE SET NULL
+              ON UPDATE CASCADE
+    , CONSTRAINT valid_nutrient_version
+          CHECK (nutrient_max_version >= 1)
+    , CONSTRAINT valid_nutrient_version
+          CHECK (nutrient_max_version >= 1)
+
+    -- Constraints not shared with FoodPortion
+    , CONSTRAINT valid_recipe_version
+          CHECK (recipe_version >= 1)
+    , CONSTRAINT valid_composite_food
+          FOREIGN KEY (parent_food_id)
+              REFERENCES Food (id)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
+    , CONSTRAINT cannot_contain_itself
+          CHECK (parent_food_id != id)
+
 );
 
 CREATE TABLE Nutrient (
@@ -282,6 +346,8 @@ CREATE TABLE NutrientValue (
     , nutrient_id          INTEGER NOT NULL
     , food_id              INTEGER NOT NULL
     , value                REAL NOT NULL
+    -- used to record changes to food nutrient values, but keep the same food
+    , version              INTEGER NOT NULL
     , unit_id              INTEGER NOT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
@@ -296,9 +362,10 @@ CREATE TABLE NutrientValue (
         REFERENCES Food (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+    , CONSTRAINT valid_version
+          CHECK (version >= 1)
     , CONSTRAINT single_nutrient_per_food
-        -- TODO this might change if versions are added
-        UNIQUE (food_id, nutrient_id)
+        UNIQUE (food_id, nutrient_id, version)
     , CONSTRAINT valid_unit
         -- have to make sure that unit has the correct type in code/trigger
         FOREIGN KEY (unit_id)

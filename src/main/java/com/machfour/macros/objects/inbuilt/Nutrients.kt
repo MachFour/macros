@@ -35,7 +35,7 @@ object Nutrients {
     val CAFFEINE: Nutrient
 
 
-    private val idMap: MutableMap<Long, Nutrient> = LinkedHashMap(25, 1f)
+    private val idMap: MutableMap<Long, Nutrient> = LinkedHashMap(30, .9f)
 
     // initialised when registration is turned off
     private lateinit var nutrientSet: Set<Nutrient>
@@ -43,12 +43,13 @@ object Nutrients {
 
     private fun initNutrientSets() {
         nutrientSet = idMap.values.toSet()
-        nutrientSetWithoutQuantity = idMap.values.filter{ it != QUANTITY }.toSet()
+        nutrientSetWithoutQuantity = nutrientSet.minusElement(QUANTITY)
     }
 
     // whether new Nutrients can be registered:
-    // once nutrients start being used in NutrientData objects, we can't be adding more
-    // this is set to false by any accesses of nutrientIterator, numNutrients, or fromId
+    // Since the nutrients are a global state, once nutrients start being used in NutrientData objects,
+    // we can't be adding more.
+    // This is set to false by any accesses of nutrientIterator, numNutrients, or fromId
     private var registrationAllowed = true
         set(value) {
             // only allow setting false

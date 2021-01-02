@@ -1,13 +1,9 @@
 package ingredients
 
-import com.machfour.macros.core.Schema
 import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.objects.CompositeFood
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.FoodType
-import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.queries.FoodQuantityQueries
+import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner
 import org.junit.jupiter.api.Assertions
@@ -26,7 +22,7 @@ class IngredientsParserTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                FoodQuantityQueries.deleteAllIngredients(db)
+                FoodPortionQueries.deleteAllIngredients(db)
                 FoodQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")

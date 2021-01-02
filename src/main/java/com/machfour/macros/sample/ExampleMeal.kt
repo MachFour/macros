@@ -4,7 +4,6 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.util.DateStamp
 
@@ -19,13 +18,13 @@ object ExampleMeal {
     }
 
     private fun initFoodPortion() : FoodPortion {
-        val fp = MacrosBuilder(FoodQuantity.table).run {
-            setField(Schema.FoodQuantityTable.MEAL_ID, MacrosEntity.NO_ID)
-            setField(Schema.FoodQuantityTable.FOOD_ID, food.id) // who knows what food this is haha
-            setField(Schema.FoodQuantityTable.QUANTITY, 100.0)
-            setField(Schema.FoodQuantityTable.QUANTITY_UNIT, "g")
-            setField(Schema.FoodQuantityTable.NOTES, "This is an example food portion")
-            build() as FoodPortion
+        val fp = MacrosBuilder(FoodPortion.table).run {
+            setField(Schema.FoodPortionTable.MEAL_ID, MacrosEntity.NO_ID)
+            setField(Schema.FoodPortionTable.FOOD_ID, food.id) // who knows what food this is haha
+            setField(Schema.FoodPortionTable.QUANTITY, 100.0)
+            setField(Schema.FoodPortionTable.QUANTITY_UNIT, "g")
+            setField(Schema.FoodPortionTable.NOTES, "This is an example food portion")
+            build()
         }
 
         fp.initFoodAndNd(food)

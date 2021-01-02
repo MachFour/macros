@@ -11,7 +11,6 @@ import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.MealQueries.saveFoodPortions
 import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.FoodPortionSpec
 import java.io.PrintStream
 import java.sql.SQLException
@@ -94,7 +93,7 @@ class Portion : CommandImpl(NAME, USAGE) {
         }
         if (!mealSpec.isMealSpecified) {
             val name = mealSpec.name
-            val dayString = if (mealSpec.day != null) DateStamp.prettyPrint(mealSpec.day) else "(invalid day)"
+            val dayString = if (mealSpec.day != null) mealSpec.day.prettyPrint() else "(invalid day)"
             out.println("No meal specified, assuming $name on $dayString")
         }
         mealSpec.process(ds, true)

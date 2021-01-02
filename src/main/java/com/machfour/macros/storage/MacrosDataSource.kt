@@ -45,7 +45,7 @@ interface MacrosDataSource {
     fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
 
     @Throws(SQLException::class)
-    fun <M> deleteById(id: Long, t: Table<M>): Int
+    fun <M> deleteById(t: Table<M>, id: Long): Int
 
     @Throws(SQLException::class)
     fun <M> clearTable(t: Table<M>): Int

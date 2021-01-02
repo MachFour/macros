@@ -54,6 +54,16 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
     // returns epoch millis of midnight on this date, in the UTC timezone
     fun toEpochMillisUTC(): Long = toEpochMillis(utcTz)
 
+    fun prettyPrint(): String {
+        val prettyStr = StringBuilder(toString())
+        val today = currentDate
+        if (this == today) {
+            prettyStr.append(" (today)")
+        } else if (this == today.step(-1)) {
+            prettyStr.append(" (yesterday)")
+        }
+        return prettyStr.toString()
+    }
 
     companion object {
         private val internalClock = Clock.systemDefaultZone()
@@ -62,31 +72,18 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
 
         fun ofLocalDate(d: LocalDate): DateStamp = DateStamp(d)
 
-        fun prettyPrint(day: DateStamp): String {
-            val prettyStr = StringBuilder(day.toString())
-            val today = currentDate()
-            if (day == today) {
-                prettyStr.append(" (today)")
-            } else if (day == today.step(-1)) {
-                prettyStr.append(" (yesterday)")
-            }
-            return prettyStr.toString()
-        }
-
         /*
          * Get corresponding DateStamp for a number of days ago by using the Calendar's
          * field addition methods to add a negative amount of days
          */
-        fun forDaysAgo(daysAgo: Long): DateStamp = currentDate().step(-1 * daysAgo)
+        fun forDaysAgo(daysAgo: Long): DateStamp = currentDate.step(-1 * daysAgo)
 
         fun forEpochDay(epochDay: Long): DateStamp {
             return DateStamp(LocalDate.ofEpochDay(epochDay))
         }
 
-        /*
-         * Constructor for current moment
-         */
-        fun currentDate(): DateStamp = DateStamp(LocalDate.now())
+        val currentDate: DateStamp
+            get() = DateStamp(LocalDate.now())
 
         /*
          * Creates a new DateStamp instance from an ISO-8601 string, e.g '2017-08-01'

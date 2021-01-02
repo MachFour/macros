@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.*
 import com.machfour.macros.storage.DatabaseUtils.makeIdMap
@@ -20,6 +21,10 @@ object FoodQueries {
     // empty list will be returned if keyword is empty string
     // If keyword is only 1 or 2 chars, search only by exact match and index name prefix
     // exact matches will come first, followed by prefix results, followed by matches on substrings of index names
+    // TODO check for recent FoodQuantities entered, and use the frecencies to sort the list
+    //  order: exact match, most frecent, other results
+    //  also be adaptive - if there only few results, add more results from less selective searches
+    //  e.g. not just prefix searches as strings get longer
     @Throws(SQLException::class)
     fun foodSearch(ds: MacrosDataSource, keyword: String): Set<Long> {
         if (keyword.isEmpty()) {
@@ -100,13 +105,23 @@ object FoodQueries {
         val allServings = ds.getAllRawObjects(Serving.table)
         val allNutrientData = ds.getAllRawObjects(NutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = ds.getAllRawObjects(FoodQuantity.table)
-            .filterValues { it is Ingredient }
-            .mapValues { it.value as Ingredient }
+        val allIngredients = ds.getAllRawObjects(Ingredient.table)
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
         return ArrayList(allFoods.values)
     }
+
+    @Throws(SQLException::class)
+    fun forgetFood(ds: MacrosDataSource, f: Food) {
+        require(f.objectSource === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
+        // delete nutrition data, foodQuantities, servings, then food
+
+        // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
+        ds.deleteByColumn(FoodPortion.table, Schema.FoodPortionTable.FOOD_ID, listOf(f.id))
+        ds.deleteByColumn(Ingredient.table, Schema.IngredientTable.FOOD_ID, listOf(f.id))
+        Queries.deleteObject(ds, f)
+    }
+
 
     @Throws(SQLException::class)
     fun getFoodsById(ds: MacrosDataSource, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
@@ -114,15 +129,15 @@ object FoodQueries {
         // we can sort it later if necessary
         val unorderedFoods = QueryHelpers.getRawObjectsByIds(ds, Food.table, foodIds)
         QueryHelpers.processRawFoodMap(ds, unorderedFoods)
-        if (!preserveOrder) {
-            return unorderedFoods
-        } else {
+        return if (preserveOrder) {
             // match order of ids in input
-            val orderedFoods: MutableMap<Long, Food> = LinkedHashMap(unorderedFoods.size)
-            for (id in foodIds) {
-                unorderedFoods[id]?.let { orderedFoods[id] = it }
+            LinkedHashMap<Long, Food>(unorderedFoods.size).also { orderedFoods ->
+                for (id in foodIds.filter { unorderedFoods.containsKey(it) }) {
+                    orderedFoods[id] = unorderedFoods.getValue(id)
+                }
             }
-            return orderedFoods
+        } else {
+            unorderedFoods
         }
     }
 
@@ -152,5 +167,12 @@ object FoodQueries {
 
     fun deleteAllCompositeFoods(ds: MacrosDataSource) : Int {
         return ds.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+    }
+
+    @Throws(SQLException::class)
+    fun getParentFoodIdsContainingFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
+        val parentIdCol = Schema.IngredientTable.PARENT_FOOD_ID
+        val foodIdCol = Schema.IngredientTable.FOOD_ID
+        return ds.selectColumn(Ingredient.table, parentIdCol, foodIdCol, foodIds, true).filterNotNull()
     }
 }

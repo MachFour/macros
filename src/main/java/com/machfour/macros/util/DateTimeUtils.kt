@@ -22,6 +22,10 @@ object DateTimeUtils {
             .ofLocalizedDateTime(FormatStyle.MEDIUM)
             .withZone(ZoneId.systemDefault())
 
+    val LOCALIZED_DATETIME_SHORT : DateTimeFormatter = DateTimeFormatter
+        .ofLocalizedDateTime(FormatStyle.SHORT)
+        .withZone(ZoneId.systemDefault())
+
     // returns a ZonedDateTime from the given instant with the system default ZoneID
     fun Instant.toDateTime(): ZonedDateTime {
         return atZone(ZoneId.systemDefault())

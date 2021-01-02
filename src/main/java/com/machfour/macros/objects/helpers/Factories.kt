@@ -1,5 +1,6 @@
 package com.machfour.macros.objects.helpers
 
+import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.Factory
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.*
@@ -21,17 +22,9 @@ object Factories {
 
     val meal: Factory<Meal> = Factory { dataMap, objectSource -> Meal(dataMap, objectSource) }
 
-    val foodQuantity : Factory<FoodQuantity> = Factory {
-        dataMap, objectSource ->
-        val parentFoodId = dataMap[Schema.FoodQuantityTable.PARENT_FOOD_ID]
-        val mealId = dataMap[Schema.FoodQuantityTable.MEAL_ID]
-        require((parentFoodId != null) xor (mealId != null)) { "Exactly one of mealId and parentFoodId must be defined" }
-        when {
-            parentFoodId != null -> Ingredient(dataMap, objectSource)
-            mealId != null -> FoodPortion(dataMap, objectSource)
-            else -> throw IllegalArgumentException("Both meal id and parent food id are null")
-        }
-    }
+    val foodPortion: Factory<FoodPortion> = Factory { dataMap, objectSource -> FoodPortion(dataMap, objectSource) }
+
+    val ingredient: Factory<Ingredient> = Factory { dataMap, objectSource -> Ingredient(dataMap, objectSource) }
 
     val nutrientValue: Factory<NutrientValue> = Factory { dataMap, objectSource -> NutrientValue(dataMap, objectSource) }
 

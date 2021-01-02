@@ -2,7 +2,7 @@ package com.machfour.macros.storage
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.Schema.FoodTable
-import com.machfour.macros.core.Schema.FoodQuantityTable
+import com.machfour.macros.core.Schema.IngredientTable
 import com.machfour.macros.core.Schema.ServingTable
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.names.ENERGY_UNIT_NAME
@@ -121,7 +121,7 @@ object CsvImport {
                         continue  // it's a blank row
                     }
                     // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                    val ingredientData = extractData(csvRow, FoodQuantity.table)
+                    val ingredientData = extractData(csvRow, Ingredient.table)
                     val compositeIndexName = csvRow.getValue("recipe_index_name")
                             ?: throw CsvException("No value for field: composite_index_name")
                     val ingredientIndexName = csvRow["ingredient_index_name"]
@@ -129,11 +129,11 @@ object CsvImport {
                     // TODO error handling
                     val ingredientFood = getFoodByIndexName(ds, ingredientIndexName)
                             ?: throw CsvException("No ingredient exists with index name: $ingredientIndexName")
-                    ingredientData.put(FoodQuantityTable.PARENT_FOOD_ID, MacrosEntity.NO_ID)
-                    ingredientData.put(FoodQuantityTable.FOOD_ID, ingredientFood.id)
-                    val i = FoodQuantity.factory.construct(ingredientData, ObjectSource.IMPORT) as Ingredient
+                    ingredientData.put(IngredientTable.PARENT_FOOD_ID, MacrosEntity.NO_ID)
+                    ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
+                    val i = Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT)
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
-                    i.setFkParentNaturalKey(FoodQuantityTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
+                    i.setFkParentNaturalKey(Schema.IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     i.initFoodAndNd(ingredientFood)
 
                     // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
@@ -309,7 +309,7 @@ object CsvImport {
         // add all the ingredients for non-duplicated recipes to one big list, then save them all
         val allIngredients: List<Ingredient> = ingredientsByRecipe.flatMap { it.value }
 
-        val completedIngredients = completeForeignKeys(ds, allIngredients, FoodQuantityTable.PARENT_FOOD_ID)
+        val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
         saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
     }
 }

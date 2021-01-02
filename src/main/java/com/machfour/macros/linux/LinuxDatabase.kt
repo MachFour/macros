@@ -141,7 +141,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     }
 
     @Throws(SQLException::class)
-    override fun <M> deleteById(id: Long, t: Table<M>): Int {
+    override fun <M> deleteById(t: Table<M>, id: Long): Int {
         val c = connection
         try {
             val sqlTemplate = DatabaseUtils.deleteWhereTemplate(t, t.idColumn, 1)

@@ -7,11 +7,7 @@ import com.machfour.macros.cli.utils.ArgParsing.findArgument
 import com.machfour.macros.queries.MealQueries.getMealsForDay
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
-import com.machfour.macros.util.DateStamp.Companion.prettyPrint
 import java.sql.SQLException
-import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -33,7 +29,7 @@ class Meals : CommandImpl(NAME, USAGE) {
         val (_, argument, status) = findArgument(args, 1)
         val d : DateStamp = when (status) {
             ArgParsing.Status.NOT_FOUND -> {
-                currentDate()
+                DateStamp.currentDate
             }
             ArgParsing.Status.OPT_ARG_MISSING -> {
                 err.println("-d option requires a day specified")
@@ -54,9 +50,9 @@ class Meals : CommandImpl(NAME, USAGE) {
         try {
             val meals = getMealsForDay(db, d)
             if (meals.isEmpty()) {
-                out.println("No meals recorded on " + prettyPrint(d))
+                out.println("No meals recorded on " + d.prettyPrint())
             } else {
-                out.println("Meals recorded on " + prettyPrint(d) + ":")
+                out.println("Meals recorded on " + d.prettyPrint() + ":")
                 out.println()
                 out.println(String.format("%-16s %-16s", "Name", "Last Modified"))
                 out.println("=================================")

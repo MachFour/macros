@@ -19,7 +19,7 @@ internal object QueryHelpers {
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
     @Throws(SQLException::class)
-    internal fun getRawMealsById(ds: MacrosDataSource, mealIds: List<Long>): Map<Long, Meal> {
+    internal fun getRawMealsById(ds: MacrosDataSource, mealIds: Collection<Long>): Map<Long, Meal> {
         return ds.getRawObjectsByKeys(Meal.table, Schema.MealTable.ID, mealIds)
     }
 
@@ -80,8 +80,7 @@ internal object QueryHelpers {
             //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
             val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
             val nutrientValues = getRawObjectsForParentFk(ds, foodMap, NutrientValue.table, Schema.NutrientValueTable.FOOD_ID)
-            val ingredients = getRawObjectsForParentFk(ds, foodMap, FoodQuantity.table, Schema.FoodQuantityTable.PARENT_FOOD_ID)
-                    .mapValues { it.value as Ingredient }
+            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, Schema.IngredientTable.PARENT_FOOD_ID)
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
             processRawIngredients(ds, ingredients)
             processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)
@@ -161,11 +160,10 @@ internal object QueryHelpers {
 
     @Throws(SQLException::class)
     private fun getRawFoodPortionsForMeal(ds: MacrosDataSource, meal: Meal): Map<Long, FoodPortion> {
-        return Queries.selectColumn(ds, FoodQuantity.table, Schema.FoodQuantityTable.ID, Schema.FoodQuantityTable.MEAL_ID, meal.id)
+        return Queries.selectColumn(ds, FoodPortion.table, Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.id)
             .map { checkNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
             .takeIf { it.isNotEmpty() }
-            ?.let { getRawObjectsByIds(ds, FoodQuantity.table, it) }
-            ?.mapValues { it.value as FoodPortion }
+            ?.let { getRawObjectsByIds(ds, FoodPortion.table, it) }
             ?: emptyMap()
     }
 

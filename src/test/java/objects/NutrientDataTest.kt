@@ -1,10 +1,10 @@
 package objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.FOOD_ID
-import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.MEAL_ID
-import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY
-import com.machfour.macros.core.Schema.FoodQuantityTable.Companion.QUANTITY_UNIT
+import com.machfour.macros.core.Schema.FoodPortionTable.Companion.FOOD_ID
+import com.machfour.macros.core.Schema.FoodPortionTable.Companion.MEAL_ID
+import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY
+import com.machfour.macros.core.Schema.FoodPortionTable.Companion.QUANTITY_UNIT
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Units
@@ -22,17 +22,17 @@ class NutrientDataTest {
         private val nd3: NutrientData // mg
 
         init {
-            val fpBuilder = MacrosBuilder(FoodQuantity.table)
+            val fpBuilder = MacrosBuilder(FoodPortion.table)
             fpBuilder.setField(FOOD_ID, f.id)
             fpBuilder.setField(MEAL_ID, MacrosEntity.NO_ID)
             fpBuilder.setField(QUANTITY, 100.0)
             fpBuilder.setField(QUANTITY_UNIT, Units.GRAMS.abbr)
-            val fp1 = fpBuilder.build() as FoodPortion
+            val fp1 = fpBuilder.build()
             fpBuilder.setField(QUANTITY_UNIT, Units.MILLILITRES.abbr)
-            val fp2 = fpBuilder.build() as FoodPortion
+            val fp2 = fpBuilder.build()
             fpBuilder.setField(QUANTITY, 100000.0)
             fpBuilder.setField(QUANTITY_UNIT, Units.MILLIGRAMS.abbr)
-            val fp3 = fpBuilder.build() as FoodPortion
+            val fp3 = fpBuilder.build()
 
 
             fp1.initFoodAndNd(f)

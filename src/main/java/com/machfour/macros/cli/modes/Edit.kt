@@ -7,12 +7,11 @@ import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
-import com.machfour.macros.objects.FoodQuantity
+import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.util.DateStamp
 
 import java.sql.SQLException
 
@@ -76,7 +75,7 @@ class Edit : CommandImpl(NAME, USAGE) {
         while (true) {
             // TODO reload meal
             out.println()
-            out.println("Editing meal: ${toEdit.name} on ${DateStamp.prettyPrint(toEdit.day)}")
+            out.println("Editing meal: ${toEdit.name} on ${toEdit.day.prettyPrint()}")
             out.println()
             out.print("Action (? for help): ")
             val action = CliUtils.getChar(input, out)
@@ -188,8 +187,8 @@ class Edit : CommandImpl(NAME, USAGE) {
 
         try {
             val newData = portions[n].dataCopy(withMetadata = false)
-            newData.put(Schema.FoodQuantityTable.QUANTITY, newQty)
-            Queries.saveObject(ds, FoodQuantity.factory.construct(newData, ObjectSource.DB_EDIT))
+            newData.put(Schema.FoodPortionTable.QUANTITY, newQty)
+            Queries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
             out.println("Error modifying the food portion: " + e3.message)
             return

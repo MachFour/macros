@@ -63,18 +63,18 @@ object IngredientsParser {
             throw RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName))
         }
         val ingredientId = ingredientMap[spec.indexName]
-        val builder = MacrosBuilder(FoodQuantity.table)
-        builder.setField(Schema.FoodQuantityTable.PARENT_FOOD_ID, composite.id)
-        builder.setField(Schema.FoodQuantityTable.FOOD_ID, ingredientId)
-        builder.setField(Schema.FoodQuantityTable.SERVING_ID, null) // TODO
-        builder.setField(Schema.FoodQuantityTable.QUANTITY_UNIT, spec.unit)
-        builder.setField(Schema.FoodQuantityTable.NOTES, spec.notes)
-        builder.setField(Schema.FoodQuantityTable.QUANTITY, spec.quantity)
+        val builder = MacrosBuilder(Ingredient.table)
+        builder.setField(Schema.IngredientTable.PARENT_FOOD_ID, composite.id)
+        builder.setField(Schema.IngredientTable.FOOD_ID, ingredientId)
+        builder.setField(Schema.IngredientTable.SERVING_ID, null) // TODO
+        builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.unit)
+        builder.setField(Schema.IngredientTable.NOTES, spec.notes)
+        builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity)
         if (builder.hasAnyInvalidFields()) {
             throw SchemaViolation(builder.allErrors)
             // throw SchemaViolation
         }
-        return builder.build() as Ingredient
+        return builder.build()
     }
 
     private fun extractIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>): Set<String> {
@@ -141,8 +141,8 @@ object IngredientsParser {
         val ingredientsWithId: MutableList<Ingredient> = ArrayList(newIngredients.size)
         for (i in newIngredients) {
             val builder = MacrosBuilder(i)
-            builder.setField(Schema.FoodQuantityTable.PARENT_FOOD_ID, id)
-            ingredientsWithId.add(builder.build() as Ingredient)
+            builder.setField(Schema.IngredientTable.PARENT_FOOD_ID, id)
+            ingredientsWithId.add(builder.build())
         }
         return ingredientsWithId
     }

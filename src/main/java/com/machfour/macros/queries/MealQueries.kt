@@ -5,7 +5,6 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Schema
 import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.storage.MacrosDataSource
@@ -49,7 +48,7 @@ object MealQueries {
     // if no meals exist for the current date, returns null
     @Throws(SQLException::class)
     fun getCurrentMeal(ds: MacrosDataSource): Meal? {
-        return getMealsForDay(ds, DateStamp.currentDate()).values.maxByOrNull { it.startTime }
+        return getMealsForDay(ds, DateStamp.currentDate).values.maxByOrNull { it.startTime }
     }
 
     @Throws(SQLException::class)
@@ -94,11 +93,11 @@ object MealQueries {
     fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
         if (fp.meal != newMeal) {
             val editedFp = MacrosBuilder(fp).run {
-                setField(Schema.FoodQuantityTable.MEAL_ID, newMeal.id)
+                setField(Schema.FoodPortionTable.MEAL_ID, newMeal.id)
                 build()
             }
             Queries.saveObject(ds, editedFp)
-            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodQuantity.table, listOf(fp.id)).mapValues { it.value as FoodPortion }
+            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
 
             assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
             QueryHelpers.processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
@@ -108,7 +107,7 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getMealsById(ds: MacrosDataSource, mealIds: List<Long>): Map<Long, Meal> {
+    fun getMealsById(ds: MacrosDataSource, mealIds: Collection<Long>): Map<Long, Meal> {
         if (mealIds.isEmpty()) {
             return emptyMap()
         }
@@ -126,10 +125,19 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: List<Long>): List<Long> {
-        val ids = ds.selectColumn(FoodQuantity.table, Schema.FoodQuantityTable.FOOD_ID, Schema.FoodQuantityTable.MEAL_ID, mealIds, true)
+    fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: Collection<Long>): List<Long> {
+        val foodIdCol = Schema.FoodPortionTable.FOOD_ID
+        val mealIdCol = Schema.FoodPortionTable.MEAL_ID
+        val ids = ds.selectColumn(FoodPortion.table, foodIdCol, mealIdCol, mealIds, true)
         // ensure no null IDs
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
+    }
+
+    @Throws(SQLException::class)
+    fun getMealIdsForFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
+        val foodIdCol = Schema.FoodPortionTable.FOOD_ID
+        val mealIdCol = Schema.FoodPortionTable.MEAL_ID
+        return ds.selectColumn(FoodPortion.table, mealIdCol, foodIdCol, foodIds, true).filterNotNull()
     }
 
     fun searchForName(mealMap: Map<Long, Meal>, name: String): Meal? {

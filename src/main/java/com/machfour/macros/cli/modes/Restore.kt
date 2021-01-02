@@ -2,7 +2,6 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
@@ -52,7 +51,8 @@ class Restore : CommandImpl(NAME, USAGE) {
             restoreTable(ds, csvDir, NutrientValue.table)
             restoreTable(ds, csvDir, Serving.table)
             restoreTable(ds, csvDir, Meal.table)
-            restoreTable(ds, csvDir, FoodQuantity.table)
+            restoreTable(ds, csvDir, FoodPortion.table)
+            restoreTable(ds, csvDir, Ingredient.table)
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

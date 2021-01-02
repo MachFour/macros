@@ -3,7 +3,6 @@ package com.machfour.macros.objects.helpers
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.Schema
 import com.machfour.macros.core.VErrorList
-import com.machfour.macros.objects.FoodQuantity
 import com.machfour.macros.objects.NutrientValue
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.validation.Validation
@@ -13,26 +12,6 @@ object Validations {
     // custom validation code for objects which cannot be expressed as a single-column constraint
     private fun <M> makeErrorMap() = HashMap<Column<M, *>, VErrorList>()
 
-
-    val foodPortion = Validation<FoodQuantity> { data ->
-        val mealIdCol = Schema.FoodQuantityTable.MEAL_ID
-
-        makeErrorMap<FoodQuantity>().also {
-            if (!data.hasData(mealIdCol)) {
-                it[mealIdCol] = listOf(ValidationError.NON_NULL)
-            }
-        }
-    }
-
-    val ingredient = Validation<FoodQuantity> { data ->
-        val parentFoodCol = Schema.FoodQuantityTable.PARENT_FOOD_ID
-
-        makeErrorMap<FoodQuantity>().also {
-            if (!data.hasData(parentFoodCol)) {
-                it[parentFoodCol] = listOf(ValidationError.NON_NULL)
-            }
-        }
-    }
 
     val nutrientValue = Validation<NutrientValue> { data ->
         val valueCol = Schema.NutrientValueTable.VALUE

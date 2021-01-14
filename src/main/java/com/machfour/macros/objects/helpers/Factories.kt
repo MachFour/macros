@@ -2,7 +2,8 @@ package com.machfour.macros.objects.helpers
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.Factory
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 
@@ -12,24 +13,32 @@ import com.machfour.macros.objects.Unit
 object Factories {
 
     val food: Factory<Food> = Factory { dataMap, objectSource ->
-        when (FoodType.fromString(dataMap[Schema.FoodTable.FOOD_TYPE]!!)) {
+        when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
             FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
             else -> Food(dataMap, objectSource)
         }
     }
 
-    val serving: Factory<Serving> = Factory { dataMap, objectSource -> Serving(dataMap, objectSource) }
+    private fun <M> defaultFactory(constructor: (ColumnData<M>, ObjectSource) -> M) : Factory<M> {
+        return Factory { dataMap, objectSource -> constructor(dataMap, objectSource) }
+    }
 
-    val meal: Factory<Meal> = Factory { dataMap, objectSource -> Meal(dataMap, objectSource) }
+    val serving = defaultFactory(::Serving)
 
-    val foodPortion: Factory<FoodPortion> = Factory { dataMap, objectSource -> FoodPortion(dataMap, objectSource) }
+    val meal = defaultFactory(::Meal)
 
-    val ingredient: Factory<Ingredient> = Factory { dataMap, objectSource -> Ingredient(dataMap, objectSource) }
+    val foodPortion = defaultFactory(::FoodPortion)
 
-    val nutrientValue: Factory<NutrientValue> = Factory { dataMap, objectSource -> NutrientValue(dataMap, objectSource) }
+    val ingredient = defaultFactory(::Ingredient)
 
-    val nutrient: Factory<Nutrient> = Factory { dataMap, objectSource -> Nutrient(dataMap, objectSource) }
+    val foodNutrientValue = defaultFactory(::FoodNutrientValue)
 
-    val unit: Factory<Unit> = Factory { dataMap, objectSource -> Unit(dataMap, objectSource) }
+    val mealNutrientGoalValue = defaultFactory(::MealNutrientGoalValue)
+
+    val dayNutrientGoalValue = defaultFactory(::DayNutrientGoalValue)
+
+    val nutrient = defaultFactory(::Nutrient)
+
+    val unit = defaultFactory(::Unit)
 
 }

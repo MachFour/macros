@@ -11,6 +11,11 @@ import java.time.temporal.ChronoUnit
 
 object DateTimeUtils {
 
+    val ISO_LOCAL_HOUR_MINUTE_12H: DateTimeFormatter = DateTimeFormatterBuilder()
+        .appendValue(ChronoField.CLOCK_HOUR_OF_AMPM, 2)
+        .appendLiteral(':')
+        .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+        .toFormatter()
 
     val ISO_LOCAL_HOUR_MINUTE: DateTimeFormatter = DateTimeFormatterBuilder()
         .appendValue(ChronoField.HOUR_OF_DAY, 2)
@@ -32,7 +37,8 @@ object DateTimeUtils {
     }
 
     fun Instant.asLocalHourMinute(is24HourFormat: Boolean = false): String {
-        return ISO_LOCAL_HOUR_MINUTE.format(this.toDateTime())
+        val fmt = if (is24HourFormat) ISO_LOCAL_HOUR_MINUTE else ISO_LOCAL_HOUR_MINUTE_12H
+        return fmt.format(this.toDateTime())
     }
 
     fun Instant.toEpochSecond(truncate: ChronoUnit = ChronoUnit.SECONDS): Long {

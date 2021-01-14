@@ -3,8 +3,8 @@ package com.machfour.macros.storage
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema.FoodTable
-import com.machfour.macros.core.Schema.MealTable
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.core.Table
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodPortion

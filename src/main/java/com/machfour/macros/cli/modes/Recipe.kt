@@ -3,16 +3,16 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.objects.CompositeFood
 
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
-import java.util.ArrayList
 
 
-class Recipe : CommandImpl(NAME, USAGE) {
+class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "recipe"
         private val USAGE = "Usage: $programName $NAME <recipes.json>"

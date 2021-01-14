@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealPrinter
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.insulin.InsulinCmdlineUtils
 import com.machfour.macros.objects.Meal
 
@@ -12,7 +13,7 @@ import java.io.IOException
 import java.sql.SQLException
 
 
-class Read : CommandImpl(NAME, USAGE) {
+class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     data class Flag(val name: String,
                     val mnemonic: String? = null,
                     val hasArg: Boolean = false,

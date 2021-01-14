@@ -5,8 +5,9 @@ import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
@@ -16,7 +17,7 @@ import com.machfour.macros.storage.MacrosDataSource
 import java.sql.SQLException
 
 
-class Edit : CommandImpl(NAME, USAGE) {
+class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "edit"
         private val USAGE = "Usage: $programName $NAME [meal [day]]"
@@ -187,7 +188,7 @@ class Edit : CommandImpl(NAME, USAGE) {
 
         try {
             val newData = portions[n].dataCopy(withMetadata = false)
-            newData.put(Schema.FoodPortionTable.QUANTITY, newQty)
+            newData.put(FoodPortionTable.QUANTITY, newQty)
             Queries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
             out.println("Error modifying the food portion: " + e3.message)

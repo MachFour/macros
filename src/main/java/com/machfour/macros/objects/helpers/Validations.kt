@@ -1,9 +1,10 @@
 package com.machfour.macros.objects.helpers
 
 import com.machfour.macros.core.Column
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.core.VErrorList
-import com.machfour.macros.objects.NutrientValue
+import com.machfour.macros.core.schema.FoodNutrientValueTable
+import com.machfour.macros.objects.FoodNutrientValue
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
@@ -13,14 +14,14 @@ object Validations {
     private fun <M> makeErrorMap() = HashMap<Column<M, *>, VErrorList>()
 
 
-    val nutrientValue = Validation<NutrientValue> { data ->
-        val valueCol = Schema.NutrientValueTable.VALUE
-        val nutrientCol = Schema.NutrientValueTable.NUTRIENT_ID
+    val nutrientValue = Validation<FoodNutrientValue> { data ->
+        val valueCol = FoodNutrientValueTable.VALUE
+        val nutrientCol = FoodNutrientValueTable.NUTRIENT_ID
 
         val nutrientId = data[nutrientCol]
         val value = data[valueCol]
 
-        makeErrorMap<NutrientValue>().also {
+        makeErrorMap<FoodNutrientValue>().also {
             if (nutrientId == null) {
                 // nutrient must be specified
                 it[nutrientCol] = listOf(ValidationError.NON_NULL)

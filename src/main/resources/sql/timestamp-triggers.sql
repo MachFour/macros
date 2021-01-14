@@ -1,106 +1,3 @@
-
--- food portion servings match foods
-CREATE TRIGGER check_food_portion_servings_match_foods
-    BEFORE INSERT ON FoodPortion
-    WHEN (
-        NEW.serving_id IS NOT NULL
-        AND NOT EXISTS (
-            SELECT * FROM Serving
-            WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
-        )
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodPortion');
-    END;
-
-CREATE TRIGGER check_food_portion_servings_match_foods_2
-    BEFORE UPDATE ON FoodPortion
-    WHEN (
-        NEW.serving_id IS NOT NULL
-        AND NOT EXISTS (
-            SELECT * FROM Serving
-            WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
-        )
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Invalid food / serving combination for FoodPortion');
-    END;
-
--- ingredient servings match foods
-CREATE TRIGGER check_ingredient_servings_match_foods
-    BEFORE INSERT ON Ingredient
-    WHEN (
-            NEW.serving_id IS NOT NULL
-            AND NOT EXISTS (
-                SELECT * FROM Serving
-                WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
-            )
-        )
-BEGIN
-    SELECT RAISE (ABORT, 'Invalid food / serving combination for Ingredient');
-END;
-
-CREATE TRIGGER check_ingredient_servings_match_foods_2
-    BEFORE UPDATE ON Ingredient
-    WHEN (
-            NEW.serving_id IS NOT NULL
-            AND NOT EXISTS (
-                SELECT * FROM Serving
-                WHERE (id = NEW.serving_id AND food_id = NEW.food_id)
-            )
-        )
-BEGIN
-    SELECT RAISE (ABORT, 'Invalid food / serving combination for Ingredient');
-END;
-
-CREATE TRIGGER check_valid_nutrient_value_units
-    BEFORE INSERT ON NutrientValue
-    WHEN (
-        -- select all possible units for the new unit type
-        NEW.unit_id NOT IN (
-            SELECT u.id FROM Nutrient AS n INNER JOIN Unit AS u 
-                ON (n.unit_types | u.type_id != 0)
-                WHERE n.id = NEW.nutrient_id
-        )
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Unit has incorrect type for NutrientValue');
-    END;
-
-CREATE TRIGGER check_valid_nutrient_value_units_2
-    BEFORE UPDATE ON NutrientValue
-    WHEN (
-        NEW.unit_id NOT IN (
-            SELECT u.id FROM Nutrient AS n INNER JOIN Unit AS u 
-                ON (n.unit_types | u.type_id != 0)
-                WHERE n.id = NEW.nutrient_id
-        )
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Unit has incorrect type for NutrientValue');
-    END;
-
--- Prevent deleting inbuilt units and nutrients
-
-CREATE TRIGGER prevent_delete_inbuilt_units
-    BEFORE DELETE ON Unit
-    WHEN (
-        OLD.inbuilt = 1
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Cannot delete inbuilt units');
-    END;
-
-CREATE TRIGGER prevent_delete_inbuilt_nutrients
-    BEFORE DELETE ON Nutrient
-    WHEN (
-        OLD.inbuilt = 1
-    )
-    BEGIN
-        SELECT RAISE (ABORT, 'Cannot delete inbuilt nutrients');
-    END;
-        
-
 -- Timestamp triggers
 -- we store timestamps in unix time.
 -- Since strftime() always returns strings, but we declare the columns
@@ -246,26 +143,65 @@ CREATE TRIGGER update_nutrient_timestamp
         WHERE id = NEW.id;
     END;
 
--- NutrientValue
-CREATE TRIGGER init_nutrient_value_timestamp
-    AFTER INSERT ON NutrientValue
+-- FoodNutrientValue
+CREATE TRIGGER init_food_nutrient_value_timestamp
+    AFTER INSERT ON FoodNutrientValue
     WHEN (NEW.create_time = 0)
     BEGIN
-        UPDATE NutrientValue
+        UPDATE FoodNutrientValue
         SET create_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
 
-CREATE TRIGGER update_nutrient_value_timestamp
-    AFTER UPDATE ON NutrientValue
+CREATE TRIGGER update_food_nutrient_value_timestamp
+    AFTER UPDATE ON FoodNutrientValue
     WHEN (NEW.modify_time = OLD.modify_time
         OR NEW.modify_time = 0)
     BEGIN
-        UPDATE NutrientValue
+        UPDATE FoodNutrientValue
         SET modify_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
 
+-- MealNutrientGoalValue
+CREATE TRIGGER init_meal_nutrient_goal_value_timestamp
+    AFTER INSERT ON MealNutrientGoalValue
+    WHEN (NEW.create_time = 0)
+    BEGIN
+        UPDATE MealNutrientGoalValue
+        SET create_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+CREATE TRIGGER update_meal_nutrient_goal_value_timestamp
+    AFTER UPDATE ON MealNutrientGoalValue
+    WHEN (NEW.modify_time = OLD.modify_time
+        OR NEW.modify_time = 0)
+    BEGIN
+        UPDATE MealNutrientGoalValue
+        SET modify_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+-- DayNutrientGoalValue
+CREATE TRIGGER init_day_nutrient_goal_value_timestamp
+    AFTER INSERT ON DayNutrientGoalValue
+    WHEN (NEW.create_time = 0)
+    BEGIN
+        UPDATE DayNutrientGoalValue
+        SET create_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+CREATE TRIGGER update_day_nutrient_goal_value_timestamp
+    AFTER UPDATE ON DayNutrientGoalValue
+    WHEN (NEW.modify_time = OLD.modify_time
+        OR NEW.modify_time = 0)
+    BEGIN
+        UPDATE DayNutrientGoalValue
+        SET modify_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
 -- Unit
 CREATE TRIGGER init_unit_timestamp
     AFTER INSERT ON Unit

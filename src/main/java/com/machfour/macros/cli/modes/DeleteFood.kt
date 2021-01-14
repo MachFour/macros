@@ -2,6 +2,7 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.CliUtils
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.objects.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.Queries
@@ -9,7 +10,7 @@ import com.machfour.macros.queries.Queries
 import java.sql.SQLException
 
 
-class DeleteFood : CommandImpl(NAME, USAGE) {
+class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "deletefood"
         private val USAGE = "Usage: $programName $NAME <index name 1> [<index name 2>] [...]"

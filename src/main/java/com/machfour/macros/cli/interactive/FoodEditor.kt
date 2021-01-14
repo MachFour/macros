@@ -7,11 +7,14 @@ import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.FoodNutrientValueTable
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.NutrientValue
+import com.machfour.macros.objects.FoodNutrientValue
 import com.machfour.macros.objects.inbuilt.DefaultUnits
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.queries.FkCompletion
@@ -22,16 +25,15 @@ import com.machfour.macros.validation.ValidationError
 
 import java.io.IOException
 import java.sql.SQLException
-import java.util.ArrayList
 
 // TODO servings?
 class FoodEditor constructor(
-        //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
-        private val ds: MacrosDataSource,
-        private val foodBuilder: MacrosBuilder<Food>,
-        private val nutrientBuilder: MacrosBuilder<NutrientValue> = MacrosBuilder(NutrientValue.table),
-        private val colStrings: ColumnStrings = DefaultColumnStrings.instance,
-        private val screen: Screen = defaultScreen()) {
+    //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
+    private val ds: MacrosDataSource,
+    private val foodBuilder: MacrosBuilder<Food>,
+    private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
+    private val colStrings: ColumnStrings = DefaultColumnStrings.instance,
+    private val screen: Screen = defaultScreen()) {
 
     companion object {
         private val NUM_ACTIONS = Action.values().size
@@ -575,7 +577,7 @@ class FoodEditor constructor(
                     val nutrientValues = nutrientData.nutrientValues
                     for (nv in nutrientValues) {
                         // link the food to the nd
-                        nv.setFkParentNaturalKey(Schema.NutrientValueTable.FOOD_ID, Schema.FoodTable.INDEX_NAME, indexName)
+                        nv.setFkParentNaturalKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, indexName)
                     }
 
                     // gotta do it in one go
@@ -584,7 +586,7 @@ class FoodEditor constructor(
                     Queries.saveObject(ds, f)
 
                     // get the food ID into the FOOD_ID field of the NutrientValues
-                    val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, Schema.NutrientValueTable.FOOD_ID)
+                    val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, FoodNutrientValueTable.FOOD_ID)
 
                     Queries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
                     ds.endTransaction()
@@ -617,13 +619,13 @@ class FoodEditor constructor(
             // try to build and save into NutrientData
             nutrientBuilder.run {
                 resetFields()
-                setField(Schema.NutrientValueTable.UNIT_ID, DefaultUnits.get(nutrient).id)
-                setField(Schema.NutrientValueTable.NUTRIENT_ID, nutrient.id)
-                setFieldFromString(Schema.NutrientValueTable.VALUE, input)
+                setField(FoodNutrientValueTable.UNIT_ID, DefaultUnits.get(nutrient).id)
+                setField(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
+                setFieldFromString(FoodNutrientValueTable.VALUE, input)
                 if (canBuild()) {
                     nutrientData[nutrient] = build()
                 }
-                errorMessageForColumnIndex[currentField] = getErrorMessage(this, Schema.NutrientValueTable.VALUE)
+                errorMessageForColumnIndex[currentField] = getErrorMessage(this, FoodNutrientValueTable.VALUE)
             }
         } else {
             val col = getColumnOrNutrientWithIndex(currentField) as Column<Food, *>

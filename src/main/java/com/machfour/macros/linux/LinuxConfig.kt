@@ -1,6 +1,7 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.SqlConfig
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.storage.MacrosDatabase
 import com.machfour.macros.util.FileUtils.joinPath
@@ -11,7 +12,7 @@ import java.io.PrintStream
 
 class LinuxConfig : MacrosConfig {
     companion object {
-        private const val PROJECT_DIR = "/home/max/devel/macros"
+        internal const val PROJECT_DIR = "/home/max/devel/macros"
 
         private const val programName = "macros"
         private const val dbName = "macros.sqlite"
@@ -21,20 +22,12 @@ class LinuxConfig : MacrosConfig {
         private const val SERVING_CSV_NAME = "servings.csv"
         private const val RECIPE_CSV_NAME = "recipes.csv"
         private const val INGREDIENTS_CSV_NAME = "ingredients.csv"
-        private const val initSqlName = "macros-db-create.sql"
-        private const val trigSqlName = "macros-db-triggers.sql"
-        private const val dataSqlName = "macros-initial-data.sql"
 
         private val LIB_DIR = joinPath(PROJECT_DIR, "libs")
-        private val SQL_DIR = joinPath(PROJECT_DIR, "src/main/resources/sql")
 
         val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so"
 
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR
-
-        val INIT_SQL = File(joinPath(SQL_DIR, initSqlName))
-        val TRIG_SQL = File(joinPath(SQL_DIR, trigSqlName))
-        val DATA_SQL = File(joinPath(SQL_DIR, dataSqlName))
 
         private val inputReader = BufferedReader(InputStreamReader(System.`in`))
 
@@ -51,10 +44,7 @@ class LinuxConfig : MacrosConfig {
     override val databaseInstance: MacrosDatabase = LinuxDatabase.getInstance(dbLocation)
     override val dataSourceInstance: MacrosDataSource = databaseInstance
 
-    override val initSqlName = Companion.initSqlName
-    override val trigSqlName = Companion.trigSqlName
-    override val dataSqlName = Companion.dataSqlName
-
+    override val sqlConfig: SqlConfig = LinuxSqlConfig()
 
     override val foodCsvPath = joinPath(DATA_DIR, FOOD_CSV_NAME)
     override val servingCsvPath = joinPath(DATA_DIR, SERVING_CSV_NAME)

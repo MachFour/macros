@@ -2,7 +2,8 @@ package com.machfour.macros.objects.inbuilt
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.NutrientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.names.*
 import com.machfour.macros.objects.Nutrient
 import com.machfour.macros.objects.UnitType
@@ -62,13 +63,13 @@ object Nutrients {
     // index of next registered nutrient
     private var nextIndex = 0L
 
-    private fun registerNutrient(name: String, typeFlag: Long, inbuilt: Boolean) : Nutrient {
+    private fun registerNutrient(name: String, typeFlag: Int, inbuilt: Boolean) : Nutrient {
         val id = nextIndex++
         val data = ColumnData(Nutrient.table).apply {
-            put(Schema.NutrientTable.ID, id)
-            put(Schema.NutrientTable.NAME, name)
-            put(Schema.NutrientTable.UNIT_TYPES, typeFlag)
-            put(Schema.NutrientTable.INBUILT, inbuilt)
+            put(NutrientTable.ID, id)
+            put(NutrientTable.NAME, name)
+            put(NutrientTable.UNIT_TYPES, typeFlag)
+            put(NutrientTable.INBUILT, inbuilt)
         }
 
         return Nutrient.factory.construct(data, ObjectSource.INBUILT).also {

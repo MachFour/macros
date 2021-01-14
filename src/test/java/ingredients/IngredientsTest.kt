@@ -2,7 +2,6 @@ package ingredients
 
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.Schema
 import com.machfour.macros.ingredients.CompositeFoodSpec
 import com.machfour.macros.ingredients.IngredientSpec
 import com.machfour.macros.ingredients.IngredientsParser
@@ -86,7 +85,7 @@ class IngredientsTest {
 
     private fun clearFoodTable() {
         try {
-            db.clearTable(Schema.FoodTable.instance)
+            db.clearTable(Food.table)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

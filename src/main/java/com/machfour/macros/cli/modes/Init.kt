@@ -1,11 +1,12 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.linux.LinuxDatabase
 import java.io.IOException
 import java.sql.SQLException
 
-class Init : CommandImpl(NAME, USAGE) {
+class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "init"
         private val USAGE = "Usage: $programName $NAME"
@@ -15,29 +16,41 @@ class Init : CommandImpl(NAME, USAGE) {
         out.println("Recreates and initialises the database. All previous data is deleted!")
     }
 
-    override fun doActionNoExitCode(args: List<String>) {
+    override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {
             printHelp()
-            return
+            return 0
         }
         val db = config.databaseInstance
         try {
             LinuxDatabase.deleteIfExists(config.dbLocation)
             out.println("Deleted database at ${config.dbLocation}")
         } catch (e: IOException) {
-            out.println()
-            out.println("Error deleting the database: " + e.message)
-            return
+            return handleDeleteException(e)
         }
         try {
-            db.initDb()
+            db.initDb(config.sqlConfig)
         } catch (e: SQLException) {
-            out.println()
-            out.println("Error initialising the database: " + e.message)
+            return handleInitException(e)
         } catch (e: IOException) {
-            out.println()
-            out.println("Error initialising the database: " + e.message)
+            return handleInitException(e)
         }
+
         out.println("Database re-initialised at ${config.dbLocation}")
+        return 0
     }
+
+    private fun printExceptionMessage(e: Exception, message: String) {
+        err.println(message + ": " + e.message)
+
+    }
+    private fun handleDeleteException(e: Exception): Int {
+        printExceptionMessage(e, "Error deleting the database")
+        return 1
+    }
+    private fun handleInitException(e: Exception): Int {
+        printExceptionMessage(e, "Error initialising the database")
+        return 1
+    }
+
 }

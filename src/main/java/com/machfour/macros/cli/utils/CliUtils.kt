@@ -6,6 +6,7 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.objects.Ingredient
 import com.machfour.macros.core.NutrientData
 import com.machfour.macros.names.EnglishUnitNames
+import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.StringJoiner.Companion.of
@@ -25,17 +26,24 @@ object CliUtils {
         out.println(string)
     }
 
+    private val energyProportionNutrientsToPrint = setOf(
+        Nutrients.PROTEIN,
+        Nutrients.FAT,
+        Nutrients.SATURATED_FAT,
+        Nutrients.CARBOHYDRATE,
+        Nutrients.SUGAR,
+        Nutrients.FIBRE
+    )
+
     fun NutrientData.printEnergyProportions(
         verbose: Boolean,
         out: PrintStream,
         colNames: ColumnNamer = EnglishColumnNames.instance
     ) {
         out.println("Energy proportions (approx.)")
-        // TODO get these lengths from ColumnNamer / ColumnUnits
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
-        for (nutrient in NutrientData.energyProportionNutrients) {
-            val proportion = getEnergyProportion(nutrient)
-            out.printf(fmt, colNames.getName(nutrient), proportion*100)
+        for (n in energyProportionNutrientsToPrint) {
+            out.printf(fmt, colNames.getName(n), getEnergyProportion(n)*100)
         }
     }
 
@@ -105,19 +113,19 @@ object CliUtils {
         return try {
             inputString.toInt().takeIf { it in min..max }
         } catch (ignore: NumberFormatException) {
-            out.println("Bad number format: '${inputString}'")
+            out.println("Bad number format: '$inputString'")
             null
         }
     }
 
     // command line inputs
     // returns null if there was an error or input was invalid
-    fun getDoubleInput(`in`: BufferedReader, out: PrintStream): Double? {
-        val input = getStringInput(`in`, out) ?: return null
+    fun getDoubleInput(input: BufferedReader, out: PrintStream): Double? {
+        val inputString = getStringInput(input, out) ?: return null
         return try {
-            input.toDouble().takeIf { it.isFinite() }
+            inputString.toDouble().takeIf { it.isFinite() }
         } catch (ignore: NumberFormatException) {
-            out.println("Bad number format: '$input'")
+            out.println("Bad number format: '$inputString'")
             null
         }
     }

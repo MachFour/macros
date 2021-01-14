@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.storage.MacrosDataSource
 
@@ -12,7 +13,7 @@ import java.sql.SQLException
 /*
  * Prints out totals for all DB recorded meals in a day
  */
-class Total : CommandImpl(NAME, USAGE) {
+class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "total"
         private val USAGE = "Usage: $programName $NAME (<meal name>|--all) [<day>] [-v|--verbose] [--per100]"

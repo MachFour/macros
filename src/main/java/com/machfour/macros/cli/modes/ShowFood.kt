@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.objects.CompositeFood
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
@@ -13,7 +14,7 @@ import java.io.PrintStream
 import java.sql.SQLException
 
 
-class ShowFood : CommandImpl(NAME, USAGE) {
+class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "show"
         private val USAGE = "Usage: $programName $NAME <index_name>"

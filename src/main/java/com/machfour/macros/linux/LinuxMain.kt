@@ -31,12 +31,13 @@ object LinuxMain {
 
         // set up all the file paths
         Commands.initCommands(config)
-        val c = if (args.isEmpty()) Commands.noArgsCommand() else Commands.parseCommand(args[0])
-        val argList: MutableList<String> = args.toMutableList() // make it mutable
+        val cmd = if (args.isEmpty()) Commands.noArgsCommand() else Commands.parseCommand(args[0])
+
+        val argList = args.toMutableList() // make it mutable
         checkDbLocationOverride(argList, config)
 
         // command args start from index 1
-        val retcode = c.doAction(argList)
+        val retcode = cmd.doAction(argList)
         exitProcess(retcode)
     }
 }

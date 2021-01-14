@@ -1,6 +1,9 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 
 import java.util.Collections
 
@@ -14,11 +17,11 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
     private var ingredientsNutrientDataNeedsUpdate = false
 
     init {
-        assert(FoodType.fromString(dataMap[Schema.FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
+        assert(FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
     }
 
     // add overriding nutrient value
-    override fun addNutrientValue(nv: NutrientValue) {
+    override fun addNutrientValue(nv: FoodNutrientValue) {
         hasOverridingNutrientData = true
         super.addNutrientValue(nv)
     }
@@ -61,7 +64,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
     }
 
     fun addIngredient(i: Ingredient) {
-        assert(!ingredients.contains(i) && foreignKeyMatches(i, Schema.IngredientTable.PARENT_FOOD_ID, this))
+        assert(!ingredients.contains(i) && foreignKeyMatches(i, IngredientTable.PARENT_FOOD_ID, this))
         ingredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients

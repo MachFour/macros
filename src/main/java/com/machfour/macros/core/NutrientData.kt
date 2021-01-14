@@ -2,7 +2,7 @@ package com.machfour.macros.core
 
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
 import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.NutrientValue
+import com.machfour.macros.objects.FoodNutrientValue
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.UnitType
 import com.machfour.macros.objects.inbuilt.DefaultUnits
@@ -27,7 +27,7 @@ class NutrientData(
 
 
         val dummyQuantity by lazy {
-            NutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, Units.GRAMS)
+            FoodNutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, Units.GRAMS)
         }
 
         val energyProportionNutrients by lazy {
@@ -35,10 +35,17 @@ class NutrientData(
                 Nutrients.PROTEIN,
                 Nutrients.FAT,
                 Nutrients.SATURATED_FAT,
+                Nutrients.MONOUNSATURATED_FAT,
+                Nutrients.POLYUNSATURATED_FAT,
                 Nutrients.CARBOHYDRATE,
                 Nutrients.SUGAR,
+                Nutrients.STARCH,
                 Nutrients.FIBRE
             )
+        }
+
+        val totalEnergyNutrients by lazy {
+            listOf(Nutrients.PROTEIN, Nutrients.FAT, Nutrients.CARBOHYDRATE, Nutrients.FIBRE)
         }
 
         // Sums each nutrition component
@@ -78,7 +85,7 @@ class NutrientData(
                 //unnormalisedDensity += density * quantity
             }
 
-            sumData.quantityObj = NutrientValue.makeComputedValue(sumQuantity, Nutrients.QUANTITY, Units.GRAMS)
+            sumData.quantityObj = FoodNutrientValue.makeComputedValue(sumQuantity, Nutrients.QUANTITY, Units.GRAMS)
             sumData.markCompleteData(Nutrients.QUANTITY, !densityGuessed)
 
             for (n in Nutrients.nutrientsExceptQuantity) {
@@ -97,7 +104,7 @@ class NutrientData(
                 }
 
                 if (existsData) {
-                    sumData[n] = NutrientValue.makeComputedValue(sumValue, n, unit)
+                    sumData[n] = FoodNutrientValue.makeComputedValue(sumValue, n, unit)
                     sumData.markCompleteData(n, completeData)
                 }
 
@@ -120,25 +127,35 @@ class NutrientData(
 
         val g = Units.GRAMS
         // energy from...
-        val protein = amountOf(Nutrients.PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
-        var fat = amountOf(Nutrients.FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
         val satFat = amountOf(Nutrients.SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
-        var carb = amountOf(Nutrients.CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val monoFat = amountOf(Nutrients.MONOUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
+        val polyFat = amountOf(Nutrients.POLYUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor
         val sugar = amountOf(Nutrients.SUGAR, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+        val starch = amountOf(Nutrients.STARCH, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor
+
+        val protein = amountOf(Nutrients.PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN / unitDivisor
         val fibre = amountOf(Nutrients.FIBRE, g, 0.0) * KJ_PER_G_FIBRE / unitDivisor
-        // correct subtypes (sugar is part of carbs, saturated is part of fat)
-        carb = (carb - sugar).coerceAtLeast(0.0)
-        fat = (fat - satFat).coerceAtLeast(0.0)
+
+        // fat must be >= sat + mono + poly
+        val fat = (amountOf(Nutrients.FAT, g, 0.0) * KJ_PER_G_FAT / unitDivisor)
+            .coerceAtLeast(satFat + monoFat + polyFat)
+        // correct subtypes: carbs must be >= sugar + starch
+        val carb = (amountOf(Nutrients.CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE / unitDivisor)
+            .coerceAtLeast(sugar + starch)
 
         componentMap[Nutrients.PROTEIN] = protein
         componentMap[Nutrients.FAT] = fat
         componentMap[Nutrients.SATURATED_FAT] = satFat
+        componentMap[Nutrients.MONOUNSATURATED_FAT] = monoFat
+        componentMap[Nutrients.POLYUNSATURATED_FAT] = polyFat
         componentMap[Nutrients.CARBOHYDRATE] = carb
         componentMap[Nutrients.SUGAR] = sugar
+        componentMap[Nutrients.STARCH] = starch
         componentMap[Nutrients.FIBRE] = fibre
 
         return componentMap
     }
+
 
     private fun makeEnergyProportionsMap() : Map<Nutrient, Double> {
         // shouldn't matter whether we use KJ or calories here, as long as the amountOf() call below
@@ -146,7 +163,8 @@ class NutrientData(
         val componentMap = makeEnergyComponentsMap(Units.KILOJOULES)
 
         // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
-        val totalEnergy = componentMap.values.sum()
+        val totalEnergy = totalEnergyNutrients.fold(0.0, { s, n -> s + componentMap.getValue(n) })
+
         // previously: use total energy is missing, falling back to sum of energy components
         //val totalEnergy = nd.amountOf(ENERGY, unit, componentMap.values.sum())
 
@@ -157,7 +175,7 @@ class NutrientData(
         }
     }
 
-    private val data: Array<NutrientValue?> = arrayOfNulls(Nutrients.numNutrients)
+    private val data: Array<FoodNutrientValue?> = arrayOfNulls(Nutrients.numNutrients)
     private val isDataComplete: Array<Boolean> = Array(Nutrients.numNutrients) { false }
 
     // TODO should this be passed in explicitly to show dependence?
@@ -168,7 +186,7 @@ class NutrientData(
     }
 
     // using null coalescing means that hasData(QUANTITY) will still return false
-    var quantityObj: NutrientValue
+    var quantityObj: FoodNutrientValue
         get() = this[Nutrients.QUANTITY] ?: dummyQuantity
         set(value) {
             this[Nutrients.QUANTITY] = value
@@ -183,10 +201,10 @@ class NutrientData(
     val qtyUnitAbbr: String
         get() = quantityObj.unit.abbr
 
-    val nutrientValues: List<NutrientValue>
+    val nutrientValues: List<FoodNutrientValue>
         get() = data.filterNotNull()
 
-    val nutrientValuesExcludingQuantity: List<NutrientValue>
+    val nutrientValuesExcludingQuantity: List<FoodNutrientValue>
         get() = nutrientValues.filter { it !== quantityObj }
 
     // map of protein, fat, saturated fat, carbs, sugar, fibre to proportion of total energy
@@ -218,8 +236,8 @@ class NutrientData(
     fun copy() : NutrientData {
         return NutrientData(dataCompleteIfNotNull).also { copy ->
             for (i in data.indices) {
-                copy.data[i] = this.data[i]
-                copy.isDataComplete[i] = this.isDataComplete[i]
+                copy.data[i] = data[i]
+                copy.isDataComplete[i] = isDataComplete[i]
             }
         }
     }
@@ -234,7 +252,7 @@ class NutrientData(
     private fun assertMutable() {
         assert(!isImmutable) { "NutrientData has been made immutable" }
     }
-    operator fun get(n: Nutrient): NutrientValue? = data[n.index]
+    operator fun get(n: Nutrient): FoodNutrientValue? = data[n.index]
 
     fun amountOf(n: Nutrient, unit: Unit? = null): Double? {
         return if (unit != null) {
@@ -253,7 +271,7 @@ class NutrientData(
         return this[n] != null
     }
 
-    operator fun set(n: Nutrient, value: NutrientValue?) {
+    operator fun set(n: Nutrient, value: FoodNutrientValue?) {
         assertMutable()
         data[n.index] = value
         if (dataCompleteIfNotNull) {
@@ -288,26 +306,20 @@ class NutrientData(
             0.0
         }
 
-    val proteinEnergyComponent: Double
-        get() = getEnergyComponent(Nutrients.PROTEIN)
-
-    val fatsEnergyComponent : Double
-        get() = getEnergyComponent(Nutrients.FAT) + getEnergyComponent(Nutrients.SATURATED_FAT)
-
-    val carbsEnergyComponent: Double
-        get() = getEnergyComponent(Nutrients.CARBOHYDRATE) + getEnergyComponent(Nutrients.SUGAR)
-
-    val fibreEnergyComponent: Double
-        get() = getEnergyComponent(Nutrients.FIBRE)
-
     val proteinEnergyProportion : Double
         get() = getEnergyProportion(Nutrients.PROTEIN)
 
     val carbsEnergyProportion : Double
-        get() = getEnergyProportion(Nutrients.CARBOHYDRATE) + getEnergyProportion(Nutrients.SUGAR)
+        get() = getEnergyProportion(Nutrients.CARBOHYDRATE)
+
+    val sugarEnergyProportion : Double
+        get() = getEnergyProportion(Nutrients.SUGAR)
 
     val fatsEnergyProportion : Double
-        get() = getEnergyProportion(Nutrients.FAT) + getEnergyProportion(Nutrients.SATURATED_FAT)
+        get() = getEnergyProportion(Nutrients.FAT)
+
+    val saturatedFatsEnergyProportion : Double
+        get() = getEnergyProportion(Nutrients.SATURATED_FAT)
 
     val fibreEnergyProportion: Double
         get() = getEnergyProportion(Nutrients.FIBRE)
@@ -418,7 +430,7 @@ class NutrientData(
         //assert(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
         val result = NutrientData(dataCompleteIfNotNull = false)
 
-        val factory = NutrientValue.factory
+        val factory = FoodNutrientValue.factory
 
         for (n in Nutrients.nutrients) {
             // note: hasCompleteData is a stricter condition than hasData:

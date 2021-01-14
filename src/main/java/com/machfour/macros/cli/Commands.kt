@@ -3,33 +3,32 @@ package com.machfour.macros.cli
 import com.machfour.macros.cli.modes.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.util.javaTrim
-import java.util.Collections;
 
 /*
  * Helper class that holds static instances of all the other commands
  */
 object Commands {
-    // TODO the configs don't do anything yet - need to add into constructor
     private val COMMAND_CONSTRUCTORS = listOf<(MacrosConfig) -> Command>(
-        { _ -> Help() },
-        { _ -> Edit() },
-        { _ -> Meals() },
-        { _ -> ShowFood() },
-        { _ -> AddFood() },
-        { _ -> DeleteFood() },
-        { _ -> Portion() },
-        { _ -> NewMeal() },
-        { _ -> Read() },
-        { _ -> SearchFood() },
-        { _ -> Total() },
-        { _ -> Recipe() },
-        { _ -> AllFoods() },
-        { _ -> Import() },
-        { _ -> Export() },
-        { _ -> Restore() },
-        { _ -> Init() },
-        { _ -> InvalidCommand() },
-        { _ -> NoArgs() }
+        { config -> Help(config) },
+        { config -> Edit(config) },
+        { config -> Meals(config) },
+        { config -> ShowFood(config) },
+        { config -> AddFood(config) },
+        { config -> DeleteFood(config) },
+        { config -> Portion(config) },
+        { config -> NewMeal(config) },
+        { config -> Read(config) },
+        { config -> SearchFood(config) },
+        { config -> Total(config) },
+        { config -> Recipe(config) },
+        { config -> AllFoods(config) },
+        { config -> Import(config) },
+        { config -> Export(config) },
+        { config -> Restore(config) },
+        { config -> Init(config) },
+        // these ones don't need configs
+        { config -> InvalidCommand(config) },
+        { config -> NoArgs(config) }
     )
     private var initialised = false
 
@@ -38,14 +37,14 @@ object Commands {
 
     // and then init commands
     fun initCommands(config: MacrosConfig) {
-        // TODO put config into constructor
-        CommandImpl.defaultConfig = { config }
-        val tmpCommandsByName = LinkedHashMap<String, Command>()
-        COMMAND_CONSTRUCTORS.forEach { it(config).let { cmd ->
-            assert(!tmpCommandsByName.containsKey(cmd.name)) { "Two commands have the same name" }
-            tmpCommandsByName[cmd.name] = cmd
-        } }
-        commandsByName = Collections.unmodifiableMap(tmpCommandsByName)
+        commandsByName = LinkedHashMap<String, Command>().apply {
+            for (cmdConstructor in COMMAND_CONSTRUCTORS) {
+                cmdConstructor(config).let {
+                    assert(!this.containsKey(it.name)) { "Two commands have the same name" }
+                    this[it.name] = it
+                }
+            }
+        }
         initialised = true
     }
 
@@ -85,18 +84,18 @@ object Commands {
     }
 
     /* Some more miscellaneous commands that don't (yet?) warrant their own class */
-    private class InvalidCommand internal constructor() : CommandImpl(NAME) {
+    private class InvalidCommand(config: MacrosConfig): CommandImpl(NAME, config = config) {
         companion object {
             const val NAME = "_invalidCommand"
         }
 
         override fun doAction(args: List<String>): Int {
-            out.println("Command not recognised: '${args[0]}%s'\n")
+            out.println("Command not recognised: '${args[0]}'\n")
             return noArgsCommand().doAction(emptyList())
         }
     }
 
-    private class NoArgs internal constructor() : CommandImpl(NAME) {
+    private class NoArgs(config: MacrosConfig): CommandImpl(NAME, config = config) {
         companion object {
             const val NAME = "_noArgs"
         }

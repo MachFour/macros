@@ -2,10 +2,9 @@ package com.machfour.macros.objects.inbuilt
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.UnitTable
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.UnitType
-import java.util.*
 import kotlin.collections.LinkedHashMap
 
 // Class of inbuilt quantity units
@@ -26,17 +25,17 @@ object Units {
 
     // this is lowercase so that CSV units can be lower case
     private val String.toMapKey: String
-        get() = this.toLowerCase(Locale.ROOT)
+        get() = this.toLowerCase()
 
     private fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType, inbuilt: Boolean): Unit {
         val id = nextIndex++
         val data = ColumnData(Unit.table).apply {
-            put(Schema.UnitTable.ID, id)
-            put(Schema.UnitTable.NAME, name)
-            put(Schema.UnitTable.ABBREVIATION, abbr)
-            put(Schema.UnitTable.METRIC_EQUIVALENT, metricEquivalent)
-            put(Schema.UnitTable.TYPE_ID, unitType.id)
-            put(Schema.UnitTable.INBUILT, inbuilt)
+            put(UnitTable.ID, id)
+            put(UnitTable.NAME, name)
+            put(UnitTable.ABBREVIATION, abbr)
+            put(UnitTable.METRIC_EQUIVALENT, metricEquivalent)
+            put(UnitTable.TYPE_ID, unitType.id)
+            put(UnitTable.INBUILT, inbuilt)
         }
 
         return Unit.factory.construct(data, ObjectSource.INBUILT).also {

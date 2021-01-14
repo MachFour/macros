@@ -37,7 +37,7 @@ class CsvTest {
             try {
                 db = getInstance(TEST_DB_LOCATION)
                 deleteIfExists(TEST_DB_LOCATION)
-                db.initDb()
+                db.initDb(config.sqlConfig)
             } catch (e1: IOException) {
                 e1.printStackTrace()
                 Assertions.fail<Any>("Database initialisation threw IO exception")
@@ -53,7 +53,7 @@ class CsvTest {
     fun clearDb() {
         FoodPortionQueries.deleteAllIngredients(db)
         db.clearTable(Serving.table)
-        db.clearTable(NutrientValue.table)
+        db.clearTable(FoodNutrientValue.table)
         db.clearTable(Food.table)
     }
 

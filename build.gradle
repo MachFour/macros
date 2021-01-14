@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "org.jetbrains.kotlin.jvm" version "1.4.20"
+    id "org.jetbrains.kotlin.jvm" version "1.4.30-M1"
 }
 
 group 'com.machfour'
@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     // Kotlin JVM standard library
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.30-M1"
     // CSV support
     implementation "net.sf.supercsv:super-csv:2.4.0"
     // Nullable annotations in Java
@@ -27,12 +27,15 @@ dependencies {
 
 // for standalone kotlin project
 compileKotlin {
-    kotlinOptions.jvmTarget = "14"
+    kotlinOptions.jvmTarget = "15"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "14"
+    kotlinOptions.jvmTarget = "15"
 }
 
+task archive(type: Zip) {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
 
 jar {
     from {
@@ -40,7 +43,6 @@ jar {
         // and adds them to the JAR itself. One can extend this task, to skip certain
         // files or particular types at will
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-        //configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
         attributes 'Main-Class': 'com.machfour.macros.linux.LinuxMain'

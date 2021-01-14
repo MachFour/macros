@@ -4,7 +4,8 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.interactive.FoodEditor
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.objects.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.storage.MacrosDataSource
@@ -13,7 +14,7 @@ import java.io.IOException
 import java.sql.SQLException
 
 
-class AddFood : CommandImpl(NAME, USAGE) {
+class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "addfood"
         private val USAGE = "Usage: $programName $NAME <index name>"
@@ -25,11 +26,6 @@ class AddFood : CommandImpl(NAME, USAGE) {
         private fun checkIndexName(ds: MacrosDataSource, indexName: String): Boolean {
             return FoodQueries.getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
         }
-    }
-
-    override fun doActionNoExitCode(args: List<String>) {
-        out.println("doAction() is deprecated, using doActionWithExitCode() instead")
-        doAction(args)
     }
 
     override fun doAction(args: List<String>): Int {
@@ -57,8 +53,8 @@ class AddFood : CommandImpl(NAME, USAGE) {
         }
 
         val foodBuilder = MacrosBuilder(Food.table).apply {
-            setField(Schema.FoodTable.INDEX_NAME, indexName)
-            markFixed(Schema.FoodTable.INDEX_NAME)
+            setField(FoodTable.INDEX_NAME, indexName)
+            markFixed(FoodTable.INDEX_NAME)
         }
 
         var editor: FoodEditor? = null

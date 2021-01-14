@@ -13,13 +13,7 @@ interface Command {
     // does the action for the mode. Arguments are given in the array passed.
     // args[0] is kept the same as that in the original program args,
     // so mode-specific args start at args[1] (if present)
-    fun doActionNoExitCode(args: List<String>)
-
-    // same as above but returns an exit code
-    fun doAction(args: List<String>): Int {
-        doActionNoExitCode(args)
-        return 0
-    }
+    fun doAction(args: List<String>): Int
 
     // help message, which defaults to printing the usage string, if not null
     fun printHelp()

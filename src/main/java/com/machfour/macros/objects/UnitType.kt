@@ -1,6 +1,6 @@
 package com.machfour.macros.objects
 
-enum class UnitType(val id: Long, val niceName: String) {
+enum class UnitType(val id: Int, val niceName: String) {
     NONE(0, "none"),
     MASS(1, "grams"),
     VOLUME(2, "volume"),
@@ -15,14 +15,14 @@ enum class UnitType(val id: Long, val niceName: String) {
             , ENERGY.id to ENERGY
             , DENSITY.id to DENSITY
         )
-        fun fromId(id: Long): UnitType = idMap.getValue(id)
+        fun fromId(id: Int): UnitType = idMap.getValue(id)
 
         // allow specifying multiple unit types
-        fun fromFlags(flags: Long) : Set<UnitType> {
-            return values().filter { it.id and flags != 0L }.toSet()
+        fun fromFlags(flags: Int) : Set<UnitType> {
+            return values().filter { it.id and flags != 0 }.toSet()
         }
 
-        fun asFlags(types: Set<UnitType>) : Long {
+        fun asFlags(types: Set<UnitType>) : Int {
             return types.map { it.id }.sum()
         }
     }

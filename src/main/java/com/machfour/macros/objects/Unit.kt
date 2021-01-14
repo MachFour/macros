@@ -1,7 +1,7 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.UnitTable
+import com.machfour.macros.core.schema.UnitTable
 import com.machfour.macros.objects.helpers.Factories
 
 /*

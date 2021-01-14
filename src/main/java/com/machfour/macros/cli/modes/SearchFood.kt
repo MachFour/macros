@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.CliUtils
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.objects.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner
@@ -9,7 +9,7 @@ import com.machfour.macros.util.UnicodeUtils
 import java.io.PrintStream
 import java.sql.SQLException
 
-class SearchFood : CommandImpl(NAME, USAGE) {
+class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "search"
         private val USAGE = "Usage: $programName $NAME <keyword>"
@@ -34,13 +34,13 @@ class SearchFood : CommandImpl(NAME, USAGE) {
         }
     }
 
-    override fun doActionNoExitCode(args: List<String>) {
+    override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {
             printHelp()
             if (args.size == 1) {
                 out.println("Please enter a search keyword for the food database")
             }
-            return
+            return 0
         }
         val ds = config.dataSourceInstance
         val keyword = args[1]
@@ -51,9 +51,9 @@ class SearchFood : CommandImpl(NAME, USAGE) {
                 resultFoods = FoodQueries.getFoodsById(ds, resultIds)
             }
         } catch (e: SQLException) {
-            out.print("SQL exception occurred: ")
-            out.println(e.message)
-            return
+            err.print("SQL exception occurred: ")
+            err.println(e.message)
+            return 1
         }
         if (resultFoods.isEmpty()) {
             out.println("No matches for keyword '${keyword}'")
@@ -62,6 +62,7 @@ class SearchFood : CommandImpl(NAME, USAGE) {
             out.println()
             printFoodList(resultFoods.values, out)
         }
+        return 0
     }
 
 }

@@ -9,18 +9,35 @@ class Types {
         val BOOLEAN = Bool()
         val NULLBOOLEAN = NullBool()
         val ID = Id()
-        val INTEGER = Int()
+        val INTEGER = Integer()
+        val LONG = LongInteger()
         val REAL = Real()
         val TEXT = Text()
         val TIMESTAMP = Time()
         val DATESTAMP = Date()
 
         @Throws(TypeCastException::class)
-        internal fun stringToLong(longString: String): Long {
+        internal fun stringToInt(s: String): Int {
             return try {
-                longString.toLong()
+                s.toInt()
             } catch (e: NumberFormatException) {
-                throw TypeCastException("Cannot convert string '$longString' to Long")
+                throw TypeCastException("Cannot convert string '$s' to Int")
+            }
+        }
+
+        @Throws(TypeCastException::class)
+        internal fun objectToInt(data: Any): Int {
+            return when (data) {
+                is Int -> data // auto unbox
+                else -> stringToInt(data.toString())
+            }
+        }
+        @Throws(TypeCastException::class)
+        internal fun stringToLong(s: String): Long {
+            return try {
+                s.toLong()
+            } catch (e: NumberFormatException) {
+                throw TypeCastException("Cannot convert string '$s' to Long")
             }
         }
 
@@ -28,7 +45,7 @@ class Types {
         internal fun objectToLong(data: Any): Long {
             return when (data) {
                 is Long -> data // auto unbox
-                is kotlin.Int -> data.toLong()
+                is Int -> data.toLong()
                 else -> stringToLong(data.toString())
             }
         }
@@ -119,8 +136,21 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Int : MacrosTypeImpl<Long>() {
+    class Integer : MacrosTypeImpl<Int>() {
         override fun toString(): String = "integer"
+
+        @Throws(TypeCastException::class)
+        override fun fromRawNotNull(data: Any): Int = objectToInt(data)
+
+        @Throws(TypeCastException::class)
+        override fun fromNonEmptyString(data: String): Int = stringToInt(data)
+
+        override fun javaClass(): Class<Int> = Int::class.javaObjectType
+
+        override fun sqliteType(): SqliteType = SqliteType.INTEGER
+    }
+    class LongInteger : MacrosTypeImpl<Long>() {
+        override fun toString(): String = "long"
 
         @Throws(TypeCastException::class)
         override fun fromRawNotNull(data: Any): Long = objectToLong(data)

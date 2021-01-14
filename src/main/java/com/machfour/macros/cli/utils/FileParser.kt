@@ -3,7 +3,9 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.core.schema.MealTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Units
@@ -113,11 +115,11 @@ class FileParser {
                 quantity = fps.quantity
             }
             val fpData = ColumnData(FoodPortion.table)
-            fpData.put(Schema.FoodPortionTable.FOOD_ID, f.id)
-            fpData.put(Schema.FoodPortionTable.SERVING_ID, s?.id)
-            fpData.put(Schema.FoodPortionTable.MEAL_ID, m.id)
-            fpData.put(Schema.FoodPortionTable.QUANTITY_UNIT, unit.abbr)
-            fpData.put(Schema.FoodPortionTable.QUANTITY, quantity)
+            fpData.put(FoodPortionTable.FOOD_ID, f.id)
+            fpData.put(FoodPortionTable.SERVING_ID, s?.id)
+            fpData.put(FoodPortionTable.MEAL_ID, m.id)
+            fpData.put(FoodPortionTable.QUANTITY_UNIT, unit.abbr)
+            fpData.put(FoodPortionTable.QUANTITY, quantity)
             val fp = FoodPortion.factory.construct(fpData, ObjectSource.USER_NEW)
             fp.initFoodAndNd(f)
             if (s != null) {
@@ -230,8 +232,8 @@ class FileParser {
 
         private fun makeMeal(description: String, day: DateStamp): Meal {
             val mealData = ColumnData(Meal.table)
-            mealData.put(Schema.MealTable.NAME, description)
-            mealData.put(Schema.MealTable.DAY, day)
+            mealData.put(MealTable.NAME, description)
+            mealData.put(MealTable.DAY, day)
             return Meal.factory.construct(mealData, ObjectSource.USER_NEW)
         }
     }

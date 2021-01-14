@@ -1,6 +1,8 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.SchemaHelpers
+import com.machfour.macros.core.schema.ServingTable
 import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.objects.inbuilt.Nutrients.QUANTITY
 import com.machfour.macros.objects.inbuilt.Units
@@ -13,11 +15,11 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
         val factory: Factory<Serving>
             get() = Factories.serving
         val table: Table<Serving>
-            get() = Schema.ServingTable.instance
+            get() = ServingTable.instance
     }
 
     val qtyUnitAbbr: String
-        get() = getData(Schema.ServingTable.QUANTITY_UNIT)!!
+        get() = getData(ServingTable.QUANTITY_UNIT)!!
 
     val qtyUnit = Units.fromAbbreviation(qtyUnitAbbr)
 
@@ -34,13 +36,13 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
         get() = Companion.table
 
     val foodId: Long
-        get() = getData(Schema.ServingTable.FOOD_ID)!!
+        get() = getData(ServingTable.FOOD_ID)!!
 
     val quantity: Double
-        get() = getData(Schema.ServingTable.QUANTITY)!!
+        get() = getData(ServingTable.QUANTITY)!!
 
     val isDefault: Boolean
-        get() = getData(Schema.ServingTable.IS_DEFAULT)!!
+        get() = getData(ServingTable.IS_DEFAULT)!!
 
     override fun equals(other: Any?): Boolean {
         return other is Serving && super.equals(other)
@@ -51,11 +53,11 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
     }
 
     fun initFood(f: Food) {
-        assert(foreignKeyMatches(this, Schema.ServingTable.FOOD_ID, f))
+        assert(foreignKeyMatches(this, ServingTable.FOOD_ID, f))
         food = f
     }
 
-    override val name: String = getData(Schema.ServingTable.NAME)!!
+    override val name: String = getData(ServingTable.NAME)!!
 
     // Measurement functions
     override val unitMultiplier = quantity

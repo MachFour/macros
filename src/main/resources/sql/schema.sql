@@ -41,7 +41,7 @@ CREATE TABLE Food (
     -- something like 'Gala' for an apple.
 
     -- 'extra_desc' is any extra description of the food that can help to identify
-    -- it in a list of similar alternatives. For example it may be a flavour (in olive oil)
+    -- it in a list of similar alternatives. For example it may be a flavour (for chips)
     -- or preparation method (cooked, raw, peeled)
 
     -- 'attributes' are generally any qualifiers that are not specific to the
@@ -84,6 +84,9 @@ CREATE TABLE Food (
     -- for liquids, how to convert between grams and mL
     -- in g/cm^3
     , density              REAL DEFAULT NULL
+    -- allows user to 'hide' foods. 0 means normal relevance, i.e. do not prioritise.
+    -- -1 is deprioritised / 'hidden'
+    , search_relevance     INTEGER NOT NULL DEFAULT 0
     -- timestamps are stored in unix time, and set via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
@@ -94,7 +97,7 @@ CREATE TABLE Food (
         REFERENCES FoodCategory (name)
         ON UPDATE CASCADE
         ON DELETE SET DEFAULT
-    , CONSTRAINT identifiable
+    , CONSTRAINT full_name_identifiable
         UNIQUE (brand, variety, name, extra_desc)
     , CONSTRAINT valid_food_type
         CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
@@ -341,38 +344,135 @@ CREATE TABLE Nutrient (
         CHECK (inbuilt IN (0, 1))
 );
 
-CREATE TABLE NutrientValue (
+CREATE TABLE FoodNutrientValue (
       id                   INTEGER PRIMARY KEY ASC
-    , nutrient_id          INTEGER NOT NULL
-    , food_id              INTEGER NOT NULL
-    , value                REAL NOT NULL
-    -- used to record changes to food nutrient values, but keep the same food
-    , version              INTEGER NOT NULL
-    , unit_id              INTEGER NOT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
+    -- columns shared with DailyNutrientGoalValue and MealNutrientGoalValue
+    , nutrient_id          INTEGER NOT NULL
+    , value                REAL NOT NULL
+    -- specifies whether the value is an equality constraint (0),
+    -- or greater than (or equal to) the true value (1),
+    -- or less than (or equal to) the true value (-1),
+    -- used for values which are only given as 'less than X' or 'at least X',
+    , constraint_spec      INTEGER NOT NULL DEFAULT 0
+    , unit_id              INTEGER NOT NULL
 
+    -- columns unique to this table
+
+    , food_id              INTEGER NOT NULL
+    -- used to record changes to food nutrient values, while keeping the food data the same
+    , version              INTEGER NOT NULL
+
+    -- constraints shared with other tables
     , CONSTRAINT valid_nutrient
         FOREIGN KEY (nutrient_id)
         REFERENCES Nutrient (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
-    , CONSTRAINT valid_food
-        FOREIGN KEY (food_id)
-        REFERENCES Food (id)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-    , CONSTRAINT valid_version
-          CHECK (version >= 1)
-    , CONSTRAINT single_nutrient_per_food
-        UNIQUE (food_id, nutrient_id, version)
     , CONSTRAINT valid_unit
         -- have to make sure that unit has the correct type in code/trigger
         FOREIGN KEY (unit_id)
         REFERENCES Unit (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
+    , CONSTRAINT nonnegative_value
+          CHECK (value >= 0)
+    , CONSTRAINT valid_constraint_spec
+          CHECK (constraint_spec IN (-1, 0, 1))
 
+    -- constraints unique to this table
+    , CONSTRAINT valid_food
+        FOREIGN KEY (food_id)
+        REFERENCES Food (id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+    , CONSTRAINT single_nutrient_per_food
+        UNIQUE (food_id, nutrient_id, version)
+    , CONSTRAINT valid_version
+          CHECK (version >= 1)
+);
+
+CREATE TABLE MealNutrientGoalValue (
+      id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    -- columns shared with DailyNutrientGoalValue and FoodNutrientValue
+    , nutrient_id          INTEGER NOT NULL
+    , value                REAL NOT NULL
+    -- specifies whether the value is an equality constraint (0),
+    -- or greater than (or equal to) the true value (1),
+    -- or less than (or equal to) the true value (-1),
+    -- used for values which are only given as 'less than X' or 'at least X',
+    , constraint_spec      INTEGER NOT NULL DEFAULT 0
+    , unit_id              INTEGER NOT NULL
+    -- columns unique to this table
+    , meal_id              INTEGER NOT NULL
+
+    -- constraints shared with other tables
+    , CONSTRAINT valid_nutrient
+        FOREIGN KEY (nutrient_id)
+        REFERENCES Nutrient (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+    , CONSTRAINT valid_unit
+        -- have to make sure that unit has the correct type in code/trigger
+        FOREIGN KEY (unit_id)
+        REFERENCES Unit (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+    , CONSTRAINT nonnegative_value
+          CHECK (value >= 0)
+    , CONSTRAINT valid_constraint_spec
+          CHECK (constraint_spec IN (-1, 0, 1))
+
+    -- constraints unique to this table
+    , CONSTRAINT valid_meal
+        FOREIGN KEY (meal_id)
+        REFERENCES Meal (id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+    , CONSTRAINT single_nutrient_per_meal
+        UNIQUE (meal_id, nutrient_id)
+);
+
+CREATE TABLE DayNutrientGoalValue (
+      id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    -- columns shared with FoodNutrientValue and MealNutrientGoalValue
+    , nutrient_id          INTEGER NOT NULL
+    , value                REAL NOT NULL
+    -- specifies whether the value is an equality constraint (0),
+    -- or greater than (or equal to) the true value (1),
+    -- or less than (or equal to) the true value (-1),
+    -- used for values which are only given as 'less than X' or 'at least X',
+    , constraint_spec      INTEGER NOT NULL DEFAULT 0
+    , unit_id              INTEGER NOT NULL
+
+    -- columns unique to this table
+    , day                  TEXT NOT NULL DEFAULT (date('now', 'localtime'))
+
+    -- constraints shared with other tables
+    , CONSTRAINT valid_nutrient
+        FOREIGN KEY (nutrient_id)
+        REFERENCES Nutrient (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+    , CONSTRAINT valid_unit
+        -- have to make sure that unit has the correct type in code/trigger
+        FOREIGN KEY (unit_id)
+        REFERENCES Unit (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+    , CONSTRAINT nonnegative_value
+          CHECK (value >= 0)
+    , CONSTRAINT valid_constraint_spec
+          CHECK (constraint_spec IN (-1, 0, 1))
+
+    -- constraints unique to this table
+    , CONSTRAINT single_nutrient_per_day
+        UNIQUE (day, nutrient_id)
 );
 
 CREATE TABLE RegularMeal (

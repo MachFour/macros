@@ -1,10 +1,8 @@
 package com.machfour.macros.storage
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.FoodTable
-import com.machfour.macros.core.Schema.IngredientTable
-import com.machfour.macros.core.Schema.ServingTable
 import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.core.schema.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.objects.*
@@ -48,8 +46,8 @@ object CsvImport {
     }
 
     @Throws(TypeCastException::class)
-    fun extractNutrientData(csvRow: Map<String, String?>): List<ColumnData<NutrientValue>> {
-        val data = ArrayList<ColumnData<NutrientValue>>()
+    fun extractNutrientData(csvRow: Map<String, String?>): List<ColumnData<FoodNutrientValue>> {
+        val data = ArrayList<ColumnData<FoodNutrientValue>>()
 
         for (nutrient in Nutrients.nutrients) {
             // we skip adding the nutrient if it's not present in the CSV
@@ -62,12 +60,13 @@ object CsvImport {
             }
             val unit = unitString?.let { Units.fromAbbreviation(it) } ?: DefaultUnits.get(nutrient)
 
-            val nutrientValueData = ColumnData(NutrientValue.table).apply {
-                putFromString(Schema.NutrientValueTable.VALUE, valueString)
-                put(Schema.NutrientValueTable.UNIT_ID, unit.id)
-                put(Schema.NutrientValueTable.NUTRIENT_ID, nutrient.id)
+            val nutrientValueData = ColumnData(FoodNutrientValue.table).apply {
+                // TODO parse constraints
+                putFromString(FoodNutrientValueTable.VALUE, valueString)
+                put(FoodNutrientValueTable.UNIT_ID, unit.id)
+                put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
             }
-            assert(nutrientValueData.hasData(Schema.NutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
+            assert(nutrientValueData.hasData(FoodNutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
 
             data.add(nutrientValueData)
         }
@@ -87,8 +86,8 @@ object CsvImport {
 
     // Returns map of food index name to parsed food and nutrition columnData objects
     @Throws(IOException::class, TypeCastException::class)
-    private fun getFoodData(foodCsv: Reader): List<Pair<ColumnData<Food>, List<ColumnData<NutrientValue>>>> {
-        val data: MutableList<Pair<ColumnData<Food>, List<ColumnData<NutrientValue>>>> = ArrayList()
+    private fun getFoodData(foodCsv: Reader): List<Pair<ColumnData<Food>, List<ColumnData<FoodNutrientValue>>>> {
+        val data: MutableList<Pair<ColumnData<Food>, List<ColumnData<FoodNutrientValue>>>> = ArrayList()
         getMapReader(foodCsv).use { mapReader ->
             val header = mapReader.getHeader(true)
             var csvRow: Map<String, String?> = emptyMap()
@@ -133,7 +132,7 @@ object CsvImport {
                     ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
                     val i = Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT)
                     //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
-                    i.setFkParentNaturalKey(Schema.IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
+                    i.setFkParentNaturalKey(IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     i.initFoodAndNd(ingredientFood)
 
                     // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
@@ -159,7 +158,7 @@ object CsvImport {
     fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, MutableList<Ingredient>>): Map<String, CompositeFood> {
         // preserve insertion order
         val foodMap: MutableMap<String, CompositeFood> = LinkedHashMap()
-        val ndMap: MutableMap<String, List<ColumnData<NutrientValue>>> = LinkedHashMap()
+        val ndMap: MutableMap<String, List<ColumnData<FoodNutrientValue>>> = LinkedHashMap()
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for ((foodData, nutrientValues) in getFoodData(recipeCsv)) {
             foodData.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
@@ -182,7 +181,7 @@ object CsvImport {
         for ((indexName, nutrientValueData) in ndMap.entries) {
             val compositeFood = foodMap.getValue(indexName)
             for (nvData in nutrientValueData) {
-                val nv = NutrientValue.factory.construct(nvData, ObjectSource.IMPORT)
+                val nv = FoodNutrientValue.factory.construct(nvData, ObjectSource.IMPORT)
                 compositeFood.addNutrientValue(nv)
             }
         }
@@ -205,7 +204,7 @@ object CsvImport {
             }
             nutrientValueData.forEach {
                 try {
-                    val nv = NutrientValue.factory.construct(it, ObjectSource.IMPORT)
+                    val nv = FoodNutrientValue.factory.construct(it, ObjectSource.IMPORT)
                     // without pairs, needed to recover nutrition data from return value
                     f.addNutrientValue(nv)
                 } catch (e: SchemaViolation) {
@@ -269,7 +268,7 @@ object CsvImport {
             food.nutrientData.nutrientValues.also {
                 for (nv in it) {
                     // link it to the food so that the DB can create the correct foreign key entries
-                    nv.setFkParentNaturalKey(Schema.NutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
+                    nv.setFkParentNaturalKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
                 }
             }
         }
@@ -279,7 +278,7 @@ object CsvImport {
             foodsToSave.keys.forEach { println(it) }
         }
         saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
-        val completedNv = completeForeignKeys(ds, nvObjects, Schema.NutrientValueTable.FOOD_ID)
+        val completedNv = completeForeignKeys(ds, nvObjects, FoodNutrientValueTable.FOOD_ID)
         saveObjects(ds, completedNv, ObjectSource.IMPORT)
     }
 

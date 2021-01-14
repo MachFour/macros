@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodPortionQueries
@@ -13,7 +14,7 @@ import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
 
-class Import : CommandImpl(NAME, USAGE) {
+class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "import"
         private val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods]"
@@ -50,7 +51,7 @@ class Import : CommandImpl(NAME, USAGE) {
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
                     FoodPortionQueries.deleteAllIngredients(ds)
                     ds.clearTable(Serving.table)
-                    ds.clearTable(NutrientValue.table)
+                    ds.clearTable(FoodNutrientValue.table)
                     ds.clearTable(Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")

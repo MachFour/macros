@@ -6,6 +6,7 @@ import com.machfour.macros.cli.utils.FileParser.Companion.processFpSpec
 import com.machfour.macros.cli.utils.MealPrinter.printMeal
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
@@ -15,7 +16,7 @@ import com.machfour.macros.util.FoodPortionSpec
 import java.io.PrintStream
 import java.sql.SQLException
 
-class Portion : CommandImpl(NAME, USAGE) {
+class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "portion"
         private val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
@@ -26,8 +27,7 @@ class Portion : CommandImpl(NAME, USAGE) {
                 return 0
             }
             val spec = specs[0]
-            val f: Food?
-            f = try {
+            val f: Food? = try {
                 getFoodByIndexName(ds, spec.foodIndexName)
             } catch (e: SQLException) {
                 err.println("Could not retrieve food. Reason: " + e.message)

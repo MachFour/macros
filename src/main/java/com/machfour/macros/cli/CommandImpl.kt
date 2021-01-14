@@ -1,26 +1,24 @@
 package com.machfour.macros.cli
 
-import com.machfour.macros.core.DummyConfig
 import com.machfour.macros.core.MacrosConfig
 import java.io.BufferedReader
 import java.io.PrintStream
 
 
-abstract class CommandImpl protected constructor(final override val name: String, usage: String? = null) : Command {
+abstract class CommandImpl protected constructor(
+    final override val name: String,
+    final override val usage: String = "No help available for mode '${name}'",
+    val config: MacrosConfig,
+) : Command {
 
-    final override val usage = usage ?: "No help available for mode '${name}'"
     // have to initialise this first with overwriteConfig
 
-    protected var config: MacrosConfig = defaultConfig()
-    protected var out: PrintStream = config.outStream
-    protected var err: PrintStream = config.errStream
-    protected var input: BufferedReader = config.inputReader
-
-
-    // can be overridden
-    override fun doActionNoExitCode(args: List<String>) {
-        doAction(args)
-    }
+    protected val out: PrintStream
+        get() = config.outStream
+    protected val err: PrintStream
+        get() = config.errStream
+    protected val input: BufferedReader
+        get() = config.inputReader
 
     /*
      * Subclasses should override this to provide more detailed help than just the usage string
@@ -42,12 +40,8 @@ abstract class CommandImpl protected constructor(final override val name: String
             return !name.startsWith("_")
         }
 
-        private val dummyConfig = DummyConfig()
-
-        var defaultConfig: () -> MacrosConfig = { dummyConfig }
-
         // TODO this is a hack for now
-        val programName: String = "macros"
+        const val programName: String = "macros"
 
     }
 

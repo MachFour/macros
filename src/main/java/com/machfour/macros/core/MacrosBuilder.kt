@@ -1,6 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 import java.util.Collections
@@ -228,21 +229,28 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      * created after a successful build.
      */
     fun build(): M {
-        check(!hasAnyInvalidFields()) { "Field values are not all valid" }
+        check(!hasAnyInvalidFields) { "Field values are not all valid (${invalidFields})" }
         val buildData = draftData.copy()
         val source = newObjectSource()
         return objectFactory.construct(buildData, source)
     }
 
-    fun hasAnyInvalidFields(): Boolean {
-        return validationErrors.values.any { it.isNotEmpty() }
+    val invalidFields: List<Column<M, *>>
+        get() = validationErrors.entries.filter { it.value.isNotEmpty() }.map { it.key }
+
+    fun invalidFieldNames(colStrings: ColumnStrings): List<String> {
+        return invalidFields.map { colStrings.getName(it) }
     }
+    fun invalidFieldNamesString(colStrings: ColumnStrings): String {
+        return invalidFieldNames(colStrings).toString()
+    }
+
+    val hasAnyInvalidFields: Boolean
+        get() = validationErrors.values.any { it.isNotEmpty() }
 
     fun canBuild(): Boolean {
-        return !hasAnyInvalidFields()
+        return !hasAnyInvalidFields
     }
-
-
 
     companion object {
         /*

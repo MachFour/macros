@@ -106,19 +106,19 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
     }
 
     @Throws(SQLException::class, IOException::class)
-    override fun initDb() {
-        // TODO insert data from Units and Nutrients classes instead of DATA_SQL
+    override fun initDb(config: SqlConfig) {
+        // TODO insert data from Units and Nutrients classes instead of initial data
         val getSqlFromFile : (File) -> String = { FileReader(it).use { reader -> DatabaseUtils.createStatements(reader) } }
         val c = connection
         try {
             c.createStatement().use { s ->
-                val createSchemaSql = getSqlFromFile(LinuxConfig.INIT_SQL)
-                val createTriggersSql = getSqlFromFile(LinuxConfig.TRIG_SQL)
-                val initialDataSql = getSqlFromFile(LinuxConfig.DATA_SQL)
+                val createSchemaSql = getSqlFromFile(config.initSqlFile)
+                val createTriggersSql = config.trigSqlFiles.map { getSqlFromFile(it) }
+                val initialDataSql = getSqlFromFile(config.dataSqlFile)
                 println("Create schema...")
                 s.executeUpdate(createSchemaSql)
                 println("Add triggers...")
-                s.executeUpdate(createTriggersSql)
+                createTriggersSql.forEach { s.executeUpdate(it) }
                 println("Add data...")
                 s.executeUpdate(initialDataSql)
             }

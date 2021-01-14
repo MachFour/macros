@@ -1,6 +1,8 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.NutrientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.helpers.Factories
 
 class Nutrient internal constructor(dataMap: ColumnData<Nutrient>, objectSource: ObjectSource)
@@ -14,7 +16,7 @@ class Nutrient internal constructor(dataMap: ColumnData<Nutrient>, objectSource:
             get() = Factories.nutrient
 
         val table: Table<Nutrient>
-            get() = Schema.NutrientTable.instance
+            get() = NutrientTable.instance
 
         fun checkCompatible(n: Nutrient, u: Unit) {
             check(n.unitTypes.contains(u.type)) { "Invalid unit $u for nutrient $n" }
@@ -27,11 +29,11 @@ class Nutrient internal constructor(dataMap: ColumnData<Nutrient>, objectSource:
     override val table: Table<Nutrient>
         get() = Companion.table
 
-    val csvName: String = getData(Schema.NutrientTable.NAME)!!
+    val csvName: String = getData(NutrientTable.NAME)!!
 
-    val unitTypes: Set<UnitType> = UnitType.fromFlags(getData(Schema.NutrientTable.UNIT_TYPES)!!)
+    val unitTypes: Set<UnitType> = UnitType.fromFlags(getData(NutrientTable.UNIT_TYPES)!!)
 
-    val isInbuilt: Boolean = getData(Schema.NutrientTable.INBUILT)!!
+    val isInbuilt: Boolean = getData(NutrientTable.INBUILT)!!
 
     fun isConvertibleTo(unit: Unit) : Boolean {
         return unitTypes.contains(unit.type)

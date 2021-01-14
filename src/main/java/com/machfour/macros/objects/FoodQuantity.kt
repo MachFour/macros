@@ -13,7 +13,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     private val quantityCol: Column<M, Double>,
     private val quantityUnitCol: Column<M, String>,
     private val notesCol: Column<M, String>,
-    private val maxNutrientVersionCol: Column<M, Long>
+    private val maxNutrientVersionCol: Column<M, Int>
 )
     : MacrosEntityImpl<M>(data, objectSource) {
 
@@ -40,7 +40,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     val quantity: Double
         get() = getData(quantityCol)!!
 
-    val maxNutrientVersion: Long
+    val maxNutrientVersion: Int
         get() = getData(maxNutrientVersionCol)!!
 
     val notes: String?

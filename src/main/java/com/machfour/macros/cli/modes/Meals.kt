@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.cli.utils.ArgParsing.findArgument
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.util.DateStamp
@@ -12,7 +13,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-class Meals : CommandImpl(NAME, USAGE) {
+class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "meals"
         private val USAGE = "Usage: $programName $NAME [day]"

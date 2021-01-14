@@ -1,9 +1,6 @@
 package com.machfour.macros.storage
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
+import com.machfour.macros.core.*
 import java.io.IOException
 import java.sql.SQLException
 
@@ -25,7 +22,7 @@ abstract class MacrosDatabase : MacrosDataSource {
     abstract override fun endTransaction()
 
     @Throws(SQLException::class, IOException::class)
-    abstract fun initDb()
+    abstract fun initDb(config: SqlConfig)
 
     @Throws(SQLException::class)
     abstract fun execRawSQLString(sql: String)
@@ -38,6 +35,8 @@ abstract class MacrosDatabase : MacrosDataSource {
             t: Table<M>, cols: List<Column<M, String>>, keyword: String, globBefore: Boolean, globAfter: Boolean
     ): List<Long>
 
+    // like selectColumn except the keys (where values) are returned mapped to the corresponding values
+    // found in the valueColumn
     @Throws(SQLException::class)
     abstract override fun <M, I, J> selectColumnMap(
             t: Table<M>, keyColumn: Column<M, I>, valueColumn: Column<M, J>, keys: Set<I>

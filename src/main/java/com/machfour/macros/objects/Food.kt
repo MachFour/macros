@@ -1,23 +1,25 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.FoodTable
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.ServingTable
 import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.objects.inbuilt.Units
 import java.lang.StringBuilder
-import java.util.Collections
 
 open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) :
         MacrosEntityImpl<Food>(dataMap, objectSource) {
 
     companion object {
         val descriptionColumns = listOf(
+            FoodTable.NAME,
             FoodTable.BRAND,
             FoodTable.VARIETY,
-            FoodTable.NAME,
             FoodTable.EXTRA_DESC,
+            FoodTable.INDEX_NAME,
             FoodTable.NOTES,
-            FoodTable.INDEX_NAME
+            FoodTable.DATA_SOURCE,
+            FoodTable.DATA_NOTES,
         )
 
         // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
@@ -28,12 +30,67 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         val table: Table<Food>
             get() = FoodTable.instance
 
+        fun indexNamePrototype(
+            basicName: String,
+            brand: String?,
+            variety: String?,
+            extraDesc: String?,
+        ): String {
+            // use sortable name but replace sequences of spaces (and dashes) with a single dash
+            return prettyFormat(basicName, brand, variety, extraDesc,
+                withBrand = true, withVariety = true, withExtra = false, sortable = true
+            ).replace(Regex("[\\s-]+"), replacement = "-")
+        }
+
+        /*
+         * Order of fields:
+         * if sortable:
+         *     <name>, <brand>, <variety> (<extra desc>)
+         * else:
+         *     <brand> <variety> <name> (<extra desc>)
+         */
+        fun prettyFormat(
+            basicName: String,
+            brand: String?,
+            variety: String?,
+            extraDesc: String?,
+            withBrand : Boolean = true,
+            withVariety : Boolean = true,
+            withExtra : Boolean = false,
+            sortable : Boolean = false,
+            coerceBlankAsNull: Boolean = false,
+        ): String {
+            val isPresent: (String?) -> Boolean
+                    = if (coerceBlankAsNull) { { !it.isNullOrEmpty() } } else { { it != null } }
+
+            val prettyName = StringBuilder(basicName)
+            if (sortable) {
+                if (withBrand && isPresent(brand)) {
+                    prettyName.append(", ").append(brand)
+                }
+                if (isPresent(variety)) {
+                    prettyName.append(", ").append(variety)
+                }
+            } else {
+                if (withVariety && isPresent(variety)) {
+                    prettyName.insert(0, "$variety ")
+                }
+                if (withBrand && isPresent(brand)) {
+                    prettyName.insert(0, "$brand ")
+                }
+            }
+            if (withExtra && isPresent(extraDesc)) {
+                prettyName.append(" (").append(extraDesc).append(")")
+            }
+            return prettyName.toString()
+        }
+
     }
 
     private val servingsInternal: MutableList<Serving> = ArrayList()
 
     val servings: List<Serving>
-        get() = Collections.unmodifiableList(servingsInternal)
+        get() = servingsInternal
 
     var defaultServing: Serving? = null
         private set
@@ -46,7 +103,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     var foodCategory: FoodCategory? = null
         private set
 
-    open fun addNutrientValue(nv: NutrientValue) {
+    open fun addNutrientValue(nv: FoodNutrientValue) {
         // TODO check ID matches
         nv.setFood(this)
         nutrientData[nv.nutrient] = nv
@@ -64,7 +121,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         get() = Companion.factory
 
     fun addServing(s: Serving) {
-        assert(!servingsInternal.contains(s) && foreignKeyMatches(s, Schema.ServingTable.FOOD_ID, this))
+        assert(!servingsInternal.contains(s) && foreignKeyMatches(s, ServingTable.FOOD_ID, this))
         servingsInternal.add(s)
         if (s.isDefault) {
             setDefaultServing(s)
@@ -103,7 +160,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
             }
         }
 
-    val usdaIndex: Long?
+    val usdaIndex: Int?
         get() = getData(FoodTable.USDA_INDEX)
 
     val nuttabIndex: String?
@@ -159,41 +216,26 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     val categoryName: String
         get() = getData(FoodTable.CATEGORY)!!
 
-    /*
-     * Order of fields:
-     * if sortable:
-     *     <name>, <brand>, <variety> (<notes>)
-     * else if variety_after_name is present:
-     *     <brand> <name> <variety> (<notes>)
-     * else:
-     *     <brand> <variety> <name> (<notes>)
-     */
+    val searchRelevance: Int
+        get() = getData(FoodTable.SEARCH_RELEVANCE)!!
+
     private fun prettyFormat(
         withBrand : Boolean = true,
         withVariety : Boolean = true,
         withExtra : Boolean = false,
         sortable : Boolean = false
     ): String {
-        val prettyName = StringBuilder(basicName)
-        if (sortable) {
-            if (withBrand && brand != null) {
-                prettyName.append(", ").append(brand)
-            }
-            if (variety != null) {
-                prettyName.append(", ").append(variety)
-            }
-        } else {
-            if (withVariety && variety != null) {
-                prettyName.insert(0, "$variety ")
-            }
-            if (withBrand && brand != null) {
-                prettyName.insert(0, "$brand ")
-            }
-        }
-        if (withExtra && extraDesc != null) {
-            prettyName.append(" (").append(extraDesc).append(")")
-        }
-        return prettyName.toString()
+        return prettyFormat(
+            basicName = basicName,
+            brand = brand,
+            variety = variety,
+            extraDesc = extraDesc,
+            withBrand = withBrand,
+            withVariety = withVariety,
+            withExtra = withExtra,
+            sortable = sortable,
+
+        )
     }
 
 }

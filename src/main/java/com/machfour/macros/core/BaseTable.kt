@@ -1,5 +1,6 @@
 package com.machfour.macros.core
 
+import com.machfour.macros.core.schema.SchemaHelpers
 import java.util.Collections
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
@@ -27,9 +28,9 @@ abstract class BaseTable<M>(
 
     // first three columns must be ID, create time, modify time
     init {
-        require(Schema.ID_COLUMN_NAME == idColumn.sqlName)
-        require(Schema.CREATE_TIME_COLUMN_NAME == createTimeColumn.sqlName)
-        require(Schema.MODIFY_TIME_COLUMN_NAME == modifyTimeColumn.sqlName)
+        require(SchemaHelpers.ID_COLUMN_NAME == idColumn.sqlName)
+        require(SchemaHelpers.CREATE_TIME_COLUMN_NAME == createTimeColumn.sqlName)
+        require(SchemaHelpers.MODIFY_TIME_COLUMN_NAME == modifyTimeColumn.sqlName)
 
         // make name map and secondary key cols list. Linked hash map keeps insertion order
         val tmpColumnsByName = LinkedHashMap<String, Column<M, *>>(cols.size, 1.0f)

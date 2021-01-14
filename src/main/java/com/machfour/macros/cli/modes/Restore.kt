@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
@@ -13,7 +14,7 @@ import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
 
-class Restore : CommandImpl(NAME, USAGE) {
+class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "restore"
         private val USAGE = "Usage: $programName $NAME [backup dir]"
@@ -48,7 +49,7 @@ class Restore : CommandImpl(NAME, USAGE) {
             restoreTable(ds, csvDir, Unit.table)
             restoreTable(ds, csvDir, Nutrient.table)
             restoreTable(ds, csvDir, Food.table)
-            restoreTable(ds, csvDir, NutrientValue.table)
+            restoreTable(ds, csvDir, FoodNutrientValue.table)
             restoreTable(ds, csvDir, Serving.table)
             restoreTable(ds, csvDir, Meal.table)
             restoreTable(ds, csvDir, FoodPortion.table)

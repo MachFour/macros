@@ -1,8 +1,8 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.Column
-import com.machfour.macros.core.Schema
 import com.machfour.macros.core.Table
+import com.machfour.macros.core.schema.*
 import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodQueries.getAllFoodCategories
 import com.machfour.macros.queries.FoodQueries.getFoodsById
@@ -20,7 +20,7 @@ internal object QueryHelpers {
     // all meals will be returned.
     @Throws(SQLException::class)
     internal fun getRawMealsById(ds: MacrosDataSource, mealIds: Collection<Long>): Map<Long, Meal> {
-        return ds.getRawObjectsByKeys(Meal.table, Schema.MealTable.ID, mealIds)
+        return ds.getRawObjectsByKeys(Meal.table, MealTable.ID, mealIds)
     }
 
     @Throws(SQLException::class)
@@ -64,8 +64,8 @@ internal object QueryHelpers {
     }
 
     internal fun processRawFoodMap(foods: Map<Long, Food>, servings: Map<Long, Serving>,
-                          nutritionData: Map<Long, NutrientValue>, ingredients: Map<Long, Ingredient>,
-                          categories: Map<String, FoodCategory>) {
+                                   nutritionData: Map<Long, FoodNutrientValue>, ingredients: Map<Long, Ingredient>,
+                                   categories: Map<String, FoodCategory>) {
         applyServingsToRawFoods(foods, servings)
         applyNutrientValuesToRawFoods(foods, nutritionData)
         applyIngredientsToRawFoods(foods, ingredients)
@@ -78,9 +78,9 @@ internal object QueryHelpers {
         if (foodMap.isNotEmpty()) {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
             //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
-            val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, Schema.ServingTable.FOOD_ID)
-            val nutrientValues = getRawObjectsForParentFk(ds, foodMap, NutrientValue.table, Schema.NutrientValueTable.FOOD_ID)
-            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, Schema.IngredientTable.PARENT_FOOD_ID)
+            val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, ServingTable.FOOD_ID)
+            val nutrientValues = getRawObjectsForParentFk(ds, foodMap, FoodNutrientValue.table, FoodNutrientValueTable.FOOD_ID)
+            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, IngredientTable.PARENT_FOOD_ID)
             val categories: Map<String, FoodCategory> = getAllFoodCategories(ds)
             processRawIngredients(ds, ingredients)
             processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)
@@ -115,7 +115,7 @@ internal object QueryHelpers {
         }
     }
 
-    private fun applyNutrientValuesToRawFoods(foodMap: Map<Long, Food>, nutrientValueMap: Map<Long, NutrientValue>) {
+    private fun applyNutrientValuesToRawFoods(foodMap: Map<Long, Food>, nutrientValueMap: Map<Long, FoodNutrientValue>) {
         for (nv in nutrientValueMap.values) {
             // this lookup should never fail, due to database constraints
             foodMap.getValue(nv.foodId).addNutrientValue(nv)
@@ -134,7 +134,7 @@ internal object QueryHelpers {
 
     private fun applyFoodCategoriesToRawFoods(foodMap: Map<Long, Food>, categories: Map<String, FoodCategory>) {
         for (f in foodMap.values) {
-            val categoryName = f.getData(Schema.FoodTable.CATEGORY)
+            val categoryName = f.getData(FoodTable.CATEGORY)
             val c = categories[categoryName]!!
             f.setFoodCategory(c)
         }
@@ -160,7 +160,7 @@ internal object QueryHelpers {
 
     @Throws(SQLException::class)
     private fun getRawFoodPortionsForMeal(ds: MacrosDataSource, meal: Meal): Map<Long, FoodPortion> {
-        return Queries.selectColumn(ds, FoodPortion.table, Schema.FoodPortionTable.ID, Schema.FoodPortionTable.MEAL_ID, meal.id)
+        return Queries.selectColumn(ds, FoodPortion.table, FoodPortionTable.ID, FoodPortionTable.MEAL_ID, meal.id)
             .map { checkNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
             .takeIf { it.isNotEmpty() }
             ?.let { getRawObjectsByIds(ds, FoodPortion.table, it) }

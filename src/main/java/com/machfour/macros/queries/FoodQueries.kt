@@ -1,7 +1,10 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.*
 import com.machfour.macros.storage.DatabaseUtils.makeIdMap
 import com.machfour.macros.storage.MacrosDataSource
@@ -11,10 +14,10 @@ object FoodQueries {
 
     // excluding index name
     val foodSearchColumns = listOf(
-          Schema.FoodTable.NAME
-        , Schema.FoodTable.VARIETY
-        , Schema.FoodTable.BRAND
-        , Schema.FoodTable.EXTRA_DESC
+          FoodTable.NAME
+        , FoodTable.VARIETY
+        , FoodTable.BRAND
+        , FoodTable.EXTRA_DESC
     )
 
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
@@ -31,7 +34,7 @@ object FoodQueries {
             return emptySet()
         }
 
-        val indexNameCol = listOf(Schema.FoodTable.INDEX_NAME)
+        val indexNameCol = listOf(FoodTable.INDEX_NAME)
         val foodTable = Food.table
 
         val results = LinkedHashSet<Long>()
@@ -88,12 +91,12 @@ object FoodQueries {
     // items in indexNames that do not correspond to a food, will not appear in the output map
     @Throws(SQLException::class)
     fun getFoodIdsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Long> {
-        return QueryHelpers.getIdsFromKeys(ds, Food.table, Schema.FoodTable.INDEX_NAME, indexNames)
+        return QueryHelpers.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, indexNames)
     }
     
     @Throws(SQLException::class)
     fun getFoodIdByIndexName(ds: MacrosDataSource, indexName: String): Long? {
-        val idMap = QueryHelpers.getIdsFromKeys(ds, Food.table, Schema.FoodTable.INDEX_NAME, listOf(indexName))
+        val idMap = QueryHelpers.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, listOf(indexName))
         assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
         return idMap.values.firstOrNull()
     }
@@ -103,7 +106,7 @@ object FoodQueries {
     fun getAllFoods(ds: MacrosDataSource): List<Food> {
         val allFoods = ds.getAllRawObjects(Food.table)
         val allServings = ds.getAllRawObjects(Serving.table)
-        val allNutrientData = ds.getAllRawObjects(NutrientValue.table)
+        val allNutrientData = ds.getAllRawObjects(FoodNutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
         val allIngredients = ds.getAllRawObjects(Ingredient.table)
         QueryHelpers.processRawIngredients(ds, allIngredients)
@@ -117,8 +120,8 @@ object FoodQueries {
         // delete nutrition data, foodQuantities, servings, then food
 
         // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
-        ds.deleteByColumn(FoodPortion.table, Schema.FoodPortionTable.FOOD_ID, listOf(f.id))
-        ds.deleteByColumn(Ingredient.table, Schema.IngredientTable.FOOD_ID, listOf(f.id))
+        ds.deleteByColumn(FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
+        ds.deleteByColumn(Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
         Queries.deleteObject(ds, f)
     }
 
@@ -152,7 +155,7 @@ object FoodQueries {
      */
     @Throws(SQLException::class)
     fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
-        val foods = ds.getRawObjectsByKeys(Schema.FoodTable.instance, Schema.FoodTable.INDEX_NAME, indexNames)
+        val foods = ds.getRawObjectsByKeys(FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
         QueryHelpers.processRawFoodMap(ds, idMap)
@@ -166,13 +169,13 @@ object FoodQueries {
     //List<FoodTable> getMatchingFoods(String searchString, String[] columnNames, boolean prefixOnly);
 
     fun deleteAllCompositeFoods(ds: MacrosDataSource) : Int {
-        return ds.deleteByColumn(Food.table, Schema.FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+        return ds.deleteByColumn(Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
     }
 
     @Throws(SQLException::class)
     fun getParentFoodIdsContainingFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        val parentIdCol = Schema.IngredientTable.PARENT_FOOD_ID
-        val foodIdCol = Schema.IngredientTable.FOOD_ID
+        val parentIdCol = IngredientTable.PARENT_FOOD_ID
+        val foodIdCol = IngredientTable.FOOD_ID
         return ds.selectColumn(Ingredient.table, parentIdCol, foodIdCol, foodIds, true).filterNotNull()
     }
 }

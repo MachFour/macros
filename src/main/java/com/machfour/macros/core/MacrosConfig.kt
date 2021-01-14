@@ -3,6 +3,7 @@ package com.machfour.macros.core
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.storage.MacrosDatabase
 import java.io.BufferedReader
+import java.io.File
 import java.io.PrintStream
 
 interface MacrosConfig {
@@ -10,9 +11,7 @@ interface MacrosConfig {
     val outStream: PrintStream
     val errStream: PrintStream
     val inputReader: BufferedReader
-    val initSqlName: String
-    val trigSqlName: String
-    val dataSqlName: String
+
     val dbName: String
     val foodCsvPath: String
     val servingCsvPath: String
@@ -21,6 +20,8 @@ interface MacrosConfig {
     val defaultCsvOutputDir: String
     var dbLocation: String
     val programName: String
+
+    val sqlConfig: SqlConfig
 
     // for not-usual operations on the database
     val databaseInstance: MacrosDatabase

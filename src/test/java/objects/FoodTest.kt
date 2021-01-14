@@ -3,8 +3,9 @@ package objects
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.linux.LinuxDatabase
+import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
 import com.machfour.macros.queries.FoodQueries
@@ -33,7 +34,7 @@ class FoodTest {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
                 LinuxDatabase.deleteIfExists(DB_LOCATION)
-                db.initDb()
+                db.initDb(LinuxSqlConfig())
             } catch (e1: IOException) {
                 e1.printStackTrace()
                 fail<Any>("Database initialisation threw IO exception")
@@ -47,19 +48,19 @@ class FoodTest {
         @BeforeAll
         @JvmStatic
         fun doFood() {
-            foodData = ColumnData(Schema.FoodTable.instance)
-            foodData.put(Schema.FoodTable.ID, MacrosEntity.NO_ID)
-            foodData.put(Schema.FoodTable.CREATE_TIME, 0L)
-            foodData.put(Schema.FoodTable.MODIFY_TIME, 0L)
-            foodData.put(Schema.FoodTable.INDEX_NAME, "food1")
-            foodData.put(Schema.FoodTable.BRAND, "Max's")
-            foodData.put(Schema.FoodTable.VARIETY, "really good")
-            foodData.put(Schema.FoodTable.NAME, "food")
-            foodData.put(Schema.FoodTable.NOTES, "notes")
-            foodData.put(Schema.FoodTable.CATEGORY, "dairy")
-            foodData.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
-            foodData.put(Schema.FoodTable.USDA_INDEX, null)
-            foodData.put(Schema.FoodTable.NUTTAB_INDEX, null)
+            foodData = ColumnData(FoodTable.instance)
+            foodData.put(FoodTable.ID, MacrosEntity.NO_ID)
+            foodData.put(FoodTable.CREATE_TIME, 0L)
+            foodData.put(FoodTable.MODIFY_TIME, 0L)
+            foodData.put(FoodTable.INDEX_NAME, "food1")
+            foodData.put(FoodTable.BRAND, "Max's")
+            foodData.put(FoodTable.VARIETY, "really good")
+            foodData.put(FoodTable.NAME, "food")
+            foodData.put(FoodTable.NOTES, "notes")
+            foodData.put(FoodTable.CATEGORY, "dairy")
+            foodData.put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
+            foodData.put(FoodTable.USDA_INDEX, null)
+            foodData.put(FoodTable.NUTTAB_INDEX, null)
             testFood = Food.factory.construct(foodData, ObjectSource.IMPORT)
         }
     }
@@ -67,7 +68,7 @@ class FoodTest {
     @Test
     fun getFoodFromDb() {
         val modifiedData = foodData.copy()
-        modifiedData.put(Schema.FoodTable.ID, 50L)
+        modifiedData.put(FoodTable.ID, 50L)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
@@ -104,8 +105,8 @@ class FoodTest {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
             val modifiedData = foodData.copy()
-            modifiedData.put(Schema.FoodTable.ID, i.toLong())
-            modifiedData.put(Schema.FoodTable.INDEX_NAME, "food$i")
+            modifiedData.put(FoodTable.ID, i.toLong())
+            modifiedData.put(FoodTable.INDEX_NAME, "food$i")
             val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
             lotsOfFoods.add(modifiedIndexName)
         }
@@ -124,7 +125,7 @@ class FoodTest {
     @Test
     fun saveFoodFromDb() {
         val modifiedData = foodData.copy()
-        modifiedData.put(Schema.FoodTable.ID, 50L)
+        modifiedData.put(FoodTable.ID, 50L)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
@@ -136,7 +137,7 @@ class FoodTest {
 
         // now change the data and save with same ID
         val modifiedData2 = modifiedData.copy()
-        modifiedData2.put(Schema.FoodTable.NAME, "newName")
+        modifiedData2.put(FoodTable.NAME, "newName")
         val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
             assertEquals(1, Queries.saveObject(db, f1))
@@ -150,7 +151,7 @@ class FoodTest {
     @Test
     fun testSaveWithId() {
         val modifiedData = foodData.copy()
-        modifiedData.put(Schema.FoodTable.ID, 500L)
+        modifiedData.put(FoodTable.ID, 500L)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             assertEquals(1, Queries.saveObject(db, f))
@@ -168,7 +169,7 @@ class FoodTest {
 
     private fun clearFoodTable() {
         try {
-            db.clearTable(Schema.FoodTable.instance)
+            db.clearTable(FoodTable.instance)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

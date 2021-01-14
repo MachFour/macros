@@ -3,7 +3,9 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.core.schema.MealTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
@@ -31,8 +33,8 @@ object MealQueries {
 
         // else create a new meal, save and return it
         val newMeal = ColumnData(Meal.table).run {
-            put(Schema.MealTable.DAY, day)
-            put(Schema.MealTable.NAME, name)
+            put(MealTable.DAY, day)
+            put(MealTable.NAME, name)
             Meal.factory.construct(this, ObjectSource.USER_NEW)
         }
         
@@ -66,7 +68,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getMealIdsForDay(ds: MacrosDataSource, day: DateStamp): List<Long> {
-        val ids = Queries.selectColumn(ds, Schema.MealTable.instance, Schema.MealTable.ID, Schema.MealTable.DAY, listOf(day))
+        val ids = Queries.selectColumn(ds, MealTable.instance, MealTable.ID, MealTable.DAY, listOf(day))
         return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
 
         // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
@@ -93,7 +95,7 @@ object MealQueries {
     fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
         if (fp.meal != newMeal) {
             val editedFp = MacrosBuilder(fp).run {
-                setField(Schema.FoodPortionTable.MEAL_ID, newMeal.id)
+                setField(FoodPortionTable.MEAL_ID, newMeal.id)
                 build()
             }
             Queries.saveObject(ds, editedFp)
@@ -126,8 +128,8 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: Collection<Long>): List<Long> {
-        val foodIdCol = Schema.FoodPortionTable.FOOD_ID
-        val mealIdCol = Schema.FoodPortionTable.MEAL_ID
+        val foodIdCol = FoodPortionTable.FOOD_ID
+        val mealIdCol = FoodPortionTable.MEAL_ID
         val ids = ds.selectColumn(FoodPortion.table, foodIdCol, mealIdCol, mealIds, true)
         // ensure no null IDs
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
@@ -135,8 +137,8 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getMealIdsForFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        val foodIdCol = Schema.FoodPortionTable.FOOD_ID
-        val mealIdCol = Schema.FoodPortionTable.MEAL_ID
+        val foodIdCol = FoodPortionTable.FOOD_ID
+        val mealIdCol = FoodPortionTable.MEAL_ID
         return ds.selectColumn(FoodPortion.table, mealIdCol, foodIdCol, foodIds, true).filterNotNull()
     }
 

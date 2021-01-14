@@ -4,7 +4,9 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonIOException
 import com.google.gson.reflect.TypeToken
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.Queries
@@ -64,13 +66,13 @@ object IngredientsParser {
         }
         val ingredientId = ingredientMap[spec.indexName]
         val builder = MacrosBuilder(Ingredient.table)
-        builder.setField(Schema.IngredientTable.PARENT_FOOD_ID, composite.id)
-        builder.setField(Schema.IngredientTable.FOOD_ID, ingredientId)
-        builder.setField(Schema.IngredientTable.SERVING_ID, null) // TODO
-        builder.setField(Schema.IngredientTable.QUANTITY_UNIT, spec.unit)
-        builder.setField(Schema.IngredientTable.NOTES, spec.notes)
-        builder.setField(Schema.IngredientTable.QUANTITY, spec.quantity)
-        if (builder.hasAnyInvalidFields()) {
+        builder.setField(IngredientTable.PARENT_FOOD_ID, composite.id)
+        builder.setField(IngredientTable.FOOD_ID, ingredientId)
+        builder.setField(IngredientTable.SERVING_ID, null) // TODO
+        builder.setField(IngredientTable.QUANTITY_UNIT, spec.unit)
+        builder.setField(IngredientTable.NOTES, spec.notes)
+        builder.setField(IngredientTable.QUANTITY, spec.quantity)
+        if (builder.hasAnyInvalidFields) {
             throw SchemaViolation(builder.allErrors)
             // throw SchemaViolation
         }
@@ -92,14 +94,14 @@ object IngredientsParser {
     // NOTE that no IDs are ever created for the objects
     private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<String, Long>): CompositeFood {
         val builder = MacrosBuilder(Food.table)
-        builder.setField(Schema.FoodTable.INDEX_NAME, spec.indexName)
-        builder.setField(Schema.FoodTable.NAME, spec.name)
-        builder.setField(Schema.FoodTable.VARIETY, spec.variety)
-        builder.setField(Schema.FoodTable.NOTES, spec.notes)
-        builder.setField(Schema.FoodTable.CATEGORY, "recipes") //TODO
+        builder.setField(FoodTable.INDEX_NAME, spec.indexName)
+        builder.setField(FoodTable.NAME, spec.name)
+        builder.setField(FoodTable.VARIETY, spec.variety)
+        builder.setField(FoodTable.NOTES, spec.notes)
+        builder.setField(FoodTable.CATEGORY, "recipes") //TODO
         // setting this means that Food.factory().construct() will create a CompositeFood
-        builder.setField(Schema.FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
-        if (builder.hasAnyInvalidFields()) {
+        builder.setField(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
+        if (builder.hasAnyInvalidFields) {
             throw SchemaViolation(builder.allErrors)
             // throw SchemaViolation
         }
@@ -141,7 +143,7 @@ object IngredientsParser {
         val ingredientsWithId: MutableList<Ingredient> = ArrayList(newIngredients.size)
         for (i in newIngredients) {
             val builder = MacrosBuilder(i)
-            builder.setField(Schema.IngredientTable.PARENT_FOOD_ID, id)
+            builder.setField(IngredientTable.PARENT_FOOD_ID, id)
             ingredientsWithId.add(builder.build())
         }
         return ingredientsWithId

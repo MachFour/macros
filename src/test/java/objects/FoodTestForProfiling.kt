@@ -3,8 +3,9 @@ package objects
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Schema
+import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.linux.LinuxDatabase
+import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.FoodType
 import com.machfour.macros.queries.Queries
@@ -23,7 +24,7 @@ class FoodTestForProfiling {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
                 LinuxDatabase.deleteIfExists(DB_LOCATION)
-                db.initDb()
+                db.initDb(LinuxSqlConfig())
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: SQLException) {
@@ -33,19 +34,19 @@ class FoodTestForProfiling {
         }
 
         private fun doFood() {
-            foodDc = ColumnData(Schema.FoodTable.instance)
-            foodDc.put(Schema.FoodTable.ID, MacrosEntity.NO_ID)
-            foodDc.put(Schema.FoodTable.CREATE_TIME, 0L)
-            foodDc.put(Schema.FoodTable.MODIFY_TIME, 0L)
-            foodDc.put(Schema.FoodTable.INDEX_NAME, "food1")
-            foodDc.put(Schema.FoodTable.BRAND, "Max's")
-            foodDc.put(Schema.FoodTable.VARIETY, "really good")
-            foodDc.put(Schema.FoodTable.NAME, "food")
-            foodDc.put(Schema.FoodTable.NOTES, "notes")
-            foodDc.put(Schema.FoodTable.CATEGORY, "Dairy")
-            foodDc.put(Schema.FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
-            foodDc.put(Schema.FoodTable.USDA_INDEX, null)
-            foodDc.put(Schema.FoodTable.NUTTAB_INDEX, null)
+            foodDc = ColumnData(FoodTable.instance)
+            foodDc.put(FoodTable.ID, MacrosEntity.NO_ID)
+            foodDc.put(FoodTable.CREATE_TIME, 0L)
+            foodDc.put(FoodTable.MODIFY_TIME, 0L)
+            foodDc.put(FoodTable.INDEX_NAME, "food1")
+            foodDc.put(FoodTable.BRAND, "Max's")
+            foodDc.put(FoodTable.VARIETY, "really good")
+            foodDc.put(FoodTable.NAME, "food")
+            foodDc.put(FoodTable.NOTES, "notes")
+            foodDc.put(FoodTable.CATEGORY, "Dairy")
+            foodDc.put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
+            foodDc.put(FoodTable.USDA_INDEX, null)
+            foodDc.put(FoodTable.NUTTAB_INDEX, null)
             testFood = Food.factory.construct(foodDc, ObjectSource.IMPORT)
         }
 
@@ -60,7 +61,7 @@ class FoodTestForProfiling {
 
     fun clearFoodTable() {
         try {
-            db.clearTable(Schema.FoodTable.instance)
+            db.clearTable(FoodTable.instance)
         } catch (e: SQLException) {
             e.printStackTrace()
         }
@@ -71,8 +72,8 @@ class FoodTestForProfiling {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
             val modifiedData = foodDc.copy()
-            modifiedData.put(Schema.FoodTable.ID, i.toLong())
-            modifiedData.put(Schema.FoodTable.INDEX_NAME, "food$i")
+            modifiedData.put(FoodTable.ID, i.toLong())
+            modifiedData.put(FoodTable.INDEX_NAME, "food$i")
             val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.IMPORT)
             lotsOfFoods.add(modifiedIndexName)
         }

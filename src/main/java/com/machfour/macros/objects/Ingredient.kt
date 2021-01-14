@@ -1,18 +1,20 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.helpers.Factories
 
 class Ingredient internal constructor(data: ColumnData<Ingredient>, objectSource: ObjectSource
 ) : FoodQuantity<Ingredient>(
     data,
     objectSource,
-    Schema.IngredientTable.FOOD_ID,
-    Schema.IngredientTable.SERVING_ID,
-    Schema.IngredientTable.QUANTITY,
-    Schema.IngredientTable.QUANTITY_UNIT,
-    Schema.IngredientTable.NOTES,
-    Schema.IngredientTable.NUTRIENT_MAX_VERSION,
+    IngredientTable.FOOD_ID,
+    IngredientTable.SERVING_ID,
+    IngredientTable.QUANTITY,
+    IngredientTable.QUANTITY_UNIT,
+    IngredientTable.NOTES,
+    IngredientTable.NUTRIENT_MAX_VERSION,
 ) {
 
     companion object {
@@ -20,7 +22,7 @@ class Ingredient internal constructor(data: ColumnData<Ingredient>, objectSource
             get() = Factories.ingredient
 
         val table: Table<Ingredient>
-            get() = Schema.IngredientTable.instance
+            get() = IngredientTable.instance
     }
 
     override val table: Table<Ingredient>
@@ -37,7 +39,7 @@ class Ingredient internal constructor(data: ColumnData<Ingredient>, objectSource
         private set
 
     val parentFoodId: Long
-        get() = getData(Schema.IngredientTable.PARENT_FOOD_ID)!!
+        get() = getData(IngredientTable.PARENT_FOOD_ID)!!
 
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;

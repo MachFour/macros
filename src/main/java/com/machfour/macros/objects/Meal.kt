@@ -1,7 +1,9 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.Schema.MealTable
+import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.core.schema.SchemaHelpers
+import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.util.DateStamp
 
@@ -56,10 +58,10 @@ class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSour
         get() = getData(MealTable.START_TIME)!!
 
     // in seconds, how long the meal lasted.
-    val durationSeconds: Long
+    val durationSeconds: Int
         get() = getData(MealTable.DURATION)!!
 
-    val durationMinutes: Long
+    val durationMinutes: Int
         get() = durationSeconds / 60
 
     val startTimeInstant: Instant
@@ -82,7 +84,7 @@ class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSour
 
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
-        require(foreignKeyMatches(fp, Schema.FoodPortionTable.MEAL_ID, this))
+        require(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
         foodPortions.add(fp)
     }
 

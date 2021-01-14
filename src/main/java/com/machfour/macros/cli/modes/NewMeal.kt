@@ -3,9 +3,10 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.core.MacrosConfig
 
 
-class NewMeal : CommandImpl(NAME, USAGE) {
+class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "newmeal"
         private val USAGE = "Usage: $programName $NAME <meal name> [<day>]"

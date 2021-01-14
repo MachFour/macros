@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.objects.*
@@ -12,7 +13,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.sql.SQLException
 
-class Export : CommandImpl(NAME, USAGE) {
+class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "export"
         private val USAGE = "Usage: $programName $NAME [output dir]"
@@ -39,7 +40,7 @@ class Export : CommandImpl(NAME, USAGE) {
         val ds = config.dataSourceInstance
         try {
             exportTable(ds, outputDir, Food.table)
-            exportTable(ds, outputDir, NutrientValue.table)
+            exportTable(ds, outputDir, FoodNutrientValue.table)
             exportTable(ds, outputDir, Serving.table)
             exportTable(ds, outputDir, FoodPortion.table)
             exportTable(ds, outputDir, Ingredient.table)

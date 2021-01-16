@@ -6,10 +6,10 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.storage.CsvException
-import com.machfour.macros.storage.CsvImport.importFoodData
-import com.machfour.macros.storage.CsvImport.importRecipes
-import com.machfour.macros.storage.CsvImport.importServings
+import com.machfour.macros.persistence.CsvException
+import com.machfour.macros.persistence.CsvImport.importFoodData
+import com.machfour.macros.persistence.CsvImport.importRecipes
+import com.machfour.macros.persistence.CsvImport.importServings
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException

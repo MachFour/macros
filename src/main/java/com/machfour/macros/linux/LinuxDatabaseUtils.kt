@@ -4,7 +4,7 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
-import com.machfour.macros.storage.DatabaseUtils
+import com.machfour.macros.persistence.DatabaseUtils
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException

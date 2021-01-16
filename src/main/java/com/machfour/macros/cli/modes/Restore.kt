@@ -7,8 +7,8 @@ import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
-import com.machfour.macros.storage.CsvRestore
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.CsvRestore
+import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileReader
 import java.io.IOException

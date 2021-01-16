@@ -1,9 +1,8 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.*
-import com.machfour.macros.linux.LinuxDatabaseUtils
 import com.machfour.macros.sql.*
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 import java.util.*
 import kotlin.collections.ArrayList

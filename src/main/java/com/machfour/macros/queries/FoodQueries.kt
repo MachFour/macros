@@ -5,8 +5,8 @@ import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
 import com.machfour.macros.objects.*
-import com.machfour.macros.storage.DatabaseUtils.makeIdMap
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.DatabaseUtils.makeIdMap
+import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 
 object FoodQueries {

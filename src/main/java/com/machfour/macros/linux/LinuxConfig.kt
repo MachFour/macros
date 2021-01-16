@@ -2,11 +2,10 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.SqlConfig
-import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.storage.MacrosDatabase
+import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 import java.io.PrintStream
 

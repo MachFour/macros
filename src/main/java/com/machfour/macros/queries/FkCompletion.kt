@@ -4,7 +4,7 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 
 object FkCompletion {

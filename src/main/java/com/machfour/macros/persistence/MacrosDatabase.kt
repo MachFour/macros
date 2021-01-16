@@ -1,7 +1,6 @@
-package com.machfour.macros.storage
+package com.machfour.macros.persistence
 
 import com.machfour.macros.core.*
-import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.sql.AllColumnSelect
 import com.machfour.macros.sql.MultiColumnSelect
 import com.machfour.macros.sql.SingleColumnSelect

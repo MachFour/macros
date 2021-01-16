@@ -11,7 +11,7 @@ import com.machfour.macros.objects.Food
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.MealQueries.saveFoodPortions
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.FoodPortionSpec
 import java.io.PrintStream
 import java.sql.SQLException

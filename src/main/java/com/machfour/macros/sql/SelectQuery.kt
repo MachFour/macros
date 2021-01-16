@@ -2,7 +2,8 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.Table
-import com.machfour.macros.storage.DatabaseUtils
+import com.machfour.macros.core.datatype.MacrosType
+import com.machfour.macros.persistence.DatabaseUtils
 import com.machfour.macros.util.StringJoiner
 
 open class SelectQuery<M>(
@@ -11,7 +12,7 @@ open class SelectQuery<M>(
 ): SqlQuery<M>(table, SqlQueryMode.SELECT) {
     private var distinct: Boolean = false
     private var ordering: OrderByClause? = null
-    private var whereExpr: SqlWhereExpr = SqlWhereExpr.whereAny()
+    private var whereExpr: SqlWhereExpr<M, *> = SqlWhereExpr.whereAny()
     private var limit: Int? = null
     private var offset: Int? = null
     private var suffix: String = ""
@@ -70,19 +71,24 @@ open class SelectQuery<M>(
         suffix = sql
     }
 
-
-
     val isOrdered: Boolean
         get() = ordering != null
 
     val hasBindArguments: Boolean
         get() = whereExpr.numArgs > 0
 
-    internal fun getBindArguments(): Collection<*> {
-        return whereExpr.getBindObjects() ?: emptyList<Nothing>()
+    val bindArgumentType: MacrosType<*>?
+        get() = whereExpr.bindArgumentType
+
+    fun getBindArguments(): Collection<*> {
+        return whereExpr.getBindObjects()
     }
 
-    internal fun toSql(): String {
+    val whereExpression: SqlWhereExpr<M, *>
+        get() = whereExpr
+
+
+    fun toSql(): String {
         val query = ArrayList<String>()
         query.add(mode.sql)
         if (distinct) {

@@ -5,7 +5,7 @@ import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 
 import java.sql.SQLException
 

@@ -12,7 +12,7 @@ import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.Queries
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 
 import java.sql.SQLException
 

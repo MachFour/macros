@@ -8,7 +8,7 @@ import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 

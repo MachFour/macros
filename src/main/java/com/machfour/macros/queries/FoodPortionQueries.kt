@@ -5,7 +5,7 @@ import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.sql.OrderByDirection
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 
 object FoodPortionQueries {

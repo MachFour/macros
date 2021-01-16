@@ -7,7 +7,7 @@ import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodQueries.getAllFoodCategories
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.queries.FoodQueries.getServingsById
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 
 internal object QueryHelpers {

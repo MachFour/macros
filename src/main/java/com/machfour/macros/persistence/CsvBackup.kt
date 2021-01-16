@@ -1,4 +1,4 @@
-package com.machfour.macros.storage
+package com.machfour.macros.persistence
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity

@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.cli.utils.ArgParsing.findArgument
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 import java.time.ZoneId

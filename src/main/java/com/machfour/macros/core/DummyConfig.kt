@@ -1,7 +1,7 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.storage.MacrosDatabase
+import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 
 import java.io.PrintStream
 import java.io.OutputStream

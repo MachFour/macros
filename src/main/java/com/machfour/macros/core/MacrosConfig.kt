@@ -1,9 +1,8 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.storage.MacrosDatabase
+import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import java.io.BufferedReader
-import java.io.File
 import java.io.PrintStream
 
 interface MacrosConfig {

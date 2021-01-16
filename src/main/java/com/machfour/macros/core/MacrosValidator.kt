@@ -1,6 +1,6 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.storage.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.validation.Validation
 
 

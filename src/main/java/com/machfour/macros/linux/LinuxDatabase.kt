@@ -3,11 +3,10 @@ package com.machfour.macros.linux
 import com.machfour.macros.core.*
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
-import com.machfour.macros.queries.Queries
 import com.machfour.macros.sql.*
-import com.machfour.macros.storage.DatabaseUtils
-import com.machfour.macros.storage.MacrosDataSource
-import com.machfour.macros.storage.MacrosDatabase
+import com.machfour.macros.persistence.DatabaseUtils
+import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
@@ -18,7 +17,6 @@ import java.nio.file.Paths
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.util.Collections;
 
 // data source provided by Xerial library
 class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), MacrosDataSource {

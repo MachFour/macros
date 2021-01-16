@@ -1,14 +1,11 @@
-package com.machfour.macros.storage
+package com.machfour.macros.persistence
 
 import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.sql.Conjuction
-import com.machfour.macros.sql.SelectQuery
-import com.machfour.macros.sql.SingleColumnSelect
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
 import java.io.IOException
@@ -123,15 +120,6 @@ object DatabaseUtils {
         return "UPDATE ${t.name} SET $columnPlaceholders $whereString"
     }
 
-    fun <J> makeBindableStrings(objects: Collection<J>, type: MacrosType<J>): Array<String> {
-        return objects.map { type.toSqlString(it) }.toTypedArray<String>()
-    }
-
-    // for use with Android SQLite implementation
-    // The Object array is only allowed to contain String, Long, Double, byte[] and null
-    fun <M> makeBindableObjects(data: ColumnData<M>, orderedColumns: List<Column<M, *>>): Array<Any?> {
-        return orderedColumns.map { data.getAsRaw(it) }.toTypedArray<Any?>()
-    }
 
     fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
         val idMap: MutableMap<Long, M> = LinkedHashMap(objects.size, 1.0f)

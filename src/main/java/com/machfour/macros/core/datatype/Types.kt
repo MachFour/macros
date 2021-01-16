@@ -51,7 +51,7 @@ class Types {
         }
     }
 
-    open class Bool : MacrosTypeImpl<Boolean>() {
+    open class Bool internal constructor(): MacrosTypeImpl<Boolean>() {
         companion object {
             // TODO internationalisation lol
             private val truthyStrings = setOf("true", "t", "yes", "y", "1")
@@ -101,7 +101,7 @@ class Types {
 
     // Boolean type where null means false. This is a hack used to ensure there's only one default serving per food,
     // using a UNIQUE check on (food_id, is_default)
-    class NullBool : Bool() {
+    class NullBool internal constructor(): Bool() {
         override fun toString(): String = "null-boolean"
 
         @Throws(TypeCastException::class)
@@ -122,7 +122,7 @@ class Types {
         }
     }
 
-    class Id : MacrosTypeImpl<Long>() {
+    class Id internal constructor(): MacrosTypeImpl<Long>() {
         override fun toString(): String = "id"
 
         @Throws(TypeCastException::class)
@@ -136,7 +136,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Integer : MacrosTypeImpl<Int>() {
+    class Integer internal constructor(): MacrosTypeImpl<Int>() {
         override fun toString(): String = "integer"
 
         @Throws(TypeCastException::class)
@@ -149,7 +149,7 @@ class Types {
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
-    class LongInteger : MacrosTypeImpl<Long>() {
+    class LongInteger internal constructor(): MacrosTypeImpl<Long>() {
         override fun toString(): String = "long"
 
         @Throws(TypeCastException::class)
@@ -163,7 +163,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Real : MacrosTypeImpl<Double>() {
+    class Real internal constructor(): MacrosTypeImpl<Double>() {
         override fun toString(): String = "real"
 
         @Throws(TypeCastException::class)
@@ -188,7 +188,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.REAL
     }
 
-    class Text : MacrosTypeImpl<String>() {
+    class Text internal constructor(): MacrosTypeImpl<String>() {
         override fun toString(): String = "text"
         override fun fromNonEmptyString(data: String): String = data
         override fun fromRawNotNull(data: Any): String = data.toString()
@@ -196,7 +196,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.TEXT
     }
 
-    class Time : MacrosTypeImpl<Long>() {
+    class Time internal constructor(): MacrosTypeImpl<Long>() {
         override fun toString(): String = "time"
 
         @Throws(TypeCastException::class)
@@ -210,7 +210,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Date : MacrosTypeImpl<DateStamp>() {
+    class Date internal constructor(): MacrosTypeImpl<DateStamp>() {
         override fun toString(): String = "date"
 
         @Throws(TypeCastException::class)

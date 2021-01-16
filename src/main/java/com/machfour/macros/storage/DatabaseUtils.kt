@@ -6,6 +6,9 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.sql.Conjuction
+import com.machfour.macros.sql.SelectQuery
+import com.machfour.macros.sql.SingleColumnSelect
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
 import java.io.IOException
@@ -13,7 +16,7 @@ import java.io.Reader
 import java.sql.SQLException
 
 object DatabaseUtils {
-    private fun <M> joinColumns(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
+    internal fun <M> joinColumns(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
         return StringJoiner.of(columns).sep(", ").stringFunc { it.sqlName }.suffix(suffix).join()
     }
 
@@ -47,7 +50,7 @@ object DatabaseUtils {
     // " WHERE column1 IS [NOT] NULL
     // if nkeys is 0, no where string will be formed, so all objects will be returned.
     // exception thrown if nValues < 0
-    private fun makeWhereString(whereColumn: Column<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
+    internal fun makeWhereString(whereColumn: Column<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
         val colName = whereColumn.sqlName
         require ((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
 
@@ -90,51 +93,21 @@ object DatabaseUtils {
     }
 
     // " WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
-    private fun <M> makeWhereLikeString(likeColumns: List<Column<M, String>>): String {
+    internal fun <M> makeWhereLikeString(
+        likeColumns: Collection<Column<M, String>>,
+        conjunction: Conjuction = Conjuction.OR,
+    ): String {
         return when (likeColumns.size) {
             0 -> ""
-            1 -> " WHERE " + likeColumns[0].sqlName + " LIKE ?"
+            1 -> " WHERE " + likeColumns.first().sqlName + " LIKE ?"
             else -> {
                 val bracketedWhereClauses: MutableList<String> = ArrayList(likeColumns.size)
                 for (c in likeColumns) {
                     bracketedWhereClauses.add("(" + c.sqlName + " LIKE ?)")
                 }
-                " WHERE " + StringJoiner.of(bracketedWhereClauses).sep(" OR ").join()
+                " WHERE " + StringJoiner.of(bracketedWhereClauses).sep(" ${conjunction.sql} ").join()
             }
         }
-    }
-
-    fun <M> selectLikeTemplate(t: Table<M>, selectColumn: Column<M, *>, likeColumns: List<Column<M, String>>): String {
-        return selectTemplate(t, listOf(selectColumn), makeWhereLikeString(likeColumns), false)
-    }
-
-    fun <M> selectTemplate(t: Table<M>, selectColumn: Column<M, *>, whereColumn: Column<M, *>, nValues: Int, distinct: Boolean): String {
-        return selectTemplate(t, listOf(selectColumn), whereColumn, nValues, distinct)
-    }
-
-    fun <M> selectTemplate(t: Table<M>, selectColumn: Column<M, *>, whereColumn: Column<M, *>, nValues: Int): String {
-        return selectTemplate(t, listOf(selectColumn), whereColumn, nValues, false)
-    }
-
-    fun <M> selectTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, whereColumn: Column<M, *>, nValues: Int, distinct: Boolean): String {
-        return selectTemplate(t, orderedColumns, makeWhereString(whereColumn, nValues), distinct)
-    }
-
-    fun <M> selectTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, whereString: String, distinct: Boolean): String {
-        val words: MutableList<String> = ArrayList(6)
-        words.add("SELECT")
-        if (distinct) {
-            words.add("DISTINCT")
-        }
-        words.add(joinColumns(orderedColumns))
-        words.add("FROM")
-        words.add(t.name)
-        words.add(whereString)
-        return StringJoiner.of(words).sep(" ").join()
-    }
-
-    fun <M> selectAllTemplate(t: Table<M>, orderBy: Column<M, *>? = null) : String {
-        return "SELECT * FROM ${t.name} " + if (orderBy != null) " ORDER BY ${orderBy.sqlName}" else ""
     }
 
     // columns must be a subset of table.columns()
@@ -194,7 +167,7 @@ object DatabaseUtils {
 
     @Throws(IOException::class)
     fun createStatements(r: Reader, lineSep: String = " "): String {
-        val trimmedAndDecommented: MutableList<String> = ArrayList(32)
+        val trimmedAndDecommented = ArrayList<String>(32)
         BufferedReader(r).use { reader ->
             // steps: remove all comment lines, trim, join, split on semicolon
             while (reader.ready()) {

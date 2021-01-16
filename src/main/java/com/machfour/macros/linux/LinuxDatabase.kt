@@ -1,7 +1,10 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
+import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
+import com.machfour.macros.queries.Queries
+import com.machfour.macros.sql.*
 import com.machfour.macros.storage.DatabaseUtils
 import com.machfour.macros.storage.MacrosDataSource
 import com.machfour.macros.storage.MacrosDatabase
@@ -13,6 +16,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.sql.Connection
+import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Collections;
 
@@ -155,205 +159,90 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         }
     }
 
-    /*
-     * Returns empty list for either blank keyword or column list
-     */
     @Throws(SQLException::class)
-    override fun <M> stringSearch(t: Table<M>, cols: List<Column<M, String>>,
-                                  keyword: String, globBefore: Boolean, globAfter: Boolean): List<Long> {
-        val resultList: MutableList<Long> = ArrayList(0)
-        if (keyword.isNotEmpty() && cols.isNotEmpty()) {
-            // TODO copy-pasted from SelectColumn... probably needs refactoring
-            val c = connection
-            try {
-                c.prepareStatement(DatabaseUtils.selectLikeTemplate(t, t.idColumn, cols)).use { p ->
-                    // have to append the percent sign for LIKE globbing to the actual argument string
-                    val keywordGlob = (if (globBefore) "%" else "") + keyword + if (globAfter) "%" else ""
-                    val keywordCopies = Collections.nCopies(cols.size, keywordGlob)
-                    LinuxDatabaseUtils.bindObjects(p, keywordCopies)
-                    p.executeQuery().use { rs ->
-                        rs.next()
-                        while (!rs.isAfterLast) {
-                            resultList.add(rs.getLong(1))
-                            rs.next()
-                        }
-                    }
-                }
-            } finally {
-                closeIfNecessary(c)
-            }
+    override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
+        val selectColumn = query.selectColumn
+        val resultList = ArrayList<I?>()
+        executeQuery(query) {
+            val value = it.getColumn(selectColumn)
+            resultList.add(value)
         }
         return resultList
     }
 
-    // The resulting map is unordered
     @Throws(SQLException::class)
-    override fun <M, I, J> selectColumnMap(t: Table<M>, keyColumn: Column<M, I>,
-                                           valueColumn: Column<M, J>, keys: Set<I>): Map<I, J?> {
-        val unorderedResults: MutableMap<I, J?> = HashMap(keys.size, 1.0f)
-        // for batch queries
-        //List<Column<M, ?>> selectColumns = Arrays.asList(keyColumn, valueColumn);
-        val selectColumns: List<Column<M, *>> = listOf(valueColumn)
+    override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
+        val column1 = query.column1
+        val column2 = query.column2
+        val resultData = ArrayList<Pair<I?, J?>>()
+        executeQuery(query) {
+            resultData.add(Pair(it.getColumn(column1), it.getColumn(column2)))
+        }
+        return resultData
+    }
+
+    @Throws(SQLException::class)
+    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>> {
+        val resultData = ArrayList<ColumnData<M>>()
+        val columns = query.columns
+        executeQuery(query) {
+            resultData.add(it.toColumnData(t, columns))
+        }
+        return resultData
+    }
+
+    @Throws(SQLException::class)
+    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>> {
+        val resultData = ArrayList<ColumnData<M>>()
+        executeQuery(query) {
+            resultData.add(it.toColumnData(t))
+        }
+        return resultData
+    }
+
+    // TODO add option to iterate over where args (see comment)
+    private fun executeQuery(query: SelectQuery<*>, resultSetAction: (ResultSet) -> Unit) {
         val c = connection
         try {
-            val sqlTemplate = DatabaseUtils.selectTemplate(t, selectColumns, keyColumn, 1, false)
-            c.prepareStatement(sqlTemplate).use { p ->
-                // should be distinct by default: assert keyColumn.isUnique();
-                for (key in keys) {
-                    // do queries one by one so we don't send a huge number of parameters at once
-                    LinuxDatabaseUtils.bindObjects(p, listOf(key))
+            val sql = query.toSql()
+            if (query.hasBindArguments) {
+
+                //for (key in keys) {
+                //    // do queries one by one so we don't send a huge number of parameters at once
+                //    LinuxDatabaseUtils.bindObjects(p, listOf(key))
+                //    p.executeQuery().use { rs ->
+                //        rs.next()
+                //        while (!rs.isAfterLast) {
+
+                //            //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
+                //            rs.next()
+                //        }
+                //    }
+                //    p.clearParameters()
+                //}
+                c.prepareStatement(sql).use { p ->
+                    LinuxDatabaseUtils.bindObjects(p, query.getBindArguments())
                     p.executeQuery().use { rs ->
                         rs.next()
                         while (!rs.isAfterLast) {
-
-                            //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
-                            val rawValue = rs.getObject(valueColumn.sqlName)
-                            try {
-                                val value : J? = valueColumn.type.fromRaw(rawValue)
-                                assert(!unorderedResults.containsKey(key)) { "Two rows in the DB contained the same data in the key column!" }
-                                unorderedResults[key] = value
-                            } catch (e: TypeCastException) {
-                                DatabaseUtils.rethrowAsSqlException(rawValue, valueColumn)
-                            }
+                            resultSetAction(rs)
                             rs.next()
                         }
                     }
-                    p.clearParameters()
                 }
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return unorderedResults
-    }
-
-    // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
-    // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    @Throws(SQLException::class)
-    override fun <M, I, J> selectColumn(t: Table<M>, selected: Column<M, I>, where: Column<M, J>, whereValues: Collection<J>,
-                                        distinct: Boolean): List<I?> {
-        val resultList: MutableList<I?> = ArrayList(0)
-        val c = connection
-        try {
-            val sqlTemplate = DatabaseUtils.selectTemplate(t, selected, where, whereValues.size, distinct)
-            c.prepareStatement(sqlTemplate).use { p ->
-                LinuxDatabaseUtils.bindObjects(p, whereValues)
-                p.executeQuery().use { rs ->
+            } else {
+                c.createStatement().executeQuery(sql).use { rs ->
                     rs.next()
                     while (!rs.isAfterLast) {
-                        val resultValue = rs.getObject(selected.sqlName)
-                        try {
-                            resultList.add(selected.type.fromRaw(resultValue))
-                        } catch (e: TypeCastException) {
-                            DatabaseUtils.rethrowAsSqlException(resultValue, selected)
-                        }
+                        resultSetAction(rs)
                         rs.next()
                     }
                 }
+
             }
         } finally {
             closeIfNecessary(c)
         }
-        return resultList
-    }
-
-    // Constructs a map of key column value to raw object data (i.e. no object references initialised
-    // Keys that do not exist in the database will not be contained in the output map
-    // The returned map is never null and is unordered
-    @Throws(SQLException::class)
-    override fun <M, J> getRawObjectsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M> {
-        // if the list of keys is empty, every row will be returned
-        if (keys.isEmpty()) {
-            return emptyMap()
-        }
-        require(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
-        val unorderedObjects: MutableMap<J, M> = HashMap(keys.size, 1.0f)
-        val c = connection
-        try {
-            c.prepareStatement(DatabaseUtils.selectTemplate(t, t.columns, keyCol, keys.size, false)).use { p ->
-                LinuxDatabaseUtils.bindObjects(p, keys)
-                p.executeQuery().use { rs ->
-                    rs.next()
-                    while (!rs.isAfterLast) {
-                        val data = ColumnData(t)
-                        LinuxDatabaseUtils.fillColumnData(data, rs)
-                        val key = data[keyCol]!!
-                        assert(!unorderedObjects.containsKey(key)) { "Key $key already in returned objects map!" }
-                        val newObject = t.factory.construct(data, ObjectSource.DATABASE)
-                        unorderedObjects[key] = newObject
-                        rs.next()
-                    }
-                }
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return unorderedObjects
-    }
-
-    // Constructs a map of key column value to ID
-    // Keys that do not exist in the database will not be contained in the output map
-    // The returned map is never null and is unordered
-    @Throws(SQLException::class)
-    override fun <M, J> getIdsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
-        // if the list of keys is empty, every row will be returned
-        if (keys.isEmpty()) {
-            return emptyMap()
-        }
-        require(!keyCol.isNullable && keyCol.isUnique) { "Key column can't be nullable and must be unique" }
-        val keyAndId = listOf(keyCol, t.idColumn) // select the ID column plus the key
-        val unorderedIdMap: MutableMap<J, Long> = HashMap(keys.size, 1.0f)
-        val c = connection
-        try {
-            c.prepareStatement(DatabaseUtils.selectTemplate(t, keyAndId, keyCol, keys.size, false)).use { p ->
-                LinuxDatabaseUtils.bindObjects(p, keys)
-                p.executeQuery().use { rs ->
-                    rs.next()
-                    while (!rs.isAfterLast) {
-                        val id = rs.getLong(t.idColumn.sqlName)
-                        val key = keyCol.type.cast(rs.getObject(keyCol.sqlName))!! //XXX wow
-                        assert(!unorderedIdMap.containsKey(key)) { "Key $key already in returned map!" }
-                        unorderedIdMap[key] = id
-                        rs.next()
-                    }
-                }
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return unorderedIdMap
-    }
-
-    // returns an (optionally ordered) map of objects by ID
-    @Throws(SQLException::class)
-    private fun <M> getAllRawObjects(t: Table<M>, orderBy: Column<M, *>? = null): Map<Long, M> {
-        val allObjects: MutableMap<Long, M> = if (orderBy != null) LinkedHashMap() else HashMap()
-        val c = connection
-        val query = DatabaseUtils.selectAllTemplate(t, orderBy)
-        try {
-            c.createStatement().executeQuery(query).use { rs ->
-                rs.next()
-                while (!rs.isAfterLast) {
-                    val data = ColumnData(t)
-                    LinuxDatabaseUtils.fillColumnData(data, rs)
-                    val id = data.get(t.idColumn)
-                    assert(!allObjects.containsKey(id)) { "ID $id already in returned objects map!" }
-                    val newObject = t.factory.construct(data, ObjectSource.DATABASE)
-                    allObjects[id!!] = newObject
-                    rs.next()
-                }
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return allObjects
-
-    }
-
-    @Throws(SQLException::class)  // returns a map of objects by ID
-    // TODO make protected
-    override fun <M> getAllRawObjects(t: Table<M>): Map<Long, M> {
-        return getAllRawObjects(t, t.idColumn)
     }
 
     @Throws(SQLException::class)
@@ -465,51 +354,4 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         return removed
     }
 
-    @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> idExistsInTable(table: Table<M>, id: Long): Boolean {
-        val idCol = table.idColumn.sqlName
-        val query = "SELECT COUNT(" + idCol + ") AS count FROM " + table.name + " WHERE " + idCol + " = " + id
-        val exists: Boolean
-        val c = connection
-        try {
-            c.createStatement().use { s ->
-                val rs = s.executeQuery(query)
-                rs.next()
-                exists = rs.getInt("count") == 1
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return exists
-    }
-
-    // The resulting map is unordered
-    @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> idsExistInTable(table: Table<M>, ids: List<Long>): Map<Long, Boolean> {
-        val idCol: Column<M, Long> = table.idColumn
-        val unorderedIdMap: MutableMap<Long, Boolean> = HashMap(ids.size, 1.0f)
-        val c = connection
-        try {
-            c.prepareStatement(DatabaseUtils.selectTemplate(table, idCol, idCol, ids.size)).use { p ->
-                LinuxDatabaseUtils.bindObjects(p, ids)
-                val rs = p.executeQuery()
-                rs.next()
-                while (!rs.isAfterLast) {
-                    val id = rs.getLong(idCol.sqlName)
-                    unorderedIdMap[id] = true
-                    rs.next()
-                }
-                rs.next()
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        // check for missing IDs
-        for (id in ids) {
-            if (!unorderedIdMap.containsKey(id)) {
-                unorderedIdMap[id] = false
-            }
-        }
-        return unorderedIdMap
-    }
 }

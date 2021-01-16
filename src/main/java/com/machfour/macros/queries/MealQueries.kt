@@ -5,7 +5,6 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.MealTable
-import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.FoodPortion
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
@@ -68,7 +67,9 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getMealIdsForDay(ds: MacrosDataSource, day: DateStamp): List<Long> {
-        val ids = Queries.selectColumn(ds, MealTable.instance, MealTable.ID, MealTable.DAY, listOf(day))
+        val ids = Queries.selectSingleColumn(ds, MealTable.instance, MealTable.ID) {
+            where(MealTable.DAY, listOf(day))
+        }
         return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
 
         // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
@@ -128,18 +129,20 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: Collection<Long>): List<Long> {
-        val foodIdCol = FoodPortionTable.FOOD_ID
-        val mealIdCol = FoodPortionTable.MEAL_ID
-        val ids = ds.selectColumn(FoodPortion.table, foodIdCol, mealIdCol, mealIds, true)
+        val ids = Queries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
+            where(FoodPortionTable.MEAL_ID, mealIds)
+            distinct()
+        }
         // ensure no null IDs
         return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
     }
 
     @Throws(SQLException::class)
     fun getMealIdsForFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        val foodIdCol = FoodPortionTable.FOOD_ID
-        val mealIdCol = FoodPortionTable.MEAL_ID
-        return ds.selectColumn(FoodPortion.table, mealIdCol, foodIdCol, foodIds, true).filterNotNull()
+        return Queries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.MEAL_ID) {
+            where(FoodPortionTable.FOOD_ID, foodIds)
+            distinct()
+        }.filterNotNull()
     }
 
     fun searchForName(mealMap: Map<Long, Meal>, name: String): Meal? {

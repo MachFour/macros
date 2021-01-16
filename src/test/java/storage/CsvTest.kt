@@ -8,6 +8,7 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.objects.*
 import com.machfour.macros.queries.FoodPortionQueries
+import com.machfour.macros.queries.Queries
 import com.machfour.macros.storage.CsvBackup.writeObjectsToCsv
 import com.machfour.macros.storage.CsvImport.buildFoodObjectTree
 import com.machfour.macros.storage.CsvImport.buildServings
@@ -132,7 +133,7 @@ class CsvTest {
     @Test
     fun testCsvWriteFoods() {
         try {
-            val foods = db.getAllRawObjects(Food.table)
+            val foods = Queries.getAllRawObjects(db, Food.table)
             FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(Food.table, it, foods.values) }
         } catch (e: IOException) {
             e.printStackTrace()
@@ -146,7 +147,7 @@ class CsvTest {
     @Test
     fun testCsvWriteServings() {
         try {
-            val servings = db.getAllRawObjects(Serving.table)
+            val servings = Queries.getAllRawObjects(db, Serving.table)
             FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(Serving.table, it, servings.values) }
         } catch (e: SQLException) {
             e.printStackTrace()

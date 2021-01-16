@@ -12,7 +12,7 @@ class ColumnData<M> private constructor(
         existing: ColumnData<M>?
 ) {
 
-    constructor(t: Table<M>, cols: List<Column<M, *>>) : this(t, cols, null)
+    constructor(t: Table<M>, cols: Collection<Column<M, *>>) : this(t, cols, null)
     constructor(t: Table<M>) : this(t, t.columns, null)
 
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to

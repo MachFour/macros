@@ -11,8 +11,8 @@ import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
+import com.machfour.macros.queries.Queries
 import com.machfour.macros.queries.Queries.saveObjects
-import com.machfour.macros.queries.Queries.selectColumn
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.Pair
 import com.machfour.macros.validation.SchemaViolation
@@ -241,9 +241,11 @@ object CsvImport {
 
     @Throws(SQLException::class)
     private fun findExistingFoodIndexNames(ds: MacrosDataSource, indexNames: Collection<String>): Set<String> {
-        return selectColumn(ds, Food.table, FoodTable.INDEX_NAME, FoodTable.INDEX_NAME, indexNames, false)
-                .map { requireNotNull(it) { "Null food index name encountered: $it" } }
-                .toSet()
+        return Queries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
+            where(FoodTable.INDEX_NAME, indexNames)
+            distinct(false)
+        }.map { requireNotNull(it) { "Null food index name encountered: $it" } }
+            .toSet()
     }
 
     // foods maps from index name to food object. Food object must have nutrition data attached

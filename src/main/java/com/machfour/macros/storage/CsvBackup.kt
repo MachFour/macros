@@ -3,6 +3,7 @@ package com.machfour.macros.storage
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
+import com.machfour.macros.queries.Queries
 import org.supercsv.io.CsvMapWriter
 import org.supercsv.io.ICsvMapWriter
 import org.supercsv.prefs.CsvPreference
@@ -39,9 +40,9 @@ object CsvBackup {
     private fun getMapWriter(w: Writer): ICsvMapWriter = CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE)
 
     @Throws(SQLException::class, IOException::class)
-    fun <M : MacrosEntity<M>> exportTable(db: MacrosDataSource, t: Table<M>, outCsv: Writer) {
+    fun <M : MacrosEntity<M>> exportTable(ds: MacrosDataSource, t: Table<M>, outCsv: Writer) {
         // TODO do we need to get raw objects? This method should probably be protected...
-        val rawObjectMap = db.getAllRawObjects(t)
+        val rawObjectMap = Queries.getAllRawObjects(ds, t)
         val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
         // Collections.sort(allRawFoods, Comparator.comparingLong(MacrosPersistable::getId));
         writeObjectsToCsv(t, outCsv, allRawObjects)

@@ -16,7 +16,7 @@ import java.io.PrintStream
 
 object CliUtils {
     fun NutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
-        val string = PrintFormatting.nutritionDataToText(
+        val string = PrintFormatting.nutrientData(
             nd = this,
             colStrings = DefaultColumnStrings.instance,
             nutrients = PrintFormatting.defaultNutrientsToPrint,
@@ -92,7 +92,7 @@ object CliUtils {
             val notes = i.notes
             val name = iFood.mediumName
             val noteString = notes ?: ""
-            val quantityString = PrintFormatting.formatQuantity(
+            val quantityString = PrintFormatting.quantity(
                     qty = i.quantity,
                     unit = i.qtyUnit,
                     unitNamer = EnglishUnitNames.instance,

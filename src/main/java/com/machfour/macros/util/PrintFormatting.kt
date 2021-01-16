@@ -9,18 +9,18 @@ import com.machfour.macros.objects.inbuilt.Nutrients
 import java.util.Formatter
 
 object PrintFormatting {
-    fun formatQuantity(
-            nd: NutrientData,
-            n: Nutrient,
-            colStrings: ColumnStrings? = null,
-            withUnit: Boolean = false,
-            width: Int = 0,
-            unitWidth: Int = 0,
-            withDp: Boolean = false,
-            alignLeft: Boolean = false,
-            unitAlignLeft: Boolean = false,
-            spaceBeforeUnit: Boolean = false
-    ) : String {
+    fun nutrient(
+        nd: NutrientData,
+        n: Nutrient,
+        colStrings: ColumnStrings? = null,
+        withUnit: Boolean = false,
+        width: Int = 0,
+        unitWidth: Int = 0,
+        withDp: Boolean = false,
+        alignLeft: Boolean = false,
+        unitAlignLeft: Boolean = false,
+        spaceBeforeUnit: Boolean = false
+    ): String {
         val qty = nd.amountOf(n, defaultValue = 0.0)
         val unit = if (withUnit) {
             requireNotNull(colStrings) { "If units are needed, colStrings must be given" }
@@ -30,28 +30,29 @@ object PrintFormatting {
         }
 
         // TODO add asterisk to incomplete quantities
-        return formatQuantity(
-                qty = qty,
-                unit = unit,
-                unitNamer = colStrings,
-                width = width,
-                unitWidth = unitWidth,
-                withDp = withDp,
-                alignLeft = alignLeft,
-                unitAlignLeft = unitAlignLeft,
-                spaceBeforeUnit = spaceBeforeUnit
+        return quantity(
+            qty = qty,
+            unit = unit,
+            unitNamer = colStrings,
+            width = width,
+            unitWidth = unitWidth,
+            withDp = withDp,
+            alignLeft = alignLeft,
+            unitAlignLeft = unitAlignLeft,
+            spaceBeforeUnit = spaceBeforeUnit
         )
     }
-    fun formatQuantity(
-            qty: Double,
-            unit: Unit? = null,
-            unitNamer: UnitNamer? = null,
-            width: Int = 0,
-            unitWidth: Int = 0,
-            withDp: Boolean = false,
-            alignLeft: Boolean = false,
-            unitAlignLeft: Boolean = false,
-            spaceBeforeUnit: Boolean = false
+
+    fun quantity(
+        qty: Double,
+        unit: Unit? = null,
+        unitNamer: UnitNamer? = null,
+        width: Int = 0,
+        unitWidth: Int = 0,
+        withDp: Boolean = false,
+        alignLeft: Boolean = false,
+        unitAlignLeft: Boolean = false,
+        spaceBeforeUnit: Boolean = false
     ): String {
         require(unitWidth <= 0 || width == 0 || (unitWidth + if (spaceBeforeUnit) 1 else 0) in 0 until width) {
             "If width != 0, must have width > unitWidth >= 0 (unitWidth excludes space before unit)"
@@ -90,25 +91,24 @@ object PrintFormatting {
     }
 
     val defaultNutrientsToPrint = listOf(
-          Nutrients.ENERGY
-        , Nutrients.PROTEIN
-        , Nutrients.FAT
-        , Nutrients.SATURATED_FAT
-        , Nutrients.CARBOHYDRATE
-        , Nutrients.SUGAR
-        , Nutrients.FIBRE
-        , Nutrients.SODIUM
-        , Nutrients.CALCIUM
+        Nutrients.ENERGY,
+        Nutrients.PROTEIN,
+        Nutrients.FAT,
+        Nutrients.SATURATED_FAT,
+        Nutrients.CARBOHYDRATE,
+        Nutrients.SUGAR,
+        Nutrients.FIBRE,
+        Nutrients.SODIUM,
+        Nutrients.CALCIUM
     )
 
-
-    fun nutritionDataToText(
-            nd: NutrientData,
-            colStrings: ColumnStrings,
-            nutrients: List<Nutrient> = defaultNutrientsToPrint,
-            withDp: Boolean = false,
-            monoSpaceAligned: Boolean = false,
-    ) : String {
+    fun nutrientData(
+        nd: NutrientData,
+        colStrings: ColumnStrings,
+        nutrients: List<Nutrient> = defaultNutrientsToPrint,
+        withDp: Boolean = false,
+        monoSpaceAligned: Boolean = false,
+    ): String {
         // TODO get these lengths from ColumnStrings?
         val lineFormat = if (monoSpaceAligned) {
             val qtyLength = if (withDp) 6 else 4
@@ -124,7 +124,7 @@ object PrintFormatting {
                 }
                 val n = nutrients[i]
                 val colName = colStrings.getName(n)
-                val value = formatQuantity(nd, n, colStrings, withUnit = false, withDp = withDp)
+                val value = nutrient(nd, n, colStrings, withUnit = false, withDp = withDp)
                 val unitStr = colStrings.getAbbr(nd.getUnitOrDefault(n))
                 append(lineFormat.format(colName, value, unitStr))
                 //append("$colName: $value $unitStr")

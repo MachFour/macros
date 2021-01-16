@@ -13,14 +13,14 @@ import java.sql.SQLException
 internal object QueryHelpers {
     @Throws(SQLException::class)
     internal fun <M, J> getIdsFromKeys(ds: MacrosDataSource, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
-        return if (keys.isEmpty()) emptyMap() else ds.getIdsByKeys(t, keyCol, keys)
+        return if (keys.isEmpty()) emptyMap() else Queries.getIdsByKeys(ds, t, keyCol, keys)
     }
 
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
     @Throws(SQLException::class)
     internal fun getRawMealsById(ds: MacrosDataSource, mealIds: Collection<Long>): Map<Long, Meal> {
-        return ds.getRawObjectsByKeys(Meal.table, MealTable.ID, mealIds)
+        return Queries.getRawObjectsByKeys(ds, Meal.table, MealTable.ID, mealIds)
     }
 
     @Throws(SQLException::class)
@@ -30,19 +30,19 @@ internal object QueryHelpers {
 
     @Throws(SQLException::class)
     internal fun <M> getRawObjectsByIds(ds: MacrosDataSource, t: Table<M>, ids: Collection<Long>): Map<Long, M> {
-        return ds.getRawObjectsByKeys(t, t.idColumn, ids)
+        return Queries.getRawObjectsByKeys(ds, t, t.idColumn, ids)
     }
 
     @Throws(SQLException::class)
     internal fun <M, J> getRawObjectByKey(ds: MacrosDataSource, t: Table<M>, keyCol: Column<M, J>, key: J): M? {
-        val returned = ds.getRawObjectsByKeys(t, keyCol, listOf(key))
+        val returned = Queries.getRawObjectsByKeys(ds, t, keyCol, listOf(key))
         return returned.getOrDefault(key, null)
     }
 
     @Throws(SQLException::class)
     internal fun processRawIngredients(ds: MacrosDataSource, ingredientMap: Map<Long, Ingredient>) {
-        val foodIds: MutableList<Long> = ArrayList(ingredientMap.size)
-        val servingIds: MutableList<Long> = ArrayList(ingredientMap.size)
+        val foodIds = ArrayList<Long>(ingredientMap.size)
+        val servingIds = ArrayList<Long>(ingredientMap.size)
         for (i in ingredientMap.values) {
             foodIds.add(i.foodId)
             i.servingId?.let { servingIds += it }
@@ -97,10 +97,11 @@ internal object QueryHelpers {
         var objectMap: Map<Long, M> = emptyMap()
         if (parentObjectMap.isNotEmpty()) {
             val childIdCol = childTable.idColumn
-            val ids = Queries.selectColumn(ds, childTable, childIdCol, fkCol, parentObjectMap.keys)
-                .map { requireNotNull(it) { "Error: null ID encountered: $it" } }
+            val ids = Queries.selectSingleColumn(ds, childTable, childIdCol) {
+                where(fkCol, parentObjectMap.keys)
+            }.map { requireNotNull(it) { "Error: null ID encountered: $it" } }
             if (ids.isNotEmpty()) {
-                objectMap = ds.getRawObjectsByKeys(childTable, childIdCol, ids)
+                objectMap = Queries.getRawObjectsByKeys(ds, childTable, childIdCol, ids)
             } // else no objects in the child table refer to any of the parent objects/rows
         }
         return objectMap
@@ -160,8 +161,10 @@ internal object QueryHelpers {
 
     @Throws(SQLException::class)
     private fun getRawFoodPortionsForMeal(ds: MacrosDataSource, meal: Meal): Map<Long, FoodPortion> {
-        return Queries.selectColumn(ds, FoodPortion.table, FoodPortionTable.ID, FoodPortionTable.MEAL_ID, meal.id)
-            .map { checkNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
+        return Queries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.ID) {
+            where(FoodPortionTable.MEAL_ID, listOf(meal.id))
+            distinct(false)
+        }.map { checkNotNull(it) { "Error: null FoodPortion ID encountered: $it" } }
             .takeIf { it.isNotEmpty() }
             ?.let { getRawObjectsByIds(ds, FoodPortion.table, it) }
             ?: emptyMap()

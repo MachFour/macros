@@ -1,6 +1,11 @@
 package com.machfour.macros.storage
 
 import com.machfour.macros.core.*
+import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
+import com.machfour.macros.sql.AllColumnSelect
+import com.machfour.macros.sql.MultiColumnSelect
+import com.machfour.macros.sql.SingleColumnSelect
+import com.machfour.macros.sql.TwoColumnSelect
 import java.io.IOException
 import java.sql.SQLException
 
@@ -31,23 +36,16 @@ abstract class MacrosDatabase : MacrosDataSource {
     abstract override fun <M> deleteById(t: Table<M>, id: Long): Int
 
     @Throws(SQLException::class)
-    abstract override fun <M> stringSearch(
-            t: Table<M>, cols: List<Column<M, String>>, keyword: String, globBefore: Boolean, globAfter: Boolean
-    ): List<Long>
+    abstract override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
-    // like selectColumn except the keys (where values) are returned mapped to the corresponding values
-    // found in the valueColumn
     @Throws(SQLException::class)
-    abstract override fun <M, I, J> selectColumnMap(
-            t: Table<M>, keyColumn: Column<M, I>, valueColumn: Column<M, J>, keys: Set<I>
-    ): Map<I, J?>
+    abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
-    // does SELECT (selectColumn) FROM (t) WHERE (whereColumn) = (whereValue)
-    // or SELECT (selectColumn) FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Throws(SQLException::class)
-    abstract override fun <M, I, J> selectColumn(
-            t: Table<M>, selected: Column<M, I>, where: Column<M, J>, whereValues: Collection<J>, distinct: Boolean
-    ): List<I?>
+    abstract override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>>
+
+    @Throws(SQLException::class)
+    abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>>
 
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
@@ -57,32 +55,12 @@ abstract class MacrosDatabase : MacrosDataSource {
     @Throws(SQLException::class)
     abstract override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
 
-    // Retrives an object by a key column, and constructs it without any FK object instances.
-    // Returns null if no row in the corresponding table had a key with the given value
-    @Throws(SQLException::class)
-    abstract override fun <M, J> getRawObjectsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M>
-
-    // TODO get rid of noEmpty
-    @Throws(SQLException::class)
-    abstract override fun <M, J> getIdsByKeys(t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long>
-
-    // returns map of all objects in table, by ID
-    // TODO make protected -- but it's useful for CSV export
-    @Throws(SQLException::class)
-    abstract override fun <M> getAllRawObjects(t: Table<M>): Map<Long, M>
-
     @Throws(SQLException::class)
     abstract override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
 
     // Note that if the id is not found in the database, nothing will be inserted
     @Throws(SQLException::class)
     abstract override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
-
-    @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> idExistsInTable(table: Table<M>, id: Long): Boolean
-
-    @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> idsExistInTable(table: Table<M>, ids: List<Long>): Map<Long, Boolean>
 
     @Throws(SQLException::class)
     abstract override fun <M> clearTable(t: Table<M>): Int

@@ -28,7 +28,13 @@ object FkCompletion {
         val uniqueColumnValues : Set<I> = data.map {
             it[parentNaturalKeyCol] ?: error("parent natural key column had null data")
         }.toSet()
-        val completedParentKeys = ds.selectColumnMap(fkColumn.parentTable, parentNaturalKeyCol, fkColumn.parentColumn, uniqueColumnValues)
+        val completedParentKeys = Queries.selectColumnMap(
+            ds,
+            fkColumn.parentTable,
+            parentNaturalKeyCol,
+            fkColumn.parentColumn,
+            uniqueColumnValues
+        )
         return completedParentKeys.mapValues {
             val parentKey = it.value ?: error("Value was null for key column ${it.key}")
             parentKey

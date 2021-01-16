@@ -102,8 +102,8 @@ class FoodTest {
 
     @Test
     fun saveALotOfFood() {
-        val lotsOfFoods = ArrayList<Food>(1000)
-        for (i in 0..999) {
+        val lotsOfFoods = ArrayList<Food>(10000)
+        for (i in 0..9999) {
             val modifiedData = foodData.copy()
             modifiedData.put(FoodTable.ID, i.toLong())
             modifiedData.put(FoodTable.INDEX_NAME, "food$i")
@@ -111,7 +111,7 @@ class FoodTest {
             lotsOfFoods.add(modifiedIndexName)
         }
         try {
-            assertEquals(1000, Queries.insertObjects(db, lotsOfFoods, true))
+            assertEquals(10000, Queries.insertObjects(db, lotsOfFoods, true))
         } catch (e: SQLiteException) {
             fail<Any>("DB save threw SQLite exception with result code: " + e.resultCode)
             e.printStackTrace()

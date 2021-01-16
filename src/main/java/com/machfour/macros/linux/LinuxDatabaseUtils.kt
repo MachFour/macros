@@ -2,6 +2,7 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.storage.DatabaseUtils
 import java.sql.PreparedStatement
@@ -37,8 +38,19 @@ internal object LinuxDatabaseUtils {
     }
 
     @Throws(SQLException::class)
-    fun <M> fillColumnData(data: ColumnData<M>, rs: ResultSet) {
-        val columns: Collection<Column<M, *>> = data.table.columns
+    fun <J> ResultSet.getColumn(column: Column<*, J>) : J? {
+        val resultValue = getObject(column.sqlName)
+        return try {
+            column.type.fromRaw(resultValue)
+        } catch (e: TypeCastException) {
+            // this line throws an exception, so code won't reach here
+            DatabaseUtils.rethrowAsSqlException(resultValue, column)
+            null
+        }
+    }
+
+    @Throws(SQLException::class)
+    fun <M> fillColumnData(data: ColumnData<M>, rs: ResultSet, columns: Collection<Column<M, *>> = data.table.columns) {
         for (col in columns) {
             val rawValue = rs.getObject(col.sqlName)
             try {
@@ -47,6 +59,13 @@ internal object LinuxDatabaseUtils {
                 DatabaseUtils.rethrowAsSqlException(rawValue, col)
             }
         }
+    }
+
+    @Throws(SQLException::class)
+    fun <M> ResultSet.toColumnData(table: Table<M>, columns: Collection<Column<M, *>> = table.columns) : ColumnData<M> {
+        val data = ColumnData(table, columns)
+        fillColumnData(data, this, columns)
+        return data
     }
 
 }

@@ -4,6 +4,7 @@ import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodTable.Companion.BRAND
 import com.machfour.macros.core.schema.FoodTable.Companion.CATEGORY
+import com.machfour.macros.core.schema.FoodTable.Companion.EXTRA_DESC
 import com.machfour.macros.core.schema.FoodTable.Companion.FOOD_TYPE
 import com.machfour.macros.core.schema.FoodTable.Companion.INDEX_NAME
 import com.machfour.macros.core.schema.FoodTable.Companion.NAME
@@ -49,12 +50,16 @@ object ExampleFood {
     }
 
     private fun init2(): Food {
-        val fData = ColumnData(foodTable)
-        fData.put(INDEX_NAME, "generic-oil")
-        fData.put(NAME, "Generic Oil")
-        fData.put(CATEGORY, "oils")
-        fData.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
-        val f = Food.factory.construct(fData, ObjectSource.IMPORT)
+        val data = ColumnData(foodTable)
+        data.put(INDEX_NAME, "generic-oil")
+        data.put(VARIETY, "Super oily")
+        data.put(EXTRA_DESC, "in a bottle")
+        data.put(NAME, "Generic Oil")
+        data.put(BRAND, "Max's")
+        data.put(NOTES, "it's still organic though")
+        data.put(CATEGORY, "oils")
+        data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
+        val f = Food.factory.construct(data, ObjectSource.IMPORT)
 
         val nutritionData = listOf(
               FoodNutrientValue.makeComputedValue(3400.0, Nutrients.ENERGY, Units.KILOJOULES)

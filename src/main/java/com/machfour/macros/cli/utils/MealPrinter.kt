@@ -61,7 +61,7 @@ object MealPrinter {
             this += name
             // add nutrients, formatting to be the appropriate width
             for (nutrient in nutrientColumns) {
-                this += PrintFormatting.formatQuantity(
+                this += PrintFormatting.nutrient(
                     nd = nd,
                     n = nutrient,
                     width = nutrientWidth,
@@ -69,7 +69,7 @@ object MealPrinter {
                 )
             }
             // add quantity and unit
-            this += PrintFormatting.formatQuantity(
+            this += PrintFormatting.quantity(
                     qty = qty,
                     unit = unit,
                     unitNamer = EnglishUnitNames.instance,

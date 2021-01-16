@@ -9,7 +9,7 @@ import com.machfour.macros.objects.inbuilt.DefaultUnits
 import com.machfour.macros.objects.inbuilt.Nutrients
 import com.machfour.macros.objects.inbuilt.Units
 
-// immutable class storing nutrition data for a food or meal
+// class storing nutrition data for a food or meal
 
 class NutrientData(
     val dataCompleteIfNotNull: Boolean = true

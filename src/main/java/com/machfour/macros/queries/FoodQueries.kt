@@ -4,7 +4,6 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
-import com.machfour.macros.core.schema.SchemaHelpers
 import com.machfour.macros.objects.*
 import com.machfour.macros.storage.DatabaseUtils.makeIdMap
 import com.machfour.macros.storage.MacrosDataSource
@@ -68,7 +67,7 @@ object FoodQueries {
 
     @Throws(SQLException::class)
     fun getAllFoodCategories(ds: MacrosDataSource): Map<String, FoodCategory> {
-        val categoriesById = ds.getAllRawObjects(FoodCategory.table)
+        val categoriesById = Queries.getAllRawObjects(ds, FoodCategory.table)
         // change the map to have keys as category names
         return categoriesById.mapKeys { idMapping : Map.Entry<Long, FoodCategory> ->
             idMapping.value.name
@@ -104,11 +103,11 @@ object FoodQueries {
     // The proper way to get all foods
     @Throws(SQLException::class)
     fun getAllFoods(ds: MacrosDataSource): List<Food> {
-        val allFoods = ds.getAllRawObjects(Food.table)
-        val allServings = ds.getAllRawObjects(Serving.table)
-        val allNutrientData = ds.getAllRawObjects(FoodNutrientValue.table)
+        val allFoods = Queries.getAllRawObjects(ds, Food.table)
+        val allServings = Queries.getAllRawObjects(ds, Serving.table)
+        val allNutrientData = Queries.getAllRawObjects(ds, FoodNutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = ds.getAllRawObjects(Ingredient.table)
+        val allIngredients = Queries.getAllRawObjects(ds, Ingredient.table)
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
         return ArrayList(allFoods.values)
@@ -155,7 +154,7 @@ object FoodQueries {
      */
     @Throws(SQLException::class)
     fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
-        val foods = ds.getRawObjectsByKeys(FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
+        val foods = Queries.getRawObjectsByKeys(ds, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
         QueryHelpers.processRawFoodMap(ds, idMap)
@@ -174,8 +173,9 @@ object FoodQueries {
 
     @Throws(SQLException::class)
     fun getParentFoodIdsContainingFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        val parentIdCol = IngredientTable.PARENT_FOOD_ID
-        val foodIdCol = IngredientTable.FOOD_ID
-        return ds.selectColumn(Ingredient.table, parentIdCol, foodIdCol, foodIds, true).filterNotNull()
+        return Queries.selectSingleColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
+            where(IngredientTable.FOOD_ID, foodIds)
+            distinct()
+        }.filterNotNull()
     }
 }

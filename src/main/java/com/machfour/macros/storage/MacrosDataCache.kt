@@ -56,11 +56,6 @@ class MacrosDataCache private constructor(private val upstream: MacrosDataSource
         return deleteObjects(upstream, objects)
     }
 
-    @Throws(SQLException::class)
-    fun <M> stringSearch(t: Table<M>, cols: List<Column<M, String>>, keyword: String, globBefore: Boolean, globAfter: Boolean): List<Long> {
-        return upstream.stringSearch(t, cols, keyword, globBefore, globAfter)
-    }
-
     @get:Throws(SQLException::class)
     val allFoods: List<Food>
         get() {

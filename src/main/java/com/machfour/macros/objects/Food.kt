@@ -16,8 +16,8 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
             FoodTable.BRAND,
             FoodTable.VARIETY,
             FoodTable.EXTRA_DESC,
-            FoodTable.INDEX_NAME,
             FoodTable.NOTES,
+            FoodTable.INDEX_NAME,
             FoodTable.DATA_SOURCE,
             FoodTable.DATA_NOTES,
         )

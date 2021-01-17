@@ -24,11 +24,12 @@ object FoodPortionQueries {
         }
     }
 
-    fun getRecentlyEnteredFoodIds(ds: MacrosDataSource, howMany: Int) : List<Long> {
-        return Queries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
+    fun recentFoodIds(ds: MacrosDataSource, howMany: Int) : List<Long> {
+        return Queries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
             orderBy(FoodPortionTable.CREATE_TIME, OrderByDirection.DESCENDING)
+            distinct()
             limit(howMany)
-        }.filterNotNull()
+        }
     }
 
     fun getFoodForFoodPortionId(ds: MacrosDataSource, fpId: Long): Food? {

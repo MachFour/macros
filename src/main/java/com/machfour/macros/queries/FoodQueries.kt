@@ -176,9 +176,9 @@ object FoodQueries {
 
     @Throws(SQLException::class)
     fun getParentFoodIdsContainingFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        return Queries.selectSingleColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
+        return Queries.selectNonNullColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
             where(IngredientTable.FOOD_ID, foodIds)
             distinct()
-        }.filterNotNull()
+        }
     }
 }

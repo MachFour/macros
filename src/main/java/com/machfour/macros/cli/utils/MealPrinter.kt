@@ -129,9 +129,10 @@ object MealPrinter {
         // now print total
         out.println(rowSeparator)
         val totalName = "Total for ${meal.name}"
-        val totalNd = meal.nutrientTotal
+        val totalNd = meal.nutrientTotal()
         // for total data, just use the quantity and unit from the sum
-        val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
+        val totalRow =
+            nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
         printRow(totalRow, rowWidths, rightAlign, columnSep, out)
     }
 
@@ -148,7 +149,7 @@ object MealPrinter {
                 out.println()
                 if (per100) {
                     out.println("== Nutrient total per 100g ==")
-                    m.nutrientTotal.rescale100().printNutrientData(verbose, out)
+                    m.nutrientTotal().rescale100().printNutrientData(verbose, out)
                     out.println("=============================")
                     out.println()
                 }
@@ -158,7 +159,7 @@ object MealPrinter {
             out.println("====================")
             out.println("Total for all meals:")
             out.println("====================")
-            NutrientData.sum(meals.map { it.nutrientTotal }).let {
+            NutrientData.sum(meals.map { it.nutrientTotal() }).let {
                 it.printNutrientData(verbose, out)
                 out.println()
                 it.printEnergyProportions(verbose, out)

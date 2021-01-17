@@ -236,18 +236,13 @@ object Queries {
     }
 
     @Throws(SQLException::class)
-    fun <M> getAllRawObjects(ds: MacrosDataSource, t: Table<M>, orderBy: Column<M, *>? = null): Map<Long, M> {
+    fun <M> getAllRawObjects(ds: MacrosDataSource, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
         val query = AllColumnSelect.build(t) {
             if (orderBy != null) {
                 orderBy(orderBy)
             }
         }
         return getRawObjectsById(ds, t, query)
-    }
-
-    @Throws(SQLException::class)  // returns a map of objects by ID
-    fun <M> getAllRawObjects(ds: MacrosDataSource, t: Table<M>): Map<Long, M> {
-        return getAllRawObjects(ds, t, t.idColumn)
     }
 
     // The resulting map is unordered

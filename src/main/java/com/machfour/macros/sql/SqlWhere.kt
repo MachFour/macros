@@ -17,6 +17,7 @@ class SqlWhereExpr<M, J> private constructor(
 
         fun <M, J> where(whereColumn: Column<M, J>, whereValue: J): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
+                whereColumn = whereColumn,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = 1),
                 whereValues = listOf(whereValue)
             )
@@ -24,6 +25,7 @@ class SqlWhereExpr<M, J> private constructor(
 
         fun <M, J> where(whereColumn: Column<M, J>, whereValues: Collection<J>): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
+                whereColumn = whereColumn,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = whereValues.size),
                 whereValues = whereValues
             )
@@ -31,6 +33,7 @@ class SqlWhereExpr<M, J> private constructor(
 
         fun <M, J> where(whereColumn: Column<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
+                whereColumn = whereColumn,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, isNotNull = isNotNull)
             )
         }

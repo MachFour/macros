@@ -102,7 +102,7 @@ open class SelectQuery<M>(
         query.add("FROM")
         query.add(table.name)
 
-        query.add(whereExpr.toTemplate())
+        query.add(whereExpr.toSql())
 
         ordering?.let {
             query.add("ORDER BY")

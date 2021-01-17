@@ -19,6 +19,9 @@ object FoodQueries {
         , FoodTable.EXTRA_DESC
     )
 
+    fun foodSearch(ds: MacrosDataSource, keywords: List<String>): Set<Long> {
+        return keywords.map { foodSearch(ds, it) }.flatten().toSet()
+    }
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
     // empty list will be returned if keyword is empty string
     // If keyword is only 1 or 2 chars, search only by exact match and index name prefix

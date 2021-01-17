@@ -2,11 +2,15 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.MacrosType
+import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.persistence.DatabaseUtils
 
+// TODO allow combining multiple SqlWhere statements, each one with a single column
+//  make into sealed class with subclasses for each kind of where (multivalue, single value, LIKE, etc.)
 class SqlWhereExpr<M, J> private constructor(
     private val whereClause: String = "",
     private val whereColumn: Column<M, J>? = null,
+    private val whereColumnType: MacrosType<J>? = null,
     private val whereValues: Collection<J>? = null,
 ) {
 
@@ -18,6 +22,7 @@ class SqlWhereExpr<M, J> private constructor(
         fun <M, J> where(whereColumn: Column<M, J>, whereValue: J): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumn = whereColumn,
+                whereColumnType = whereColumn.type,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = 1),
                 whereValues = listOf(whereValue)
             )
@@ -26,6 +31,7 @@ class SqlWhereExpr<M, J> private constructor(
         fun <M, J> where(whereColumn: Column<M, J>, whereValues: Collection<J>): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumn = whereColumn,
+                whereColumnType = whereColumn.type,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = whereValues.size),
                 whereValues = whereValues
             )
@@ -34,6 +40,7 @@ class SqlWhereExpr<M, J> private constructor(
         fun <M, J> where(whereColumn: Column<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumn = whereColumn,
+                whereColumnType = whereColumn.type,
                 whereClause = DatabaseUtils.makeWhereString(whereColumn, isNotNull = isNotNull)
             )
         }
@@ -44,6 +51,7 @@ class SqlWhereExpr<M, J> private constructor(
             )
         }
 
+        // TODO clean up this interface (see note at top)
         // " WHERE (likeColumn[0] LIKE ?) <Conjuction> (likeColumn[1] LIKE ?) <Conjunction> ..."
         fun <M> whereLike(
             likeColumns: Collection<Column<M, String>>,
@@ -51,13 +59,14 @@ class SqlWhereExpr<M, J> private constructor(
             conjunction: Conjuction = Conjuction.OR
         ): SqlWhereExpr<M, String> {
             return SqlWhereExpr(
+                whereColumnType = Types.TEXT,
                 whereClause = DatabaseUtils.makeWhereLikeString(likeColumns, conjunction),
                 whereValues = whereLikeValues
             )
         }
     }
 
-    fun toTemplate(): String {
+    fun toSql(): String {
         return whereClause
     }
 
@@ -72,5 +81,5 @@ class SqlWhereExpr<M, J> private constructor(
 
     // for Android
     val bindArgumentType: MacrosType<J>?
-        get() = whereColumn?.type
+        get() = whereColumnType
 }

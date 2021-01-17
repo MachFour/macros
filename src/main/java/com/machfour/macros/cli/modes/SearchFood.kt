@@ -43,12 +43,14 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 0
         }
         val ds = config.dataSourceInstance
-        val keyword = args[1]
-        var resultFoods: Map<Long, Food> = emptyMap()
-        try {
-            val resultIds = FoodQueries.foodSearch(ds, keyword)
+        val searchString = args[1]
+        val keywords = searchString.split(Regex("\\s"))
+        val resultFoods = try {
+            val resultIds = FoodQueries.foodSearch(ds, keywords)
             if (resultIds.isNotEmpty()) {
-                resultFoods = FoodQueries.getFoodsById(ds, resultIds)
+                FoodQueries.getFoodsById(ds, resultIds)
+            } else {
+                emptyMap()
             }
         } catch (e: SQLException) {
             err.print("SQL exception occurred: ")
@@ -56,7 +58,7 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 1
         }
         if (resultFoods.isEmpty()) {
-            out.println("No matches for keyword '${keyword}'")
+            out.println("No matches for search string '${searchString}'")
         } else {
             out.println("Search results:")
             out.println()

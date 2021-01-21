@@ -56,7 +56,7 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
 
     fun prettyPrint(): String {
         val prettyStr = StringBuilder(toString())
-        val today = currentDate
+        val today = currentDate()
         if (this == today) {
             prettyStr.append(" (today)")
         } else if (this == today.step(-1)) {
@@ -68,7 +68,7 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
     companion object {
         private val internalClock = Clock.systemDefaultZone()
         private val internalTz = ZoneId.systemDefault()
-        private val utcTz : ZoneId = ZoneOffset.UTC
+        private val utcTz: ZoneId = ZoneOffset.UTC
 
         fun ofLocalDate(d: LocalDate): DateStamp = DateStamp(d)
 
@@ -76,14 +76,15 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
          * Get corresponding DateStamp for a number of days ago by using the Calendar's
          * field addition methods to add a negative amount of days
          */
-        fun forDaysAgo(daysAgo: Long): DateStamp = currentDate.step(-1 * daysAgo)
+        fun forDaysAgo(daysAgo: Long): DateStamp = currentDate().step(-1 * daysAgo)
 
         fun forEpochDay(epochDay: Long): DateStamp {
             return DateStamp(LocalDate.ofEpochDay(epochDay))
         }
 
-        val currentDate: DateStamp
-            get() = DateStamp(LocalDate.now())
+        fun currentDate(): DateStamp {
+            return DateStamp(LocalDate.now())
+        }
 
         /*
          * Creates a new DateStamp instance from an ISO-8601 string, e.g '2017-08-01'

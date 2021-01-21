@@ -3,8 +3,8 @@ INSERT INTO Unit (id, type_id, name, abbreviation, metric_equivalent, inbuilt) V
     , (1, 1, 'milligrams', 'mg', 0.001, 1)
     , (2, 2, 'millilitres', 'ml', 1, 1)
     , (3, 2, 'litres', 'L', 1000, 0)
-    , (4, 3, 'kilojoules', 'kj', 1, 1)
-    , (5, 3, 'calories', 'kcal', 4.186, 1)
+    , (4, 4, 'kilojoules', 'kj', 1, 1)
+    , (5, 4, 'calories', 'kcal', 4.186, 1)
 ;
 
 INSERT INTO Nutrient (id, name, unit_types, inbuilt) VALUES

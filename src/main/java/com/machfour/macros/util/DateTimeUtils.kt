@@ -15,6 +15,8 @@ object DateTimeUtils {
         .appendValue(ChronoField.CLOCK_HOUR_OF_AMPM, 2)
         .appendLiteral(':')
         .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+        .appendLiteral(' ')
+        .appendText(ChronoField.AMPM_OF_DAY)
         .toFormatter()
 
     val ISO_LOCAL_HOUR_MINUTE: DateTimeFormatter = DateTimeFormatterBuilder()

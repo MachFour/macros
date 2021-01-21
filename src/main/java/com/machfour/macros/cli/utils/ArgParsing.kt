@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.util.DateStamp
+import com.machfour.macros.util.DateStamp.Companion.currentDate
 
 // Utility class for argument parsing
 object ArgParsing {
@@ -66,7 +67,7 @@ object ArgParsing {
     fun dayStringParse(dayString: String?): DateStamp? {
         // default values
         if (dayString == null) {
-            return DateStamp.currentDate
+            return currentDate()
         }
         try {
             // enter day as '-1' for yesterday, '0' for today, '1' for tomorrow, etc.

@@ -6,6 +6,7 @@ import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.objects.Meal
 import com.machfour.macros.objects.helpers.Factories
 import com.machfour.macros.util.DateStamp
+import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.time.Instant
 
 class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Factories.meal, COLUMNS) {
@@ -31,7 +32,7 @@ class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Factories.me
             NOTES = SchemaHelpers.notesColumnBuildAndAdd(COLUMNS)
 
             NAME = SchemaHelpers.builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
-            DAY = SchemaHelpers.builder("day", Types.DATESTAMP).notNull().default { DateStamp.currentDate }.buildAndAdd(COLUMNS)
+            DAY = SchemaHelpers.builder("day", Types.DATESTAMP).notNull().default { currentDate() }.buildAndAdd(COLUMNS)
             START_TIME = SchemaHelpers.builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildAndAdd(COLUMNS)
             DURATION = SchemaHelpers.builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildAndAdd(COLUMNS)
         }

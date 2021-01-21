@@ -8,6 +8,7 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp
+import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -30,7 +31,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val (_, argument, status) = findArgument(args, 1)
         val d : DateStamp = when (status) {
             ArgParsing.Status.NOT_FOUND -> {
-                DateStamp.currentDate
+                currentDate()
             }
             ArgParsing.Status.OPT_ARG_MISSING -> {
                 err.println("-d option requires a day specified")

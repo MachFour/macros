@@ -11,6 +11,7 @@ import com.machfour.macros.objects.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp
+import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
 import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
@@ -248,7 +249,7 @@ class FileParser {
         val foodIndexNames = getAllIndexNames(mealSpecs.values)
         val meals: MutableList<Meal> = ArrayList()
         val foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames)
-        val currentDay = DateStamp.currentDate
+        val currentDay = currentDate()
         for ((key, value) in mealSpecs) {
             val m = makeMeal(key.name!!, currentDay)
             for (fps in value) {

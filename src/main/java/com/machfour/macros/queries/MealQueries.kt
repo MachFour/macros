@@ -10,6 +10,7 @@ import com.machfour.macros.objects.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp
+import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
 
 object MealQueries {
@@ -50,7 +51,7 @@ object MealQueries {
     // if no meals exist for the current date, returns null
     @Throws(SQLException::class)
     fun getCurrentMeal(ds: MacrosDataSource): Meal? {
-        return getMealsForDay(ds, DateStamp.currentDate).values.maxByOrNull { it.startTime }
+        return getMealsForDay(ds, currentDate()).values.maxByOrNull { it.startTime }
     }
 
     @Throws(SQLException::class)

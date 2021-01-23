@@ -130,7 +130,7 @@ object IngredientsParser {
 
         // go through and create object links so that we can have a proper object tree without having to save to DB first
         for (cf in results) {
-            for (i in cf.getIngredients()) {
+            for (i in cf.ingredients) {
                 i.initCompositeFood(cf)
                 i.initFoodAndNd(ingredientFoods.getValue(i.foodId))
             }
@@ -164,7 +164,7 @@ object IngredientsParser {
 
             // Now we can edit the ingredients to have the ID
             // TODO use completeFk function
-            val newIngredients = addCompositeFoodId(cf.getIngredients(), id)
+            val newIngredients = addCompositeFoodId(cf.ingredients, id)
             // here we go!
             Queries.insertObjects(ds, newIngredients, false)
 

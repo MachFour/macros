@@ -18,7 +18,8 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.Reader
 import java.sql.SQLException
-import java.util.regex.Pattern
+
+// TODO remove toPattern() calls
 
 class FileParser {
     private val errorLines: MutableMap<String, String> = LinkedHashMap() // LinkedHashMap maintains insertion order
@@ -28,11 +29,11 @@ class FileParser {
     }
 
     companion object {
-        private val mealPattern = Pattern.compile("\\[(?<mealdesc>.*)]")
+        private val mealPattern = Regex("\\[(?<mealdesc>.*)]")
         private const val quantityRegex = "(?<qty>-?[0-9]+(?:.[0-9]+)?)"
         private const val unitRegex = "(?<unit>[a-zA-Z]+)?"
-        private val servingCountPattern = Pattern.compile(quantityRegex)
-        private val quantityAndUnitPattern = Pattern.compile("$quantityRegex\\s*$unitRegex")
+        private val servingCountPattern = Regex(quantityRegex)
+        private val quantityAndUnitPattern = Regex("$quantityRegex\\s*$unitRegex")
 
         // returns an array holding MealSpec or FoodPortionSpec objects describing the objects that should be created
         // only checked for syntax, not whether those foods/servings actually exist
@@ -44,10 +45,10 @@ class FileParser {
             var currentFpSpecs: MutableList<FoodPortionSpec>? = null
             for (index in fileLines.indices) {
                 val line = fileLines[index].javaTrim()
-                val mealTitle = mealPattern.matcher(line)
-                if (mealTitle.find()) {
+                val mealTitle = mealPattern.find(line)
+                if (mealTitle != null) {
                     // make a new meal
-                    val m = makeMealSpec(mealTitle.group("mealdesc"))
+                    val m = makeMealSpec(mealTitle.groups["mealdesc"]?.value)
                     currentFpSpecs = ArrayList()
                     specMap[m] = currentFpSpecs
                 } else if (line.isNotEmpty() && !line.startsWith("#")) {
@@ -173,7 +174,7 @@ class FileParser {
                     2 -> {
                         // vanilla food and quantity, with optional unit defaulting to whatever food's nutrition data uses
                         isServingMode = false
-                        val quantityMatch = quantityAndUnitPattern.matcher(tokens[1])
+                        val quantityMatch = quantityAndUnitPattern.toPattern().matcher(tokens[1])
                         if (!quantityMatch.find()) {
                             // could not understand anything
                             error = "invalid quantity or unit"
@@ -208,7 +209,7 @@ class FileParser {
                         if (servingCountStr.isEmpty()) {
                             servingCount = 1.0
                         } else {
-                            val servingCountMatch = servingCountPattern.matcher(tokens[2])
+                            val servingCountMatch = servingCountPattern.toPattern().matcher(tokens[2])
                             if (servingCountMatch.find()) {
                                 try {
                                     servingCount = servingCountMatch.group("qty").toDouble()

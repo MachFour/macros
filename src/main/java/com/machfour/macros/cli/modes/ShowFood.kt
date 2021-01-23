@@ -97,7 +97,7 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             out.println()
             out.println("Ingredients:")
             out.println()
-            val ingredients = cf.getIngredients()
+            val ingredients = cf.ingredients
             if (ingredients.isNotEmpty()) {
                 CliUtils.printIngredients(ingredients, out)
                 out.println()

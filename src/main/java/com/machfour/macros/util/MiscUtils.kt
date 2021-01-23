@@ -22,3 +22,10 @@ fun Int.floorMod(y: Int): Int {
 fun <E, K> List<E>.filterInSetUnlessEmpty(set: Set<K>, key: (E) -> K) : List<E> {
     return if (set.isEmpty()) this else this.filter { set.contains(key(it)) }
 }
+
+fun <K, V, R> mapValueOrElse(data: Map<K, V>, key: K, elseValue: R, mapping: (V) -> R): R {
+    return when(val value = data[key]) {
+        null -> elseValue
+        else -> mapping(value)
+    }
+}

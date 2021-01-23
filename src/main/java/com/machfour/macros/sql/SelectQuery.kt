@@ -74,6 +74,11 @@ open class SelectQuery<M>(
     val isOrdered: Boolean
         get() = ordering != null
 
+    // TODO situation when there are a lot of arguments (e.g. in a WHERE clause), we iterate over them one by one
+    //  however there may be some other arguments which must be in every query?
+    val hasBindArgumentsForIteration: Boolean
+        get() = false
+
     val hasBindArguments: Boolean
         get() = whereExpr.numArgs > 0
 

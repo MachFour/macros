@@ -2,6 +2,7 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.core.*
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
+import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
 import com.machfour.macros.sql.*
 import com.machfour.macros.persistence.DatabaseUtils
@@ -198,45 +199,25 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
         return resultData
     }
 
-    // TODO add option to iterate over where args (see comment)
     private fun executeQuery(query: SelectQuery<*>, resultSetAction: (ResultSet) -> Unit) {
         val c = connection
         try {
             val sql = query.toSql()
             if (query.hasBindArguments) {
-
-                //for (key in keys) {
-                //    // do queries one by one so we don't send a huge number of parameters at once
-                //    LinuxDatabaseUtils.bindObjects(p, listOf(key))
-                //    p.executeQuery().use { rs ->
-                //        rs.next()
-                //        while (!rs.isAfterLast) {
-
-                //            //I key = keyColumn.getType().fromRaw(rs.getObject(keyColumn.sqlName()));
-                //            rs.next()
-                //        }
-                //    }
-                //    p.clearParameters()
-                //}
-                c.prepareStatement(sql).use { p ->
-                    LinuxDatabaseUtils.bindObjects(p, query.getBindArguments())
-                    p.executeQuery().use { rs ->
-                        rs.next()
-                        while (!rs.isAfterLast) {
-                            resultSetAction(rs)
-                            rs.next()
+                c.prepareStatement(sql).use {
+                    if (query.hasBindArgumentsForIteration) {
+                        for (arg in query.getBindArguments()) {
+                            LinuxDatabaseUtils.bindObjects(it, listOf(arg))
+                            it.executeQuery().processResultSet(resultSetAction)
+                            it.clearParameters()
                         }
+                    } else {
+                        LinuxDatabaseUtils.bindObjects(it, query.getBindArguments())
+                        it.executeQuery().processResultSet(resultSetAction)
                     }
                 }
             } else {
-                c.createStatement().executeQuery(sql).use { rs ->
-                    rs.next()
-                    while (!rs.isAfterLast) {
-                        resultSetAction(rs)
-                        rs.next()
-                    }
-                }
-
+                c.createStatement().executeQuery(sql).processResultSet(resultSetAction)
             }
         } finally {
             closeIfNecessary(c)

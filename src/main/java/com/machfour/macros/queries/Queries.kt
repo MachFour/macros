@@ -4,10 +4,6 @@ import com.machfour.macros.core.*
 import com.machfour.macros.sql.*
 import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.LinkedHashMap
 
 object Queries {
     @Throws(SQLException::class)
@@ -42,7 +38,7 @@ object Queries {
         }
 
         val keywordGlob = (if (globBefore) "%" else "") + keyword + if (globAfter) "%" else ""
-        val keywordCopies = Collections.nCopies(cols.size, keywordGlob)
+        val keywordCopies = List(cols.size) { keywordGlob }
         val query = SingleColumnSelect.build(t, t.idColumn) {
             whereLike(cols, keywordCopies)
         }

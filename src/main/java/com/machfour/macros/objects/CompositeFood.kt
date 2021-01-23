@@ -3,16 +3,13 @@ package com.machfour.macros.objects
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
-import com.machfour.macros.core.schema.SchemaHelpers
-
-import java.util.Collections
 
 class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
     private var ingredientNutrientData = NutrientData()
     private var hasOverridingNutrientData: Boolean = false
-    private val ingredients: MutableList<Ingredient> = ArrayList()
+    private val mutableIngredients = ArrayList<Ingredient>()
 
     private var ingredientsNutrientDataNeedsUpdate = false
 
@@ -28,7 +25,7 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
 
     private fun updateIngredientsNutrientData() {
         // don't combine densities of the foods
-        ingredientNutrientData = NutrientData.sum(ingredients.map { it.nutrientData })
+        ingredientNutrientData = NutrientData.sum(mutableIngredients.map { it.nutrientData })
         ingredientsNutrientDataNeedsUpdate = false
     }
 
@@ -59,16 +56,15 @@ class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource
         }
     }
 
-    fun getIngredients(): List<Ingredient> {
-        return Collections.unmodifiableList(ingredients)
-    }
+    val ingredients: List<Ingredient>
+        get() = mutableIngredients // should be immutable
 
     fun addIngredient(i: Ingredient) {
-        assert(!ingredients.contains(i) && foreignKeyMatches(i, IngredientTable.PARENT_FOOD_ID, this))
-        ingredients.add(i)
+        assert(!mutableIngredients.contains(i) && foreignKeyMatches(i, IngredientTable.PARENT_FOOD_ID, this))
+        mutableIngredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients
-        ingredients.sortBy { it.id }
+        mutableIngredients.sortBy { it.id }
         ingredientsNutrientDataNeedsUpdate = true
     }
 

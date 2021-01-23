@@ -3,7 +3,6 @@ package com.machfour.macros.core
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.ValidationError
 import java.time.Instant
-import java.util.Collections;
 
 /**
  * parent class for all Macros persistable objects
@@ -27,7 +26,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     private val mutableFkForeignKeyMap: MutableMap<Column.Fk<M, *, *>, ColumnData<*>> = HashMap()
 
     override val fkNaturalKeyMap: Map<Column.Fk<M, *, *>, ColumnData<*>>
-        get() = Collections.unmodifiableMap(mutableFkForeignKeyMap)
+        get() = mutableFkForeignKeyMap // should be immutable
 
 
     // NOTE data passed in is made Immutable as a side effect

@@ -56,7 +56,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             out.println()
             out.println("Ingredients:")
             out.println()
-            CliUtils.printIngredients(cf.getIngredients(), out)
+            CliUtils.printIngredients(cf.ingredients, out)
             out.println()
             out.println("Nutrition Information:")
             out.println()

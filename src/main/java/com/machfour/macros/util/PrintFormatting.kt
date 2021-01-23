@@ -6,7 +6,6 @@ import com.machfour.macros.names.UnitNamer
 import com.machfour.macros.objects.*
 import com.machfour.macros.objects.Unit
 import com.machfour.macros.objects.inbuilt.Nutrients
-import java.util.Formatter
 
 object PrintFormatting {
     fun nutrient(
@@ -77,16 +76,12 @@ object PrintFormatting {
         }
 
         val floatFmt = if (withDp) ".1f" else ".0f"
-        return Formatter().let {
-            if (alignLeft) {
-                it.format("%${floatFmt}${formattedUnitString}", qty)
-                if (width > 0) String.format("%-${width}s", it.toString()) else it.toString()
-            } else {
-                val qtyWidthStr = if (width > 0) "${width - finalUnitWidth}" else ""
-                it.format("%$qtyWidthStr$floatFmt", qty)
-                it.toString() + formattedUnitString
-            }
-
+        return if (alignLeft) {
+            val formattedQty = "%${floatFmt}${formattedUnitString}".format(qty)
+            if (width > 0) String.format("%-${width}s", formattedQty) else formattedQty
+        } else {
+            val qtyWidthStr = if (width > 0) "${width - finalUnitWidth}" else ""
+            "%$qtyWidthStr$floatFmt".format(qty) + formattedUnitString
         }
     }
 

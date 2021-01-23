@@ -4,8 +4,6 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
-import java.util.Collections
-
 
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fromInstance: M?) {
@@ -165,7 +163,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      * or otherwise an empty list.
      */
     fun <J> getErrors(field: Column<M, J>): List<ValidationError> {
-        return Collections.unmodifiableList(getErrorsInternal(field))
+        return getErrorsInternal(field)
     }
 
     // TODO should it be set to null or default value? Or edit value?

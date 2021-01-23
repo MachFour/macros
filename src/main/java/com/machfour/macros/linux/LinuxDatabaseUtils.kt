@@ -68,4 +68,15 @@ internal object LinuxDatabaseUtils {
         return data
     }
 
+    fun ResultSet.processResultSet(resultSetAction: (ResultSet) -> Unit) {
+        this.use {
+            it.next()
+            while (!it.isAfterLast) {
+                resultSetAction(it)
+                it.next()
+            }
+        }
+    }
+
+
 }

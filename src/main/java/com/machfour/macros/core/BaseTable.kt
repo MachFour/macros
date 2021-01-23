@@ -1,9 +1,6 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.schema.SchemaHelpers
-import java.util.Collections
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
 abstract class BaseTable<M>(
     final override val name: String,
@@ -57,10 +54,10 @@ abstract class BaseTable<M>(
                 tmpFkColumns.add(c as Column.Fk<M, *, *>)
             }
         }
-        this.columns = Collections.unmodifiableList(cols)
-        this.columnsByName = Collections.unmodifiableMap(tmpColumnsByName)
-        this.secondaryKeyCols = Collections.unmodifiableList(tmpSecondaryKeyCols)
-        this.fkColumns = Collections.unmodifiableList(tmpFkColumns)
+        this.columns = cols // unmodifiable
+        this.columnsByName = tmpColumnsByName // unmodifiable
+        this.secondaryKeyCols = tmpSecondaryKeyCols // unmodifiable
+        this.fkColumns = tmpFkColumns // unmodifiable
         this.naturalKeyColumn = naturalKeyColumn
     }
 

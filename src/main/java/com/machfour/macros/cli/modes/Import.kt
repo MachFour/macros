@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.objects.*
@@ -17,18 +18,29 @@ import java.sql.SQLException
 class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "import"
-        private val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods]"
+        private val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods] " +
+                " [-f <foods.csv>] [-s <servings.csv>] [-r <recipes.csv>] [-i <ingredients.csv>]"
     }
 
     override fun printHelp() {
         out.println("Imports CSV data for foods, servings, recipes and ingredients into the database.")
         out.println("Only foods with index names not already in the database will be imported.")
         out.println("However, it will try to import all servings, and so will fail if duplicate servings exist.")
+        out.println()
         out.println("Options:")
-        out.println("  --clear       removes existing data before import")
-        out.println("  --nofoods     prevents import of food and serving data (and clearing if --clear is used)")
-        out.println("  --norecipes   prevents import of recipe data (and clearing if --clear is used)")
+        out.println("  --clear               removes existing data before import")
+        out.println("  --nofoods             don't import food and serving data (if --clear is used, do not clear)")
+        out.println("  --norecipes           don't import recipe data (if --clear is used, do not clear)")
+        out.println("  -f <foods.csv>        read custom foods file (default: ${config.foodCsvPath}")
+        out.println("  -s <servings.csv>     read custom servings file (default: ${config.servingCsvPath}")
+        out.println("  -r <recipes.csv>      read custom recipes file (default: ${config.recipeCsvPath}")
+        out.println("  -i <ingredients.csv>  read custom ingredients file (default: ${config.ingredientsCsvPath}")
+        out.println()
+        out.println("Note: If any custom CSV files are specified, no default paths will be used.")
+
     }
+
+
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {
@@ -38,7 +50,25 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val doClear = args.contains("--clear")
         val noRecipes = args.contains("--norecipes")
         val noFoodsServings = args.contains("--nofoods")
-        val foodCsvFile = config.foodCsvPath
+        val foodCsvArg = ArgParsing.findArgumentFromFlag(args, "-f")
+        val servingCsvArg = ArgParsing.findArgumentFromFlag(args, "-s")
+        val recipeCsvArg = ArgParsing.findArgumentFromFlag(args, "-r")
+        val ingredientCsvArg = ArgParsing.findArgumentFromFlag(args, "-i")
+        val foodCsvOverride: String?
+        when (foodCsvArg) {
+            is ArgParsing.Result.KeyValFound -> foodCsvOverride = foodCsvArg.argument
+            is ArgParsing.Result.ValNotFound -> {
+                err.println("Error - '-f' flag given but no food.csv specified")
+                return 1
+            }
+            else -> {
+                foodCsvOverride = null
+            }
+        }
+        // TODO servings, etc
+
+
+        val foodCsvFile = foodCsvOverride ?: config.foodCsvPath
         val servingCsvFile = config.servingCsvPath
         val recipeCsvFile = config.recipeCsvPath
         val ingredientsCsvFile = config.ingredientsCsvPath

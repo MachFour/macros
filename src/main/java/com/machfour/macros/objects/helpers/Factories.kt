@@ -12,10 +12,19 @@ import com.machfour.macros.objects.Unit
 
 object Factories {
 
-    val food: Factory<Food> = Factory { dataMap, objectSource ->
-        when (FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)) {
-            FoodType.COMPOSITE -> CompositeFood(dataMap, objectSource)
-            else -> Food(dataMap, objectSource)
+
+    val food: Factory<Food> = Factory { data, objectSource ->
+        // index name completion
+        if (data[FoodTable.INDEX_NAME] == null) {
+            val name = data[FoodTable.NAME]!!
+            val brand = data[FoodTable.BRAND]
+            val variety = data[FoodTable.VARIETY]
+            val extraDesc = data[FoodTable.EXTRA_DESC]
+            data.put(FoodTable.INDEX_NAME, Food.indexNamePrototype(name, brand, variety, extraDesc))
+        }
+        when (FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)) {
+            FoodType.COMPOSITE -> CompositeFood(data, objectSource)
+            else -> Food(data, objectSource)
         }
     }
 

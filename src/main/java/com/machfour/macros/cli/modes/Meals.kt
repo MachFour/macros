@@ -28,21 +28,19 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         // cases: day not specified vs day specified
         val ds = config.dataSourceInstance
-        val (_, argument, status) = findArgument(args, 1)
-        val d : DateStamp = when (status) {
-            ArgParsing.Status.NOT_FOUND -> {
-                currentDate()
-            }
-            ArgParsing.Status.OPT_ARG_MISSING -> {
-                err.println("-d option requires a day specified")
-                return 1
-            }
-            ArgParsing.Status.ARG_FOUND -> {
-                dayStringParse(argument) ?: run {
-                    err.println("Invalid date format: '$argument'.")
+        val dateArg = findArgument(args, 1)
+        val d : DateStamp = when (dateArg) {
+            is ArgParsing.Result.KeyValFound -> {
+                dayStringParse(dateArg.argument) ?: run {
+                    err.println("Invalid date format: '${dateArg.argument}'.")
                     return 1
                 }
             }
+            is ArgParsing.Result.ValNotFound -> {
+                err.println("-d option requires a day specified")
+                return 1
+            }
+            else -> currentDate()
         }
         return printMealList(ds, d)
         //Meal toEdit = mealSpec.processedObject();

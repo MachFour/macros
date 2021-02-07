@@ -13,54 +13,37 @@ object ArgParsing {
      *     when called with null, returns a default value
      */
     private fun <T> parseArgument(args: List<String>, flag: String, parser: (String?) -> T?): T? {
-        val r = findArgument(args, flag)
-        return parser(r.argument)
+        return when (val r = findArgumentFromFlag(args, flag)) {
+            is Result.KeyValFound -> parser(r.argument)
+            is Result.ArgFound -> parser(r.flag)
+            else -> parser(null)
+        }
     }
 
     fun parseDate(args: List<String>, flag: String): DateStamp? {
         return parseArgument(args, flag) { dayStringParse(it) }
     }
 
-    fun findArgument(args: List<String>, flag: String?): Result {
-        val detectedIndex = args.indexOf(flag) + 1
-        val argument: String?
-        val index: Int
-        val status: Status
-        when {
-            detectedIndex == 0 -> {
-                // indexOf returned -1
-                argument = null
-                index = -1
-                status = Status.NOT_FOUND
-            }
-            detectedIndex >= args.size -> {
-                argument = null
-                index = -1
-                status = Status.OPT_ARG_MISSING
-            }
-            else -> {
-                argument = args[detectedIndex]
-                index = detectedIndex
-                status = Status.ARG_FOUND
-            }
+    fun findArgumentFromFlag(args: List<String>, flag: String): Result {
+        val flagIndex = args.indexOf(flag)
+        val detectedIndex = flagIndex + 1
+        return when {
+            // indexOf returned -1
+            detectedIndex == 0 -> Result.ArgNotFound()
+            detectedIndex >= args.size -> Result.ValNotFound(flagIndex, flag)
+            else -> Result.KeyValFound(detectedIndex, flag, args[detectedIndex])
         }
-        return Result(index, argument, status)
     }
 
     // just attempts to use the given argument index
     fun findArgument(args: List<String>, argIdx: Int): Result {
         assert(argIdx >= 0)
-        val argument: String?
-        val status: Status
-        if (argIdx < args.size) {
-            argument = args[argIdx]
-            status = Status.ARG_FOUND
+        return if (argIdx < args.size) {
+            Result.ArgFound(argIdx, args[argIdx])
         } else {
             // info not provided, so return NOT_FOUND
-            argument = null
-            status = Status.NOT_FOUND
+            Result.ArgNotFound()
         }
-        return Result(argIdx, argument, status)
     }
 
     // returns null for invalid, today if flag not found, or otherwise decodes day from argument string
@@ -89,5 +72,12 @@ object ArgParsing {
     }
 
     // represents result of parsed argument from command line
-    data class Result constructor(val index: Int, val argument: String?, val status: Status)
+    sealed class Result {
+        class ArgFound(val index: Int, val flag: String): Result()
+        class ArgNotFound: Result()
+        class KeyValFound(val argIndex: Int, val flag: String, val argument: String): Result()
+        // for flags with extra arguments; when the flag is found but there is no extra arg
+        class ValNotFound(val flagIndex: Int, val flag: String) : Result()
+    }
+
 }

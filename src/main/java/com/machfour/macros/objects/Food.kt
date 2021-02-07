@@ -38,8 +38,10 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         ): String {
             // use sortable name but replace sequences of spaces (and dashes) with a single dash
             return prettyFormat(basicName, brand, variety, extraDesc,
-                withBrand = true, withVariety = true, withExtra = false, sortable = true
-            ).replace(Regex("[\\s-]+"), replacement = "-")
+                withBrand = true, withVariety = true, withExtra = true, sortable = true
+            )
+                .replace(Regex("[()\\[\\]{}&%!$#@*^+=:;<>?/\\\\]"), replacement = "")
+                .replace(Regex("[\\s-,]+"), replacement = "-")
         }
 
         /*
@@ -100,7 +102,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
 
     val foodType: FoodType = FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)
 
-    var foodCategory: FoodCategory? = null
+    lateinit var foodCategory: FoodCategory
         private set
 
     open fun addNutrientValue(nv: FoodNutrientValue) {
@@ -110,7 +112,7 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     }
 
     fun setFoodCategory(c: FoodCategory) {
-        assert(foodCategory == null && foreignKeyMatches(this, FoodTable.CATEGORY, c))
+        assert(!this::foodCategory.isInitialized && foreignKeyMatches(this, FoodTable.CATEGORY, c))
         foodCategory = c
     }
 

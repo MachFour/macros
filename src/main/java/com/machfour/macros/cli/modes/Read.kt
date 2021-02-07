@@ -56,14 +56,14 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val verbose = verboseFlag.containedIn(args)
         val per100 = per100Flag.containedIn(args)
 
-        val insulinArg = ArgParsing.findArgument(args, insulinFlag.full)
+        val insulinArg = ArgParsing.findArgumentFromFlag(args, insulinFlag.full)
         val icRatio: Double?
         val proteinFactor: Double?
 
-        when (insulinArg.status) {
-            ArgParsing.Status.ARG_FOUND -> {
+        when (insulinArg) {
+            is ArgParsing.Result.KeyValFound -> {
                 try {
-                    InsulinCmdlineUtils.parseArgument(insulinArg.argument!!).let {
+                    InsulinCmdlineUtils.parseArgument(insulinArg.argument).let {
                         icRatio = it.first
                         proteinFactor = it.second
                     }
@@ -72,15 +72,14 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                             "must be numeric and separated by a colon with no space")
                     return 1
                 }
-
             }
-            ArgParsing.Status.NOT_FOUND -> {
-                icRatio = null
-                proteinFactor = null
-            }
-            ArgParsing.Status.OPT_ARG_MISSING -> {
+            is ArgParsing.Result.ValNotFound -> {
                 err.println("${insulinFlag.full} requires an argument")
                 return 1
+            }
+            else -> {
+                icRatio = null
+                proteinFactor = null
             }
         }
 

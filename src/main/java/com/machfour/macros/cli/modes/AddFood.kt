@@ -33,17 +33,18 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return -1
         }
-        val (_, indexName, status) = ArgParsing.findArgument(args, 1)
-        if (status !== ArgParsing.Status.ARG_FOUND) {
+        val indexNameArg = ArgParsing.findArgument(args, 1)
+        if (indexNameArg !is ArgParsing.Result.KeyValFound) {
             out.print(usage)
             return -1
         }
+        val indexName = indexNameArg.argument
 
         val ds = config.dataSourceInstance
 
         try {
             // TODO move this check inside MacrosBuilder validations
-            if (!checkIndexName(ds, indexName!!)) {
+            if (!checkIndexName(ds, indexName)) {
                 out.println("Index name $indexName already exists in the database, cannot continue.")
                 return 1
             }

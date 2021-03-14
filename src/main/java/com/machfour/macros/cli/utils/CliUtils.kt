@@ -3,10 +3,10 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.names.ColumnNamer
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.names.EnglishColumnNames
-import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.core.NutrientData
+import com.machfour.macros.entities.Ingredient
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.StringJoiner.Companion.of
@@ -15,7 +15,7 @@ import java.io.IOException
 import java.io.PrintStream
 
 object CliUtils {
-    fun NutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
+    fun FoodNutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
         val string = PrintFormatting.nutrientData(
             nd = this,
             colStrings = DefaultColumnStrings.instance,
@@ -35,7 +35,7 @@ object CliUtils {
         Nutrients.FIBRE
     )
 
-    fun NutrientData.printEnergyProportions(
+    fun FoodNutrientData.printEnergyProportions(
         verbose: Boolean,
         out: PrintStream,
         colNames: ColumnNamer = EnglishColumnNames.instance

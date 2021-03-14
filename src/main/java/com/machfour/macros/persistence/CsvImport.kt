@@ -5,10 +5,10 @@ import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.core.schema.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.inbuilt.DefaultUnits
-import com.machfour.macros.objects.inbuilt.Nutrients
-import com.machfour.macros.objects.inbuilt.Units
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.inbuilt.DefaultUnits
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.Queries
@@ -241,11 +241,11 @@ object CsvImport {
 
     @Throws(SQLException::class)
     private fun findExistingFoodIndexNames(ds: MacrosDataSource, indexNames: Collection<String>): Set<String> {
-        return Queries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
-            where(FoodTable.INDEX_NAME, indexNames)
+        val queryResult = Queries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
+            where(FoodTable.INDEX_NAME, indexNames, iterate = true)
             distinct(false)
-        }.map { requireNotNull(it) { "Null food index name encountered: $it" } }
-            .toSet()
+        }
+        return queryResult.map { requireNotNull(it) { "Null food index name encountered: $it" } }.toSet()
     }
 
     // foods maps from index name to food object. Food object must have nutrition data attached

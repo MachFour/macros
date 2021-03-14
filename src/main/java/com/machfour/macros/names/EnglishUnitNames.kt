@@ -1,7 +1,7 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.objects.inbuilt.Units
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.entities.Unit
 
 /*
  * Singleton pattern

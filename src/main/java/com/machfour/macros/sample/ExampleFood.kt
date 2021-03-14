@@ -10,12 +10,12 @@ import com.machfour.macros.core.schema.FoodTable.Companion.INDEX_NAME
 import com.machfour.macros.core.schema.FoodTable.Companion.NAME
 import com.machfour.macros.core.schema.FoodTable.Companion.NOTES
 import com.machfour.macros.core.schema.FoodTable.Companion.NUTTAB_INDEX
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 
 import com.machfour.macros.core.schema.FoodTable.Companion.USDA_INDEX
 import com.machfour.macros.core.schema.FoodTable.Companion.VARIETY
-import com.machfour.macros.objects.inbuilt.Nutrients
-import com.machfour.macros.objects.inbuilt.Units
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Units
 
 object ExampleFood {
     private val foodTable = Food.table

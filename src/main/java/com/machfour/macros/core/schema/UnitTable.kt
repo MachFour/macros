@@ -3,8 +3,8 @@ package com.machfour.macros.core.schema
 import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.auxiliary.Factories
 
 // Unit.factory() causes initialisation of Unit, which depends on this class.
 // So the columns are initialised as a side effect of calling that function.

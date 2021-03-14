@@ -1,15 +1,15 @@
 package com.machfour.macros.util
 
-import com.machfour.macros.core.NutrientData
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.UnitNamer
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.inbuilt.Nutrients
 
 object PrintFormatting {
     fun nutrient(
-        nd: NutrientData,
+        nd: FoodNutrientData,
         n: Nutrient,
         colStrings: ColumnStrings? = null,
         withUnit: Boolean = false,
@@ -98,7 +98,7 @@ object PrintFormatting {
     )
 
     fun nutrientData(
-        nd: NutrientData,
+        nd: FoodNutrientData,
         colStrings: ColumnStrings,
         nutrients: List<Nutrient> = defaultNutrientsToPrint,
         withDp: Boolean = false,

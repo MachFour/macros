@@ -3,7 +3,7 @@ package com.machfour.macros.core.schema
 import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.FoodCategory
+import com.machfour.macros.entities.FoodCategory
 
 class FoodCategoryTable private constructor() : BaseTable<FoodCategory>(TABLE_NAME, FoodCategory.factory, COLUMNS) {
     companion object {

@@ -4,9 +4,9 @@ import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.auxiliary.Factories
 
 class MealNutrientGoalValueTable private constructor() : BaseTable<MealNutrientGoalValue>(
     TABLE_NAME, Factories.mealNutrientGoalValue, COLUMNS

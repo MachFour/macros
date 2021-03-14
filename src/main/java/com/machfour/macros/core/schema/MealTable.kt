@@ -3,8 +3,8 @@ package com.machfour.macros.core.schema
 import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Meal
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.time.Instant

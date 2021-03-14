@@ -3,11 +3,11 @@ package com.machfour.macros.core.schema
 import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.Ingredient
-import com.machfour.macros.objects.Serving
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.Ingredient
+import com.machfour.macros.entities.Serving
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.auxiliary.Factories
 
 // needs to come after FoodTable, ServingTable, MealTable
 class IngredientTable private constructor() : BaseTable<Ingredient>(TABLE_NAME, Factories.ingredient, COLUMNS) {

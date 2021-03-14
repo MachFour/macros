@@ -3,7 +3,7 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.schema.*
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodQueries.getAllFoodCategories
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.queries.FoodQueries.getServingsById

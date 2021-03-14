@@ -2,7 +2,7 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.objects.Food
+import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner
 import com.machfour.macros.util.UnicodeUtils

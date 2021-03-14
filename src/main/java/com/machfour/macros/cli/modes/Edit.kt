@@ -8,8 +8,8 @@ import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
-import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.Meal
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.persistence.MacrosDataSource

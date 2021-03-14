@@ -12,6 +12,7 @@ class SqlWhereExpr<M, J> private constructor(
     private val whereColumn: Column<M, J>? = null,
     private val whereColumnType: MacrosType<J>? = null,
     private val whereValues: Collection<J>? = null,
+    val isIterated: Boolean = false,
 ) {
 
     companion object {
@@ -28,12 +29,15 @@ class SqlWhereExpr<M, J> private constructor(
             )
         }
 
-        fun <M, J> where(whereColumn: Column<M, J>, whereValues: Collection<J>): SqlWhereExpr<M, J> {
+        // can specify iterated = true so that a separate query will be carried out for each where value
+        // useful when the number of where values is large
+        fun <M, J> where(whereColumn: Column<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumn = whereColumn,
                 whereColumnType = whereColumn.type,
-                whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = whereValues.size),
-                whereValues = whereValues
+                whereValues = whereValues,
+                whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = if (iterated) 1 else whereValues.size),
+                isIterated = iterated
             )
         }
 
@@ -82,4 +86,5 @@ class SqlWhereExpr<M, J> private constructor(
     // for Android
     val bindArgumentType: MacrosType<J>?
         get() = whereColumnType
+
 }

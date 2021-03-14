@@ -7,8 +7,8 @@ import com.machfour.macros.cli.utils.MealPrinter.printMeal
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.Meal
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.MealQueries.saveFoodPortions
 import com.machfour.macros.persistence.MacrosDataSource

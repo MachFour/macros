@@ -4,9 +4,8 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.MealTable
-import com.machfour.macros.core.schema.SchemaHelpers
-import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.Meal
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.util.DateStamp
 
 object ExampleMeal {

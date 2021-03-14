@@ -4,11 +4,11 @@ import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.FoodNutrientValue
-import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.auxiliary.Factories
 
 class FoodNutrientValueTable private constructor() : BaseTable<FoodNutrientValue>(TABLE_NAME, Factories.foodNutrientValue, COLUMNS) {
     companion object {

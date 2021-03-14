@@ -1,8 +1,7 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
-import com.machfour.macros.cli.utils.ArgParsing.findArgumentFromFlag
-import com.machfour.macros.objects.Meal
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.DateStamp

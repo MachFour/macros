@@ -3,8 +3,8 @@ package com.machfour.macros.core.schema
 import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Meal
-import com.machfour.macros.objects.RegularMeal
+import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.RegularMeal
 
 class RegularMealTable private constructor() : BaseTable<RegularMeal>(TABLE_NAME, RegularMeal.factory, COLUMNS) {
     companion object {

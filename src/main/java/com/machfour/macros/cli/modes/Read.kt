@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.insulin.InsulinCmdlineUtils
-import com.machfour.macros.objects.Meal
+import com.machfour.macros.entities.Meal
 
 import java.io.FileReader
 import java.io.IOException

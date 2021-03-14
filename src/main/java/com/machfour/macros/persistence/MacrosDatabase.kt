@@ -1,10 +1,7 @@
 package com.machfour.macros.persistence
 
 import com.machfour.macros.core.*
-import com.machfour.macros.sql.AllColumnSelect
-import com.machfour.macros.sql.MultiColumnSelect
-import com.machfour.macros.sql.SingleColumnSelect
-import com.machfour.macros.sql.TwoColumnSelect
+import com.machfour.macros.sql.*
 import java.io.IOException
 import java.sql.SQLException
 

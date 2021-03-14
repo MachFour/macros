@@ -1,7 +1,7 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.core.SqlConfig
+import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.FileUtils.joinPath

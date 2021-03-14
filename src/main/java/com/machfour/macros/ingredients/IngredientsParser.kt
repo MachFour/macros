@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.persistence.MacrosDataSource

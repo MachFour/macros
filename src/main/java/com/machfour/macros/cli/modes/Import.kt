@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.datatype.TypeCastException
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.persistence.CsvException

@@ -42,8 +42,8 @@ open class SelectQuery<M>(
         whereExpr = SqlWhereExpr.where(whereColumn, whereValue)
     }
 
-    fun <J> where(whereColumn: Column<M, J>, whereValues: Collection<J>) {
-        whereExpr = SqlWhereExpr.where(whereColumn, whereValues)
+    fun <J> where(whereColumn: Column<M, J>, whereValues: Collection<J>, iterate: Boolean = false) {
+        whereExpr = SqlWhereExpr.where(whereColumn, whereValues, iterate)
     }
 
     fun where(whereColumn: Column<M, *>, isNotNull: Boolean) {
@@ -76,14 +76,11 @@ open class SelectQuery<M>(
 
     // TODO situation when there are a lot of arguments (e.g. in a WHERE clause), we iterate over them one by one
     //  however there may be some other arguments which must be in every query?
-    val hasBindArgumentsForIteration: Boolean
-        get() = false
+    val shouldIterateBindArguments: Boolean
+        get() = whereExpr.isIterated
 
     val hasBindArguments: Boolean
         get() = whereExpr.numArgs > 0
-
-    val bindArgumentType: MacrosType<*>?
-        get() = whereExpr.bindArgumentType
 
     fun getBindArguments(): Collection<*> {
         return whereExpr.getBindObjects()

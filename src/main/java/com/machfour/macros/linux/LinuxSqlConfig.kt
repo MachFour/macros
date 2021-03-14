@@ -1,6 +1,6 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.core.SqlConfig
+import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.util.FileUtils
 import java.io.File
 

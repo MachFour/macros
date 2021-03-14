@@ -5,7 +5,7 @@ import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.ingredients.IngredientsParser
-import com.machfour.macros.objects.CompositeFood
+import com.machfour.macros.entities.CompositeFood
 
 import java.io.FileReader
 import java.io.IOException

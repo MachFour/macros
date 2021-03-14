@@ -48,8 +48,8 @@ object FkCompletion {
         val naturalKeyData: MutableList<ColumnData<N>> = ArrayList(objects.size)
         for (obj in objects) {
             // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
-            assert(listOf(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
-                    .contains(obj.objectSource)) { "Object is not from import, new or computed" }
+            assert(obj.objectSource in setOf(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
+                ) { "Object is not from import, new or computed" }
             assert(obj.fkNaturalKeyMap.isNotEmpty()) { "Object has no FK data maps" }
             val objectNkData = obj.getFkParentNaturalKey(fkCol)
             naturalKeyData.add(objectNkData)
@@ -63,9 +63,9 @@ object FkCompletion {
             // only contains data for the parentNaturalKeyCol
             val fkParentNaturalKey : ColumnData<N> = obj.getFkParentNaturalKey(fkCol)
             val fkParentNaturalKeyData: Any = fkParentNaturalKey[parentNaturalKeyCol]
-                    ?: throw RuntimeException("Column data contained no data for natural key column")
+                    ?: error("Column data contained no data for natural key column")
             val fkParentId : J = foreignKeyToIdMapping[fkParentNaturalKeyData]
-                    ?: throw RuntimeException("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
+                    ?: error("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
             newData.put(fkCol, fkParentId)
             val newObject = obj.table.construct(newData, obj.objectSource)
             // copy over old FK data to new object

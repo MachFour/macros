@@ -11,11 +11,12 @@ import com.machfour.macros.core.schema.FoodNutrientValueTable
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.FoodNutrientValue
-import com.machfour.macros.objects.inbuilt.DefaultUnits
-import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.inbuilt.DefaultUnits
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.persistence.MacrosDataSource
@@ -83,7 +84,7 @@ class FoodEditor constructor(
 
 
     // stores built Nutrient Data objects
-    private val nutrientData = NutrientData()
+    private val nutrientData = FoodNutrientData()
 
     private val editingValue: StringBuilder
 

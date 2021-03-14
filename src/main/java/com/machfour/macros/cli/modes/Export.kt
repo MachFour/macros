@@ -4,8 +4,8 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvBackup
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath

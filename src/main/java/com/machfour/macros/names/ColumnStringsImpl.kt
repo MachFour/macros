@@ -1,8 +1,8 @@
 package com.machfour.macros.names
 
 import com.machfour.macros.core.Column
-import com.machfour.macros.objects.Nutrient
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.Unit
 
 abstract class ColumnStringsImpl protected constructor(
     private val columnNames: ColumnNamer,

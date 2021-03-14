@@ -4,10 +4,10 @@ import com.machfour.macros.core.BaseTable
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.datatype.Types
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.Serving
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.helpers.Factories
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.Serving
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.auxiliary.Factories
 
 class ServingTable private constructor() : BaseTable<Serving>(TABLE_NAME, Factories.serving, COLUMNS) {
     companion object {

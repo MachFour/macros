@@ -7,9 +7,9 @@ import com.machfour.macros.validation.ValidationError
 
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fromInstance: M?) {
-    fun interface ValueChangeListener<J> {
-        fun onValueChanged(newValue: J?, errors: List<ValidationError>)
-    }
+    //fun interface ValueChangeListener<J> {
+    //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
+    //}
 
     constructor(table: Table<M>): this(table, null)
     constructor(fromInstance: M): this(fromInstance.table, fromInstance)
@@ -19,6 +19,9 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     var editInstance: M? = fromInstance
         set(value) {
             field = value
+            if (value != null) {
+                originalData = value.dataFullCopy
+            }
             // if this setter is called during init {}, we can skip this call
             if (finishedInit) {
                 resetFields()
@@ -26,7 +29,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         }
 
     // columns that are available for editing
-    private val settableColumns: MutableSet<Column<M, *>> = LinkedHashSet(table.columns)
+    private val settableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
     // columns that are not available for editing; initially empty
     private val unsettableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
     // invariant: settableColumns ⋃ unsettableColumns == table.columns()
@@ -40,6 +43,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
+    private var originalData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
     private val draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
 
     private val validationErrors = HashMap<Column<M, *>, MVErrorList>(table.columns.size, 1f).also {
@@ -50,9 +54,11 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     }
 
     // value change listeners
-    private val listeners: MutableMap<Column<M, *>, ValueChangeListener<*>> = HashMap()
+    //private val listeners: MutableMap<Column<M, *>, ValueChangeListener<*>> = HashMap()
 
     init {
+        settableColumns.addAll(table.columns)
+
         // requires draftData to be initialised
         validateAll()
         finishedInit = true
@@ -72,32 +78,29 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         }
     }
 
-    private fun copyFromEditInstance(editInstance: M) {
-        ColumnData.copyData(editInstance.data, draftData, settableColumns)
-    }
-
     // only resets settable fields
     fun resetFields() {
-        when (val it = editInstance) {
-            null -> draftData.setDefaultData(settableColumns)
-            else -> copyFromEditInstance(it)
-        }
+        ColumnData.copyData(originalData, draftData, settableColumns)
         validateAll()
     }
 
-    fun <J> setValueChangeListener(col: Column<M, J>, listener: ValueChangeListener<J>) {
-        listeners[col] = listener
+    fun hasUnsavedData(): Boolean {
+        return editInstance == null || originalData != draftData
     }
 
-    private fun <J> getListener(col: Column<M, J>): ValueChangeListener<J>? {
-        return if (!listeners.containsKey(col)) null else listeners[col] as ValueChangeListener<J>
-    }
+    //fun <J> setValueChangeListener(col: Column<M, J>, listener: ValueChangeListener<J>) {
+    //    listeners[col] = listener
+    //}
 
-    private fun <J> fireValueChangeListener(col: Column<M, J>) {
-        val newValue = get(col)
-        val errors = getErrorsInternal(col)
-        getListener(col)?.onValueChanged(newValue, errors)
-    }
+    //private fun <J> getListener(col: Column<M, J>): ValueChangeListener<J>? {
+    //    return if (!listeners.containsKey(col)) null else listeners[col] as ValueChangeListener<J>
+    //}
+
+    //private fun <J> fireValueChangeListener(col: Column<M, J>) {
+    //    val newValue = get(col)
+    //    val errors = getErrorsInternal(col)
+    //    getListener(col)?.onValueChanged(newValue, errors)
+    //}
 
     // when setting null values, wasTypeMismatch differentiates between null as a value and null
     // as an error value during a setFromString
@@ -112,7 +115,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
 
         if (oldValue != value || wasTypeMismatch || hasErrors(col)) {
             validateSingle(col, wasTypeMismatch)
-            fireValueChangeListener(col)
+            //fireValueChangeListener(col)
         }
     }
 
@@ -148,11 +151,9 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         return data?.toString() ?: ""
     }
 
-    //
     private fun <J> getErrorsInternal(field: Column<M, J>): MVErrorList {
         return validationErrors.getValue(field)
     }
-
 
     fun <J> hasNoErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isEmpty()
     fun <J> hasErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isNotEmpty()

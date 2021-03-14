@@ -6,10 +6,10 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.core.Table
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.Meal
-import com.machfour.macros.objects.Serving
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.FoodQueries.getAllFoods
 import com.machfour.macros.queries.MealQueries.getMealsById
 import com.machfour.macros.queries.Queries.deleteObject

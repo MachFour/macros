@@ -1,9 +1,9 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.schema.FoodPortionTable
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.inbuilt.Units
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.sql.OrderByDirection
 import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException

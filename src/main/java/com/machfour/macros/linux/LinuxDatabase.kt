@@ -205,7 +205,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), Macr
             val sql = query.toSql()
             if (query.hasBindArguments) {
                 c.prepareStatement(sql).use {
-                    if (query.hasBindArgumentsForIteration) {
+                    if (query.shouldIterateBindArguments) {
                         for (arg in query.getBindArguments()) {
                             LinuxDatabaseUtils.bindObjects(it, listOf(arg))
                             it.executeQuery().processResultSet(resultSetAction)

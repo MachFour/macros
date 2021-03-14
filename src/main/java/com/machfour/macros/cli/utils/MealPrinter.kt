@@ -2,12 +2,12 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.CliUtils.printEnergyProportions
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
-import com.machfour.macros.core.NutrientData
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.Unit
-import com.machfour.macros.objects.inbuilt.Nutrients
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.StringJoiner
 import com.machfour.macros.util.UnicodeUtils
@@ -52,7 +52,7 @@ object MealPrinter {
         out.println()
     }
 
-    private fun nutritionDataToRow(name: String, nd: NutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
+    private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
         val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
         val nutrientWidth = if (verbose) longDataWidth else shortDataWidth
 
@@ -159,7 +159,7 @@ object MealPrinter {
             out.println("====================")
             out.println("Total for all meals:")
             out.println("====================")
-            NutrientData.sum(meals.map { it.nutrientTotal() }).let {
+            FoodNutrientData.sum(meals.map { it.nutrientTotal() }).let {
                 it.printNutrientData(verbose, out)
                 out.println()
                 it.printEnergyProportions(verbose, out)

@@ -2,6 +2,7 @@ package com.machfour.macros.core
 
 import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlConfig
 import java.io.BufferedReader
 import java.io.PrintStream
 

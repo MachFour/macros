@@ -6,7 +6,7 @@ import com.machfour.macros.cli.interactive.FoodEditor
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.schema.FoodTable
-import com.machfour.macros.objects.Food
+import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.persistence.MacrosDataSource
 

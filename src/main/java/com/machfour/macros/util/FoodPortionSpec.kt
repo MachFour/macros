@@ -1,7 +1,7 @@
 package com.machfour.macros.util
 
-import com.machfour.macros.objects.FoodPortion
-import com.machfour.macros.objects.Unit
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Unit
 
 // records intermediate data during parsing of a food portion spec
 class FoodPortionSpec(

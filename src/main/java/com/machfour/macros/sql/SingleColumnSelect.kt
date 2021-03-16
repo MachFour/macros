@@ -21,6 +21,5 @@ class SingleColumnSelect<M, J> private constructor(
             }
         }
     }
-
 }
 

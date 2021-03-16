@@ -67,7 +67,7 @@ object Queries {
     }
 
     @Throws(SQLException::class)
-    fun <M, I> selectNonNullColumn(ds: MacrosDataSource, query: SingleColumnSelect<M, I>): List<I> {
+    private fun <M, I> selectNonNullColumn(ds: MacrosDataSource, query: SingleColumnSelect<M, I>): List<I> {
         require(!query.selectColumn.isNullable) { "column is nullable" }
         val values = ds.selectColumn(query)
         val nonNullValues = ArrayList<I>(values.size)
@@ -243,18 +243,19 @@ object Queries {
 
     // The resulting map is unordered
     @Throws(SQLException::class)
-    // TODO when number of keys gets too large, split up the query
     fun <M, I, J> selectColumnMap(
         ds: MacrosDataSource,
         t: Table<M>,
         keyColumn: Column<M, I>,
         valueColumn: Column<M, J>,
-        keys: Collection<I>
+        keys: Collection<I>,
+        // when number of keys gets too large, split up the query
+        iterateThreshold: Int = 100
     ): Map<I, J?> {
         require(!keyColumn.isNullable && keyColumn.isUnique) { "Key column $keyColumn (table $t) must be unique and not nullable" }
         val unorderedResults = HashMap<I, J?>(keys.size, 1.0f)
         val query = TwoColumnSelect.build(t, keyColumn, valueColumn) {
-            where(keyColumn, keys)
+            where(keyColumn, keys, iterate = keys.size >= iterateThreshold)
         }
         val data = ds.selectTwoColumns(query)
         for (pair in data) {

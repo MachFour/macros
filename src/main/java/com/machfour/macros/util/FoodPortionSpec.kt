@@ -15,7 +15,7 @@ class FoodPortionSpec(
         val servingName: String?,
         var isServingMode: Boolean,
         // records an error at any stage of parsing
-        var error: String?
+        var error: String
 ) {
 
     // context data

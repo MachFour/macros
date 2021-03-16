@@ -38,7 +38,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
                 return 1
             }
             processFpSpec(spec, toAddTo, f)
-            if (spec.error != null) {
+            if (spec.error.isNotEmpty()) {
                 err.println(spec.error)
                 return 1
             }

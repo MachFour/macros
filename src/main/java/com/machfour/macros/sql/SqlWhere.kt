@@ -15,7 +15,7 @@ class SqlWhereExpr<M, J> private constructor(
     val isIterated: Boolean = false,
 ) {
 
-    companion object {
+    internal companion object {
         fun <M> whereAny(): SqlWhereExpr<M, Nothing> {
             return SqlWhereExpr()
         }

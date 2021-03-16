@@ -2,7 +2,6 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.Table
-import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.persistence.DatabaseUtils
 import com.machfour.macros.util.StringJoiner
 

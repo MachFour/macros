@@ -6,6 +6,7 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.sql.OrderByDirection
 import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.sql.ColumnMax.Companion.max
 import java.sql.SQLException
 
 object FoodPortionQueries {
@@ -24,12 +25,27 @@ object FoodPortionQueries {
         }
     }
 
+    /* SELECT DISTINCT ... ORDER BY doesn't work because when food IDs are repeated, it needs
+     * to take the one corresponding to the most recent create time.
+     * This is what aggregate functions are for: https://stackoverflow.com/q/5391564/9901599
+     * Ideally:
+     *     SELECT (DISTINCT) food_id, MAX(create_time) FROM FoodPortion
+     *     GROUP BY food_id
+     *     ORDER BY MAX(create_time) DESC
+     * (nb DISTINCT is implied by the aggregation)
+     *
+     * For now we can manually do the order by operation
+     */
     fun recentFoodIds(ds: MacrosDataSource, howMany: Int) : List<Long> {
-        return Queries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
-            orderBy(FoodPortionTable.CREATE_TIME, OrderByDirection.DESCENDING)
-            distinct()
+        val (foodId, createTime) = Pair(FoodPortionTable.FOOD_ID, FoodPortionTable.CREATE_TIME)
+        // we don't technically need to select MAX(create_time) but it would be nice
+        val query = Queries.selectTwoColumns(ds, FoodPortion.table, foodId, createTime) {
+            //distinct()
+            orderBy(FoodPortionTable.CREATE_TIME.max(), OrderByDirection.DESCENDING)
+            groupBy(FoodPortionTable.FOOD_ID)
             limit(howMany)
         }
+        return query.mapNotNull { it.first }
     }
 
     fun getFoodForFoodPortionId(ds: MacrosDataSource, fpId: Long): Food? {

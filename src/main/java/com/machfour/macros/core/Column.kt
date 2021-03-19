@@ -1,11 +1,12 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.core.datatype.MacrosType
+import com.machfour.macros.sql.ColumnExpr
 
 /**
  * Created by max on 4/11/17.
  */
-interface Column<M, J> {
+interface Column<M, J> : ColumnExpr<M, J> {
     /*
      * Describes one column referencing another. N is the parent table type
      */
@@ -16,8 +17,12 @@ interface Column<M, J> {
 
     val sqlName: String
     val defaultData: J?
-    val type: MacrosType<J>
-    val table: Table<M>
+
+    // overriden ColumnExpr fields
+    override val type: MacrosType<J>
+    override val table: Table<M>
+    override val sql: String
+        get() = sqlName
 
     // unique index of column, giving its order.
     val index: Int

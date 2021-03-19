@@ -6,6 +6,10 @@ import com.machfour.macros.persistence.MacrosDataSource
 import java.sql.SQLException
 
 object Queries {
+
+    // if number of parameters in a query gets too large, Android SQlite will not execute the query
+    private const val ITERATE_THRESHOLD = 200
+
     @Throws(SQLException::class)
     fun <M> prefixSearch(ds: MacrosDataSource, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
         return stringSearch(ds, t, cols, keyword, globBefore = false, globAfter = true)
@@ -55,6 +59,17 @@ object Queries {
         queryOptions: SingleColumnSelect<M, I>.() -> Unit
     ): List<I?> {
         return ds.selectColumn(SingleColumnSelect.build(table, selectColumn, queryOptions))
+    }
+
+    @Throws(SQLException::class)
+    fun <M, I, J> selectTwoColumns(
+        ds: MacrosDataSource,
+        table: Table<M>,
+        select1: Column<M, I>,
+        select2: Column<M, J>,
+        queryOptions: TwoColumnSelect<M, I, J>.() -> Unit
+    ): List<Pair<I?, J?>> {
+        return ds.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
     }
     @Throws(SQLException::class)
     fun <M, I> selectNonNullColumn(
@@ -197,14 +212,21 @@ object Queries {
     // Keys that do not exist in the database will not be contained in the output map
     // The returned map is never null and is unordered
     @Throws(SQLException::class)
-    fun <M, J> getRawObjectsByKeys(ds: MacrosDataSource, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, M> {
+    fun <M, J> getRawObjectsByKeys(
+        ds: MacrosDataSource,
+        t: Table<M>,
+        keyCol: Column<M, J>,
+        keys: Collection<J>,
+        // if the number of keys exceeds this number, the query will be iterated
+        iterateThreshold: Int = ITERATE_THRESHOLD,
+    ): Map<J, M> {
         require(keyCol.isUnique) { "Key column must be unique" }
         // if the list of keys is empty, every row will be returned
         if (keys.isEmpty()) {
             return emptyMap()
         }
         val query = MultiColumnSelect.build(t, t.columns) {
-            where(keyCol, keys)
+            where(keyCol, keys, iterate = keys.size > iterateThreshold)
         }
 
         return HashMap<J, M>(keys.size, 1.0f).apply {
@@ -250,12 +272,12 @@ object Queries {
         valueColumn: Column<M, J>,
         keys: Collection<I>,
         // when number of keys gets too large, split up the query
-        iterateThreshold: Int = 100
+        iterateThreshold: Int = ITERATE_THRESHOLD
     ): Map<I, J?> {
         require(!keyColumn.isNullable && keyColumn.isUnique) { "Key column $keyColumn (table $t) must be unique and not nullable" }
         val unorderedResults = HashMap<I, J?>(keys.size, 1.0f)
         val query = TwoColumnSelect.build(t, keyColumn, valueColumn) {
-            where(keyColumn, keys, iterate = keys.size >= iterateThreshold)
+            where(keyColumn, keys, iterate = keys.size > iterateThreshold)
         }
         val data = ds.selectTwoColumns(query)
         for (pair in data) {

@@ -10,43 +10,47 @@ open class SelectQuery<M>(
     val columns: List<Column<M, *>>
 ): SqlQuery<M>(table, SqlQueryMode.SELECT) {
     private var distinct: Boolean = false
-    private var ordering: OrderByClause? = null
+    private var ordering: OrderByClause<M>? = null
+    private var grouping: GroupByClause<M>? = null
     private var whereExpr: SqlWhereExpr<M, *> = SqlWhereExpr.whereAny()
     private var limit: Int? = null
     private var offset: Int? = null
     private var suffix: String = ""
 
-    companion object {
-    }
-
-    private inner class OrderByClause(
-        val column: Column<M, *>,
-        val direction: OrderByDirection?,
-        val nulls: OrderByNullPrecedence?
-    )
 
     fun orderBy(
-        column: Column<M, *>,
+        columnExpr: ColumnExpr<M, *>,
         order: OrderByDirection? = null,
         nullPrecedence: OrderByNullPrecedence? = null
     ) {
-        ordering = OrderByClause(column, order, nullPrecedence)
+        ordering = OrderByClause(columnExpr, order, nullPrecedence)
+    }
+
+    fun orderBy(clauseBody: String) {
+        ordering = OrderByClause(clauseBody)
+    }
+
+    fun groupBy(columnExpr: ColumnExpr<M, *>) {
+        grouping = GroupByClause(columnExpr)
+    }
+    fun groupBy(clauseBody: String) {
+        grouping = GroupByClause(clauseBody)
     }
 
     fun distinct(selectDistinct: Boolean = true) {
         distinct = selectDistinct
     }
 
-    fun <J> where(whereColumn: Column<M, J>, whereValue: J) {
-        whereExpr = SqlWhereExpr.where(whereColumn, whereValue)
+    fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J) {
+        whereExpr = SqlWhereExpr.where(whereColumnExpr, whereValue)
     }
 
-    fun <J> where(whereColumn: Column<M, J>, whereValues: Collection<J>, iterate: Boolean = false) {
-        whereExpr = SqlWhereExpr.where(whereColumn, whereValues, iterate)
+    fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterate: Boolean = false) {
+        whereExpr = SqlWhereExpr.where(whereColumnExpr, whereValues, iterate)
     }
 
-    fun where(whereColumn: Column<M, *>, isNotNull: Boolean) {
-        whereExpr = SqlWhereExpr.where(whereColumn, isNotNull)
+    fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean) {
+        whereExpr = SqlWhereExpr.where(whereColumnExpr, isNotNull)
     }
 
     fun where(whereString: String) {
@@ -105,16 +109,8 @@ open class SelectQuery<M>(
 
         query.add(whereExpr.toSql())
 
-        ordering?.let {
-            query.add("ORDER BY")
-            query.add(it.column.sqlName)
-            it.direction?.let { dir ->
-                query.add(dir.sql)
-            }
-            it.nulls?.let { nulls ->
-                query.add(nulls.sql)
-            }
-        }
+        grouping?.let { query.add(it.sql) }
+        ordering?.let { query.add(it.sql) }
 
         limit?.let { l ->
             query.add("LIMIT $l")

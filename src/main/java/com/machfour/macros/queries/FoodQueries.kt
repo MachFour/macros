@@ -134,15 +134,15 @@ object FoodQueries {
         // we can sort it later if necessary
         val unorderedFoods = QueryHelpers.getRawObjectsByIds(ds, Food.table, foodIds)
         QueryHelpers.processRawFoodMap(ds, unorderedFoods)
-        return if (preserveOrder) {
-            // match order of ids in input
-            LinkedHashMap<Long, Food>(unorderedFoods.size).also { orderedFoods ->
-                for (id in foodIds.filter { unorderedFoods.containsKey(it) }) {
-                    orderedFoods[id] = unorderedFoods.getValue(id)
-                }
-            }
-        } else {
+        return if (!preserveOrder) {
             unorderedFoods
+        } else {
+            // match order of ids in input
+            val orderedFoods = LinkedHashMap<Long, Food>(unorderedFoods.size)
+            for (id in foodIds) {
+                unorderedFoods[id]?.let { orderedFoods[id] = it }
+            }
+            orderedFoods
         }
     }
 

@@ -5,6 +5,7 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.sql.ColumnExpr
 import com.machfour.macros.sql.Conjuction
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
@@ -47,8 +48,8 @@ object DatabaseUtils {
     // " WHERE column1 IS [NOT] NULL
     // if nkeys is 0, no where string will be formed, so all objects will be returned.
     // exception thrown if nValues < 0
-    internal fun makeWhereString(whereColumn: Column<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
-        val colName = whereColumn.sqlName
+    internal fun makeWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
+        val colName = whereColumnExpr.sql
         require ((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
 
         if (isNotNull != null) {
@@ -61,7 +62,7 @@ object DatabaseUtils {
             return ""
         }
 
-        val placeholder = getSqlPlaceholder(whereColumn.type)
+        val placeholder = getSqlPlaceholder(whereColumnExpr.type)
 
         //if (whereColumn.type().equals(DATESTAMP)) {
         //    sb.append("DATE(").append(whereColumn.sqlName()).append(")");
@@ -155,28 +156,26 @@ object DatabaseUtils {
 
     @Throws(IOException::class)
     fun createStatements(r: Reader, lineSep: String = " "): String {
-        val trimmedAndDecommented = ArrayList<String>(32)
+        val trimmedDecommentedLines = ArrayList<String>(32)
         BufferedReader(r).use { reader ->
             // steps: remove all comment lines, trim, join, split on semicolon
             while (reader.ready()) {
                 var line = reader.readLine()
-                val commentIndex = line.indexOf("--")
-                if (commentIndex == 0) {
-                    // skip comment lines completely
-                    continue
-                } else if (commentIndex != -1) {
-                    line = line.substring(0, commentIndex)
+                when (val commentIndex = line.indexOf("--")) {
+                    0 -> continue // skip comment lines completely
+                    -1 -> {} // no comment line
+                    else -> line = line.substring(0, commentIndex)
                 }
                 //line = line.trim();
                 // if line was only space but not completely blank, then ignore
                 // need to keep track of blank lines so Android can separate SQL statements
                 line = line.replace("\\s+".toRegex(), " ")
                 if (line != " ") {
-                    trimmedAndDecommented.add(line)
+                    trimmedDecommentedLines.add(line)
                 }
             }
         }
-        return StringJoiner.of(trimmedAndDecommented).sep(lineSep).join()
+        return StringJoiner.of(trimmedDecommentedLines).sep(lineSep).join()
     }
 
     @Throws(SQLException::class)

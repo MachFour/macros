@@ -9,7 +9,7 @@ import com.machfour.macros.persistence.DatabaseUtils
 //  make into sealed class with subclasses for each kind of where (multivalue, single value, LIKE, etc.)
 class SqlWhereExpr<M, J> private constructor(
     private val whereClause: String = "",
-    private val whereColumn: Column<M, J>? = null,
+    private val whereColumnExpr: ColumnExpr<M, J>? = null,
     private val whereColumnType: MacrosType<J>? = null,
     private val whereValues: Collection<J>? = null,
     val isIterated: Boolean = false,
@@ -20,32 +20,33 @@ class SqlWhereExpr<M, J> private constructor(
             return SqlWhereExpr()
         }
 
-        fun <M, J> where(whereColumn: Column<M, J>, whereValue: J): SqlWhereExpr<M, J> {
+        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
-                whereColumn = whereColumn,
-                whereColumnType = whereColumn.type,
-                whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = 1),
+                whereColumnExpr = whereColumnExpr,
+                whereColumnType = whereColumnExpr.type,
+                whereClause = DatabaseUtils.makeWhereString(whereColumnExpr, nValues = 1),
                 whereValues = listOf(whereValue)
             )
         }
 
         // can specify iterated = true so that a separate query will be carried out for each where value
         // useful when the number of where values is large
-        fun <M, J> where(whereColumn: Column<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
+        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
+            val nValues = if (iterated) 1 else whereValues.size
             return SqlWhereExpr(
-                whereColumn = whereColumn,
-                whereColumnType = whereColumn.type,
+                whereColumnExpr = whereColumnExpr,
+                whereColumnType = whereColumnExpr.type,
                 whereValues = whereValues,
-                whereClause = DatabaseUtils.makeWhereString(whereColumn, nValues = if (iterated) 1 else whereValues.size),
+                whereClause = DatabaseUtils.makeWhereString(whereColumnExpr, nValues = nValues),
                 isIterated = iterated
             )
         }
 
-        fun <M, J> where(whereColumn: Column<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
+        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
-                whereColumn = whereColumn,
-                whereColumnType = whereColumn.type,
-                whereClause = DatabaseUtils.makeWhereString(whereColumn, isNotNull = isNotNull)
+                whereColumnExpr = whereColumnExpr,
+                whereColumnType = whereColumnExpr.type,
+                whereClause = DatabaseUtils.makeWhereString(whereColumnExpr, isNotNull = isNotNull)
             )
         }
 

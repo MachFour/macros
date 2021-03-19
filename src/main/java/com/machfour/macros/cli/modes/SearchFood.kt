@@ -12,7 +12,7 @@ import java.sql.SQLException
 class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "search"
-        private val USAGE = "Usage: $programName $NAME <keyword>"
+        private const val USAGE = "Usage: $programName $NAME <keyword>"
 
         fun printFoodList(foods: Collection<Food>, out: PrintStream) {
             // work out how wide the column should be

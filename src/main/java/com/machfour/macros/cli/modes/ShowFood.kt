@@ -17,7 +17,7 @@ import java.sql.SQLException
 class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "show"
-        private val USAGE = "Usage: $programName $NAME <index_name>"
+        private const val USAGE = "Usage: $programName $NAME <index_name>"
 
         fun printFoodSummary(f: Food, out: PrintStream) {
             val dateFormat = DateTimeUtils.LOCALIZED_DATETIME_MEDIUM

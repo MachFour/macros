@@ -17,7 +17,7 @@ import java.time.format.FormatStyle
 class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "meals"
-        private val USAGE = "Usage: $programName $NAME [day]"
+        private const val USAGE = "Usage: $programName $NAME [day]"
     }
 
     override fun doAction(args: List<String>): Int {

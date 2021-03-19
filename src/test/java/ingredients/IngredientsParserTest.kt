@@ -2,7 +2,7 @@ package ingredients
 
 import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.objects.CompositeFood
+import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.StringJoiner

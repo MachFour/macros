@@ -13,7 +13,7 @@ import java.sql.SQLException
 class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "deletefood"
-        private val USAGE = "Usage: $programName $NAME <index name 1> [<index name 2>] [...]"
+        private const val USAGE = "Usage: $programName $NAME <index name 1> [<index name 2>] [...]"
     }
 
     override fun doAction(args: List<String>): Int {

@@ -6,8 +6,8 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.objects.Food
-import com.machfour.macros.objects.FoodType
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodType
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.Queries
 import org.junit.jupiter.api.AfterEach

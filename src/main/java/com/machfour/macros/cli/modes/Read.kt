@@ -24,9 +24,8 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val abbr: String?
             get() = mnemonic?.let { "-$it" }
         val usage: String
-            get() {
-                return if (mnemonic != null) "$abbr | " else ""  + full
-            }
+            get() = (if (mnemonic != null) "$abbr | " else "") + full
+
         fun containedIn(cmdline: List<String>) : Boolean {
             return cmdline.contains(full) || cmdline.contains(abbr)
         }

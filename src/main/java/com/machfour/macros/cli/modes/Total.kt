@@ -16,7 +16,7 @@ import java.sql.SQLException
 class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "total"
-        private val USAGE = "Usage: $programName $NAME (<meal name>|--all) [<day>] [-v|--verbose] [--per100]"
+        private const val USAGE = "Usage: $programName $NAME (<meal name>|--all) [<day>] [-v|--verbose] [--per100]"
 
         private fun makeMealSpec(args: List<String>, isAllMeals: Boolean): MealSpec {
             /* logic:

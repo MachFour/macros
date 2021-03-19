@@ -9,7 +9,7 @@ import com.machfour.macros.core.MacrosConfig
 class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "newmeal"
-        private val USAGE = "Usage: $programName $NAME <meal name> [<day>]"
+        private const val USAGE = "Usage: $programName $NAME <meal name> [<day>]"
     }
 
     override fun doAction(args: List<String>) : Int {

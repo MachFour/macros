@@ -5,9 +5,10 @@ import com.machfour.macros.core.schema.FoodPortionTable.Companion.FOOD_ID
 import com.machfour.macros.core.schema.FoodPortionTable.Companion.MEAL_ID
 import com.machfour.macros.core.schema.FoodPortionTable.Companion.QUANTITY
 import com.machfour.macros.core.schema.FoodPortionTable.Companion.QUANTITY_UNIT
-import com.machfour.macros.objects.*
-import com.machfour.macros.objects.inbuilt.Nutrients
-import com.machfour.macros.objects.inbuilt.Units
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.sample.ExampleFood
 import org.junit.jupiter.api.Test
 
@@ -17,9 +18,9 @@ class NutrientDataTest {
     companion object {
 
         private val f = ExampleFood.food2
-        private val nd1: NutrientData // grams
-        private val nd2: NutrientData // ml
-        private val nd3: NutrientData // mg
+        private val nd1: FoodNutrientData // grams
+        private val nd2: FoodNutrientData // ml
+        private val nd3: FoodNutrientData // mg
 
         init {
             val fpBuilder = MacrosBuilder(FoodPortion.table)
@@ -71,7 +72,7 @@ class NutrientDataTest {
 
     @Test
     fun testSum() {
-        val sum = NutrientData.sum(listOf(nd1, nd2))
+        val sum = FoodNutrientData.sum(listOf(nd1, nd2))
         assertEquals(192.0, sum.amountOf(Nutrients.FAT) as Double)
     }
 

@@ -6,7 +6,7 @@ import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.Queries
 import com.machfour.macros.persistence.CsvBackup.writeObjectsToCsv

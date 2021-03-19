@@ -15,7 +15,7 @@ import java.sql.SQLException
 class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "recipe"
-        private val USAGE = "Usage: $programName $NAME <recipes.json>"
+        private const val USAGE = "Usage: $programName $NAME <recipes.json>"
     }
 
     override fun doAction(args: List<String>) : Int {

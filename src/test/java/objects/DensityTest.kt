@@ -2,10 +2,10 @@ package objects
 
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.objects.*
-import com.machfour.macros.core.NutrientData
-import com.machfour.macros.objects.inbuilt.Nutrients
-import com.machfour.macros.objects.inbuilt.Units
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.queries.FoodQueries
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -18,8 +18,8 @@ class DensityTest {
         lateinit var db: LinuxDatabase
         lateinit var chickpeaFlour: Food
         lateinit var water: Food
-        lateinit var chickpeaNd: NutrientData
-        lateinit var waterNd: NutrientData
+        lateinit var chickpeaNd: FoodNutrientData
+        lateinit var waterNd: FoodNutrientData
 
         @BeforeAll
         @JvmStatic
@@ -64,7 +64,7 @@ class DensityTest {
         requireNotNull(density)
         val chickPea100mL = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale100()
         val water100mL = waterNd.withQuantityUnit(Units.MILLILITRES, 1.0).rescale100()
-        val combined = NutrientData.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
+        val combined = FoodNutrientData.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
         Assertions.assertEquals(Units.GRAMS, combined.quantityObj.unit)
         Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)
         Assertions.assertTrue(combined.hasCompleteData(Nutrients.QUANTITY))

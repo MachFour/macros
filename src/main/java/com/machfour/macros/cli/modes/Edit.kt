@@ -20,7 +20,7 @@ import java.sql.SQLException
 class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "edit"
-        private val USAGE = "Usage: $programName $NAME [meal [day]]"
+        private const val USAGE = "Usage: $programName $NAME [meal [day]]"
 
         private fun interactiveHelpString(): String {
             return ("Actions:"

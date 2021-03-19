@@ -19,7 +19,7 @@ import java.sql.SQLException
 class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "portion"
-        private val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
+        private const val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
 
         fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, ds: MacrosDataSource, out: PrintStream, err: PrintStream): Int {
             if (specs.isEmpty()) {

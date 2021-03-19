@@ -7,7 +7,7 @@ import com.machfour.macros.core.MacrosConfig
 class Help(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "help"
-        private val USAGE = "Usage: $programName $NAME"
+        private const val USAGE = "Usage: $programName $NAME"
     }
 
     override fun printHelp() {

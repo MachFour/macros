@@ -12,7 +12,7 @@ import java.sql.SQLException
 class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "allfoods"
-        private val USAGE = "Usage: $programName $NAME"
+        private const val USAGE = "Usage: $programName $NAME"
 
     }
 

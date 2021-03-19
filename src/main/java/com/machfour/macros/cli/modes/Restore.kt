@@ -17,7 +17,7 @@ import java.sql.SQLException
 class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "restore"
-        private val USAGE = "Usage: $programName $NAME [backup dir]"
+        private const val USAGE = "Usage: $programName $NAME [backup dir]"
 
     }
 

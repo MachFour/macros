@@ -18,7 +18,7 @@ import java.sql.SQLException
 class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "import"
-        private val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods] " +
+        private const val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods] " +
                 " [-f <foods.csv>] [-s <servings.csv>] [-r <recipes.csv>] [-i <ingredients.csv>]"
     }
 

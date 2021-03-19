@@ -16,7 +16,7 @@ import java.sql.SQLException
 class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "export"
-        private val USAGE = "Usage: $programName $NAME [output dir]"
+        private const val USAGE = "Usage: $programName $NAME [output dir]"
     }
 
     override fun printHelp() {

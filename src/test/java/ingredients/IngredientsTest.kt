@@ -6,7 +6,7 @@ import com.machfour.macros.ingredients.CompositeFoodSpec
 import com.machfour.macros.ingredients.IngredientSpec
 import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.objects.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
 import org.junit.jupiter.api.AfterEach

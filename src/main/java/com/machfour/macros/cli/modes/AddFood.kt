@@ -17,7 +17,7 @@ import java.sql.SQLException
 class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "addfood"
-        private val USAGE = "Usage: $programName $NAME <index name>"
+        private const val USAGE = "Usage: $programName $NAME <index name>"
 
         /*
          * Ensures the given index name is not already in the database; returns true if it is not present.

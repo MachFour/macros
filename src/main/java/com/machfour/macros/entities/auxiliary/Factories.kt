@@ -42,9 +42,7 @@ object Factories {
 
     val foodNutrientValue = defaultFactory(::FoodNutrientValue)
 
-    val mealNutrientGoalValue = defaultFactory(::MealNutrientGoalValue)
-
-    val dayNutrientGoalValue = defaultFactory(::DayNutrientGoalValue)
+    val nutrientGoalValue = defaultFactory(::NutrientGoalValue)
 
     val nutrient = defaultFactory(::Nutrient)
 

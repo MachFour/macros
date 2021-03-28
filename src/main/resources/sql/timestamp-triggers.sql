@@ -164,44 +164,25 @@ CREATE TRIGGER update_food_nutrient_value_timestamp
     END;
 
 -- MealNutrientGoalValue
-CREATE TRIGGER init_meal_nutrient_goal_value_timestamp
-    AFTER INSERT ON MealNutrientGoalValue
+CREATE TRIGGER init_nutrient_goal_value_timestamp
+    AFTER INSERT ON NutrientGoalValue
     WHEN (NEW.create_time = 0)
     BEGIN
-        UPDATE MealNutrientGoalValue
+        UPDATE NutrientGoalValue
         SET create_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
 
-CREATE TRIGGER update_meal_nutrient_goal_value_timestamp
-    AFTER UPDATE ON MealNutrientGoalValue
+CREATE TRIGGER update_nutrient_goal_value_timestamp
+    AFTER UPDATE ON NutrientGoalValue
     WHEN (NEW.modify_time = OLD.modify_time
         OR NEW.modify_time = 0)
     BEGIN
-        UPDATE MealNutrientGoalValue
+        UPDATE NutrientGoalValue
         SET modify_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;
 
--- DayNutrientGoalValue
-CREATE TRIGGER init_day_nutrient_goal_value_timestamp
-    AFTER INSERT ON DayNutrientGoalValue
-    WHEN (NEW.create_time = 0)
-    BEGIN
-        UPDATE DayNutrientGoalValue
-        SET create_time = strftime('%s', 'now')
-        WHERE id = NEW.id;
-    END;
-
-CREATE TRIGGER update_day_nutrient_goal_value_timestamp
-    AFTER UPDATE ON DayNutrientGoalValue
-    WHEN (NEW.modify_time = OLD.modify_time
-        OR NEW.modify_time = 0)
-    BEGIN
-        UPDATE DayNutrientGoalValue
-        SET modify_time = strftime('%s', 'now')
-        WHERE id = NEW.id;
-    END;
 -- Unit
 CREATE TRIGGER init_unit_timestamp
     AFTER INSERT ON Unit

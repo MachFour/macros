@@ -7,6 +7,7 @@ enum class ValidationError(private val str: String) {
     UNIQUE("value must be unique"),
     POSITIVE("value must be positive"),
     NON_NEGATIVE("value cannot be negative"),
+    MUST_BE_NULL("value must be null"),
     ;
 
     override fun toString(): String = str

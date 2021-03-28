@@ -393,11 +393,11 @@ CREATE TABLE FoodNutrientValue (
           CHECK (version >= 1)
 );
 
-CREATE TABLE MealNutrientGoalValue (
+CREATE TABLE NutrientGoalValue (
       id                   INTEGER PRIMARY KEY ASC
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
-    -- columns shared with DailyNutrientGoalValue and FoodNutrientValue
+    -- columns shared with FoodNutrientValue
     , nutrient_id          INTEGER NOT NULL
     , value                REAL NOT NULL
     -- specifies whether the value is an equality constraint (0),
@@ -407,7 +407,10 @@ CREATE TABLE MealNutrientGoalValue (
     , constraint_spec      INTEGER NOT NULL DEFAULT 0
     , unit_id              INTEGER NOT NULL
     -- columns unique to this table
-    , meal_id              INTEGER NOT NULL
+    -- exactly one of these columns has to be null, depending on whether it's a goal for
+    -- a whole day or a specific meal
+    , meal_id              INTEGER DEFAULT NULL -- NOT NULL
+    , day                  TEXT DEFAULT NULL --  DEFAULT (date('now', 'localtime'))
 
     -- constraints shared with other tables
     , CONSTRAINT valid_nutrient
@@ -422,55 +425,22 @@ CREATE TABLE MealNutrientGoalValue (
         ON UPDATE CASCADE
         ON DELETE RESTRICT
     , CONSTRAINT nonnegative_value
-          CHECK (value >= 0)
+        CHECK (value >= 0)
     , CONSTRAINT valid_constraint_spec
-          CHECK (constraint_spec IN (-1, 0, 1))
+        CHECK (constraint_spec IN (-1, 0, 1))
 
     -- constraints unique to this table
+    , CONSTRAINT meal_or_day
+        CHECK ((meal_id IS NULL) != (day IS NULL))
+    -- these only apply if the corresponding column is not null
     , CONSTRAINT valid_meal
         FOREIGN KEY (meal_id)
         REFERENCES Meal (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+    -- constraints unique to this table
     , CONSTRAINT single_nutrient_per_meal
         UNIQUE (meal_id, nutrient_id)
-);
-
-CREATE TABLE DayNutrientGoalValue (
-      id                   INTEGER PRIMARY KEY ASC
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
-    -- columns shared with FoodNutrientValue and MealNutrientGoalValue
-    , nutrient_id          INTEGER NOT NULL
-    , value                REAL NOT NULL
-    -- specifies whether the value is an equality constraint (0),
-    -- or greater than (or equal to) the true value (1),
-    -- or less than (or equal to) the true value (-1),
-    -- used for values which are only given as 'less than X' or 'at least X',
-    , constraint_spec      INTEGER NOT NULL DEFAULT 0
-    , unit_id              INTEGER NOT NULL
-
-    -- columns unique to this table
-    , day                  TEXT NOT NULL DEFAULT (date('now', 'localtime'))
-
-    -- constraints shared with other tables
-    , CONSTRAINT valid_nutrient
-        FOREIGN KEY (nutrient_id)
-        REFERENCES Nutrient (id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-    , CONSTRAINT valid_unit
-        -- have to make sure that unit has the correct type in code/trigger
-        FOREIGN KEY (unit_id)
-        REFERENCES Unit (id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-    , CONSTRAINT nonnegative_value
-          CHECK (value >= 0)
-    , CONSTRAINT valid_constraint_spec
-          CHECK (constraint_spec IN (-1, 0, 1))
-
-    -- constraints unique to this table
     , CONSTRAINT single_nutrient_per_day
         UNIQUE (day, nutrient_id)
 );

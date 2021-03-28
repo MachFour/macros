@@ -56,7 +56,7 @@ internal object SchemaHelpers {
         = builder("nutrient_max_version", Types.INTEGER).notEditable().notNull().defaultsTo(1)
             .buildAndAdd(columns)
 
-    // Shared columns for NutrientValue tables (FoodNutrientValue, MealNutrientGoalValue, DayNutrientGoalValue)
+    // Shared columns for NutrientValue tables (FoodNutrientValue, NutrientGoalValue)
 
     internal fun <M> nutrientValueNutrientColumn(columns: MutableList<Column<M, *>>)
         = builder("nutrient_id", Types.ID).notNull().notEditable().inSecondaryKey()

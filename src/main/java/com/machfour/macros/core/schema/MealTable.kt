@@ -5,6 +5,7 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.time.Instant
@@ -24,6 +25,7 @@ class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Factories.me
         val START_TIME: Column<Meal, Long>
         val DURATION: Column<Meal, Int>
         val NOTES: Column<Meal, String>
+        val GOAL_ID: Column.Fk<Meal, Long, NutrientGoal>
 
         init {
             ID = SchemaHelpers.idColumnBuildAndAdd(COLUMNS)
@@ -35,6 +37,8 @@ class MealTable private constructor() : BaseTable<Meal>(TABLE_NAME, Factories.me
             DAY = SchemaHelpers.builder("day", Types.DATESTAMP).notNull().default { currentDate() }.buildAndAdd(COLUMNS)
             START_TIME = SchemaHelpers.builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildAndAdd(COLUMNS)
             DURATION = SchemaHelpers.builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildAndAdd(COLUMNS)
+            GOAL_ID = SchemaHelpers.builder("goal_id", Types.ID).defaultsTo(null).notEditable().unique()
+                .buildAndAddFk(NutrientGoalTable.ID, NutrientGoalTable.instance, COLUMNS)
         }
 
         val instance = MealTable()

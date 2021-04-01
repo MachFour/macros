@@ -39,6 +39,7 @@ class FoodNutrientValueTable private constructor() : BaseTable<FoodNutrientValue
             VALUE = SchemaHelpers.nutrientValueValueColumn(COLUMNS)
             CONSTRAINT_SPEC = SchemaHelpers.nutrientValueConstraintColumn(COLUMNS)
 
+            // might have NO_ID value if it's not being stored in the database (i.e computed value)
             FOOD_ID = SchemaHelpers.builder("food_id", Types.ID)
                 .notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
                 .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)

@@ -163,7 +163,7 @@ CREATE TRIGGER update_food_nutrient_value_timestamp
         WHERE id = NEW.id;
     END;
 
--- MealNutrientGoalValue
+-- NutrientGoalValue
 CREATE TRIGGER init_nutrient_goal_value_timestamp
     AFTER INSERT ON NutrientGoalValue
     WHEN (NEW.create_time = 0)
@@ -179,6 +179,46 @@ CREATE TRIGGER update_nutrient_goal_value_timestamp
         OR NEW.modify_time = 0)
     BEGIN
         UPDATE NutrientGoalValue
+        SET modify_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+-- NutrientGoal
+CREATE TRIGGER init_nutrient_goal_timestamp
+    AFTER INSERT ON NutrientGoal
+    WHEN (NEW.create_time = 0)
+    BEGIN
+        UPDATE NutrientGoal
+        SET create_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+CREATE TRIGGER update_nutrient_goal_timestamp
+    AFTER UPDATE ON NutrientGoal
+    WHEN (NEW.modify_time = OLD.modify_time
+        OR NEW.modify_time = 0)
+    BEGIN
+        UPDATE NutrientGoal
+        SET modify_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+-- NutrientGoalDayMapping
+CREATE TRIGGER init_nutrient_goal_day_mapping_timestamp
+    AFTER INSERT ON NutrientGoalDayMapping
+    WHEN (NEW.create_time = 0)
+    BEGIN
+        UPDATE NutrientGoalDayMapping
+        SET create_time = strftime('%s', 'now')
+        WHERE id = NEW.id;
+    END;
+
+CREATE TRIGGER update_nutrient_goal_day_mapping_timestamp
+    AFTER UPDATE ON NutrientGoalDayMapping
+    WHEN (NEW.modify_time = OLD.modify_time
+        OR NEW.modify_time = 0)
+    BEGIN
+        UPDATE NutrientGoalDayMapping
         SET modify_time = strftime('%s', 'now')
         WHERE id = NEW.id;
     END;

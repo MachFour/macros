@@ -6,7 +6,6 @@ import com.machfour.macros.core.schema.ServingTable
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import java.lang.StringBuilder
 
 open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) :
         MacrosEntityImpl<Food>(dataMap, objectSource) {
@@ -61,10 +60,11 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
             withVariety : Boolean = true,
             withExtra : Boolean = false,
             sortable : Boolean = false,
-            coerceBlankAsNull: Boolean = false,
+            includeEmptyFields: Boolean = true,
         ): String {
-            val isPresent: (String?) -> Boolean
-                    = if (coerceBlankAsNull) { { !it.isNullOrEmpty() } } else { { it != null } }
+            val isPresent: (String?) -> Boolean = {
+                it != null && (includeEmptyFields || it.isNotEmpty())
+            }
 
             val prettyName = StringBuilder(basicName)
             if (sortable) {
@@ -145,11 +145,10 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         return servingsInternal.firstOrNull { it.name == name }
     }
 
-    // Returns list of quantity units and servings which can be used to measure this food
-    val validMeasurements: List<PortionMeasurement>
+    val validUnits: List<Unit>
         get() {
             val naturalUnit = nutrientData.qtyUnit
-            return ArrayList<PortionMeasurement>().apply {
+            return ArrayList<Unit>().apply {
                 add(naturalUnit)
                 // allow conversion if density is given
                 if (density != null) {
@@ -159,8 +158,13 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
                         add(Units.MILLILITRES)
                     }
                 }
-                addAll(servings)
             }
+        }
+
+    // Returns list of quantity units and servings which can be used to measure this food
+    val validMeasurements: List<PortionMeasurement>
+        get() {
+            return validUnits + servings
         }
 
     val usdaIndex: Int?

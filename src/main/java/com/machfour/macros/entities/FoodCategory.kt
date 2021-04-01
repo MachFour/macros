@@ -2,10 +2,12 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.FoodCategoryTable
+import com.machfour.macros.entities.auxiliary.Factories
 
 class FoodCategory(data: ColumnData<FoodCategory>, objectSource: ObjectSource) : MacrosEntityImpl<FoodCategory>(data, objectSource) {
     companion object {
-        val factory: Factory<FoodCategory> = Factory { dataMap, objectSource -> FoodCategory(dataMap, objectSource) }
+        val factory: Factory<FoodCategory>
+            get() = Factories.foodCategory
         val table: Table<FoodCategory>
             get() = FoodCategoryTable.instance
     }

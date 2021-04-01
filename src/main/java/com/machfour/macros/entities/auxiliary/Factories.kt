@@ -6,6 +6,7 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.NutrientGoal
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues
@@ -32,6 +33,10 @@ object Factories {
         return Factory { dataMap, objectSource -> constructor(dataMap, objectSource) }
     }
 
+    val attributeMapping = defaultFactory(::AttrMapping)
+
+    val foodCategory = defaultFactory(::FoodCategory)
+
     val serving = defaultFactory(::Serving)
 
     val meal = defaultFactory(::Meal)
@@ -41,6 +46,10 @@ object Factories {
     val ingredient = defaultFactory(::Ingredient)
 
     val foodNutrientValue = defaultFactory(::FoodNutrientValue)
+
+    val nutrientGoal = defaultFactory(::NutrientGoal)
+
+    val nutrientGoalDayMapping = defaultFactory(::NutrientGoalDayMapping)
 
     val nutrientGoalValue = defaultFactory(::NutrientGoalValue)
 

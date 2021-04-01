@@ -42,23 +42,4 @@ object Validations {
             }
         }
     }
-
-    val nutrientGoal = Validation<NutrientGoalValue> { data ->
-        val dayCol = NutrientGoalValueTable.DAY
-        val mealCol = NutrientGoalValueTable.MEAL_ID
-
-        val day = data[dayCol]
-        val mealId = data[mealCol]
-
-        makeErrorMap<NutrientGoalValue>().also {
-            if (mealId != null && day != null) {
-                // can't specify both day and meal
-                it[mealCol] = listOf(ValidationError.MUST_BE_NULL) // TODO improve?
-            }
-            else if (mealId == null && day == null) {
-                // can't specify both day and meal
-                it[dayCol] = listOf(ValidationError.NON_NULL)
-            }
-        }
-    }
 }

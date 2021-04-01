@@ -6,7 +6,7 @@ import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.util.DateStamp
+import com.machfour.macros.entities.NutrientGoal
 
 class NutrientGoalValueTable private constructor() : BaseTable<NutrientGoalValue>(
     TABLE_NAME, Factories.nutrientGoalValue, COLUMNS
@@ -25,8 +25,7 @@ class NutrientGoalValueTable private constructor() : BaseTable<NutrientGoalValue
         val CONSTRAINT_SPEC: Column<NutrientGoalValue, Int>
         val UNIT_ID: Column.Fk<NutrientGoalValue, Long, Unit>
 
-        val MEAL_ID: Column.Fk<NutrientGoalValue, Long, Meal>
-        val DAY: Column<NutrientGoalValue, DateStamp>
+        val GOAL_ID: Column.Fk<NutrientGoalValue, Long, NutrientGoal>
 
         init {
             ID = SchemaHelpers.idColumnBuildAndAdd(COLUMNS)
@@ -38,11 +37,8 @@ class NutrientGoalValueTable private constructor() : BaseTable<NutrientGoalValue
             VALUE = SchemaHelpers.nutrientValueValueColumn(COLUMNS)
             CONSTRAINT_SPEC = SchemaHelpers.nutrientValueConstraintColumn(COLUMNS)
 
-            MEAL_ID = SchemaHelpers.builder("meal_id", Types.ID)
-                .notEditable().buildAndAddFk(MealTable.ID, MealTable.instance, COLUMNS)
-
-            DAY = SchemaHelpers.builder("day", Types.DATESTAMP)
-                .notEditable().buildAndAdd(COLUMNS)
+            GOAL_ID = SchemaHelpers.builder("goal_id", Types.ID).notEditable().notNull()
+                .buildAndAddFk(NutrientGoalTable.ID, NutrientGoalTable.instance, COLUMNS)
         }
 
         // this part has to be last (static initialisation order)

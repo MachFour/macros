@@ -4,8 +4,10 @@
 -- use spaces for indentation, not tabs
 
 -- note that these pragmas need to be set every time a database connection is made
+
 PRAGMA foreign_keys = ON;
 PRAGMA recursive_triggers = ON;
+
 
 -- Measures mass (weight), volume or energy
 CREATE TABLE Unit (
@@ -25,6 +27,19 @@ CREATE TABLE Unit (
     , CONSTRAINT positive_conversion
         CHECK (metric_equivalent > 0)
 );
+
+
+CREATE TABLE Nutrient (
+      id                   INTEGER PRIMARY KEY ASC
+    , name                 TEXT NOT NULL UNIQUE
+    , unit_types           INTEGER NOT NULL
+    , inbuilt              INTEGER NOT NULL DEFAULT 0
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    , CONSTRAINT boolean_inbuilt
+        CHECK (inbuilt IN (0, 1))
+);
+
 
 CREATE TABLE Food (
     -- Field meanings
@@ -103,28 +118,32 @@ CREATE TABLE Food (
         CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
 );
 
+
 CREATE UNIQUE INDEX food_index ON Food (index_name);
+
 
 CREATE TABLE FoodCategory (
       id                   INTEGER PRIMARY KEY ASC
-    , name                 TEXT NOT NULL UNIQUE
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
+    , name                 TEXT NOT NULL UNIQUE
 );
+
 
 CREATE TABLE FoodAttribute (
       id                   INTEGER PRIMARY KEY ASC
-    , name                 TEXT NOT NULL UNIQUE
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
+    , name                 TEXT NOT NULL UNIQUE
 );
+
 
 CREATE TABLE AttributeMapping (
       id                   INTEGER PRIMARY KEY ASC
-    , food_id              INTEGER NOT NULL
-    , attribute_id         INTEGER NOT NULL
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
+    , food_id              INTEGER NOT NULL
+    , attribute_id         INTEGER NOT NULL
 
     , CONSTRAINT single_association
         UNIQUE (food_id, attribute_id)
@@ -139,6 +158,7 @@ CREATE TABLE AttributeMapping (
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
 
 -- so you can put in '1 tin' of tuna, not 95g.
 CREATE TABLE Serving (
@@ -182,8 +202,37 @@ CREATE TABLE Serving (
         CHECK (is_default IS NULL OR is_default = 1)
 );
 
+
+-- a collection of nutrient goal values
+CREATE TABLE NutrientGoal (
+      id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    , name                 TEXT NOT NULL
+);
+
+
+-- maps nutrient goals to days
+CREATE TABLE NutrientGoalDayMapping (
+      id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    -- unique goal per day
+    , day                  TEXT NOT NULL UNIQUE
+    , goal_id              INTEGER NOT NULL
+
+    , CONSTRAINT valid_nutrient_goal
+        FOREIGN KEY (goal_id)
+        REFERENCES NutrientGoal (id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+
 CREATE TABLE Meal (
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL
     -- which day to associate the meal with. Dependent on user's time zone.
     -- only year, month and day stored, in ISO8601 format.
@@ -195,9 +244,8 @@ CREATE TABLE Meal (
     , start_time           INTEGER NOT NULL
     -- duration of meal, in seconds from the start_time
     , duration             INTEGER NOT NULL DEFAULT 0
-    -- timestamps are updated via triggers
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
+    -- records nutrient goal, if one is set for this meal
+    , goal_id              INTEGER DEFAULT NULL
 
     -- table restriction
     --, CONSTRAINT valid_meal_description
@@ -210,7 +258,14 @@ CREATE TABLE Meal (
     --    UNIQUE (day, name)
     , CONSTRAINT nonnegative_duration
         CHECK (duration >= 0)
+
+    , CONSTRAINT valid_nutrient_goal
+        FOREIGN KEY (goal_id)
+        REFERENCES NutrientGoal (id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
 );
+
 
 CREATE TABLE FoodPortion (
     -- Columns shared with Ingredient
@@ -269,8 +324,8 @@ CREATE TABLE FoodPortion (
               ON UPDATE CASCADE
     , CONSTRAINT valid_recipe_version
           CHECK (recipe_max_version >= 1)
-
 );
+
 
 CREATE TABLE Ingredient (
     -- Columns shared with FoodPortion
@@ -330,25 +385,14 @@ CREATE TABLE Ingredient (
               ON UPDATE CASCADE
     , CONSTRAINT cannot_contain_itself
           CHECK (parent_food_id != id)
-
 );
 
-CREATE TABLE Nutrient (
-      id                   INTEGER PRIMARY KEY ASC
-    , name                 TEXT NOT NULL UNIQUE
-    , unit_types           INTEGER NOT NULL
-    , inbuilt              INTEGER NOT NULL DEFAULT 0
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
-    , CONSTRAINT boolean_inbuilt
-        CHECK (inbuilt IN (0, 1))
-);
 
 CREATE TABLE FoodNutrientValue (
       id                   INTEGER PRIMARY KEY ASC
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
-    -- columns shared with DailyNutrientGoalValue and MealNutrientGoalValue
+    -- columns shared with NutrientGoalValue
     , nutrient_id          INTEGER NOT NULL
     , value                REAL NOT NULL
     -- specifies whether the value is an equality constraint (0),
@@ -358,8 +402,7 @@ CREATE TABLE FoodNutrientValue (
     , constraint_spec      INTEGER NOT NULL DEFAULT 0
     , unit_id              INTEGER NOT NULL
 
-    -- columns unique to this table
-
+    -- columns unique to FoodNutrientValue
     , food_id              INTEGER NOT NULL
     -- used to record changes to food nutrient values, while keeping the food data the same
     , version              INTEGER NOT NULL
@@ -393,6 +436,7 @@ CREATE TABLE FoodNutrientValue (
           CHECK (version >= 1)
 );
 
+
 CREATE TABLE NutrientGoalValue (
       id                   INTEGER PRIMARY KEY ASC
     , create_time          INTEGER NOT NULL DEFAULT 0
@@ -406,13 +450,11 @@ CREATE TABLE NutrientGoalValue (
     -- used for values which are only given as 'less than X' or 'at least X',
     , constraint_spec      INTEGER NOT NULL DEFAULT 0
     , unit_id              INTEGER NOT NULL
-    -- columns unique to this table
-    -- exactly one of these columns has to be null, depending on whether it's a goal for
-    -- a whole day or a specific meal
-    , meal_id              INTEGER DEFAULT NULL -- NOT NULL
-    , day                  TEXT DEFAULT NULL --  DEFAULT (date('now', 'localtime'))
 
-    -- constraints shared with other tables
+    -- columns unique to NutrientGoalValue
+    , goal_id              INTEGER NOT NULL
+
+    -- constraints shared with FoodNutrientValue
     , CONSTRAINT valid_nutrient
         FOREIGN KEY (nutrient_id)
         REFERENCES Nutrient (id)
@@ -428,36 +470,27 @@ CREATE TABLE NutrientGoalValue (
         CHECK (value >= 0)
     , CONSTRAINT valid_constraint_spec
         CHECK (constraint_spec IN (-1, 0, 1))
+    -- constraints unique to NutrientGoalValue
+    , CONSTRAINT valid_goal
+        FOREIGN KEY (goal_id)
+        REFERENCES NutrientGoal (id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
 
-    -- constraints unique to this table
-    , CONSTRAINT meal_or_day
-        CHECK ((meal_id IS NULL) != (day IS NULL))
-    -- these only apply if the corresponding column is not null
+
+CREATE TABLE RegularMeal (
+      id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
+    , name                 TEXT NOT NULL
+    , meal_id              INTEGER NOT NULL UNIQUE
+
     , CONSTRAINT valid_meal
         FOREIGN KEY (meal_id)
         REFERENCES Meal (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-    -- constraints unique to this table
-    , CONSTRAINT single_nutrient_per_meal
-        UNIQUE (meal_id, nutrient_id)
-    , CONSTRAINT single_nutrient_per_day
-        UNIQUE (day, nutrient_id)
-);
-
-CREATE TABLE RegularMeal (
-      id                   INTEGER PRIMARY KEY ASC
-    , meal_id              INTEGER NOT NULL UNIQUE
-    , name                 TEXT NOT NULL
-    -- timestamps are stored in unix time, and set via triggers
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
-    -- don't let user delete a favourited meal; have to unfavourite first
-    , CONSTRAINT valid_meal
-        FOREIGN KEY (meal_id)
-        REFERENCES Meal (id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
 );
 
 -- vim: et ts=4

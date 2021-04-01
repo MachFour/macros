@@ -26,27 +26,6 @@ class NutrientGoalValue internal constructor(
         val table: Table<NutrientGoalValue>
             get() = NutrientGoalValueTable.instance
 
-        private fun makeBaseComputedValue(value: Double, nutrient: Nutrient, unit: Unit): ColumnData<NutrientGoalValue> {
-            return ColumnData(table).apply {
-                put(NutrientGoalValueTable.ID, MacrosEntity.NO_ID)
-                put(NutrientGoalValueTable.VALUE, value)
-                put(NutrientGoalValueTable.NUTRIENT_ID, nutrient.id)
-                put(NutrientGoalValueTable.UNIT_ID, unit.id)
-            }
-        }
-
-        // for day goals
-        fun makeComputedValue(date: DateStamp, value: Double, nutrient: Nutrient, unit: Unit): NutrientGoalValue {
-            val data = makeBaseComputedValue(value, nutrient, unit)
-            data.put(NutrientGoalValueTable.DAY, date)
-            return factory.construct(data, ObjectSource.COMPUTED)
-        }
-        // for meal goals
-        fun makeComputedValue(mealId: Long, value: Double, nutrient: Nutrient, unit: Unit): NutrientGoalValue {
-            val data = makeBaseComputedValue(value, nutrient, unit)
-            data.put(NutrientGoalValueTable.MEAL_ID, mealId)
-            return factory.construct(data, ObjectSource.COMPUTED)
-        }
     }
 
     override val factory: Factory<NutrientGoalValue>

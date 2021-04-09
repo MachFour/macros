@@ -195,8 +195,7 @@ object CsvImport {
         // preserve insertion order
         val foodMap: MutableMap<String, Food> = LinkedHashMap()
         for ((foodData, nutrientValueData) in getFoodData(foodCsv)) {
-            val f: Food
-            f = try {
+            val f: Food = try {
                 Food.factory.construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
                 throw CsvException("Schema violation detected in food: ${e.message} Data: $foodData")

@@ -1,3 +1,5 @@
+@file:Suppress("EqualsOrHashCode")
+
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
@@ -145,9 +147,11 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
         return servingsInternal.firstOrNull { it.name == name }
     }
 
+    val naturalUnit: Unit
+        get() = nutrientData.qtyUnit
+
     val validUnits: List<Unit>
         get() {
-            val naturalUnit = nutrientData.qtyUnit
             return ArrayList<Unit>().apply {
                 add(naturalUnit)
                 // allow conversion if density is given
@@ -187,8 +191,6 @@ open class Food internal constructor(dataMap: ColumnData<Food>, objectSource: Ob
     override fun equals(other: Any?): Boolean {
         return other is Food && super.equals(other)
     }
-
-    override fun hashCode(): Int = super.hashCode()
 
     val shortName: String
         get() = prettyFormat(withBrand = false, withVariety = false)

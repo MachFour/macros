@@ -12,8 +12,8 @@ abstract class NutrientValue<M: NutrientValue<M>> protected constructor(
     objectSource: ObjectSource,
 
     private val nutrientIdCol: Column.Fk<M, Long, Nutrient>,
-    private val unitIdCol: Column.Fk<M, Long, Unit>,
-    private val valueCol: Column<M, Double>,
+    /* private val */ unitIdCol: Column.Fk<M, Long, Unit>,
+    /* private val */ valueCol: Column<M, Double>,
     private val constraintSpecCol: Column<M, Int>,
 ) : MacrosEntityImpl<M>(data, objectSource) {
 

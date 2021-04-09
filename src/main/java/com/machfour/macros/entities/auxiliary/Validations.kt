@@ -3,9 +3,7 @@ package com.machfour.macros.entities.auxiliary
 import com.machfour.macros.core.Column
 import com.machfour.macros.core.VErrorList
 import com.machfour.macros.core.schema.FoodNutrientValueTable
-import com.machfour.macros.core.schema.NutrientGoalValueTable
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.NutrientGoalValue
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError

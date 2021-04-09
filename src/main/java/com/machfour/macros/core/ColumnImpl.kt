@@ -16,6 +16,7 @@ internal open class ColumnImpl<M, J> private constructor(
 
     // These are set later, when added to Table
     override lateinit var table: Table<M>
+    // can't use lateinit on primitive types
     override var index by Delegates.notNull<Int>()
 
     override val defaultData: J?

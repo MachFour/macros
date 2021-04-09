@@ -177,6 +177,7 @@ object Queries {
             val secondaryKey = o.table.secondaryKeyCols
             if (secondaryKey.isEmpty()) {
                 // no way to know except by ID...
+                TODO()
             }
             TODO()
             @Suppress("UNREACHABLE_CODE")
@@ -290,15 +291,4 @@ object Queries {
         return unorderedResults
     }
 
-    // The resulting map is unordered
-    @Throws(SQLException::class)
-    fun <M, I> getIdsByKeys(
-        ds: MacrosDataSource,
-        t: Table<M>,
-        keyColumn: Column<M, I>,
-        keys: Collection<I>
-    ): Map<I, Long> {
-        val keyMap = selectColumnMap(ds, t, keyColumn, t.idColumn, keys)
-        return keyMap.mapValues { it.value!! }
-    }
 }

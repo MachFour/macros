@@ -28,9 +28,9 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     }
 
     private fun listFoods(ds: MacrosDataSource) {
-        val allFoods: List<Food>
+        val allFoods: Collection<Food>
         try {
-            allFoods = FoodQueries.getAllFoods(ds)
+            allFoods = FoodQueries.getAllFoodsMap(ds).values
         } catch (e: SQLException) {
             err.print("SQL exception occurred: ")
             err.println(e.errorCode)

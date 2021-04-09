@@ -105,7 +105,7 @@ class Types {
         override fun toString(): String = "null-boolean"
 
         @Throws(TypeCastException::class)
-        override fun fromRaw(data: Any?): Boolean? {
+        override fun fromRaw(data: Any?): Boolean {
             return when (data) {
                 null -> false
                 else -> super.fromRawNotNull(data)

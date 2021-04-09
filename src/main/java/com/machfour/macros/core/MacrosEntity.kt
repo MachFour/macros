@@ -10,7 +10,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
         // special ID for the 'null' serving of just grams / mL
         const val UNIT_SERVING: Long = -101
         const val NO_DATE: Long = -99
-        val UNSET = Double.NaN
+        const val UNSET = Double.NaN
 
         fun <M: MacrosEntity<M>> Factory<M>.cloneWithoutMetadata(obj: MacrosEntity<M>): M {
             return construct(obj.dataCopy(withMetadata = false), ObjectSource.COMPUTED)

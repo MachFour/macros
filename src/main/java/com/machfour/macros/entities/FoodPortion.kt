@@ -1,3 +1,5 @@
+@file:Suppress("EqualsOrHashCode")
+
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
@@ -58,8 +60,5 @@ class FoodPortion internal constructor(data: ColumnData<FoodPortion>, objectSour
         return other is FoodPortion && super.equals(other)
     }
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
 }
 

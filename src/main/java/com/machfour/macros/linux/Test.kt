@@ -15,7 +15,7 @@ object Test {
     }
 
     @Throws(Exception::class)
-    private fun getCloseable() : Closeable? {
+    private fun getCloseable() : Closeable {
         return Closeable()
     }
 
@@ -25,7 +25,7 @@ object Test {
 
         try {
             getCloseable().use {
-                it?.throwException()
+                it.throwException()
                 out = 10
             }
         } finally {

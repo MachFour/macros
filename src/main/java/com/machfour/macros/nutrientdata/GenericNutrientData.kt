@@ -77,7 +77,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         makeEnergyProportionsMap()
     }
     // map of protein, fat, saturated fat, carbs, sugar, fibre to amount of energy in calories
-    private val energyComponentsMapInKj: Map<Nutrient, Double> by lazy {
+    private val energyComponentsMapKj: Map<Nutrient, Double> by lazy {
         makeEnergyComponentsMapInKj()
     }
 
@@ -193,7 +193,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         // this is also ensured by database
         assert(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
 
-        val totalEnergy = totalEnergyNutrients.fold(0.0, { s, n -> s + energyComponentsMapInKj.getValue(n) })
+        val totalEnergy = totalEnergyNutrients.fold(0.0) { s, n -> s + energyComponentsMapKj.getValue(n) }
         // have to divide by kJ/calories ratio if desired unit is calories
         return totalEnergy / unit.metricEquivalent
     }
@@ -240,7 +240,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     private fun makeEnergyProportionsMap() : Map<Nutrient, Double> {
         // shouldn't matter whether we use KJ or calories here, as long as the amountOf() call below
         // uses the same unit
-        val componentMap = energyComponentsMapInKj // evaluated lazily
+        val componentMap = energyComponentsMapKj // evaluated lazily
 
         // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
         val totalEnergy = calculateMacroEnergy()

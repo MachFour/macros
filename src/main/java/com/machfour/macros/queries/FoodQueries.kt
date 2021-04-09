@@ -19,9 +19,21 @@ object FoodQueries {
         , FoodTable.EXTRA_DESC
     )
 
-    fun foodSearch(ds: MacrosDataSource, keywords: List<String>): Set<Long> {
-        return keywords.map { foodSearch(ds, it) }.flatten().toSet()
+    // returns results matching either all or any of the keywords
+    fun foodSearch(ds: MacrosDataSource, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
+        return if (keywords.isEmpty()) {
+            emptySet()
+        } else {
+            val resultsByKeyword = keywords.map { foodSearch(ds, it) }
+            val combineOp: (Set<Long>, Set<Long>) -> Set<Long> = if (matchAll) {
+                { s, t -> s.intersect(t) }
+            } else {
+                { s, t -> s.union(t) }
+            }
+            resultsByKeyword.reduce(combineOp)
+        }
     }
+
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
     // empty list will be returned if keyword is empty string
     // If keyword is only 1 or 2 chars, search only by exact match and index name prefix
@@ -104,8 +116,7 @@ object FoodQueries {
     }
 
     // The proper way to get all foods
-    @Throws(SQLException::class)
-    fun getAllFoods(ds: MacrosDataSource): List<Food> {
+    fun getAllFoodsMap(ds: MacrosDataSource): Map<Long, Food> {
         val allFoods = Queries.getAllRawObjects(ds, Food.table)
         val allServings = Queries.getAllRawObjects(ds, Serving.table)
         val allNutrientData = Queries.getAllRawObjects(ds, FoodNutrientValue.table)
@@ -113,7 +124,7 @@ object FoodQueries {
         val allIngredients = Queries.getAllRawObjects(ds, Ingredient.table)
         QueryHelpers.processRawIngredients(ds, allIngredients)
         QueryHelpers.processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
-        return ArrayList(allFoods.values)
+        return allFoods
     }
 
     @Throws(SQLException::class)

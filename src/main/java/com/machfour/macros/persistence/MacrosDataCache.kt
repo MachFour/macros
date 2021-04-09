@@ -10,7 +10,7 @@ import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Serving
-import com.machfour.macros.queries.FoodQueries.getAllFoods
+import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.MealQueries.getMealsById
 import com.machfour.macros.queries.Queries.deleteObject
 import com.machfour.macros.queries.Queries.deleteObjects
@@ -56,19 +56,16 @@ class MacrosDataCache private constructor(private val upstream: MacrosDataSource
         return deleteObjects(upstream, objects)
     }
 
-    @get:Throws(SQLException::class)
-    val allFoods: List<Food>
-        get() {
-            if (foodCache.isEmpty() || allFoodsNeedsRefresh) {
-                val allFoods = getAllFoods(upstream)
-                foodCache.clear()
-                for (f in allFoods) {
-                    foodCache[f.id] = f
-                }
-                allFoodsNeedsRefresh = false
-            }
-            return ArrayList(foodCache.values)
+    @Throws(SQLException::class)
+    fun allFoodsMap(): Map<Long, Food> {
+        if (foodCache.isEmpty() || allFoodsNeedsRefresh) {
+            val foods = FoodQueries.getAllFoodsMap(upstream)
+            foodCache.clear()
+            foodCache.putAll(foods)
+            allFoodsNeedsRefresh = false
         }
+        return foodCache
+    }
 
     @Throws(SQLException::class)
     fun getMealsById(mealIds: List<Long>): Map<Long, Meal> {

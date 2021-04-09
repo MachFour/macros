@@ -21,8 +21,7 @@ internal class CompositeFoodAdapter : TypeAdapter<CompositeFoodSpec>() {
         val ingredients: MutableList<IngredientSpec> = ArrayList()
         reader.beginObject()
         while (reader.hasNext()) {
-            val key = reader.nextName()
-            when (key) {
+            when (reader.nextName()) {
                 "index_name" -> indexName = reader.nextString()
                 "name" -> name = reader.nextString()
                 "variety" -> variety = reader.nextString()

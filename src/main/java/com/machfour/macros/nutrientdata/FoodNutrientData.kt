@@ -1,3 +1,5 @@
+@file:Suppress("EqualsOrHashCode")
+
 package com.machfour.macros.nutrientdata
 
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
@@ -102,10 +104,6 @@ class FoodNutrientData(
 
     override fun equals(other: Any?): Boolean {
         return (other as? FoodNutrientData)?.data?.equals(data) ?: false
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
     }
 
     override fun toString(): String {

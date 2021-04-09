@@ -37,10 +37,6 @@ abstract class BaseTable<M>(
         val tmpFkColumns = ArrayList<Column.Fk<M, *, *>>(2)
 
         for (c in cols) {
-            // This package only uses ColumnImpl objects so we're good
-            require(c is ColumnImpl<*, *>)
-            (c as ColumnImpl<M, *>).table = this
-
             tmpColumnsByName[c.sqlName] = c
             if (c.isInSecondaryKey) {
                 tmpSecondaryKeyCols.add(c)
@@ -59,7 +55,18 @@ abstract class BaseTable<M>(
         this.secondaryKeyCols = tmpSecondaryKeyCols // unmodifiable
         this.fkColumns = tmpFkColumns // unmodifiable
         this.naturalKeyColumn = naturalKeyColumn
+
+        initTableCols()
     }
 
-
+    // make separate method to avoid leaking 'this' in constructor
+    private fun initTableCols() {
+        // This package only uses ColumnImpl objects so we're good
+        for (c in columns) {
+            when (c) {
+                is ColumnImpl<M, *> -> c.table = this
+                else -> assert(false) { "Columns must be of ColumnImpl type" }
+            }
+        }
+    }
 }

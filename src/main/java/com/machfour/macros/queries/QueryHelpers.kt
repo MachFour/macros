@@ -8,12 +8,18 @@ import com.machfour.macros.queries.FoodQueries.getAllFoodCategories
 import com.machfour.macros.queries.FoodQueries.getFoodsById
 import com.machfour.macros.queries.FoodQueries.getServingsById
 import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.queries.Queries.selectColumnMap
 import java.sql.SQLException
 
 internal object QueryHelpers {
     @Throws(SQLException::class)
     internal fun <M, J> getIdsFromKeys(ds: MacrosDataSource, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
-        return if (keys.isEmpty()) emptyMap() else Queries.getIdsByKeys(ds, t, keyCol, keys)
+        return if (keys.isNotEmpty()) {
+            // The resulting map is unordered
+            selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }
+        } else {
+            emptyMap()
+        }
     }
 
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
@@ -24,19 +30,8 @@ internal object QueryHelpers {
     }
 
     @Throws(SQLException::class)
-    internal fun <M> getRawObjectById(ds: MacrosDataSource, t: Table<M>, id: Long): M? {
-        return getRawObjectByKey(ds, t, t.idColumn, id)
-    }
-
-    @Throws(SQLException::class)
     internal fun <M> getRawObjectsByIds(ds: MacrosDataSource, t: Table<M>, ids: Collection<Long>): Map<Long, M> {
         return Queries.getRawObjectsByKeys(ds, t, t.idColumn, ids)
-    }
-
-    @Throws(SQLException::class)
-    internal fun <M, J> getRawObjectByKey(ds: MacrosDataSource, t: Table<M>, keyCol: Column<M, J>, key: J): M? {
-        val returned = Queries.getRawObjectsByKeys(ds, t, keyCol, listOf(key))
-        return returned.getOrDefault(key, null)
     }
 
     @Throws(SQLException::class)

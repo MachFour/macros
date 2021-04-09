@@ -24,7 +24,7 @@ class LinuxConfig : MacrosConfig {
 
         private val LIB_DIR = joinPath(PROJECT_DIR, "libs")
 
-        val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so"
+        const val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so"
 
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR
 

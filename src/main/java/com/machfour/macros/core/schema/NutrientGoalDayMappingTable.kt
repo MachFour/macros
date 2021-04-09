@@ -5,7 +5,6 @@ import com.machfour.macros.core.Column
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.entities.*
 import com.machfour.macros.util.DateStamp
-import java.time.Instant
 
 class NutrientGoalDayMappingTable private constructor()
     : BaseTable<NutrientGoalDayMapping>(TABLE_NAME, NutrientGoalDayMapping.factory, COLUMNS) {

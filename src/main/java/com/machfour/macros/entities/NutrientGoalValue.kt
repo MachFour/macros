@@ -3,7 +3,6 @@ package com.machfour.macros.entities
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.NutrientGoalValueTable
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.util.DateStamp
 
 class NutrientGoalValue internal constructor(
     data: ColumnData<NutrientGoalValue>,

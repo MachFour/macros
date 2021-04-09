@@ -15,7 +15,7 @@ import java.sql.SQLException
 
 class FoodTestForProfiling {
     companion object {
-        private val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
+        private const val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
         private lateinit var db: LinuxDatabase
         private lateinit var foodDc: ColumnData<Food>
         private var testFood: Food? = null

@@ -10,7 +10,6 @@ import com.machfour.macros.entities.inbuilt.Nutrients.ENERGY
 import com.machfour.macros.entities.inbuilt.Nutrients.FAT
 import com.machfour.macros.entities.inbuilt.Nutrients.PROTEIN
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.entities.NutrientGoalValue
 import com.machfour.macros.entities.inbuilt.Nutrients.FIBRE
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.entities.NutrientGoal

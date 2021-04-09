@@ -1,3 +1,5 @@
+@file:Suppress("EqualsOrHashCode")
+
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
@@ -73,10 +75,6 @@ class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSour
         return other is Meal && super.equals(other)
     }
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
-
     fun getFoodPortions(): List<FoodPortion> {
         return ArrayList(foodPortions)
     }
@@ -89,7 +87,8 @@ class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSour
 
     internal fun removeFoodPortion(fp: FoodPortion) {
         val index = foodPortions.indexOf(fp)
-        require(index != -1) { "removeFoodPortion(): FoodPortion (id = ${fp.id}) not found in meal ${id}" }
+        require(index != -1) {
+            "removeFoodPortion(): FoodPortion (id = ${fp.id}) not found in meal $name (id = $id)" }
         foodPortions.removeAt(index)
     }
 

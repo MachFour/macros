@@ -12,7 +12,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     private val foodIdCol: Column.Fk<M, Long, Food>,
     private val servingIdCol: Column.Fk<M, Long, Serving>,
     private val quantityCol: Column<M, Double>,
-    private val quantityUnitCol: Column<M, String>,
+    /* private val */ quantityUnitCol: Column<M, String>,
     private val notesCol: Column<M, String>,
     private val maxNutrientVersionCol: Column<M, Int>
 )

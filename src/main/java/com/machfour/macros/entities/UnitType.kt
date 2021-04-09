@@ -23,7 +23,7 @@ enum class UnitType(val id: Int, val niceName: String) {
         }
 
         fun asFlags(types: Set<UnitType>) : Int {
-            return types.map { it.id }.sum()
+            return types.sumOf { it.id }
         }
     }
 

@@ -29,7 +29,7 @@ object ArgParsing {
         val detectedIndex = flagIndex + 1
         return when {
             // indexOf returned -1
-            detectedIndex == 0 -> Result.ArgNotFound()
+            detectedIndex == 0 -> Result.ArgNotFound
             detectedIndex >= args.size -> Result.ValNotFound(flagIndex, flag)
             else -> Result.KeyValFound(detectedIndex, flag, args[detectedIndex])
         }
@@ -42,7 +42,7 @@ object ArgParsing {
             Result.ArgFound(argIdx, args[argIdx])
         } else {
             // info not provided, so return NOT_FOUND
-            Result.ArgNotFound()
+            Result.ArgNotFound
         }
     }
 
@@ -65,16 +65,10 @@ object ArgParsing {
         return null
     }
 
-    enum class Status {
-        ARG_FOUND,  // arg was found either by index or after flag
-        NOT_FOUND,  // arg not found by index (out of range) or flag not present
-        OPT_ARG_MISSING // flag found but no corresponding argument (out of range)
-    }
-
     // represents result of parsed argument from command line
     sealed class Result {
         class ArgFound(val index: Int, val flag: String): Result()
-        class ArgNotFound: Result()
+        object ArgNotFound : Result()
         class KeyValFound(val argIndex: Int, val flag: String, val argument: String): Result()
         // for flags with extra arguments; when the flag is found but there is no extra arg
         class ValNotFound(val flagIndex: Int, val flag: String) : Result()

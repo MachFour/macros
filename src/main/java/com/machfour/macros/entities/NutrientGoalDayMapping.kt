@@ -1,11 +1,8 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.schema.AttrMappingTable
 import com.machfour.macros.core.schema.NutrientGoalDayMappingTable
-import com.machfour.macros.core.schema.NutrientGoalTable
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.nutrientdata.GenericNutrientData
 import com.machfour.macros.util.DateStamp
 
 

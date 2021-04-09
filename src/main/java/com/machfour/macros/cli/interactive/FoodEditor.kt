@@ -219,7 +219,7 @@ class FoodEditor constructor(
     @Throws(IOException::class)
     private fun processEnter() {
         if (isEditing) {
-            stepField(true, true)
+            stepField(forward = true, save = true)
         } else {
             // else we're choosing an action, so start it
             when (currentAction) {

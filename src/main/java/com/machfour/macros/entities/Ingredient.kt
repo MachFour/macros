@@ -1,3 +1,5 @@
+@file:Suppress("EqualsOrHashCode")
+
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
@@ -45,10 +47,6 @@ class Ingredient internal constructor(data: ColumnData<Ingredient>, objectSource
     // the only thing that it misses out is checking that o is actually an instance of the subclass.
     override fun equals(other: Any?): Boolean {
         return other is Ingredient && super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
     }
 
     fun initCompositeFood(f: Food) {

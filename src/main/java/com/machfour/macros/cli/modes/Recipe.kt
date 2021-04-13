@@ -27,7 +27,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             return -1
         }
 
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         val recipes = ArrayList<CompositeFood>()
 
         try {

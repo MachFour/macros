@@ -1,9 +1,13 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
+import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 
@@ -59,7 +63,29 @@ class MealSpec {
         dayArg: ArgParsing.Result.KeyValFound
     ) : this(nameArg.argument, dayArg.argument)
 
-    fun process(ds: MacrosDataSource, create: Boolean) {
+    @Throws(SQLException::class)
+    private fun getOrCreateMeal(ds: MacrosDatabase, day: DateStamp, name: String): Meal {
+        // if it already exists return it
+        val matchingMeal = MealQueries.getMealForDayWithName(ds, day, name)
+        if (matchingMeal != null) {
+            return matchingMeal
+        }
+
+        // else create a new meal, save and return it
+        val newMeal = ColumnData(Meal.table).run {
+            put(MealTable.DAY, day)
+            put(MealTable.NAME, name)
+            Meal.factory.construct(this, ObjectSource.USER_NEW)
+        }
+
+        WriteQueries.saveObject(ds, newMeal)
+        // get it back again, so that it has an ID and stuff
+        val newlySavedMeal = MealQueries.getMealForDayWithName(ds, day, name)
+        check(newlySavedMeal != null) { "Couldn't find newly saved meal in day $day" }
+        return newlySavedMeal
+    }
+
+    fun process(ds: MacrosDatabase, create: Boolean) {
         if (processed || error != null) {
             // skip processing if there are already errors
             return
@@ -92,7 +118,7 @@ class MealSpec {
         } else {
             // if a name was given, try to find a matching meal with that name
             // name cannot be null since it is implied by isMealSpecified
-            val nameMatch = MealQueries.searchForName(mealsForDay, name!!)
+            val nameMatch = mealsForDay.searchForName(name!!)
             when {
                 nameMatch != null -> {
                     processedObject = nameMatch
@@ -100,7 +126,7 @@ class MealSpec {
                 }
                 create -> {
                     try {
-                        processedObject = MealQueries.getOrCreateMeal(ds, day, name)
+                        processedObject = getOrCreateMeal(ds, day, name)
                         isCreated = true
                     } catch (e: SQLException) {
                         error = "Error retrieving meal: " + e.message
@@ -154,6 +180,10 @@ class MealSpec {
                     MealSpec(nameArg, dayArg)
                 }
             }
+        }
+
+        fun Map<Long, Meal>.searchForName(name: String): Meal? {
+            return values.firstOrNull { it.name == name }
         }
     }
 }

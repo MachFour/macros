@@ -2,7 +2,7 @@ package com.machfour.macros.persistence
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.datatype.TypeCastException
-import com.machfour.macros.queries.Queries
+import com.machfour.macros.queries.WriteQueries
 import java.io.IOException
 import java.io.PrintStream
 import java.io.Reader
@@ -39,8 +39,8 @@ object CsvRestore {
     }
 
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    fun <M : MacrosEntity<M>> restoreTable(db: MacrosDataSource, t: Table<M>, csvData: Reader, out: PrintStream) {
+    fun <M : MacrosEntity<M>> restoreTable(db: MacrosDatabase, t: Table<M>, csvData: Reader, out: PrintStream) {
         val objects = buildObjectsForRestore(t, csvData, out)
-        Queries.saveObjects(db, objects, ObjectSource.RESTORE)
+        WriteQueries.saveObjects(db, objects, ObjectSource.RESTORE)
     }
 }

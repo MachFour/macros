@@ -7,11 +7,12 @@ import com.machfour.macros.cli.utils.MealPrinter.printMeal
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
-import com.machfour.macros.queries.MealQueries.saveFoodPortions
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.util.FoodPortionSpec
 import java.io.PrintStream
 import java.sql.SQLException
@@ -21,7 +22,16 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         private const val NAME = "portion"
         private const val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
 
-        fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, ds: MacrosDataSource, out: PrintStream, err: PrintStream): Int {
+        @Throws(SQLException::class)
+        private fun saveFoodPortions(ds: MacrosDatabase, meal: Meal) {
+            for (fp in meal.getFoodPortions()) {
+                if (fp.objectSource != ObjectSource.DATABASE) {
+                    WriteQueries.saveObject(ds, fp)
+                }
+            }
+        }
+
+        fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, ds: MacrosDatabase, out: PrintStream, err: PrintStream): Int {
             if (specs.isEmpty()) {
                 out.println("No food portions specified, nothing to do")
                 return 0
@@ -61,7 +71,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         // MealSpec mealSpec = MealSpec.makeMealSpec(args);
 
         // TODO use argParsing here

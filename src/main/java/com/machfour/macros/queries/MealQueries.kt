@@ -1,90 +1,40 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.MealTable
+import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.FoodQueries.getFoodsById
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
 
 object MealQueries {
-    @Throws(SQLException::class)
-    fun saveFoodPortions(ds: MacrosDataSource, m: Meal) {
-        for (fp in m.getFoodPortions()) {
-            if (fp.objectSource != ObjectSource.DATABASE) {
-                Queries.saveObject(ds, fp)
-            }
-        }
-    }
-
-    // only used by mealquery - this isn't a great function
-    @Throws(SQLException::class)
-    internal fun getOrCreateMeal(ds: MacrosDataSource, day: DateStamp, name: String): Meal {
-        // if it already exists return it
-        val matchingMeal = getMealsForDayWithName(ds, day, name).firstOrNull()
-        if (matchingMeal != null) {
-            return matchingMeal
-        }
-
-        // else create a new meal, save and return it
-        val newMeal = ColumnData(Meal.table).run {
-            put(MealTable.DAY, day)
-            put(MealTable.NAME, name)
-            Meal.factory.construct(this, ObjectSource.USER_NEW)
-        }
-        
-        Queries.saveObject(ds, newMeal)
-        // get it back again, so that it has an ID and stuff
-        val newlySavedMeal = getMealsForDayWithName(ds, day, name).firstOrNull()
-        check(newlySavedMeal != null) { "Couldn't find newly saved meal in day $day" }
-        return newlySavedMeal
-    }
-
-    // finds whether there is a 'current meal', and returns it if so.
-    // defined as the most recently modified meal created for the current date
-    // if no meals exist for the current date, returns null
-    @Throws(SQLException::class)
-    fun getCurrentMeal(ds: MacrosDataSource): Meal? {
-        return getMealsForDay(ds, currentDate()).values.maxByOrNull { it.startTime }
-    }
 
     @Throws(SQLException::class)
-    fun getMealsForDay(ds: MacrosDataSource, day: DateStamp): Map<Long, Meal> {
+    fun getMealsForDay(ds: MacrosDatabase, day: DateStamp): Map<Long, Meal> {
         val mealIds = getMealIdsForDay(ds, day)
         return getMealsById(ds, mealIds)
     }
 
+    // assumes unique meal name per day
     @Throws(SQLException::class)
-    fun getMealsForDayWithName(ds: MacrosDataSource, day: DateStamp, name: String): Collection<Meal> {
+    fun getMealForDayWithName(ds: MacrosDatabase, day: DateStamp, name: String): Meal? {
         val mealIds = getMealIdsForDay(ds, day)
-        return getMealsById(ds, mealIds).filter { it.value.name == name }.values
+        return getMealsById(ds, mealIds).filter { it.value.name == name }.values.firstOrNull()
     }
 
-
     @Throws(SQLException::class)
-    fun getMealIdsForDay(ds: MacrosDataSource, day: DateStamp): List<Long> {
-        val ids = Queries.selectSingleColumn(ds, MealTable.instance, MealTable.ID) {
+    fun getMealIdsForDay(ds: MacrosDatabase, day: DateStamp): List<Long> {
+        val ids = CoreQueries.selectSingleColumn(ds, MealTable.instance, MealTable.ID) {
             where(MealTable.DAY, listOf(day))
         }
         return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
-
-        // TODO: need "DATE(" + Meal.Column.DAY + ") = DATE ( ? )"; ???
     }
 
-    /* The get<Object>By(Id|Key) functions construct objects for all necessary entities that match the query,
-     * as well as all other entities referenced by them.
-     * For example, getMealsForDay constructs all of the MealTable objects for one particular day,
-     * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
-     * It's probably worth caching the results of these!
-     */
     @Throws(SQLException::class)
-    fun getMealById(ds: MacrosDataSource, id: Long): Meal? {
+    fun getMealById(ds: MacrosDatabase, id: Long): Meal? {
         val resultMeals = getMealsById(ds, listOf(id))
         return resultMeals.getOrDefault(id, null)
     }
@@ -94,44 +44,82 @@ object MealQueries {
     // it will be garbage collected.
     // newMeal will have the newly constructed object (with the correct ID) added.
     // if the food portion already belongs to newMeal, nothing is done
+    //@Throws(SQLException::class)
+    //fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
+    //    if (fp.meal != newMeal) {
+    //        val editedFp = MacrosBuilder(fp).run {
+    //            setField(FoodPortionTable.MEAL_ID, newMeal.id)
+    //            build()
+    //        }
+    //        WriteQueries.saveObject(ds, editedFp)
+    //        val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
+
+    //        assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
+    //        processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
+
+    //        fp.removeFromMeal()
+    //    }
+    //}
+
     @Throws(SQLException::class)
-    fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
-        if (fp.meal != newMeal) {
-            val editedFp = MacrosBuilder(fp).run {
-                setField(FoodPortionTable.MEAL_ID, newMeal.id)
-                build()
-            }
-            Queries.saveObject(ds, editedFp)
-            val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
-
-            assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
-            QueryHelpers.processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
-
-            fp.removeFromMeal()
+    private fun getRawFoodPortionsForMeal(ds: MacrosDatabase, meal: Meal): Map<Long, FoodPortion> {
+        val fpIds = CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.ID) {
+            where(FoodPortionTable.MEAL_ID, listOf(meal.id))
+            distinct()
+        }
+        return if (fpIds.isNotEmpty()) {
+            RawEntityQueries.getRawObjectsByIds(ds, FoodPortion.table, fpIds)
+        } else {
+            emptyMap()
         }
     }
 
     @Throws(SQLException::class)
-    fun getMealsById(ds: MacrosDataSource, mealIds: Collection<Long>): Map<Long, Meal> {
+    private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, foodMap: Map<Long, Food>) {
+        // sort by create time - but if adding to existing meals, they are added to the end
+        val fpList = fpMap.values.toList().sortedBy { it.createTime }
+        for (fp in fpList) {
+            val portionFood = foodMap[fp.foodId]
+            require(portionFood != null) { "foodMap did not contain food with ID ${fp.foodId}" }
+            fp.initFoodAndNd(portionFood)
+            fp.servingId?.let {
+                val serving = portionFood.getServingById(it)
+                checkNotNull(serving) { "Serving specified by FoodPortion not found in its food!" }
+                fp.initServing(serving)
+            }
+            fp.initMeal(meal)
+            meal.addFoodPortion(fp)
+        }
+    }
+
+    /* The getXXXBy(Id|Key) functions construct objects for all necessary entities that match the query,
+     * as well as all other entities referenced by them.
+     * For example, getMealsForDay constructs all of the MealTable objects for one particular day,
+     * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
+     * It's probably worth caching the results of these!
+     */
+    @Throws(SQLException::class)
+    fun getMealsById(ds: MacrosDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
         if (mealIds.isEmpty()) {
             return emptyMap()
         }
+        // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
+        // all meals will be returned.
+        val meals = RawEntityQueries.getRawObjectsByKeys(ds, Meal.table, MealTable.ID, mealIds)
         val foodIds = getFoodIdsForMeals(ds, mealIds)
-        val meals = QueryHelpers.getRawMealsById(ds, mealIds)
-        // this check stops an unnecessary lookup of all foods, which happens if no IDs are passed
-        // into getFoodsById;
         if (foodIds.isNotEmpty()) {
             val foodMap = getFoodsById(ds, foodIds)
             for (meal in meals.values) {
-                QueryHelpers.applyFoodPortionsToRawMeal(ds, meal, foodMap)
+                val foodPortionMap = getRawFoodPortionsForMeal(ds, meal)
+                processRawFoodPortions(meal, foodPortionMap, foodMap)
             }
         }
         return meals
     }
 
     @Throws(SQLException::class)
-    fun getFoodIdsForMeals(ds: MacrosDataSource, mealIds: Collection<Long>): List<Long> {
-        val ids = Queries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
+    private fun getFoodIdsForMeals(ds: MacrosDatabase, mealIds: Collection<Long>): List<Long> {
+        val ids = CoreQueries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
             where(FoodPortionTable.MEAL_ID, mealIds)
             distinct()
         }
@@ -140,14 +128,17 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getMealIdsForFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        return Queries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.MEAL_ID) {
+    fun getMealIdsForFoodIds(ds: MacrosDatabase, foodIds: Collection<Long>): List<Long> {
+        return CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.MEAL_ID) {
             where(FoodPortionTable.FOOD_ID, foodIds)
             distinct()
         }
     }
 
-    fun searchForName(mealMap: Map<Long, Meal>, name: String): Meal? {
-        return mealMap.values.firstOrNull { it.name == name }
+    @Throws(SQLException::class)
+    fun getDaysForMealIds(ds: MacrosDatabase, mealIds: Collection<Long>): List<DateStamp> {
+        return CoreQueries.selectNonNullColumn(ds, Meal.table, MealTable.DAY) {
+            where(MealTable.ID, mealIds)
+        }
     }
 }

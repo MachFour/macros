@@ -11,8 +11,8 @@ import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
-import com.machfour.macros.queries.Queries
-import com.machfour.macros.queries.Queries.saveObjects
+import com.machfour.macros.queries.CoreQueries
+import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.Pair
 import com.machfour.macros.validation.SchemaViolation
@@ -109,7 +109,7 @@ object CsvImport {
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    private fun makeIngredients(ingredientCsv: Reader, ds: MacrosDataSource): Map<String, MutableList<Ingredient>> {
+    private fun makeIngredients(ingredientCsv: Reader, ds: MacrosDatabase): Map<String, MutableList<Ingredient>> {
         val data: MutableMap<String, MutableList<Ingredient>> = HashMap()
         try {
             getMapReader(ingredientCsv).use { mapReader ->
@@ -239,17 +239,17 @@ object CsvImport {
     }
 
     @Throws(SQLException::class)
-    private fun findExistingFoodIndexNames(ds: MacrosDataSource, indexNames: Collection<String>): Set<String> {
-        val queryResult = Queries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
+    private fun findExistingFoodIndexNames(ds: MacrosDatabase, indexNames: Collection<String>): Set<String> {
+        val queryResult = CoreQueries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
             where(FoodTable.INDEX_NAME, indexNames, iterate = true)
-            distinct(false)
+            distinct()
         }
         return queryResult.map { requireNotNull(it) { "Null food index name encountered: $it" } }.toSet()
     }
 
     // foods maps from index name to food object. Food object must have nutrition data attached
     @Throws(SQLException::class)
-    private fun saveImportedFoods(ds: MacrosDataSource, foods: Map<String, Food>) {
+    private fun saveImportedFoods(ds: MacrosDatabase, foods: Map<String, Food>) {
         // collect all of the index names to be imported, and check if they're already in the DB.
         val existingIndexNames = findExistingFoodIndexNames(ds, foods.keys)
         // remove entries corresponding to existing foods; this actually modifies the original map
@@ -278,27 +278,27 @@ object CsvImport {
             println("The following foods will be imported; others had index names already present in the database:")
             foodsToSave.keys.forEach { println(it) }
         }
-        saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
+        WriteQueries.saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
         val completedNv = completeForeignKeys(ds, nvObjects, FoodNutrientValueTable.FOOD_ID)
-        saveObjects(ds, completedNv, ObjectSource.IMPORT)
+        WriteQueries.saveObjects(ds, completedNv, ObjectSource.IMPORT)
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importFoodData(ds: MacrosDataSource, foodCsv: Reader, allowOverwrite: Boolean) {
+    fun importFoodData(ds: MacrosDatabase, foodCsv: Reader, allowOverwrite: Boolean) {
         val csvFoods = buildFoodObjectTree(foodCsv)
         saveImportedFoods(ds, csvFoods)
     }
 
     // TODO detect existing servings
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importServings(ds: MacrosDataSource, servingCsv: Reader, allowOverwrite: Boolean) {
+    fun importServings(ds: MacrosDatabase, servingCsv: Reader, allowOverwrite: Boolean) {
         val csvServings = buildServings(servingCsv)
         val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
-        saveObjects(ds, completedServings, ObjectSource.IMPORT)
+        WriteQueries.saveObjects(ds, completedServings, ObjectSource.IMPORT)
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importRecipes(ds: MacrosDataSource, recipeCsv: Reader, ingredientCsv: Reader) {
+    fun importRecipes(ds: MacrosDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
         val ingredientsByRecipe : Map<String, MutableList<Ingredient>> = makeIngredients(ingredientCsv, ds)
         val csvRecipes : Map<String, CompositeFood> = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe)
         //val duplicateRecipes : Set<String> = findExistingFoodIndexNames(csvRecipes.keys, ds)
@@ -310,6 +310,6 @@ object CsvImport {
         val allIngredients: List<Ingredient> = ingredientsByRecipe.flatMap { it.value }
 
         val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
-        saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
+        WriteQueries.saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
     }
 }

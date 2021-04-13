@@ -1,63 +1,70 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.*
-import com.machfour.macros.sql.*
-import java.io.IOException
+import com.machfour.macros.core.Column
+import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.Table
+import com.machfour.macros.sql.AllColumnSelect
+import com.machfour.macros.sql.MultiColumnSelect
+import com.machfour.macros.sql.SingleColumnSelect
+import com.machfour.macros.sql.TwoColumnSelect
 import java.sql.SQLException
 
-abstract class MacrosDatabase : MacrosDataSource {
-    // caller-managed connection, useful to reduce number of calls to DB
-    // caller needs to call closeConnection() after. Use with begin and end transaction
+interface MacrosDatabase {
+    // Used to create a persistent connection that lasts across calls to the DB.
+    // Caller MUST call closeConnection in a finally block
     @Throws(SQLException::class)
-    abstract override fun openConnection()
+    fun openConnection()
 
     @Throws(SQLException::class)
-    abstract override fun closeConnection()
+    fun closeConnection()
 
     // By default, database functions will autocommit.
     // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
     @Throws(SQLException::class)
-    abstract override fun beginTransaction()
+    fun beginTransaction()
 
     @Throws(SQLException::class)
-    abstract override fun endTransaction()
-
-    @Throws(SQLException::class, IOException::class)
-    abstract fun initDb(config: SqlConfig)
+    fun endTransaction()
 
     @Throws(SQLException::class)
-    abstract fun execRawSQLString(sql: String)
+    fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
     @Throws(SQLException::class)
-    abstract override fun <M> deleteById(t: Table<M>, id: Long): Int
+    fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I>
 
     @Throws(SQLException::class)
-    abstract override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
+    fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SQLException::class)
-    abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
+    fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>>
+    fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>>
+    fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
 
+    // TODO replace with delete template
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Throws(SQLException::class)
-    abstract override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
+    fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
+
+    // TODO replace with delete template
+    // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
+    @Throws(SQLException::class)
+    fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
+
+    // TODO replace with delete template
+    @Throws(SQLException::class)
+    fun <M> deleteById(t: Table<M>, id: Long): Int
+
+    // TODO replace with delete template
+    @Throws(SQLException::class)
+    fun <M> clearTable(t: Table<M>): Int
 
     @Throws(SQLException::class)
-    abstract override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
+    fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
 
-    @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
-
-    // Note that if the id is not found in the database, nothing will be inserted
-    @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
-
-    @Throws(SQLException::class)
-    abstract override fun <M> clearTable(t: Table<M>): Int
 }

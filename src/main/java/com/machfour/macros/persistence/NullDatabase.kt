@@ -10,7 +10,7 @@ import com.machfour.macros.sql.SingleColumnSelect
 import com.machfour.macros.sql.TwoColumnSelect
 
 // Implementation of MacrosDataSource for testing which does nothing and returns empty data
-class NullDataSource: MacrosDataSource {
+class NullDatabase: MacrosDatabase {
     override fun openConnection() {}
 
     override fun closeConnection() {}
@@ -20,6 +20,10 @@ class NullDataSource: MacrosDataSource {
     override fun endTransaction() {}
 
     override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
+        return emptyList()
+    }
+
+    override fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
         return emptyList()
     }
 

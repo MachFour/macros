@@ -1,7 +1,7 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.persistence.MacrosDatabaseImpl
 import com.machfour.macros.sql.SqlConfig
 import java.io.BufferedReader
 import java.io.PrintStream
@@ -23,8 +23,8 @@ interface MacrosConfig {
 
     val sqlConfig: SqlConfig
 
-    // for not-usual operations on the database
     val databaseInstance: MacrosDatabase
-    val dataSourceInstance: MacrosDataSource
+    // for not-usual operations on the database
+    val databaseImplInstance: MacrosDatabaseImpl
 
 }

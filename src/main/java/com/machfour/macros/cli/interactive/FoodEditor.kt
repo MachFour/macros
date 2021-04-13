@@ -18,8 +18,8 @@ import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.queries.FkCompletion
-import com.machfour.macros.queries.Queries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.validation.ValidationError
 
@@ -29,7 +29,7 @@ import java.sql.SQLException
 // TODO servings?
 class FoodEditor constructor(
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
-    private val ds: MacrosDataSource,
+    private val ds: MacrosDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
     private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
     private val colStrings: ColumnStrings = DefaultColumnStrings.instance,
@@ -583,12 +583,12 @@ class FoodEditor constructor(
                     // gotta do it in one go
                     ds.openConnection()
                     ds.beginTransaction()
-                    Queries.saveObject(ds, f)
+                    WriteQueries.saveObject(ds, f)
 
                     // get the food ID into the FOOD_ID field of the NutrientValues
                     val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, FoodNutrientValueTable.FOOD_ID)
 
-                    Queries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
+                    WriteQueries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
                     ds.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
                 } finally {

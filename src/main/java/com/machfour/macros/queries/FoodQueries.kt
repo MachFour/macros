@@ -1,102 +1,97 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.schema.FoodPortionTable
-import com.machfour.macros.core.schema.FoodTable
-import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.core.schema.*
 import com.machfour.macros.entities.*
 import com.machfour.macros.persistence.DatabaseUtils.makeIdMap
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.RawEntityQueries.getAllRawObjects
+import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByIds
+import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByKeys
+import com.machfour.macros.queries.RawEntityQueries.getRawObjectsForParentFk
+import com.machfour.macros.util.intersectAllOrNull
+import com.machfour.macros.util.unionAllOrNull
 import java.sql.SQLException
 
 object FoodQueries {
 
     // excluding index name
-    val foodSearchColumns = listOf(
+    private val foodSearchCols = listOf(
           FoodTable.NAME
         , FoodTable.VARIETY
         , FoodTable.BRAND
         , FoodTable.EXTRA_DESC
     )
 
+    // TODO
+    //  - be adaptive - if there only few results, add more results from less selective searches
+    //  e.g. not just prefix searches as strings get longer
     // returns results matching either all or any of the keywords
-    fun foodSearch(ds: MacrosDataSource, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
-        return if (keywords.isEmpty()) {
-            emptySet()
-        } else {
-            val resultsByKeyword = keywords.map { foodSearch(ds, it) }
-            val combineOp: (Set<Long>, Set<Long>) -> Set<Long> = if (matchAll) {
-                { s, t -> s.intersect(t) }
+    @Throws(SQLException::class)
+    fun foodSearch(ds: MacrosDatabase, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
+        return keywords.map { foodSearch(ds, it) }.let {
+            // map will be empty if keywords is empty
+            if (matchAll) {
+                it.intersectAllOrNull()
             } else {
-                { s, t -> s.union(t) }
+                it.unionAllOrNull()
             }
-            resultsByKeyword.reduce(combineOp)
-        }
+        } ?: emptySet()
     }
 
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
     // empty list will be returned if keyword is empty string
     // If keyword is only 1 or 2 chars, search only by exact match and index name prefix
     // exact matches will come first, followed by prefix results, followed by matches on substrings of index names
-    // TODO check for recent FoodQuantities entered, and use the frecencies to sort the list
-    //  order: exact match, most frecent, other results
-    //  also be adaptive - if there only few results, add more results from less selective searches
+    // TODO
+    //  - provide simple control of how exhaustive the search is
+    //  - most exhaustive search: substring search of all columns
+    //  - be adaptive - if there only few results, add more results from less selective searches
     //  e.g. not just prefix searches as strings get longer
     @Throws(SQLException::class)
-    fun foodSearch(ds: MacrosDataSource, keyword: String): Set<Long> {
+    fun foodSearch(ds: MacrosDatabase, keyword: String): Set<Long> {
         if (keyword.isEmpty()) {
             return emptySet()
         }
 
         val indexNameCol = listOf(FoodTable.INDEX_NAME)
-        val foodTable = Food.table
+        val table = Food.table
 
         val results = LinkedHashSet<Long>()
-        results.addAll(
+        with (results) {
             // add exact matches on index name
-            Queries.exactStringSearch(ds, foodTable, indexNameCol, keyword).toSet()
-        )
-        results.addAll(
+            addAll(CoreQueries.exactStringSearch(ds, table, indexNameCol, keyword).toSet())
             // add exact matches on any other column
-            Queries.exactStringSearch(ds, foodTable, foodSearchColumns, keyword).toSet()
-        )
+            addAll(CoreQueries.exactStringSearch(ds, table, foodSearchCols, keyword).toSet())
 
-        if (keyword.length <= 2) {
-            results.addAll(
+            if (keyword.length <= 2) {
                 // just match prefix of index name
-                Queries.prefixSearch(ds, foodTable, indexNameCol, keyword)
-            )
-        } else {
-            results.addAll(
+                addAll(CoreQueries.prefixSearch(ds, table, indexNameCol, keyword))
+            } else {
                 // match any column prefix
-                Queries.prefixSearch(ds, foodTable, foodSearchColumns, keyword)
-            )
-            results.addAll(
+                addAll(CoreQueries.prefixSearch(ds, table, foodSearchCols, keyword))
                 // match anywhere in index name
-                Queries.substringSearch(ds, foodTable, indexNameCol, keyword)
-            )
+                addAll(CoreQueries.substringSearch(ds, table, indexNameCol, keyword))
+            }
         }
         return results
 
     }
 
     @Throws(SQLException::class)
-    fun getAllFoodCategories(ds: MacrosDataSource): Map<String, FoodCategory> {
-        val categoriesById = Queries.getAllRawObjects(ds, FoodCategory.table)
+    fun getAllFoodCategories(ds: MacrosDatabase): Map<String, FoodCategory> {
+        val categoriesById = getAllRawObjects(ds, FoodCategory.table)
         // change the map to have keys as category names
-        return categoriesById.mapKeys { idMapping : Map.Entry<Long, FoodCategory> ->
-            idMapping.value.name
-        }
+        return categoriesById.mapKeys { it.value.name }
     }
 
     @Throws(SQLException::class)
-    fun getFoodByIndexName(ds: MacrosDataSource, indexName: String): Food? {
+    fun getFoodByIndexName(ds: MacrosDatabase, indexName: String): Food? {
         val resultFood = getFoodsByIndexName(ds, listOf(indexName))
         return resultFood[indexName]
     }
 
     @Throws(SQLException::class)
-    fun getFoodById(ds: MacrosDataSource, id: Long): Food? {
+    fun getFoodById(ds: MacrosDatabase, id: Long): Food? {
         val resultFood = getFoodsById(ds, listOf(id))
         return resultFood[id]
     }
@@ -104,47 +99,35 @@ object FoodQueries {
     // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
     // items in indexNames that do not correspond to a food, will not appear in the output map
     @Throws(SQLException::class)
-    fun getFoodIdsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Long> {
-        return QueryHelpers.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, indexNames)
+    fun getFoodIdsByIndexName(ds: MacrosDatabase, indexNames: Collection<String>): Map<String, Long> {
+        return CoreQueries.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, indexNames)
     }
     
     @Throws(SQLException::class)
-    fun getFoodIdByIndexName(ds: MacrosDataSource, indexName: String): Long? {
-        val idMap = QueryHelpers.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, listOf(indexName))
+    fun getFoodIdByIndexName(ds: MacrosDatabase, indexName: String): Long? {
+        val idMap = CoreQueries.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, listOf(indexName))
         assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
         return idMap.values.firstOrNull()
     }
 
     // The proper way to get all foods
-    fun getAllFoodsMap(ds: MacrosDataSource): Map<Long, Food> {
-        val allFoods = Queries.getAllRawObjects(ds, Food.table)
-        val allServings = Queries.getAllRawObjects(ds, Serving.table)
-        val allNutrientData = Queries.getAllRawObjects(ds, FoodNutrientValue.table)
+    fun getAllFoodsMap(ds: MacrosDatabase): Map<Long, Food> {
+        val allFoods = getAllRawObjects(ds, Food.table)
+        val allServings = getAllRawObjects(ds, Serving.table)
+        val allNutrientData = getAllRawObjects(ds, FoodNutrientValue.table)
         val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = Queries.getAllRawObjects(ds, Ingredient.table)
-        QueryHelpers.processRawIngredients(ds, allIngredients)
-        QueryHelpers.processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
+        val allIngredients = getAllRawObjects(ds, Ingredient.table)
+        processRawIngredients(ds, allIngredients)
+        processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
         return allFoods
     }
 
     @Throws(SQLException::class)
-    fun forgetFood(ds: MacrosDataSource, f: Food) {
-        require(f.objectSource === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
-        // delete nutrition data, foodQuantities, servings, then food
-
-        // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
-        ds.deleteByColumn(FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
-        ds.deleteByColumn(Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
-        Queries.deleteObject(ds, f)
-    }
-
-
-    @Throws(SQLException::class)
-    fun getFoodsById(ds: MacrosDataSource, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
+    fun getFoodsById(ds: MacrosDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
         // this map is unordered due to order of database results being unpredictable,
         // we can sort it later if necessary
-        val unorderedFoods = QueryHelpers.getRawObjectsByIds(ds, Food.table, foodIds)
-        QueryHelpers.processRawFoodMap(ds, unorderedFoods)
+        val unorderedFoods = getRawObjectsByIds(ds, Food.table, foodIds)
+        processRawFoodMap(ds, unorderedFoods)
         return if (!preserveOrder) {
             unorderedFoods
         } else {
@@ -158,8 +141,8 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getServingsById(ds: MacrosDataSource, servingIds: Collection<Long>): Map<Long, Serving> {
-        return QueryHelpers.getRawObjectsByIds(ds, Serving.table, servingIds)
+    fun getServingsById(ds: MacrosDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
+        return getRawObjectsByIds(ds, Serving.table, servingIds)
     }
 
     /*
@@ -167,29 +150,105 @@ object FoodQueries {
      * Returns a map of index name to food object
      */
     @Throws(SQLException::class)
-    fun getFoodsByIndexName(ds: MacrosDataSource, indexNames: Collection<String>): Map<String, Food> {
-        val foods = Queries.getRawObjectsByKeys(ds, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
+    fun getFoodsByIndexName(ds: MacrosDatabase, indexNames: Collection<String>): Map<String, Food> {
+        val foods = getRawObjectsByKeys(ds, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
-        QueryHelpers.processRawFoodMap(ds, idMap)
+        processRawFoodMap(ds, idMap)
         return foods
     }
 
-    /*
-     * FoodTable search done by substring matching the searchString against any of the given columns
-     * Use prefixOnly to only allow matches at the start of the matching string.
-     */
-    //List<FoodTable> getMatchingFoods(String searchString, String[] columnNames, boolean prefixOnly);
-
-    fun deleteAllCompositeFoods(ds: MacrosDataSource) : Int {
-        return ds.deleteByColumn(Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+    @Throws(SQLException::class)
+    fun getParentFoodIdsContainingFoodIds(ds: MacrosDatabase, foodIds: List<Long>): List<Long> {
+        return CoreQueries.selectNonNullColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
+            where(IngredientTable.FOOD_ID, foodIds)
+            distinct()
+        }
     }
 
     @Throws(SQLException::class)
-    fun getParentFoodIdsContainingFoodIds(ds: MacrosDataSource, foodIds: List<Long>): List<Long> {
-        return Queries.selectNonNullColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
-            where(IngredientTable.FOOD_ID, foodIds)
-            distinct()
+    internal fun processRawIngredients(ds: MacrosDatabase, ingredientMap: Map<Long, Ingredient>) {
+        val foodIds = ArrayList<Long>(ingredientMap.size)
+        val servingIds = ArrayList<Long>(ingredientMap.size)
+        for (i in ingredientMap.values) {
+            foodIds.add(i.foodId)
+            i.servingId?.let { servingIds += it }
+        }
+        // XXX make sure this doesn't loop infinitely if two composite foods contain each other as ingredients
+        // (or potentially via a longer chain -- A contains B, B contains C, C contains A)
+        val ingredientFoods = getFoodsById(ds, foodIds)
+        val ingredientServings = getServingsById(ds, servingIds)
+        for (i in ingredientMap.values) {
+            // applyFoodsToRawIngredients(ingredients, servings
+            val f = ingredientFoods.getValue(i.foodId)
+            i.initFoodAndNd(f)
+            // applyServingsToRawIngredients(ingredients, servings)
+            i.servingId?.let { id ->
+                val s = ingredientServings.getValue(id)
+                i.initServing(s)
+            }
+        }
+    }
+
+    private fun processRawFoodMap(
+        foods: Map<Long, Food>,
+        servings: Map<Long, Serving>,
+        nutrientData: Map<Long, FoodNutrientValue>,
+        ingredients: Map<Long, Ingredient>,
+        categories: Map<String, FoodCategory>
+    ) {
+        applyServingsToRawFoods(foods, servings)
+        applyNutrientValuesToRawFoods(foods, nutrientData)
+        applyIngredientsToRawFoods(foods, ingredients)
+        applyFoodCategoriesToRawFoods(foods, categories)
+    }
+
+    // foodMap is a map of food IDs to the raw (i.e. unlinked) object created from the database
+    @Throws(SQLException::class)
+    private fun processRawFoodMap(ds: MacrosDatabase, foodMap: Map<Long, Food>) {
+        if (foodMap.isNotEmpty()) {
+            //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
+            //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
+            val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, ServingTable.FOOD_ID)
+            val nutrientValues = getRawObjectsForParentFk(ds, foodMap, FoodNutrientValue.table, FoodNutrientValueTable.FOOD_ID)
+            val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, IngredientTable.PARENT_FOOD_ID)
+            val categories = getAllFoodCategories(ds)
+            processRawIngredients(ds, ingredients)
+            processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)
+        }
+    }
+
+    private fun applyServingsToRawFoods(foodMap: Map<Long, Food>, servingMap: Map<Long, Serving>) {
+        for (s in servingMap.values) {
+            // this query should never fail, due to database constraints
+            val f = foodMap.getValue(s.foodId)
+            s.initFood(f)
+            f.addServing(s)
+        }
+    }
+
+    private fun applyNutrientValuesToRawFoods(foodMap: Map<Long, Food>, nutrientValueMap: Map<Long, FoodNutrientValue>) {
+        for (nv in nutrientValueMap.values) {
+            // this lookup should never fail, due to database constraints
+            foodMap.getValue(nv.foodId).addNutrientValue(nv)
+        }
+    }
+
+    // note not all foods in the map will be composite
+    private fun applyIngredientsToRawFoods(foodMap: Map<Long, Food>, ingredientMap: Map<Long, Ingredient>) {
+        for (i in ingredientMap.values) {
+            val f = foodMap[i.parentFoodId]
+            require(f is CompositeFood && f.foodType === FoodType.COMPOSITE)
+            i.initCompositeFood(f)
+            f.addIngredient(i)
+        }
+    }
+
+    private fun applyFoodCategoriesToRawFoods(foodMap: Map<Long, Food>, categories: Map<String, FoodCategory>) {
+        for (f in foodMap.values) {
+            val categoryName = f.getData(FoodTable.CATEGORY)!!
+            val c = categories.getValue(categoryName)
+            f.setFoodCategory(c)
         }
     }
 }

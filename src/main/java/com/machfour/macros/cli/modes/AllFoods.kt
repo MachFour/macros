@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 
 import java.sql.SQLException
 
@@ -21,13 +21,13 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         listFoods(ds)
 
         return 0
     }
 
-    private fun listFoods(ds: MacrosDataSource) {
+    private fun listFoods(ds: MacrosDatabase) {
         val allFoods: Collection<Food>
         try {
             allFoods = FoodQueries.getAllFoodsMap(ds).values

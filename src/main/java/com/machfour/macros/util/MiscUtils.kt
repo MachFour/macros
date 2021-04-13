@@ -29,3 +29,19 @@ fun <K, V, R> mapValueOrElse(data: Map<K, V>, key: K, elseValue: R, mapping: (V)
         else -> mapping(value)
     }
 }
+
+fun <E> Iterable<Set<E>>.unionAll() : Set<E> {
+    return reduce { s, t -> s.union(t) }
+}
+
+fun <E> Iterable<Set<E>>.intersectAll() : Set<E> {
+    return reduce { s, t -> s.intersect(t) }
+}
+
+fun <E> Iterable<Set<E>>.unionAllOrNull() : Set<E>? {
+    return reduceOrNull { s, t -> s.union(t) }
+}
+
+fun <E> Iterable<Set<E>>.intersectAllOrNull() : Set<E>? {
+    return reduceOrNull { s, t -> s.intersect(t) }
+}

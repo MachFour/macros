@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.cli.utils.ArgParsing.findArgument
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
@@ -27,7 +27,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
 
         // cases: day not specified vs day specified
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         val date = when (val dateArg = findArgument(args, 1)) {
             is ArgParsing.Result.KeyValFound -> {
                 dayStringParse(dateArg.argument) ?: run {
@@ -45,7 +45,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         //Meal toEdit = mealSpec.processedObject();
     }
 
-    private fun printMealList(db: MacrosDataSource, d: DateStamp): Int {
+    private fun printMealList(db: MacrosDatabase, d: DateStamp): Int {
         try {
             val meals = getMealsForDay(db, d)
             if (meals.isEmpty()) {
@@ -53,12 +53,12 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             } else {
                 out.println("Meals recorded on " + d.prettyPrint() + ":")
                 out.println()
-                out.println(String.format("%-16s %-16s", "Name", "Last Modified"))
+                out.println("%-16s %-16s".format("Name", "Last Modified"))
                 out.println("=================================")
                 val dateFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.LONG)
                 for (m in meals.values) {
                     val mealDate = m.modifyInstant.atZone(ZoneId.systemDefault())
-                    out.println(String.format("%-16s %16s", m.name, dateFormat.format(mealDate)))
+                    out.println("%-16s %16s".format(m.name, dateFormat.format(mealDate)))
                 }
             }
         } catch (e: SQLException) {

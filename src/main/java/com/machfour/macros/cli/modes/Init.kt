@@ -21,7 +21,7 @@ class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val db = config.databaseInstance
+        val db = config.databaseImplInstance
         try {
             LinuxDatabase.deleteIfExists(config.dbLocation)
             out.println("Deleted database at ${config.dbLocation}")

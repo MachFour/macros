@@ -8,8 +8,8 @@ import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.queries.Queries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.validation.SchemaViolation
 import java.io.IOException
 import java.io.Reader
@@ -118,7 +118,7 @@ object IngredientsParser {
     // THE INGREDIENTS CANNOT BE SAVED INTO THE DATABASE AS IS, because they do not have the proper foreign keys set up
     // to save the object tree correctly, use the method saveCompositeFoods(compositeFoods, ds)
     @Throws(SQLException::class)
-    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDataSource): List<CompositeFood> {
+    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDatabase): List<CompositeFood> {
         val indexNames = extractIngredientIndexNames(parseResult)
         // for invalid index names, the map won't have an entry
         val indexNameMap = FoodQueries.getFoodIdsByIndexName(ds, indexNames)
@@ -150,14 +150,14 @@ object IngredientsParser {
 
     // saves a composite food and all its ingredients into the database
     @Throws(SQLException::class)
-    private fun saveCompositeFood(cf: CompositeFood, ds: MacrosDataSource) {
+    private fun saveCompositeFood(cf: CompositeFood, ds: MacrosDatabase) {
         try {
             ds.openConnection()
             // If inserting ingredients fails, we want to be able to roll back the whole thing.
             ds.beginTransaction()
 
             // First save the food and then retrieve it from the database, to get the ID
-            Queries.saveObject(ds, cf)
+            WriteQueries.saveObject(ds, cf)
             val saved = FoodQueries.getFoodByIndexName(ds, cf.indexName)
                     ?: throw SQLException("Could not retrieved saved composite food")
             val id = saved.id
@@ -166,7 +166,7 @@ object IngredientsParser {
             // TODO use completeFk function
             val newIngredients = addCompositeFoodId(cf.ingredients, id)
             // here we go!
-            Queries.insertObjects(ds, newIngredients, false)
+            WriteQueries.insertObjects(ds, newIngredients, false)
 
             // TODO nutrition data object to go along with it, if quantity is known
             //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientData.table);
@@ -181,13 +181,13 @@ object IngredientsParser {
 
     // returns list of index names of foods that were created
     @Throws(SQLException::class, IOException::class)
-    fun readRecipes(json: Reader, ds: MacrosDataSource): List<CompositeFood> {
+    fun readRecipes(json: Reader, ds: MacrosDatabase): List<CompositeFood> {
         val ingredientSpecs = deserialiseIngredientsJson(json)
         return createCompositeFoods(ingredientSpecs, ds)
     }
 
     @Throws(SQLException::class)
-    fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: MacrosDataSource) {
+    fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: MacrosDatabase) {
         // TODO save all the composite foods and recreate them in one go
         // Then, save the ingredients at the same time.
         for (cf in compositeFoods) {

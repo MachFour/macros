@@ -8,7 +8,7 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 
 import java.io.IOException
 import java.sql.SQLException
@@ -23,7 +23,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
          * Ensures the given index name is not already in the database; returns true if it is not present.
          */
         @Throws(SQLException::class)
-        private fun checkIndexName(ds: MacrosDataSource, indexName: String): Boolean {
+        private fun checkIndexName(ds: MacrosDatabase, indexName: String): Boolean {
             return FoodQueries.getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
         }
     }
@@ -40,7 +40,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
         val indexName = indexNameArg.argument
 
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
 
         try {
             // TODO move this check inside MacrosBuilder validations

@@ -11,8 +11,8 @@ import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.queries.Queries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.persistence.MacrosDatabase
 
 import java.sql.SQLException
 
@@ -45,7 +45,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val mealNameArg = ArgParsing.findArgument(args, 1)
         val dayArg = ArgParsing.findArgument(args, 2)
 
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
 
         val mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg)
         mealSpec.process(ds, true)
@@ -62,7 +62,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         return startEditor(ds, toEdit!!.id)
     }
 
-    private fun startEditor(ds: MacrosDataSource, mealId: Long): Int {
+    private fun startEditor(ds: MacrosDatabase, mealId: Long): Int {
         val toEdit: Meal?
         try {
             toEdit = MealQueries.getMealById(ds, mealId)
@@ -115,7 +115,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
     }
 
-    private fun addPortion(toEdit: Meal, db: MacrosDataSource) {
+    private fun addPortion(toEdit: Meal, db: MacrosDatabase) {
         out.println("Please enter the portion information (see help for how to specify a food portion)")
         // copy from portion
         val inputString = CliUtils.getStringInput(input, out)
@@ -135,12 +135,12 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         out.println()
     }
 
-    private fun deleteMeal(toDelete: Meal, db: MacrosDataSource) {
+    private fun deleteMeal(toDelete: Meal, db: MacrosDatabase) {
         out.print("Delete meal")
         out.print("Are you sure? [y/N] ")
         if ((CliUtils.getChar(input, out) == 'y') or (CliUtils.getChar(input, out) == 'Y')) {
             try {
-                Queries.deleteObject(db, toDelete)
+                WriteQueries.deleteObject(db, toDelete)
             } catch (e: SQLException) {
                 out.println("Error deleting meal: " + e.message)
             }
@@ -148,7 +148,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
     }
 
-    private fun deleteFoodPortion(toEdit: Meal, ds: MacrosDataSource) {
+    private fun deleteFoodPortion(toEdit: Meal, ds: MacrosDatabase) {
         out.println("Delete food portion")
         showFoodPortions(toEdit)
         out.print("Enter the number of the food portion to delete and press enter: ")
@@ -159,7 +159,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return
         }
         try {
-            Queries.deleteObject(ds, portions[n])
+            WriteQueries.deleteObject(ds, portions[n])
         } catch (e3: SQLException) {
             out.println("Error deleting the food portion: " + e3.message)
             return
@@ -169,7 +169,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         out.println()
     }
 
-    private fun editFoodPortion(m: Meal, ds: MacrosDataSource) {
+    private fun editFoodPortion(m: Meal, ds: MacrosDatabase) {
         out.println("Edit food portion")
         showFoodPortions(m)
         out.print("Enter the number of the food portion to edit and press enter: ")
@@ -189,7 +189,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             val newData = portions[n].dataCopy(withMetadata = false)
             newData.put(FoodPortionTable.QUANTITY, newQty)
-            Queries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
+            WriteQueries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
             out.println("Error modifying the food portion: " + e3.message)
             return

@@ -9,7 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.persistence.MacrosDataSource
+import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
@@ -86,43 +86,43 @@ class FileParser {
 
         fun processFpSpec(fps: FoodPortionSpec, m: Meal, f: Food) {
             assert(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
-            val s: Serving?
-            val quantity: Double
-            val unit: Unit?
-            if (fps.isServingMode) {
-                assert(fps.servingName != null && fps.servingCount != 0.0)
-                if (fps.servingName == "") {
+            val serving = if (!fps.isServingMode) {
+                // use unit if specified, otherwise default unit of food's nutrition data
+                null
+            } else {
+                check(fps.servingName != null && fps.servingCount != 0.0)
+                if (fps.servingName.isEmpty()) {
                     // default serving
-                    s = f.defaultServing
-                    if (s == null) {
+                    f.defaultServing ?: run {
                         fps.error = "food has no default serving"
                         return
                     }
                 } else {
-                    s = f.getServingByName(fps.servingName!!)
-                    if (s == null) {
+                    f.getServingByName(fps.servingName) ?: run {
                         fps.error = "food has no serving named '" + fps.servingName + "'"
                         return
                     }
                 }
-                quantity = fps.servingCount * s.quantity
-                unit = s.qtyUnit
-            } else {
-                // not serving mode - use unit if specified, otherwise default unit of food's nutrition data
-                s = null
-                unit = fps.unit ?: f.nutrientData.qtyUnit
-                quantity = fps.quantity
             }
-            val fpData = ColumnData(FoodPortion.table)
-            fpData.put(FoodPortionTable.FOOD_ID, f.id)
-            fpData.put(FoodPortionTable.SERVING_ID, s?.id)
-            fpData.put(FoodPortionTable.MEAL_ID, m.id)
-            fpData.put(FoodPortionTable.QUANTITY_UNIT, unit.abbr)
-            fpData.put(FoodPortionTable.QUANTITY, quantity)
-            val fp = FoodPortion.factory.construct(fpData, ObjectSource.USER_NEW)
+
+            val (quantity, unit) = if (serving != null) {
+                Pair(fps.servingCount * serving.quantity, serving.qtyUnit)
+            } else {
+                Pair(fps.quantity, fps.unit ?: f.nutrientData.qtyUnit)
+            }
+
+            val fp = ColumnData(FoodPortion.table).run {
+                put(FoodPortionTable.FOOD_ID, f.id)
+                put(FoodPortionTable.SERVING_ID, serving?.id)
+                put(FoodPortionTable.MEAL_ID, m.id)
+                put(FoodPortionTable.QUANTITY_UNIT, unit.abbr)
+                put(FoodPortionTable.QUANTITY, quantity)
+                FoodPortion.factory.construct(this, ObjectSource.USER_NEW)
+            }
+            
             fp.initFoodAndNd(f)
-            if (s != null) {
-                fp.initServing(s)
+            if (serving != null) {
+                fp.initServing(serving)
             }
             fps.createdObject = fp
         }
@@ -158,7 +158,7 @@ class FileParser {
             var isServingMode = false
             var error = ""
 
-            // have to use run block to be able to escape from 'when' at arbitrary points (using return@run
+            // run block allows breaking from 'when' at arbitrary points (using return@run)
             run {
                 when (tokens.size) {
                     1 -> {
@@ -171,29 +171,33 @@ class FileParser {
                         // vanilla food and quantity, with optional unit defaulting to whatever food's nutrition data uses
                         isServingMode = false
                         val quantityMatch = quantityAndUnitPattern.find(tokens[1])
-                        if (quantityMatch == null) {
-                            // could not understand anything
-                            error = "invalid quantity or unit"
-                            return@run // 'break from when'
+                        when (quantityMatch) {
+                            null -> {
+                                // could not understand anything
+                                error = "invalid quantity or unit"
+                                return@run // break from when
+                            }
+                            else ->
+                                try {
+                                    quantity = quantityMatch.groupValues[1].toDouble()
+                                } catch (e: NumberFormatException) {
+                                    // invalid quantity
+                                    error = "invalid quantity"
+                                    return@run // break from when
+                                }
                         }
-                        try {
-                            quantity = quantityMatch.groupValues[1].toDouble()
-                        } catch (e: NumberFormatException) {
-                            // invalid quantity
-                            error = "invalid quantity"
-                            return@run // 'break from when'
-                        }
+
                         val unitString = quantityMatch.groupValues[2]
-                        if (unitString.isEmpty()) {
-                            unit = null
-                        } else {
-                            val matchUnit = Units.fromAbbreviationNoThrow(unitString)
-                            if (matchUnit != null) {
-                                unit = matchUnit
-                            } else {
-                                // invalid unit
+                        val matchUnit = Units.fromAbbreviationNoThrow(unitString)
+                        when {
+                            // default unit?
+                            unitString.isEmpty() -> unit = null
+                            // valid unit specified
+                            matchUnit != null -> unit = matchUnit
+                            // invalid unit
+                            else -> {
                                 error = "unrecognised unit"
-                                return@run // 'break from when'
+                                return@run // break from when
                             }
                         }
                     }
@@ -202,26 +206,23 @@ class FileParser {
                         servingName = tokens[1]
                         // get quantity, which defaults to 1 of serving if not included
                         val servingCountStr = tokens[2]
-                        if (servingCountStr.isEmpty()) {
-                            servingCount = 1.0
-                        } else {
-                            val servingCountMatch = servingCountPattern.find(tokens[2])
-                            if (servingCountMatch != null) {
+                        val servingCountMatch = servingCountPattern.find(tokens[2])
+                        when {
+                            servingCountStr.isEmpty() -> servingCount = 1.0
+                            servingCountMatch != null ->
                                 try {
                                     servingCount = servingCountMatch.groupValues[1].toDouble()
                                 } catch (e: NumberFormatException) {
                                     error = "invalid serving count"
                                     return@run // 'break from when'
                                 }
-                            } else {
+                            else -> {
                                 error = "invalid serving count"
                                 return@run // 'break from when'
                             }
                         }
                     }
-                    else -> {
-                        error = "too many commas"
-                    }
+                    else -> error = "too many commas"
                 }
             }
             return FoodPortionSpec(indexName, quantity, unit, servingCount, servingName, isServingMode, error)
@@ -237,14 +238,14 @@ class FileParser {
 
     // make sure to close the reader afterwards
     @Throws(IOException::class, SQLException::class)
-    fun parseFile(db: MacrosDataSource, fileReader: Reader): List<Meal> {
+    fun parseFile(db: MacrosDatabase, fileReader: Reader): List<Meal> {
         val fileLines = readAllLines(fileReader)
         // also gets list of index names to retrieve
         val mealSpecs = createSpecFromLines(fileLines)
 
         // get all the index names in one place so that we can grab them all at once from the DB
         val foodIndexNames = getAllIndexNames(mealSpecs.values)
-        val meals: MutableList<Meal> = ArrayList()
+        val meals = ArrayList<Meal>()
         val foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames)
         val currentDay = currentDate()
         for ((key, value) in mealSpecs) {

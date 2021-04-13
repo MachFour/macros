@@ -11,6 +11,7 @@ import com.machfour.macros.persistence.CsvException
 import com.machfour.macros.persistence.CsvImport.importFoodData
 import com.machfour.macros.persistence.CsvImport.importRecipes
 import com.machfour.macros.persistence.CsvImport.importServings
+import com.machfour.macros.queries.WriteQueries
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -72,7 +73,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val servingCsvFile = config.servingCsvPath
         val recipeCsvFile = config.recipeCsvPath
         val ingredientsCsvFile = config.ingredientsCsvPath
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         try {
             if (doClear) {
                 if (!noFoodsServings) {
@@ -87,7 +88,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     out.println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
                     FoodPortionQueries.deleteAllIngredients(ds)
-                    FoodQueries.deleteAllCompositeFoods(ds)
+                    WriteQueries.deleteAllCompositeFoods(ds)
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }

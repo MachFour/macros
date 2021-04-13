@@ -5,7 +5,7 @@ import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.queries.Queries
+import com.machfour.macros.queries.WriteQueries
 
 import java.sql.SQLException
 
@@ -25,7 +25,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return -1
         }
 
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
 
         out.println("Retrieving foods...")
         out.println()
@@ -72,7 +72,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 ds.beginTransaction()
                 for (f in foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    Queries.deleteObject(ds, f)
+                    WriteQueries.deleteObject(ds, f)
                     out.println("Deleted " + f.indexName)
                 }
                 ds.endTransaction()

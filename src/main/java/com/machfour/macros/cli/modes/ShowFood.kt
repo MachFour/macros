@@ -122,7 +122,7 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             verbose = true
         }
 
-        val ds = config.dataSourceInstance
+        val ds = config.databaseInstance
         val indexName = args[1]
         val foodToList: Food?
         try {

@@ -6,8 +6,8 @@ import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
 import com.machfour.macros.sql.*
 import com.machfour.macros.persistence.DatabaseUtils
-import com.machfour.macros.persistence.MacrosDataSource
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.persistence.MacrosDatabaseImpl
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
@@ -20,7 +20,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 
 // data source provided by Xerial library
-class LinuxDatabase private constructor(dbFile: String) : MacrosDatabase(), MacrosDataSource {
+class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), MacrosDatabase {
     companion object {
         // singleton
         private lateinit var instance: LinuxDatabase

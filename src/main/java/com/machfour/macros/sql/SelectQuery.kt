@@ -37,8 +37,12 @@ open class SelectQuery<M>(
         grouping = GroupByClause(clauseBody)
     }
 
-    fun distinct(selectDistinct: Boolean = true) {
-        distinct = selectDistinct
+    fun distinct() {
+        distinct = true
+    }
+    
+    fun notDistinct() {
+        distinct = false
     }
 
     fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J) {

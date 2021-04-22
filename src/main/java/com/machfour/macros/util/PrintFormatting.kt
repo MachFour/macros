@@ -118,7 +118,7 @@ object PrintFormatting {
                     appendLine()
                 }
                 val n = nutrients[i]
-                val colName = colStrings.getName(n)
+                val colName = colStrings.getFullName(n)
                 val value = nutrient(nd, n, colStrings, withUnit = false, withDp = withDp)
                 val unitStr = colStrings.getAbbr(nd.getUnitOrDefault(n))
                 append(lineFormat.format(colName, value, unitStr))

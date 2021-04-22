@@ -78,8 +78,7 @@ CREATE TABLE Food (
     -- <brand> <variety> <name> (<attribute1>, <attribute2>, ...) or
     -- <brand> <name> <variety> (<attribute1>, <attribute2>, ...)
 
-    -- Notes are not normally displayed, so try to make the food recognisable
-    -- without them
+    -- Notes are not normally displayed, so food has to be recognisable without them
 
       id                   INTEGER PRIMARY KEY ASC
     , index_name           TEXT NOT NULL UNIQUE
@@ -89,6 +88,8 @@ CREATE TABLE Food (
     , extra_desc           TEXT DEFAULT NULL
     , notes                TEXT DEFAULT NULL
     , category             TEXT NOT NULL DEFAULT 'uncategorised'
+    -- for internal use so not constrained, but nominal values are according to previous constraint:
+    -- CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
     , food_type            TEXT NOT NULL DEFAULT 'primary'
     -- miscellaneous metadata
     , usda_index           INTEGER DEFAULT NULL
@@ -96,8 +97,7 @@ CREATE TABLE Food (
     -- old NutritionData fields
     , data_source          TEXT DEFAULT NULL
     , data_notes           TEXT DEFAULT NULL
-    -- for liquids, how to convert between grams and mL
-    -- in g/cm^3
+    -- for liquids, how to convert between grams and mL. Measured in g/cm^3
     , density              REAL DEFAULT NULL
     -- allows user to 'hide' foods. 0 means normal relevance, i.e. do not prioritise.
     -- -1 is deprioritised / 'hidden'
@@ -114,8 +114,6 @@ CREATE TABLE Food (
         ON DELETE SET DEFAULT
     , CONSTRAINT full_name_identifiable
         UNIQUE (brand, variety, name, extra_desc)
-    , CONSTRAINT valid_food_type
-        CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
 );
 
 

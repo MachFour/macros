@@ -62,12 +62,12 @@ object Nutrients {
     // index of next registered nutrient
     private var nextIndex = 0L
 
-    private fun registerNutrient(name: String, typeFlag: Int, inbuilt: Boolean) : Nutrient {
+    private fun registerNutrient(name: String, typeFlags: Int, inbuilt: Boolean) : Nutrient {
         val id = nextIndex++
         val data = ColumnData(Nutrient.table).apply {
             put(NutrientTable.ID, id)
             put(NutrientTable.NAME, name)
-            put(NutrientTable.UNIT_TYPES, typeFlag)
+            put(NutrientTable.UNIT_TYPES, typeFlags)
             put(NutrientTable.INBUILT, inbuilt)
         }
 
@@ -76,13 +76,13 @@ object Nutrients {
         }
     }
 
-    private fun registerInbuiltNutrient(name: String, type: UnitType) = registerNutrient(name, type.id, inbuilt = true)
-    private fun registerInbuiltNutrient(name: String, types: Set<UnitType>) = registerNutrient(name, UnitType.asFlags(types), inbuilt = true)
+    private fun registerInbuiltNutrient(name: String, vararg types: UnitType)
+        = registerNutrient(name, UnitType.asFlags(types), inbuilt = true)
 
     fun fromId(id: Long): Nutrient = idMap.getValue(id)
 
     init {
-        QUANTITY = registerInbuiltNutrient(QUANTITY_NAME, setOf(UnitType.MASS, UnitType.VOLUME))
+        QUANTITY = registerInbuiltNutrient(QUANTITY_NAME, UnitType.MASS, UnitType.VOLUME)
         ENERGY = registerInbuiltNutrient(ENERGY_NAME, UnitType.ENERGY)
         PROTEIN = registerInbuiltNutrient(PROTEIN_NAME, UnitType.MASS)
         FAT = registerInbuiltNutrient(FAT_NAME, UnitType.MASS)
@@ -100,7 +100,7 @@ object Nutrients {
         OMEGA_6_FAT = registerInbuiltNutrient(OMEGA_6_FAT_NAME, UnitType.MASS)
         STARCH = registerInbuiltNutrient(STARCH_NAME, UnitType.MASS)
         SALT = registerInbuiltNutrient(SALT_NAME, UnitType.MASS)
-        WATER = registerInbuiltNutrient(WATER_NAME, UnitType.MASS)
+        WATER = registerInbuiltNutrient(WATER_NAME, UnitType.MASS, UnitType.VOLUME)
         CARBOHYDRATE_BY_DIFF = registerInbuiltNutrient(CARBOHYDRATE_BY_DIFF_NAME, UnitType.MASS)
         ALCOHOL = registerInbuiltNutrient(ALCOHOL_NAME, UnitType.MASS)
         SUGAR_ALCOHOL = registerInbuiltNutrient(SUGAR_ALCOHOL_NAME, UnitType.MASS)

@@ -238,7 +238,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         get() = validationErrors.entries.filter { it.value.isNotEmpty() }.map { it.key }
 
     fun invalidFieldNames(colStrings: ColumnStrings): List<String> {
-        return invalidFields.map { colStrings.getName(it) }
+        return invalidFields.map { colStrings.getFullName(it) }
     }
     fun invalidFieldNamesString(colStrings: ColumnStrings): String {
         return invalidFieldNames(colStrings).toString()

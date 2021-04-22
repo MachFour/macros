@@ -83,17 +83,17 @@ class EnglishColumnNames private constructor(): ColumnNamer {
         val instance: EnglishColumnNames = EnglishColumnNames()
     }
 
-    override fun getName(col: Column<*, *>): String {
+    override fun getFullName(col: Column<*, *>): String {
         return columnNames[col]
                 ?: throw UnsupportedOperationException("Name for $col not yet added, sorry!")
     }
-    override fun getName(n: Nutrient): String {
+    override fun getFullName(n: Nutrient): String {
         return nutrientNames[n]
                 ?: throw UnsupportedOperationException("Name for $n not yet added, sorry!")
     }
 
     override fun getAbbreviatedName(n: Nutrient): String {
-        return longerNutrientNames[n] ?: getName(n)
+        return longerNutrientNames[n] ?: getFullName(n)
     }
 
 }

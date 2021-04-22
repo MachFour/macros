@@ -23,7 +23,7 @@ class Serving internal constructor(data: ColumnData<Serving>, objectSource: Obje
     val qtyUnit = Units.fromAbbreviation(qtyUnitAbbr)
 
     init {
-        Nutrient.checkCompatible(QUANTITY, qtyUnit)
+        check(QUANTITY.compatibleWithUnit(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }
     }
 
     lateinit var food: Food

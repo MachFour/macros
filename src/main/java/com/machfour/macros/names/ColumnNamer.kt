@@ -7,9 +7,10 @@ import com.machfour.macros.entities.Nutrient
  * Interface to provide user-readable names (strings) for nutrition data columns
  */
 interface ColumnNamer {
-    fun getName(col: Column<*, *>): String
-    fun getAbbreviatedName(col: Column<*, *>): String = getName(col)
+    fun getFullName(col: Column<*, *>): String
+    fun getAbbreviatedName(col: Column<*, *>): String = getFullName(col)
 
-    fun getName(n: Nutrient): String
-    fun getAbbreviatedName(n: Nutrient): String = getName(n)
+    fun getFullName(n: Nutrient): String
+    fun getDisplayName(n: Nutrient): String = getFullName(n)
+    fun getAbbreviatedName(n: Nutrient): String = getFullName(n)
 }

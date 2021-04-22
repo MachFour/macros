@@ -43,7 +43,7 @@ object CliUtils {
         out.println("Energy proportions (approx.)")
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
         for (n in energyProportionNutrientsToPrint) {
-            out.printf(fmt, colNames.getName(n), getEnergyProportion(n)*100)
+            out.printf(fmt, colNames.getFullName(n), getEnergyProportion(n)*100)
         }
     }
 

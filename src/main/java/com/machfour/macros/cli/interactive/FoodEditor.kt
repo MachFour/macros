@@ -479,7 +479,7 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printField(colStrings.getName(col), builder.getAsString(col), columnIndex)
+            printField(colStrings.getFullName(col), builder.getAsString(col), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index
@@ -489,7 +489,7 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (n in nutrients) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printField(colStrings.getName(n), nutrientData[n].toString(), columnIndex)
+            printField(colStrings.getFullName(n), nutrientData[n].toString(), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index

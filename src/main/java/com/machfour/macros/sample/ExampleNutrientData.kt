@@ -13,6 +13,7 @@ import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.entities.inbuilt.Nutrients.FIBRE
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.entities.inbuilt.Nutrients.WATER
 
 
 object ExampleNutrientData {
@@ -23,6 +24,7 @@ object ExampleNutrientData {
         this[FAT] = FoodNutrientValue.makeComputedValue(100.0, FAT, Units.GRAMS)
         this[CARBOHYDRATE] = FoodNutrientValue.makeComputedValue(220.0, CARBOHYDRATE, Units.GRAMS)
         this[FIBRE] = FoodNutrientValue.makeComputedValue(80.0, FIBRE, Units.GRAMS)
+        this[WATER] = FoodNutrientValue.makeComputedValue(550.0, WATER, Units.MILLILITRES)
     }
 
     private val dayGoalColumnData = ColumnData(NutrientGoal.table).apply {
@@ -36,5 +38,6 @@ object ExampleNutrientData {
         addComputedValue(FAT, 65.0, Units.GRAMS)
         addComputedValue(CARBOHYDRATE, 300.0, Units.GRAMS)
         addComputedValue(FIBRE, 80.0, Units.GRAMS)
+        addComputedValue(WATER, 1000.0, Units.MILLILITRES)
     }
 }

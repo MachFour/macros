@@ -122,7 +122,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
     fun amountOf(n: Nutrient, unit: Unit? = null): Double? {
         return if (unit != null) {
-            require(n.isConvertibleTo(unit)) { "Cannot convert nutrient $n to $unit" }
+            require(n.compatibleWithUnit(unit)) { "Cannot convert nutrient $n to $unit" }
             this[n]?.convertValueTo(unit)
         } else {
             this[n]?.value

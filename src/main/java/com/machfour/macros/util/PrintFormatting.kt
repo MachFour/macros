@@ -100,7 +100,7 @@ object PrintFormatting {
     fun nutrientData(
         nd: FoodNutrientData,
         colStrings: ColumnStrings,
-        nutrients: List<Nutrient> = defaultNutrientsToPrint,
+        nutrients: Collection<Nutrient> = defaultNutrientsToPrint,
         withDp: Boolean = false,
         monoSpaceAligned: Boolean = false,
     ): String {
@@ -113,11 +113,7 @@ object PrintFormatting {
         }
 
         return buildString {
-            for (i in nutrients.indices) {
-                if (i != 0) {
-                    appendLine()
-                }
-                val n = nutrients[i]
+            for (n in nutrients) {
                 val colName = colStrings.getFullName(n)
                 val value = nutrient(nd, n, colStrings, withUnit = false, withDp = withDp)
                 val unitStr = colStrings.getAbbr(nd.getUnitOrDefault(n))
@@ -127,7 +123,10 @@ object PrintFormatting {
                     // mark incomplete
                     append(" (*)")
                 }
+                appendLine()
             }
+            // delete last newline
+            deleteAt(lastIndex)
         }
     }
 }

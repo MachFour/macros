@@ -3,6 +3,7 @@ package com.machfour.macros.entities
 import com.machfour.macros.core.*
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.util.toRoundedString
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -85,16 +86,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     // it is formatted as an integer.
     private val servingCountString: String
         // test if can round
-        get() {
-            val c = servingCount
-            val asInt = c.roundToInt()
-            val error = c - asInt
-            return if (abs(error) < 0.001) {
-                asInt.toString()
-            } else {
-                "%.2f".format(c)
-            }
-        }
+        get() = servingCount.toRoundedString()
 
     val servingCount: Double
         get() {

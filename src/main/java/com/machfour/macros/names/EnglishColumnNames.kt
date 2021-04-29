@@ -84,16 +84,23 @@ class EnglishColumnNames private constructor(): ColumnNamer {
     }
 
     override fun getFullName(col: Column<*, *>): String {
-        return columnNames[col]
-                ?: throw UnsupportedOperationException("Name for $col not yet added, sorry!")
+        return columnNames[col] ?: throw TODO("Name for $col not yet added, sorry!")
     }
+
+    override fun getAbbreviatedName(col: Column<*, *>): String {
+        return getFullName(col)
+    }
+
     override fun getFullName(n: Nutrient): String {
-        return nutrientNames[n]
-                ?: throw UnsupportedOperationException("Name for $n not yet added, sorry!")
+        return nutrientNames[n] ?: TODO("Name for $n not yet added, sorry!")
+    }
+
+    override fun getDisplayName(n: Nutrient): String {
+        return longerNutrientNames[n] ?: getFullName(n)
     }
 
     override fun getAbbreviatedName(n: Nutrient): String {
-        return longerNutrientNames[n] ?: getFullName(n)
+        return briefNutrientNames[n] ?: getDisplayName(n)
     }
 
 }

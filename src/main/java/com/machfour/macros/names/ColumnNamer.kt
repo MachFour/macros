@@ -8,9 +8,9 @@ import com.machfour.macros.entities.Nutrient
  */
 interface ColumnNamer {
     fun getFullName(col: Column<*, *>): String
-    fun getAbbreviatedName(col: Column<*, *>): String = getFullName(col)
+    fun getAbbreviatedName(col: Column<*, *>): String
 
     fun getFullName(n: Nutrient): String
-    fun getDisplayName(n: Nutrient): String = getFullName(n)
-    fun getAbbreviatedName(n: Nutrient): String = getFullName(n)
+    fun getDisplayName(n: Nutrient): String
+    fun getAbbreviatedName(n: Nutrient): String = getDisplayName(n)
 }

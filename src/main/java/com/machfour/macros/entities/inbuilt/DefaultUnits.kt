@@ -24,7 +24,7 @@ object DefaultUnits {
         Nutrients.OMEGA_6_FAT to Units.MILLIGRAMS,
         Nutrients.STARCH to Units.GRAMS,
         Nutrients.SALT to Units.GRAMS,
-        Nutrients.WATER to Units.GRAMS,
+        Nutrients.WATER to Units.MILLILITRES,
         Nutrients.CARBOHYDRATE_BY_DIFF to Units.GRAMS,
         Nutrients.ALCOHOL to Units.GRAMS,
         Nutrients.SUGAR_ALCOHOL to Units.GRAMS,

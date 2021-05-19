@@ -10,6 +10,7 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
@@ -238,7 +239,7 @@ class FileParser {
 
     // make sure to close the reader afterwards
     @Throws(IOException::class, SQLException::class)
-    fun parseFile(db: MacrosDatabase, fileReader: Reader): List<Meal> {
+    fun parseFile(ds: MacrosDataSource, fileReader: Reader): List<Meal> {
         val fileLines = readAllLines(fileReader)
         // also gets list of index names to retrieve
         val mealSpecs = createSpecFromLines(fileLines)
@@ -246,7 +247,7 @@ class FileParser {
         // get all the index names in one place so that we can grab them all at once from the DB
         val foodIndexNames = getAllIndexNames(mealSpecs.values)
         val meals = ArrayList<Meal>()
-        val foods = FoodQueries.getFoodsByIndexName(db, foodIndexNames)
+        val foods = ds.getFoodsByIndexName(foodIndexNames)
         val currentDay = currentDate()
         for ((key, value) in mealSpecs) {
             val m = makeMeal(key.name!!, currentDay)

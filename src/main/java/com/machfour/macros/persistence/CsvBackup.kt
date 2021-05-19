@@ -4,6 +4,7 @@ import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.Table
 import com.machfour.macros.queries.CoreQueries
+import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.queries.RawEntityQueries
 import org.supercsv.io.CsvMapWriter
 import org.supercsv.io.ICsvMapWriter
@@ -41,8 +42,8 @@ object CsvBackup {
     private fun getMapWriter(w: Writer): ICsvMapWriter = CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE)
 
     @Throws(SQLException::class, IOException::class)
-    fun <M : MacrosEntity<M>> exportTable(ds: MacrosDatabase, t: Table<M>, outCsv: Writer) {
-        val rawObjectMap = RawEntityQueries.getAllRawObjects(ds, t)
+    fun <M : MacrosEntity<M>> exportTable(ds: MacrosDataSource, t: Table<M>, outCsv: Writer) {
+        val rawObjectMap = RawEntityQueries.getAllRawObjects(ds.database, t)
         val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
         // Collections.sort(allRawFoods, Comparator.comparingLong(MacrosPersistable::getId));
         writeObjectsToCsv(t, outCsv, allRawObjects)

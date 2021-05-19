@@ -12,8 +12,12 @@ import java.sql.SQLException
 // which allows for caching of objects returned from query results.
 interface MacrosDataSource {
 
-    // allow access to underlying data source for non-write queries
+    // TODO don't expose this publicly
     val database: MacrosDatabase
+
+    // pass through to database, but disable cache resloading until after transaction is finished
+    fun beginTransaction()
+    fun endTransaction()
 
     /*
      * The following functions are just simple passthoughs to static queries
@@ -27,6 +31,7 @@ interface MacrosDataSource {
 
     @Throws(SQLException::class)
     fun recentFoodIds(howMany: Int) : List<Long>
+
 
     /*
      * The functions below do not mutate the database but are useful to populate the cache
@@ -95,6 +100,38 @@ interface MacrosDataSource {
 
     @Throws(SQLException::class)
     fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long>
+
+    /*
+     * Flow versions of the above functions
+     */
+
+    /*
+     * FoodQueries
+     */
+
+    @Throws(SQLException::class)
+    fun getFood(indexName: String): Food?
+
+    @Throws(SQLException::class)
+    fun getFood(id: Long): Food?
+
+    @Throws(SQLException::class)
+    fun getFoods(ids: Collection<Long>): Map<Long, Food>
+
+    @Throws(SQLException::class)
+    fun getAllFoods(): Map<Long, Food>
+
+    /*
+     * MealQueries
+     */
+    @Throws(SQLException::class)
+    fun getMeals(date: DateStamp): Map<Long, Meal>
+
+    @Throws(SQLException::class)
+    fun getMeal(id: Long): Meal?
+
+    @Throws(SQLException::class)
+    fun getMeals(ids: Collection<Long>): Map<Long, Meal>
 
     /*
      * The functions below mutate the database and require cache updates

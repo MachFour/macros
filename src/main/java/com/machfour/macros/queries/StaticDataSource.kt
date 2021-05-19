@@ -9,9 +9,49 @@ import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.DateStamp
-import java.sql.SQLException
+import kotlinx.coroutines.flow.flowOf
 
-open class UncachedDataSource(override val database: MacrosDatabase): MacrosDataSource {
+// Each query returns a single value (or set of values) that is not updated when the database changes
+open class StaticDataSource(override val database: MacrosDatabase): MacrosDataSource {
+
+    override fun beginTransaction() {
+        database.beginTransaction()
+    }
+
+    override fun endTransaction() {
+        database.endTransaction()
+    }
+
+    // Flow functions
+    override fun getFood(id: Long): Food? {
+        return getFoodById(id)
+    }
+
+    override fun getFood(indexName: String): Food? {
+        return getFoodByIndexName(indexName)
+    }
+
+    override fun getFoods(ids: Collection<Long>): Map<Long, Food> {
+        return getFoodsById(ids)
+    }
+
+    override fun getAllFoods(): Map<Long, Food> {
+        return getAllFoodsMap()
+    }
+
+    override fun getMeal(id: Long): Meal? {
+        return getMealById(id)
+    }
+
+    override fun getMeals(date: DateStamp): Map<Long, Meal> {
+        return getMealsForDay(date)
+    }
+
+    override fun getMeals(ids: Collection<Long>): Map<Long, Meal> {
+        return getMealsById(ids)
+    }
+
+    // TODO remove all the methods below from the interface and make them protected
 
     override fun getAllFoodCategories(): Map<String, FoodCategory> {
         return FoodQueries.getAllFoodCategories(database)

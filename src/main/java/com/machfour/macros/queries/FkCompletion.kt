@@ -60,14 +60,14 @@ object FkCompletion {
                 ?: error("Table " + fkCol.parentTable.name + " has no natural key defined")
         val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentNaturalKeyCol, naturalKeyData)
         for (obj in objects) {
-            val newData = obj.dataFullCopy
+            val newData = obj.dataFullCopy()
             // TODO might be able to remove one level of indirection here because the ColumnData object
             // only contains data for the parentNaturalKeyCol
-            val fkParentNaturalKey : ColumnData<N> = obj.getFkParentNaturalKey(fkCol)
+            val fkParentNaturalKey: ColumnData<N> = obj.getFkParentNaturalKey(fkCol)
             val fkParentNaturalKeyData: Any = fkParentNaturalKey[parentNaturalKeyCol]
-                    ?: error("Column data contained no data for natural key column")
-            val fkParentId : J = foreignKeyToIdMapping[fkParentNaturalKeyData]
-                    ?: error("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
+                ?: error("Column data contained no data for natural key column")
+            val fkParentId: J = foreignKeyToIdMapping[fkParentNaturalKeyData]
+                ?: error("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
             newData.put(fkCol, fkParentId)
             val newObject = obj.table.construct(newData, obj.objectSource)
             // copy over old FK data to new object

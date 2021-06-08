@@ -80,14 +80,14 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
-                    FoodPortionQueries.deleteAllIngredients(ds)
+                    WriteQueries.deleteAllIngredients(ds)
                     ds.clearTable(Serving.table)
                     ds.clearTable(FoodNutrientValue.table)
                     ds.clearTable(Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
-                    FoodPortionQueries.deleteAllIngredients(ds)
+                    WriteQueries.deleteAllIngredients(ds)
                     WriteQueries.deleteAllCompositeFoods(ds)
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")

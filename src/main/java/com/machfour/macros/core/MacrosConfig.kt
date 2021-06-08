@@ -2,6 +2,7 @@ package com.machfour.macros.core
 
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.persistence.MacrosDatabaseImpl
+import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.SqlConfig
 import java.io.BufferedReader
 import java.io.PrintStream
@@ -26,5 +27,6 @@ interface MacrosConfig {
     val databaseInstance: MacrosDatabase
     // for not-usual operations on the database
     val databaseImplInstance: MacrosDatabaseImpl
+    val dataSource: MacrosDataSource
 
 }

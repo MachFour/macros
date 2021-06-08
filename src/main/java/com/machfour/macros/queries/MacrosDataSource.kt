@@ -15,10 +15,6 @@ interface MacrosDataSource {
     // TODO don't expose this publicly
     val database: MacrosDatabase
 
-    // pass through to database, but disable cache resloading until after transaction is finished
-    fun beginTransaction()
-    fun endTransaction()
-
     /*
      * The following functions are just simple passthoughs to static queries
      */
@@ -170,6 +166,9 @@ interface MacrosDataSource {
 
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
+
+    @Throws(SQLException::class)
+    fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>)
 
     @Throws(SQLException::class)
     fun deleteAllIngredients()

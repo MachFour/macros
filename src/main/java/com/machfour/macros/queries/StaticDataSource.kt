@@ -3,24 +3,14 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.Table
-import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodCategory
-import com.machfour.macros.entities.Meal
-import com.machfour.macros.entities.Serving
+import com.machfour.macros.core.schema.FoodNutrientValueTable
+import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.entities.*
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.util.DateStamp
-import kotlinx.coroutines.flow.flowOf
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
 open class StaticDataSource(override val database: MacrosDatabase): MacrosDataSource {
-
-    override fun beginTransaction() {
-        database.beginTransaction()
-    }
-
-    override fun endTransaction() {
-        database.endTransaction()
-    }
 
     // Flow functions
     override fun getFood(id: Long): Food? {
@@ -153,6 +143,34 @@ open class StaticDataSource(override val database: MacrosDatabase): MacrosDataSo
         source: ObjectSource
     ): Int {
         return WriteQueries.saveObjects(database, objects, source)
+    }
+
+    override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
+        val foodIdCol = FoodNutrientValueTable.FOOD_ID
+        try {
+            val (insertNutrients, updateNutrients) = nutrients.partition { it.objectSource == ObjectSource.USER_NEW }
+
+            // link the new FoodNutrientValues to the food
+            for (nv in insertNutrients) {
+                nv.setFkParentNaturalKey(foodIdCol, FoodTable.INDEX_NAME, food.indexName)
+            }
+
+            database.openConnection()
+            database.beginTransaction()
+
+            // get the food ID into the FOOD_ID field of the NutrientValues
+            val completedNValues = FkCompletion.completeForeignKeys(database, insertNutrients, foodIdCol)
+
+            saveObjects(completedNValues, ObjectSource.USER_NEW)
+            saveObjects(updateNutrients, ObjectSource.DB_EDIT)
+
+
+            database.endTransaction()
+        } finally {
+            // TODO if exception is thrown here after an exception thrown
+            // in the above try block, the one here will hide the previous.
+            database.closeConnection()
+        }
     }
 
     override fun deleteAllIngredients() {

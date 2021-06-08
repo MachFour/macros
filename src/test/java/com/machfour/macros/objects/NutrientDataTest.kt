@@ -1,4 +1,4 @@
-package objects
+package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.FoodPortionTable.Companion.FOOD_ID

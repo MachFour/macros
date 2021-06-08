@@ -11,8 +11,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
     //}
 
-    constructor(table: Table<M>): this(table, null)
-    constructor(fromInstance: M): this(fromInstance.table, fromInstance)
+    constructor(table: Table<M>) : this(table, null)
+    constructor(fromInstance: M) : this(fromInstance.table, fromInstance)
 
     var finishedInit = false
 
@@ -20,7 +20,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         set(value) {
             field = value
             if (value != null) {
-                originalData = value.dataFullCopy
+                originalData = value.dataFullCopy()
             }
             // if this setter is called during init {}, we can skip this call
             if (finishedInit) {
@@ -30,8 +30,10 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
 
     // columns that are available for editing
     private val settableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
+
     // columns that are not available for editing; initially empty
     private val unsettableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
+
     // invariant: settableColumns ⋃ unsettableColumns == table.columns()
     private val objectFactory: Factory<M> = table.factory
 
@@ -43,8 +45,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var originalData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
-    private val draftData: ColumnData<M> = editInstance?.dataFullCopy ?: ColumnData(table)
+    private var originalData: ColumnData<M> = editInstance?.dataFullCopy() ?: ColumnData(table)
+    private val draftData: ColumnData<M> = editInstance?.dataFullCopy() ?: ColumnData(table)
 
     private val validationErrors = HashMap<Column<M, *>, MVErrorList>(table.columns.size, 1f).also {
         // init with empty lists
@@ -240,6 +242,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     fun invalidFieldNames(colStrings: ColumnStrings): List<String> {
         return invalidFields.map { colStrings.getFullName(it) }
     }
+
     fun invalidFieldNamesString(colStrings: ColumnStrings): String {
         return invalidFieldNames(colStrings).toString()
     }

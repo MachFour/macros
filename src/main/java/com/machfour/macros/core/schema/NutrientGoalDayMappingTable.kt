@@ -10,7 +10,7 @@ class NutrientGoalDayMappingTable private constructor()
     : BaseTable<NutrientGoalDayMapping>(TABLE_NAME, NutrientGoalDayMapping.factory, COLUMNS) {
 
     companion object {
-        private const val TABLE_NAME = "AttributeMapping"
+        private const val TABLE_NAME = "NutrientGoalDayMapping"
 
         // holds the following columns in the order initialised in the static block
         private val COLUMNS = ArrayList<Column<NutrientGoalDayMapping, *>>()

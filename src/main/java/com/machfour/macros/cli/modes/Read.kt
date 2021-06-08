@@ -82,7 +82,7 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
         }
 
-        val ds = config.databaseInstance
+        val ds = config.dataSource
 
 
         val fileParser = FileParser()

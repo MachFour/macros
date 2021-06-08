@@ -1,4 +1,4 @@
-package objects
+package com.machfour.macros.objects
 
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance

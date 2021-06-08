@@ -17,7 +17,7 @@ object Factories {
     val food: Factory<Food> = Factory { data, objectSource ->
         // index name completion
         if (data[FoodTable.INDEX_NAME] == null) {
-            val name = data[FoodTable.NAME]!!
+            val name = data[FoodTable.NAME]?: "food"
             val brand = data[FoodTable.BRAND]
             val variety = data[FoodTable.VARIETY]
             val extraDesc = data[FoodTable.EXTRA_DESC]

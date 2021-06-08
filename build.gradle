@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "org.jetbrains.kotlin.jvm" version "1.4.32"
+    id "org.jetbrains.kotlin.jvm" version "1.5.10"
 }
 
 group 'com.machfour'
@@ -12,7 +12,8 @@ repositories {
 
 dependencies {
     // Kotlin JVM standard library
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.32"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.10"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
     // CSV support
     implementation "net.sf.supercsv:super-csv:2.4.0"
     // JSON

@@ -7,6 +7,7 @@ import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.sql.ColumnExpr
 import com.machfour.macros.sql.Conjuction
+import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
 import java.io.IOException
@@ -156,19 +157,17 @@ object DatabaseUtils {
 
     @Throws(IOException::class)
     fun createStatements(r: Reader, lineSep: String = " "): String {
-        val trimmedDecommentedLines = ArrayList<String>(32)
+        val trimmedDecommentedLines = ArrayList<String>()
         BufferedReader(r).use { reader ->
             // steps: remove all comment lines, trim, join, split on semicolon
             while (reader.ready()) {
                 var line = reader.readLine()
-                when (val commentIndex = line.indexOf("--")) {
-                    0 -> continue // skip comment lines completely
-                    -1 -> {} // no comment line
-                    else -> line = line.substring(0, commentIndex)
+                val commentIndex = line.indexOf("--")
+                if (commentIndex == 0) {
+                    continue // skip comment lines completely
+                } else if (commentIndex != -1) {
+                    line = line.substring(0, commentIndex)
                 }
-                //line = line.trim();
-                // if line was only space but not completely blank, then ignore
-                // need to keep track of blank lines so Android can separate SQL statements
                 line = line.replace("\\s+".toRegex(), " ")
                 if (line != " ") {
                     trimmedDecommentedLines.add(line)
@@ -176,6 +175,40 @@ object DatabaseUtils {
             }
         }
         return StringJoiner.of(trimmedDecommentedLines).sep(lineSep).join()
+    }
+
+
+    // Returns triggers that update the create and modify times of the given table.
+    // Columns are determined using the Schema object so ensure it is updated.
+
+    fun <M> createInitTimestampTriggers(t: Table<M>): List<String> {
+        val table = t.name
+        val createTime = t.createTimeColumn.sqlName
+        val modifyTime = t.modifyTimeColumn.sqlName
+        val id = t.idColumn.sqlName
+        val currentUnixTime = "CAST(strftime('%s', 'now') AS INTEGER)"
+        val timestampCols = setOf(t.createTimeColumn, t.modifyTimeColumn)
+        val columnNames = t.columns.filterNot { it in timestampCols }.map { it.sqlName }
+
+        val initTimeStampTrigger = """
+            |CREATE TRIGGER init_${table.lowercase()}_timestamp
+            |AFTER INSERT ON $table
+            |WHEN (NEW.${createTime} = 0)
+            |BEGIN UPDATE $table
+            |SET $createTime = $currentUnixTime, $modifyTime = $currentUnixTime 
+            |WHERE $id = NEW.${id};
+            |END;
+        """.trimMargin("|")
+
+        val updateTimestampTrigger = """
+            |CREATE TRIGGER update_${table.lowercase()}_timestamp
+            |AFTER UPDATE OF ${StringJoiner.of(columnNames).sep(", ").join()} ON $table
+            |BEGIN UPDATE $table
+            |SET $modifyTime = $currentUnixTime
+            |WHERE $id = NEW.${id};
+            |END;
+        """.trimMargin("|")
+        return listOf(initTimeStampTrigger, updateTimestampTrigger)
     }
 
     @Throws(SQLException::class)

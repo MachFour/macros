@@ -9,6 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvRestore
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileReader
 import java.io.IOException
@@ -27,10 +28,10 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    private fun <M : MacrosEntity<M>> restoreTable(db: MacrosDatabase, exportDir: String, t: Table<M>) {
+    private fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, exportDir: String, t: Table<M>) {
         out.println("Restoring " + t.name + " table...")
         val csvPath = joinPath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(db, t, csvData, out) }
+        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(ds, t, csvData, out) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -44,7 +45,7 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         if (args.size >= 2) {
             csvDir = args[1]
         }
-        val ds = config.databaseInstance
+        val ds = config.dataSource
         try {
             restoreTable(ds, csvDir, Unit.table)
             restoreTable(ds, csvDir, Nutrient.table)

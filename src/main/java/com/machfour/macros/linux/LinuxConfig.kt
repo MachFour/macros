@@ -4,6 +4,8 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.persistence.MacrosDatabaseImpl
+import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.queries.StaticDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -42,6 +44,7 @@ class LinuxConfig : MacrosConfig {
 
     override val databaseImplInstance: MacrosDatabaseImpl = LinuxDatabase.getInstance(dbLocation)
     override val databaseInstance: MacrosDatabase = databaseImplInstance
+    override val dataSource: MacrosDataSource = StaticDataSource(databaseInstance)
 
     override val sqlConfig: SqlConfig = LinuxSqlConfig()
 

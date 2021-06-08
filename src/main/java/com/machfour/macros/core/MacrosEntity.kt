@@ -34,8 +34,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     val factory: Factory<M>
 
     fun dataCopy(withMetadata: Boolean): ColumnData<M>
-    val dataFullCopy: ColumnData<M>
-        get() = dataCopy(withMetadata = true)
+    fun dataFullCopy(): ColumnData<M> = dataCopy(withMetadata = true)
 
     // ... Alternative methods that can be used with unique columns
     fun <N : MacrosEntity<N>, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, parent: N)

@@ -12,9 +12,7 @@ class LinuxSqlConfig: SqlConfig {
             "food-quantity-triggers.sql",
             "nutrient-value-triggers.sql",
             "inbuilt-units-nutrients-triggers.sql",
-            "timestamp-triggers.sql"
         )
-
 
         private val SQL_DIR = FileUtils.joinPath(LinuxConfig.PROJECT_DIR, "src/main/resources/sql")
     }

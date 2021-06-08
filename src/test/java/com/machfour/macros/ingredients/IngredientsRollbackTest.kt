@@ -1,9 +1,8 @@
-package ingredients
+package com.machfour.macros.ingredients
 
-import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.FoodPortionQueries
 import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.WriteQueries
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -22,8 +21,8 @@ class IngredientsRollbackTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                FoodPortionQueries.deleteAllIngredients(db)
-                FoodQueries.deleteAllCompositeFoods(db)
+                WriteQueries.deleteAllIngredients(db)
+                WriteQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)

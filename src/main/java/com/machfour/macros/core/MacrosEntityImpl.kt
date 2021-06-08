@@ -8,8 +8,8 @@ import java.time.Instant
  * parent class for all Macros persistable objects
  */
 abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
-        final override val data: ColumnData<M>,
-        final override val objectSource: ObjectSource
+    final override val data: ColumnData<M>,
+    final override val objectSource: ObjectSource
 ) : MacrosEntity<M> {
 
 

@@ -1,6 +1,7 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.*
+import com.machfour.macros.core.schema.Tables
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
@@ -115,14 +116,21 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
         val c = connection
         try {
             c.createStatement().use { s ->
-                val createSchemaSql = getSqlFromFile(config.initSqlFile)
-                val createTriggersSql = config.trigSqlFiles.map { getSqlFromFile(it) }
-                val initialDataSql = getSqlFromFile(config.dataSqlFile)
                 println("Create schema...")
+                val createSchemaSql = getSqlFromFile(config.initSqlFile)
                 s.executeUpdate(createSchemaSql)
-                println("Add triggers...")
+
+                println("Add timestamp triggers...")
+                Tables.all
+                    .flatMap { DatabaseUtils.createInitTimestampTriggers(it) }
+                    .forEach { s.executeUpdate(it) }
+
+                println("Add other triggers...")
+                val createTriggersSql = config.trigSqlFiles.map { getSqlFromFile(it) }
                 createTriggersSql.forEach { s.executeUpdate(it) }
+
                 println("Add data...")
+                val initialDataSql = getSqlFromFile(config.dataSqlFile)
                 s.executeUpdate(initialDataSql)
             }
         } finally {

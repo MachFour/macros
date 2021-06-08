@@ -1,14 +1,10 @@
-package ingredients
+package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.ColumnData
-import com.machfour.macros.ingredients.CompositeFoodSpec
-import com.machfour.macros.ingredients.IngredientSpec
-import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.entities.*
-import com.machfour.macros.queries.FoodPortionQueries
-import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.WriteQueries
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -40,8 +36,8 @@ class IngredientsTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
-                FoodPortionQueries.deleteAllIngredients(db)
-                FoodQueries.deleteAllCompositeFoods(db)
+                WriteQueries.deleteAllIngredients(db)
+                WriteQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)

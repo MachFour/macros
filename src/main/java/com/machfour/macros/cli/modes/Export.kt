@@ -8,6 +8,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvBackup
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileWriter
 import java.io.IOException
@@ -25,10 +26,10 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     @Throws(SQLException::class, IOException::class)
-    private fun <M : MacrosEntity<M>> exportTable(db: MacrosDatabase, outDir: String, t: Table<M>) {
+    private fun <M : MacrosEntity<M>> exportTable(ds: MacrosDataSource, outDir: String, t: Table<M>) {
         out.println("Exporting ${t.name} table...")
         val outCsvPath = joinPath(outDir, t.name + ".csv")
-        FileWriter(outCsvPath).use { CsvBackup.exportTable(db, t, it) }
+        FileWriter(outCsvPath).use { CsvBackup.exportTable(ds, t, it) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -37,7 +38,7 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             return 0
         }
         val outputDir = if (args.size >= 2) args[1] else config.defaultCsvOutputDir
-        val ds = config.databaseInstance
+        val ds = config.dataSource
         try {
             exportTable(ds, outputDir, Food.table)
             exportTable(ds, outputDir, FoodNutrientValue.table)

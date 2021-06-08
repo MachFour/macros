@@ -1,4 +1,4 @@
-package objects
+package com.machfour.macros.objects
 
 import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.MacrosEntity
@@ -8,7 +8,7 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodType
-import com.machfour.macros.queries.Queries
+import com.machfour.macros.queries.WriteQueries
 
 import java.io.IOException
 import java.sql.SQLException
@@ -78,7 +78,7 @@ class FoodTestForProfiling {
             lotsOfFoods.add(modifiedIndexName)
         }
         try {
-            Queries.insertObjects(db, lotsOfFoods, true)
+            WriteQueries.insertObjects(db, lotsOfFoods, true)
         } catch (e: SQLException) {
             e.printStackTrace()
         }

@@ -71,7 +71,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val ds = config.databaseInstance
+        val ds = config.database
         // MealSpec mealSpec = MealSpec.makeMealSpec(args);
 
         // TODO use argParsing here

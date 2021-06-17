@@ -5,8 +5,6 @@ import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.datatype.TypeCastException
 import com.machfour.macros.entities.*
-import com.machfour.macros.queries.FoodPortionQueries
-import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.persistence.CsvException
 import com.machfour.macros.persistence.CsvImport.importFoodData
 import com.machfour.macros.persistence.CsvImport.importRecipes
@@ -73,7 +71,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val servingCsvFile = config.servingCsvPath
         val recipeCsvFile = config.recipeCsvPath
         val ingredientsCsvFile = config.ingredientsCsvPath
-        val ds = config.databaseInstance
+        val ds = config.database
         try {
             if (doClear) {
                 if (!noFoodsServings) {

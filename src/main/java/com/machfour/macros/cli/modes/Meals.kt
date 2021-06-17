@@ -27,7 +27,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
 
         // cases: day not specified vs day specified
-        val ds = config.databaseInstance
+        val ds = config.database
         val date = when (val dateArg = findArgument(args, 1)) {
             is ArgParsing.Result.KeyValFound -> {
                 dayStringParse(dateArg.argument) ?: run {

@@ -24,9 +24,9 @@ interface MacrosConfig {
 
     val sqlConfig: SqlConfig
 
-    val databaseInstance: MacrosDatabase
+    val database: MacrosDatabase
     // for not-usual operations on the database
-    val databaseImplInstance: MacrosDatabaseImpl
+    val databaseImpl: MacrosDatabaseImpl
     val dataSource: MacrosDataSource
 
 }

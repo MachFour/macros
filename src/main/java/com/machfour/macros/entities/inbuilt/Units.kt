@@ -26,7 +26,7 @@ object Units {
 
     // this is lowercase so that CSV units can be lower case
     private val String.toMapKey: String
-        get() = this.toLowerCase()
+        get() = this.lowercase()
 
     private fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType, inbuilt: Boolean): Unit {
         val id = nextIndex++

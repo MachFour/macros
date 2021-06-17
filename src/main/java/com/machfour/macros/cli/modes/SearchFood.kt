@@ -42,7 +42,7 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
             return 0
         }
-        val ds = config.databaseInstance
+        val ds = config.database
         val searchString = args[1]
         val keywords = searchString.split(Regex("\\s"))
         val resultFoods = try {

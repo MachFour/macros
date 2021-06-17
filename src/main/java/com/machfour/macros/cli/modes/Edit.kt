@@ -45,7 +45,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val mealNameArg = ArgParsing.findArgument(args, 1)
         val dayArg = ArgParsing.findArgument(args, 2)
 
-        val ds = config.databaseInstance
+        val ds = config.database
 
         val mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg)
         mealSpec.process(ds, true)

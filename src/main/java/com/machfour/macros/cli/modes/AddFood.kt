@@ -40,7 +40,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
         val indexName = indexNameArg.argument
 
-        val ds = config.databaseInstance
+        val ds = config.database
 
         try {
             // TODO move this check inside MacrosBuilder validations

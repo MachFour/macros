@@ -20,7 +20,7 @@ class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         // cases: day not specified vs day specified
         // meal exists with that name, or doesn't exist
-        val ds = config.databaseInstance
+        val ds = config.database
 
         val mealNameArg = ArgParsing.findArgument(args, 1)
         val dayArg = ArgParsing.findArgument(args, 2)

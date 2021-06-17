@@ -25,7 +25,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return -1
         }
 
-        val ds = config.databaseInstance
+        val ds = config.database
 
         out.println("Retrieving foods...")
         out.println()

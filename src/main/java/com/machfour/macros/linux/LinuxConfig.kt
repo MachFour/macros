@@ -16,7 +16,7 @@ class LinuxConfig : MacrosConfig {
         internal const val PROJECT_DIR = "/home/max/devel/macros"
 
         private const val programName = "macros"
-        private const val dbName = "macros.sqlite"
+        private const val DEFAULT_DB_NAME = "macros.sqlite"
         private const val DATA_DIR = "/home/max/devel/macros-data"
         private const val DB_DIR = PROJECT_DIR
         private const val FOOD_CSV_NAME = "foods.csv"
@@ -26,11 +26,14 @@ class LinuxConfig : MacrosConfig {
 
         private val LIB_DIR = joinPath(PROJECT_DIR, "libs")
 
-        const val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-3.30.1.so"
+        private const val SQLITE_JDBC_VERSION = "3.34.0"
+        const val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-${SQLITE_JDBC_VERSION}.so"
 
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR
 
         private val inputReader = BufferedReader(InputStreamReader(System.`in`))
+
+        private val dbDefaultLocation = joinPath(DB_DIR, DEFAULT_DB_NAME)
 
     }
 
@@ -39,12 +42,32 @@ class LinuxConfig : MacrosConfig {
     override val inputReader: BufferedReader = Companion.inputReader
 
     override val programName = Companion.programName
-    override val dbName = Companion.dbName
-    override var dbLocation = joinPath(DB_DIR, dbName)
+    override val dbName = DEFAULT_DB_NAME
 
-    override val databaseImplInstance: MacrosDatabaseImpl = LinuxDatabase.getInstance(dbLocation)
-    override val databaseInstance: MacrosDatabase = databaseImplInstance
-    override val dataSource: MacrosDataSource = StaticDataSource(databaseInstance)
+    // allows setting up until the database is requested for the first time
+    override var dbLocation = dbDefaultLocation
+
+    private lateinit var databaseInstance: MacrosDatabaseImpl
+    private lateinit var dataSourceInstance: MacrosDataSource
+
+    override val databaseImpl: MacrosDatabaseImpl
+        get() {
+            if (!::databaseInstance.isInitialized) {
+                databaseInstance = LinuxDatabase.getInstance(dbLocation)
+            }
+            return databaseInstance
+        }
+
+    override val database: MacrosDatabase
+        get() = databaseImpl
+
+    override val dataSource: MacrosDataSource
+        get() {
+            if (!::dataSourceInstance.isInitialized) {
+                dataSourceInstance = StaticDataSource(databaseImpl)
+            }
+            return dataSourceInstance
+        }
 
     override val sqlConfig: SqlConfig = LinuxSqlConfig()
 

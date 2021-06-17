@@ -21,7 +21,7 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val ds = config.databaseInstance
+        val ds = config.database
         listFoods(ds)
 
         return 0

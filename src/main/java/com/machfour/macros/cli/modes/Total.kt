@@ -60,7 +60,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val per100 = args.contains("--per100")
         val allMeals = args.contains("--all")
 
-        val ds = config.databaseInstance
+        val ds = config.database
         val spec = makeMealSpec(args, allMeals)
         return process(spec, ds, allMeals, verbose, per100)
 

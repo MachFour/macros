@@ -72,8 +72,8 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromNonEmptyString(data: String): Boolean {
             // TODO internationalisation...
-            val truthy = truthyStrings.contains(data.toLowerCase())
-            val falsey = falseyStrings.contains(data.toLowerCase())
+            val truthy = truthyStrings.contains(data.lowercase())
+            val falsey = falseyStrings.contains(data.lowercase())
 
             // can't be both (bad programming)
             assert(!(truthy && falsey))

@@ -95,7 +95,7 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
                 val date = LocalDate.parse(dateString)
                 DateStamp(date)
             } catch (e: DateTimeParseException) {
-                throw IllegalArgumentException("Date string not in ISO-8601 format")
+                throw IllegalArgumentException("Date string not in ISO-8601 format: $dateString")
             }
         }
 

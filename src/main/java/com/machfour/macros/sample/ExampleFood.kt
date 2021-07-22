@@ -63,6 +63,7 @@ object ExampleFood {
 
         val nutritionData = listOf(
               FoodNutrientValue.makeComputedValue(3400.0, Nutrients.ENERGY, Units.KILOJOULES)
+            , FoodNutrientValue.makeComputedValue(40.0, Nutrients.PROTEIN, Units.GRAMS)
             , FoodNutrientValue.makeComputedValue(20.0, Nutrients.CARBOHYDRATE, Units.GRAMS)
             , FoodNutrientValue.makeComputedValue(90.0, Nutrients.FAT, Units.GRAMS)
             , FoodNutrientValue.makeComputedValue(12.0, Nutrients.SATURATED_FAT, Units.GRAMS)

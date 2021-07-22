@@ -74,6 +74,7 @@ INSERT INTO FoodCategory (name) VALUES
     , ('sauces, dips and spreads')
     , ('soft drinks')
     , ('soy products')
+    , ('sweets')
     , ('uncategorised')
 ;
 

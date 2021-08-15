@@ -7,7 +7,6 @@ import com.machfour.macros.core.Table
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvBackup
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileWriter

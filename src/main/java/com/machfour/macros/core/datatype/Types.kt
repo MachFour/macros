@@ -1,7 +1,6 @@
 package com.machfour.macros.core.datatype
 
 import com.machfour.macros.util.DateStamp
-import java.util.*
 
 // basic types corresponding roughly to database types
 // TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type

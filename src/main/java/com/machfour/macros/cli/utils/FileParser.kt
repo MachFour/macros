@@ -5,11 +5,11 @@ import com.machfour.macros.core.ColumnData
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.MealTable
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate

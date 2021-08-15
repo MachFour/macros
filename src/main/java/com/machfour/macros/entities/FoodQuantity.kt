@@ -1,11 +1,12 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
+import com.machfour.macros.core.Column
+import com.machfour.macros.core.ColumnData
+import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.util.toRoundedString
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
 abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     data: ColumnData<M>,

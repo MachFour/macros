@@ -7,7 +7,6 @@ import com.machfour.macros.core.datatype.MacrosType
 import com.machfour.macros.core.datatype.Types
 import com.machfour.macros.sql.ColumnExpr
 import com.machfour.macros.sql.Conjuction
-import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
 import java.io.IOException

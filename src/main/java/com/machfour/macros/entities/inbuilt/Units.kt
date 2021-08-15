@@ -5,8 +5,6 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.schema.UnitTable
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.UnitType
-import java.util.*
-import kotlin.collections.LinkedHashMap
 
 // Class of inbuilt quantity units
 // These definitions need to be outside the Unit class itself,

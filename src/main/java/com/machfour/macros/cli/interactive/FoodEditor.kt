@@ -17,6 +17,8 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.persistence.MacrosDatabase

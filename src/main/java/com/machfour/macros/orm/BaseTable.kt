@@ -1,4 +1,4 @@
-package com.machfour.macros.core
+package com.machfour.macros.orm
 
 import com.machfour.macros.core.schema.SchemaHelpers
 

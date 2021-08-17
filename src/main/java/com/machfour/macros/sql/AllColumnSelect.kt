@@ -1,21 +1,26 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Table
 
 class AllColumnSelect<M> private constructor(
-    table: Table<M>,
-) : SelectQuery<M>(
-    table,
-    listOf()
-) {
+    private val query: SelectQuery<M>
+) : SelectQuery<M> by query {
+
     companion object {
         fun <M> build(
             table: Table<M>,
-            queryOptions: AllColumnSelect<M>.() -> Unit
+            queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : AllColumnSelect<M> {
-            return AllColumnSelect(table).apply {
+            return Builder(table).run {
                 queryOptions()
+                build()
             }
+        }
+    }
+
+    private class Builder<M>(table: Table<M>): SelectQueryImpl.Builder<M>(table, emptyList()) {
+        fun build(): AllColumnSelect<M> {
+            return AllColumnSelect(buildQuery())
         }
     }
 }

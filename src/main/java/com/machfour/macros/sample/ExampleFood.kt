@@ -1,7 +1,7 @@
 package com.machfour.macros.sample
 
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.core.schema.FoodTable.Companion.BRAND
 import com.machfour.macros.core.schema.FoodTable.Companion.CATEGORY
 import com.machfour.macros.core.schema.FoodTable.Companion.EXTRA_DESC

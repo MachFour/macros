@@ -1,7 +1,7 @@
 package com.machfour.macros.entities.inbuilt
 
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.core.schema.UnitTable
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.UnitType

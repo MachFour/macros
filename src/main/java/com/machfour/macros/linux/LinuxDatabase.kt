@@ -5,6 +5,9 @@ import com.machfour.macros.core.schema.Tables
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Table
 import com.machfour.macros.sql.*
 import com.machfour.macros.persistence.DatabaseUtils
 import com.machfour.macros.persistence.MacrosDatabase
@@ -75,12 +78,12 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
 
     @Throws(SQLException::class)
     override fun closeConnection() {
-        requireNotNull(cachedConnection) { "A connection hasn't been opened" }
+        val c = cachedConnection
+        requireNotNull(c) { "A connection hasn't been opened" }
         // set instance variable to null first in case exception is thrown?
         // or is this shooting oneself in the foot?
-        val c: Connection = cachedConnection!!
-        this.cachedConnection = null
         c.close()
+        this.cachedConnection = null
     }
 
     // true if getConnection() returns a temporary connection that needs to be closed immediately after use
@@ -268,6 +271,18 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
             closeIfNecessary(c)
         }
         return saved
+    }
+
+    override fun executeRawStatement(sql: String): Int {
+        val c = connection
+
+        try {
+            c.createStatement().use {
+                return it.executeUpdate(sql)
+            }
+        } finally {
+            closeIfNecessary(c)
+        }
     }
 
     // Note that if the id is not found in the database, nothing will be inserted

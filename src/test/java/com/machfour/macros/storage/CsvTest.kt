@@ -1,7 +1,7 @@
 package com.machfour.macros.storage
 
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.orm.datatype.TypeCastException
 import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists

@@ -1,15 +1,15 @@
-package com.machfour.macros.core
+package com.machfour.macros.orm
 
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.orm.datatype.TypeCastException
 
 // Class which maps columns to their data values in instances of Macros objects
 class ColumnData<M> private constructor(
-        // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
-        // Internally, since all of the columns are known at compile time, we can just assign an index to each one
-        // and store the values in a list according to that index.
-        val table: Table<M>,
-        cols: Collection<Column<M, *>>,
-        existing: ColumnData<M>?
+    // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
+    // Internally, since all of the columns are known at compile time, we can just assign an index to each one
+    // and store the values in a list according to that index.
+    val table: Table<M>,
+    cols: Collection<Column<M, *>>,
+    existing: ColumnData<M>?
 ) {
 
     constructor(t: Table<M>, cols: Collection<Column<M, *>>) : this(t, cols, null)

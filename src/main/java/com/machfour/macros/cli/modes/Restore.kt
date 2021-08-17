@@ -3,8 +3,8 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.orm.Table
+import com.machfour.macros.orm.datatype.TypeCastException
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvRestore

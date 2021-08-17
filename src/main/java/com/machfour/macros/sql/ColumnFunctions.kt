@@ -1,6 +1,6 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.Column
 
 class ColumnMax<M, J> private constructor(col: Column<M, J>): ColumnExpr<M, J> {
     override val sql = "MAX(${col.sqlName})"

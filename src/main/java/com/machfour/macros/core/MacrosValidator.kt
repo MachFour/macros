@@ -1,5 +1,6 @@
 package com.machfour.macros.core
 
+import com.machfour.macros.orm.Column
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.validation.Validation
 

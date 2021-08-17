@@ -1,26 +1,35 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.Table
 
 class TwoColumnSelect<M, I, J> private constructor(
-    table: Table<M>,
     val column1: Column<M, I>,
     val column2: Column<M, J>,
-) : SelectQuery<M>(
-    table,
-    listOf(column1, column2)
-) {
+    private val query: SelectQuery<M>
+) : SelectQuery<M> by query {
+
     companion object {
         fun <M, I, J> build(
             table: Table<M>,
             column1: Column<M, I>,
             column2: Column<M, J>,
-            queryOptions: TwoColumnSelect<M, I, J>.() -> Unit
+            queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : TwoColumnSelect<M, I, J> {
-            return TwoColumnSelect(table, column1, column2).apply {
+            return Builder(table, column1, column2).run {
                 queryOptions()
+                build()
             }
+        }
+    }
+
+    private class Builder<M, I, J>(
+        table: Table<M>,
+        val column1: Column<M, I>,
+        val column2: Column<M, J>,
+    ) : SelectQueryImpl.Builder<M>(table, listOf(column1, column2)) {
+        fun build(): TwoColumnSelect<M, I, J> {
+            return TwoColumnSelect(column1, column2, buildQuery())
         }
     }
 }

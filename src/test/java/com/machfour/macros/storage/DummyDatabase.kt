@@ -1,9 +1,9 @@
 package com.machfour.macros.storage
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Table
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.sql.*
 
@@ -67,6 +67,10 @@ class DummyDatabase: MacrosDatabase {
     }
 
     override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int {
+        return 0
+    }
+
+    override fun executeRawStatement(sql: String): Int {
         return 0
     }
 }

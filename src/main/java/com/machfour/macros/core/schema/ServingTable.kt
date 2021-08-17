@@ -1,9 +1,9 @@
 package com.machfour.macros.core.schema
 
-import com.machfour.macros.core.BaseTable
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.BaseTable
+import com.machfour.macros.orm.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.orm.datatype.Types
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit

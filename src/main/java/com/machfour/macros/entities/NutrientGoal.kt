@@ -6,6 +6,10 @@ import com.machfour.macros.core.schema.NutrientGoalValueTable
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.nutrientdata.GenericNutrientData
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 import com.machfour.macros.util.DateStamp
 
 

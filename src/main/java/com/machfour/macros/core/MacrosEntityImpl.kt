@@ -1,5 +1,6 @@
 package com.machfour.macros.core
 
+import com.machfour.macros.orm.*
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.ValidationError
 import java.time.Instant
@@ -139,7 +140,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
 
     // this also works for import (without IDs) because both columns are NO_ID
     protected fun <M : MacrosEntity<M>, J, N : MacrosEntity<N>> foreignKeyMatches(
-            childObj: MacrosEntityImpl<M>, childCol: Column.Fk<M, J, N>, parentObj: MacrosEntityImpl<N>): Boolean {
+        childObj: MacrosEntityImpl<M>, childCol: Column.Fk<M, J, N>, parentObj: MacrosEntityImpl<N>): Boolean {
         val childData = childObj.getData(childCol)
         val parentData = parentObj.getData(childCol.parentColumn)
         return childData == parentData

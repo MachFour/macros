@@ -1,4 +1,4 @@
-package com.machfour.macros.core.datatype
+package com.machfour.macros.orm.datatype
 
 /*
  * Exception to be thrown when casting from one MacrosType to another fails.

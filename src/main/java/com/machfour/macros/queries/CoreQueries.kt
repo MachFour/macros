@@ -1,6 +1,8 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.*
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.Table
 import com.machfour.macros.sql.*
 import com.machfour.macros.persistence.MacrosDatabase
 import java.sql.SQLException
@@ -56,7 +58,7 @@ internal object CoreQueries {
         ds: MacrosDatabase,
         table: Table<M>,
         selectColumn: Column<M, I>,
-        queryOptions: SingleColumnSelect<M, I>.() -> Unit
+        queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<I?> {
         return ds.selectColumn(SingleColumnSelect.build(table, selectColumn, queryOptions))
     }
@@ -67,7 +69,7 @@ internal object CoreQueries {
         table: Table<M>,
         select1: Column<M, I>,
         select2: Column<M, J>,
-        queryOptions: TwoColumnSelect<M, I, J>.() -> Unit
+        queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<Pair<I?, J?>> {
         return ds.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
     }
@@ -76,7 +78,7 @@ internal object CoreQueries {
         ds: MacrosDatabase,
         table: Table<M>,
         selectColumn: Column<M, I>,
-        queryOptions: SingleColumnSelect<M, I>.() -> Unit
+        queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<I> {
         return ds.selectNonNullColumn(SingleColumnSelect.build(table, selectColumn, queryOptions))
     }

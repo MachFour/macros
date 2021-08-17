@@ -1,6 +1,6 @@
 package com.machfour.macros.entities.auxiliary
 
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.Column
 import com.machfour.macros.core.VErrorList
 import com.machfour.macros.core.schema.FoodNutrientValueTable
 import com.machfour.macros.entities.FoodNutrientValue

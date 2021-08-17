@@ -1,4 +1,4 @@
-package com.machfour.macros.core.datatype
+package com.machfour.macros.orm.datatype
 
 abstract class MacrosTypeImpl<J> : MacrosType<J> {
     // gets the java class associated with this type

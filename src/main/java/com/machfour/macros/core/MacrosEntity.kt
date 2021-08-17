@@ -1,5 +1,7 @@
 package com.machfour.macros.core
 
+import com.machfour.macros.orm.*
+
 /**
  * Defines common methods for each object to be persisted
  */

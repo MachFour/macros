@@ -1,10 +1,10 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
-import com.machfour.macros.core.datatype.MacrosType
-import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.orm.Table
+import com.machfour.macros.orm.datatype.MacrosType
+import com.machfour.macros.orm.datatype.Types
 import com.machfour.macros.sql.ColumnExpr
 import com.machfour.macros.sql.Conjuction
 import com.machfour.macros.util.StringJoiner

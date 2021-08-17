@@ -1,9 +1,9 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Table
 import com.machfour.macros.sql.AllColumnSelect
 import com.machfour.macros.sql.MultiColumnSelect
 import com.machfour.macros.sql.SingleColumnSelect
@@ -60,6 +60,10 @@ class NullDatabase: MacrosDatabase {
     }
 
     override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int {
+        return 0
+    }
+
+    override fun executeRawStatement(sql: String): Int {
         return 0
     }
 }

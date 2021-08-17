@@ -1,8 +1,8 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
@@ -91,15 +91,24 @@ object WriteQueries {
      * Entity-specific
      */
     @Throws(SQLException::class)
-    fun forgetFood(ds: MacrosDatabase, f: Food) {
+    fun forgetFood(db: MacrosDatabase, f: Food) {
         require(f.objectSource === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
         // delete nutrition data, foodQuantities, servings, then food
 
         // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
-        ds.deleteByColumn(FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
-        ds.deleteByColumn(Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
-        deleteObject(ds, f)
+        db.deleteByColumn(FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
+        db.deleteByColumn(Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
+        deleteObject(db, f)
     }
+
+    @Throws(SQLException::class)
+    fun setSearchRelevanceForFoodType(db: MacrosDatabase, foodType: FoodType, value: Int) {
+        db.executeRawStatement(
+            "UPDATE ${Food.table.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
+                "${FoodTable.FOOD_TYPE} = ${foodType.niceName}"
+        )
+    }
+
 
     @Throws(SQLException::class)
     fun deleteAllCompositeFoods(ds: MacrosDatabase) : Int {

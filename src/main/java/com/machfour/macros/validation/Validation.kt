@@ -1,7 +1,7 @@
 package com.machfour.macros.validation
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnData
 
 fun interface Validation<M> {
     fun validate(data: ColumnData<M>): Map<Column<M, *>, List<ValidationError>>

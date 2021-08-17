@@ -2,6 +2,10 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.FoodAttributeTable
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 
 class FoodAttribute private constructor(data: ColumnData<FoodAttribute>, objectSource: ObjectSource)
     : MacrosEntityImpl<FoodAttribute>(data, objectSource) {

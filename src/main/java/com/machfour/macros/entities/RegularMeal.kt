@@ -2,6 +2,10 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.RegularMealTable
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 
 class RegularMeal(data: ColumnData<RegularMeal>, objectSource: ObjectSource) : MacrosEntityImpl<RegularMeal>(data, objectSource) {
     companion object {

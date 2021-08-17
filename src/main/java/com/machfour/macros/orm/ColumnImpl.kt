@@ -1,17 +1,17 @@
-package com.machfour.macros.core
+package com.machfour.macros.orm
 
-import com.machfour.macros.core.datatype.MacrosType
+import com.machfour.macros.orm.datatype.MacrosType
 
 import kotlin.properties.Delegates
 
 internal open class ColumnImpl<M, J> private constructor(
-        override val sqlName: String,
-        override val type: MacrosType<J>,
-        private val defaultValue: () -> J?,
-        override val isUserEditable: Boolean,
-        override val isNullable: Boolean,
-        override val isInSecondaryKey: Boolean,
-        override val isUnique: Boolean
+    override val sqlName: String,
+    override val type: MacrosType<J>,
+    private val defaultValue: () -> J?,
+    override val isUserEditable: Boolean,
+    override val isNullable: Boolean,
+    override val isInSecondaryKey: Boolean,
+    override val isUnique: Boolean
 ) : Column<M, J> {
 
     // These are set later, when added to Table
@@ -27,15 +27,15 @@ internal open class ColumnImpl<M, J> private constructor(
     }
 
     internal class Fk<M, J, N> internal constructor(
-            name: String, type: MacrosType<J>,
-            defaultValue: () -> J?,
-            editable: Boolean,
-            nullable: Boolean,
-            inSecondaryKey: Boolean,
-            unique: Boolean,
-            override val parentColumn: Column<N, J>,
-            override val parentTable: Table<N>)
-        : ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique), Column.Fk<M, J, N> {
+        name: String, type: MacrosType<J>,
+        defaultValue: () -> J?,
+        editable: Boolean,
+        nullable: Boolean,
+        inSecondaryKey: Boolean,
+        unique: Boolean,
+        override val parentColumn: Column<N, J>,
+        override val parentTable: Table<N>
+    ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique), Column.Fk<M, J, N> {
 
         override fun toString(): String {
             return super.toString() + " (-> " + parentTable.name + "." + parentColumn.sqlName + ")"

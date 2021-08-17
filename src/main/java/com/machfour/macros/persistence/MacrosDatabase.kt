@@ -1,9 +1,9 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Table
 import com.machfour.macros.sql.AllColumnSelect
 import com.machfour.macros.sql.MultiColumnSelect
 import com.machfour.macros.sql.SingleColumnSelect
@@ -66,5 +66,9 @@ interface MacrosDatabase {
 
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
+
+    // XXX
+    @Throws(SQLException::class)
+    fun executeRawStatement(sql: String): Int
 
 }

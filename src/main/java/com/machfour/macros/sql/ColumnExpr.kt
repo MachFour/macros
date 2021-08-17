@@ -1,7 +1,7 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.Table
-import com.machfour.macros.core.datatype.MacrosType
+import com.machfour.macros.orm.Table
+import com.machfour.macros.orm.datatype.MacrosType
 
 /*
  * Represents a generalised column expression, which may be either a column itself,

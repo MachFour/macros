@@ -1,9 +1,9 @@
 package com.machfour.macros.core.schema
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.ColumnImpl
-import com.machfour.macros.core.datatype.MacrosType
-import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.ColumnImpl
+import com.machfour.macros.orm.datatype.MacrosType
+import com.machfour.macros.orm.datatype.Types
 
 import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
 

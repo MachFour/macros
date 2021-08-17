@@ -1,6 +1,6 @@
 package com.machfour.macros.core.schema
 
-import com.machfour.macros.core.Table
+import com.machfour.macros.orm.Table
 
 // Just a list of all tables, in a separate file to avoid static initialisation order issues
 object Tables {

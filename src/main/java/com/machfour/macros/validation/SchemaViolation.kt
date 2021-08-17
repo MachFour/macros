@@ -1,6 +1,6 @@
 package com.machfour.macros.validation
 
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.Column
 
 class SchemaViolation : RuntimeException {
     constructor (c: Column<*, *>, v: ValidationError) : super("Schema error (" + v + ") found in column: " + c.sqlName)

@@ -1,8 +1,8 @@
 package com.machfour.macros.sample
 
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.core.schema.NutrientGoalTable
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.inbuilt.Nutrients.CARBOHYDRATE

@@ -1,4 +1,4 @@
-package com.machfour.macros.core
+package com.machfour.macros.orm
 
 /*
  * Describes how an object was created, which describes its state with respect to the database.

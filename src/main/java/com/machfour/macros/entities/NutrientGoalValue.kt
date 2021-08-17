@@ -1,8 +1,11 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.NutrientGoalValueTable
 import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 
 class NutrientGoalValue internal constructor(
     data: ColumnData<NutrientGoalValue>,

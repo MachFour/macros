@@ -1,4 +1,4 @@
-package com.machfour.macros.core.datatype
+package com.machfour.macros.orm.datatype
 
 import com.machfour.macros.util.DateStamp
 

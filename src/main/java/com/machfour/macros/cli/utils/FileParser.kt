@@ -1,8 +1,8 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
-import com.machfour.macros.core.ColumnData
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.core.schema.FoodPortionTable
 import com.machfour.macros.core.schema.MealTable
 import com.machfour.macros.entities.Food

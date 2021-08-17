@@ -5,6 +5,10 @@ import com.machfour.macros.core.schema.ServingTable
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Nutrients.QUANTITY
 import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 
 class Serving internal constructor(data: ColumnData<Serving>, objectSource: ObjectSource)
     : MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {

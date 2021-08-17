@@ -1,4 +1,4 @@
-package com.machfour.macros.core.datatype
+package com.machfour.macros.orm.datatype
 
 interface MacrosType<J> {
     // These methods perform type-specific conversion is necessary

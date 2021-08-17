@@ -1,9 +1,10 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
 import com.machfour.macros.core.schema.FoodTable
 import com.machfour.macros.core.schema.IngredientTable
 import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.ObjectSource
 
 class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 

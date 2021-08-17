@@ -1,8 +1,8 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.Column
-import com.machfour.macros.core.datatype.MacrosType
-import com.machfour.macros.core.datatype.Types
+import com.machfour.macros.orm.Column
+import com.machfour.macros.orm.datatype.MacrosType
+import com.machfour.macros.orm.datatype.Types
 import com.machfour.macros.persistence.DatabaseUtils
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column

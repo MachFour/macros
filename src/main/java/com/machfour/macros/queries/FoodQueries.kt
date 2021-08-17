@@ -111,23 +111,23 @@ object FoodQueries {
     }
 
     // The proper way to get all foods
-    fun getAllFoodsMap(ds: MacrosDatabase): Map<Long, Food> {
-        val allFoods = getAllRawObjects(ds, Food.table)
-        val allServings = getAllRawObjects(ds, Serving.table)
-        val allNutrientData = getAllRawObjects(ds, FoodNutrientValue.table)
-        val allFoodCategories = getAllFoodCategories(ds)
-        val allIngredients = getAllRawObjects(ds, Ingredient.table)
-        processRawIngredients(ds, allIngredients)
+    fun getAllFoodsMap(db: MacrosDatabase): Map<Long, Food> {
+        val allFoods = getAllRawObjects(db, Food.table)
+        val allServings = getAllRawObjects(db, Serving.table)
+        val allNutrientData = getAllRawObjects(db, FoodNutrientValue.table)
+        val allFoodCategories = getAllFoodCategories(db)
+        val allIngredients = getAllRawObjects(db, Ingredient.table)
+        processRawIngredients(db, allIngredients)
         processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
         return allFoods
     }
 
     @Throws(SQLException::class)
-    fun getFoodsById(ds: MacrosDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
+    fun getFoodsById(db: MacrosDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
         // this map is unordered due to order of database results being unpredictable,
         // we can sort it later if necessary
-        val unorderedFoods = getRawObjectsByIds(ds, Food.table, foodIds)
-        processRawFoodMap(ds, unorderedFoods)
+        val unorderedFoods = getRawObjectsByIds(db, Food.table, foodIds)
+        processRawFoodMap(db, unorderedFoods)
         return if (!preserveOrder) {
             unorderedFoods
         } else {
@@ -141,8 +141,8 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getServingsById(ds: MacrosDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
-        return getRawObjectsByIds(ds, Serving.table, servingIds)
+    fun getServingsById(db: MacrosDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
+        return getRawObjectsByIds(db, Serving.table, servingIds)
     }
 
     /*
@@ -150,17 +150,17 @@ object FoodQueries {
      * Returns a map of index name to food object
      */
     @Throws(SQLException::class)
-    fun getFoodsByIndexName(ds: MacrosDatabase, indexNames: Collection<String>): Map<String, Food> {
-        val foods = getRawObjectsByKeys(ds, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
+    fun getFoodsByIndexName(db: MacrosDatabase, indexNames: Collection<String>): Map<String, Food> {
+        val foods = getRawObjectsByKeys(db, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
-        processRawFoodMap(ds, idMap)
+        processRawFoodMap(db, idMap)
         return foods
     }
 
     @Throws(SQLException::class)
-    fun getParentFoodIdsContainingFoodIds(ds: MacrosDatabase, foodIds: List<Long>): List<Long> {
-        return CoreQueries.selectNonNullColumn(ds, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
+    fun getParentFoodIdsContainingFoodIds(db: MacrosDatabase, foodIds: List<Long>): List<Long> {
+        return CoreQueries.selectNonNullColumn(db, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
             where(IngredientTable.FOOD_ID, foodIds)
             distinct()
         }

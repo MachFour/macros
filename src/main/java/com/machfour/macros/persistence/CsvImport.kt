@@ -1,7 +1,7 @@
 package com.machfour.macros.persistence
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.orm.datatype.TypeCastException
 import com.machfour.macros.core.schema.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
@@ -9,6 +9,9 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.CoreQueries

@@ -1,7 +1,7 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
-import com.machfour.macros.core.ColumnData
+import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.entities.*
 import com.machfour.macros.queries.WriteQueries

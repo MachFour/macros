@@ -1,10 +1,10 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.Column
+import com.machfour.macros.orm.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.core.Table
-import com.machfour.macros.core.datatype.TypeCastException
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.Table
+import com.machfour.macros.orm.datatype.TypeCastException
 import com.machfour.macros.queries.MacrosDataSource
 import java.io.IOException
 import java.io.PrintStream

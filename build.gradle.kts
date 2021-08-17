@@ -30,9 +30,9 @@ tasks.withType<Copy> {
 tasks.withType<Jar> {
     // This code recursively collects and copies all of a project's files and adds them to the JAR itself.
     // One can extend this task, to skip certain files or particular types at will
-    from(
-        configurations.runtimeClasspath.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } }
-    )
+    from(configurations.runtimeClasspath.map {
+            config -> config.map { if (it.isDirectory) it else zipTree(it) }
+    })
     manifest {
         attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
     }

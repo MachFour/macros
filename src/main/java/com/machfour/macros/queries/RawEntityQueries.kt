@@ -1,9 +1,9 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.sql.generator.AllColumnSelect
 import com.machfour.macros.sql.generator.MultiColumnSelect
 import java.sql.SQLException
@@ -15,7 +15,7 @@ internal object RawEntityQueries {
     // The returned map is never null and is unordered
     @Throws(SQLException::class)
     internal fun <M, J> getRawObjectsByKeys(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         t: Table<M>,
         keyCol: Column<M, J>,
         keys: Collection<J>,
@@ -42,7 +42,7 @@ internal object RawEntityQueries {
     }
 
     @Throws(SQLException::class)
-    private fun <M> getRawObjectsById(ds: MacrosDatabase, t: Table<M>, query: AllColumnSelect<M>): Map<Long, M> {
+    private fun <M> getRawObjectsById(ds: SqlDatabase, t: Table<M>, query: AllColumnSelect<M>): Map<Long, M> {
         val objects = if (query.isOrdered) LinkedHashMap<Long, M>() else HashMap<Long, M>()
         val resultData = ds.selectAllColumns(t, query)
         for (objectData in resultData) {
@@ -56,7 +56,7 @@ internal object RawEntityQueries {
     }
 
     @Throws(SQLException::class)
-    internal fun <M> getAllRawObjects(ds: MacrosDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
+    internal fun <M> getAllRawObjects(ds: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
         val query = AllColumnSelect.build(t) {
             if (orderBy != null) {
                 orderBy(orderBy)
@@ -66,13 +66,13 @@ internal object RawEntityQueries {
     }
 
     @Throws(SQLException::class)
-    internal fun <M> getRawObjectsByIds(ds: MacrosDatabase, t: Table<M>, ids: Collection<Long>): Map<Long, M> {
+    internal fun <M> getRawObjectsByIds(ds: SqlDatabase, t: Table<M>, ids: Collection<Long>): Map<Long, M> {
         return getRawObjectsByKeys(ds, t, t.idColumn, ids)
     }
 
     @Throws(SQLException::class)
     internal fun <M, N> getRawObjectsForParentFk(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         parentObjectMap: Map<Long, N>,
         childTable: Table<M>,
         fkCol: Column.Fk<M, Long, N>

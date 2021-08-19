@@ -1,14 +1,14 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.RowData
 
 abstract class NutrientValue<M: NutrientValue<M>> protected constructor(
-    data: ColumnData<M>,
+    data: RowData<M>,
     objectSource: ObjectSource,
 
     private val nutrientIdCol: Column.Fk<M, Long, Nutrient>,

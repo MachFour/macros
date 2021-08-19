@@ -1,6 +1,10 @@
 package com.machfour.macros.sample
 
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.FoodType
+import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable.Companion.BRAND
 import com.machfour.macros.orm.schema.FoodTable.Companion.CATEGORY
@@ -10,12 +14,9 @@ import com.machfour.macros.orm.schema.FoodTable.Companion.INDEX_NAME
 import com.machfour.macros.orm.schema.FoodTable.Companion.NAME
 import com.machfour.macros.orm.schema.FoodTable.Companion.NOTES
 import com.machfour.macros.orm.schema.FoodTable.Companion.NUTTAB_INDEX
-import com.machfour.macros.entities.*
-
 import com.machfour.macros.orm.schema.FoodTable.Companion.USDA_INDEX
 import com.machfour.macros.orm.schema.FoodTable.Companion.VARIETY
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.sql.RowData
 
 object ExampleFood {
     private val foodTable = Food.table
@@ -36,7 +37,7 @@ object ExampleFood {
     }
 
     private fun init1(): Food {
-        val data = ColumnData(foodTable)
+        val data = RowData(foodTable)
         data.put(INDEX_NAME, "food1")
         data.put(BRAND, "Max's")
         data.put(VARIETY, "really good")
@@ -50,7 +51,7 @@ object ExampleFood {
     }
 
     private fun init2(): Food {
-        val data = ColumnData(foodTable)
+        val data = RowData(foodTable)
         data.put(INDEX_NAME, "generic-oil")
         data.put(VARIETY, "Super oily")
         data.put(EXTRA_DESC, "in a bottle")

@@ -6,14 +6,13 @@ import com.machfour.macros.cli.utils.CliUtils
 import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.queries.WriteQueries
-import com.machfour.macros.persistence.MacrosDatabase
-
+import com.machfour.macros.sql.SqlDatabase
 import java.sql.SQLException
 
 
@@ -62,7 +61,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         return startEditor(ds, toEdit!!.id)
     }
 
-    private fun startEditor(ds: MacrosDatabase, mealId: Long): Int {
+    private fun startEditor(ds: SqlDatabase, mealId: Long): Int {
         val toEdit: Meal?
         try {
             toEdit = MealQueries.getMealById(ds, mealId)
@@ -115,7 +114,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
     }
 
-    private fun addPortion(toEdit: Meal, db: MacrosDatabase) {
+    private fun addPortion(toEdit: Meal, db: SqlDatabase) {
         out.println("Please enter the portion information (see help for how to specify a food portion)")
         // copy from portion
         val inputString = CliUtils.getStringInput(input, out)
@@ -135,7 +134,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         out.println()
     }
 
-    private fun deleteMeal(toDelete: Meal, db: MacrosDatabase) {
+    private fun deleteMeal(toDelete: Meal, db: SqlDatabase) {
         out.print("Delete meal")
         out.print("Are you sure? [y/N] ")
         if ((CliUtils.getChar(input, out) == 'y') or (CliUtils.getChar(input, out) == 'Y')) {
@@ -148,7 +147,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
     }
 
-    private fun deleteFoodPortion(toEdit: Meal, ds: MacrosDatabase) {
+    private fun deleteFoodPortion(toEdit: Meal, ds: SqlDatabase) {
         out.println("Delete food portion")
         showFoodPortions(toEdit)
         out.print("Enter the number of the food portion to delete and press enter: ")
@@ -169,7 +168,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         out.println()
     }
 
-    private fun editFoodPortion(m: Meal, ds: MacrosDatabase) {
+    private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
         out.println("Edit food portion")
         showFoodPortions(m)
         out.print("Enter the number of the food portion to edit and press enter: ")

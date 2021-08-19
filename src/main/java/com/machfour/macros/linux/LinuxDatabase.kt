@@ -1,17 +1,10 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.Tables
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
-import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.sql.Table
-import com.machfour.macros.persistence.DatabaseUtils
-import com.machfour.macros.persistence.MacrosDatabase
-import com.machfour.macros.persistence.MacrosDatabaseImpl
-import com.machfour.macros.sql.SqlConfig
+import com.machfour.macros.linux.LinuxDatabaseUtils.toRowData
+import com.machfour.macros.orm.schema.Tables
+import com.machfour.macros.sql.*
 import com.machfour.macros.sql.generator.*
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
@@ -25,7 +18,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 
 // data source provided by Xerial library
-class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), MacrosDatabase {
+class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), SqlDatabase {
     companion object {
         // singleton
         private lateinit var instance: LinuxDatabase
@@ -117,7 +110,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
     @Throws(SQLException::class, IOException::class)
     override fun initDb(config: SqlConfig) {
         // TODO insert data from Units and Nutrients classes instead of initial data
-        val getSqlFromFile : (File) -> String = { FileReader(it).use { reader -> DatabaseUtils.createStatements(reader) } }
+        val getSqlFromFile : (File) -> String = { FileReader(it).use { reader -> SqlUtils.createStatements(reader) } }
         val c = connection
         try {
             c.createStatement().use { s ->
@@ -127,7 +120,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
 
                 println("Add timestamp triggers...")
                 Tables.all
-                    .flatMap { DatabaseUtils.createInitTimestampTriggers(it) }
+                    .flatMap { SqlUtils.createInitTimestampTriggers(it) }
                     .forEach { s.executeUpdate(it) }
 
                 println("Add other triggers...")
@@ -160,7 +153,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
     override fun <M> deleteById(t: Table<M>, id: Long): Int {
         val c = connection
         try {
-            val sqlTemplate = DatabaseUtils.deleteWhereTemplate(t, t.idColumn, 1)
+            val sqlTemplate = SqlUtils.deleteWhereTemplate(t, t.idColumn, 1)
             c.prepareStatement(sqlTemplate).use { statement ->
                 LinuxDatabaseUtils.bindObjects(statement, listOf(id))
                 statement.executeUpdate()
@@ -194,20 +187,20 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
     }
 
     @Throws(SQLException::class)
-    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>> {
-        val resultData = ArrayList<ColumnData<M>>()
+    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
+        val resultData = ArrayList<RowData<M>>()
         val columns = query.columns
         executeQuery(query) {
-            resultData.add(it.toColumnData(t, columns))
+            resultData.add(it.toRowData(t, columns))
         }
         return resultData
     }
 
     @Throws(SQLException::class)
-    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>> {
-        val resultData = ArrayList<ColumnData<M>>()
+    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
+        val resultData = ArrayList<RowData<M>>()
         executeQuery(query) {
-            resultData.add(it.toColumnData(t))
+            resultData.add(it.toRowData(t))
         }
         return resultData
     }
@@ -238,12 +231,12 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
     }
 
     @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int {
-        if (objectData.isEmpty()) {
+    override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
+        if (data.isEmpty()) {
             return 0
         }
         var saved = 0
-        val table = objectData[0].table
+        val table = data.first().table
         // even if we are inserting for the first time, there may be it has an ID that we want to keep intact
         val columnsToInsert = if (withId) {
             table.columns
@@ -253,10 +246,12 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
         val c = connection
         val prevAutoCommit = c.autoCommit
         c.autoCommit = false
-        val statement = DatabaseUtils.insertTemplate(table, columnsToInsert)
+        val statement = SqlUtils.insertTemplate(table, columnsToInsert)
+        var currentRow: RowData<M>? = null
         try {
             c.prepareStatement(statement).use { p ->
-                for (row in objectData) {
+                for (row in data) {
+                    currentRow = row
                     LinuxDatabaseUtils.bindData(p, row, columnsToInsert)
                     saved += p.executeUpdate()
                     p.clearParameters()
@@ -267,7 +262,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
                 }
             }
         } catch (e: SQLException) {
-            val msg = "${e.message} thrown by insertObjectData() on table ${table.name} and object data: ${objectData[saved]}"
+            val msg = "${e.message} thrown by insertObjectData() on table ${table.name} and object data: $currentRow"
             throw SQLException(msg, e.cause)
         } finally {
             closeIfNecessary(c)
@@ -280,28 +275,27 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
 
         try {
             c.createStatement().use {
-                return it.executeUpdate(sql)
+                it.executeUpdate(sql)
             }
         } finally {
             closeIfNecessary(c)
         }
     }
 
-    // Note that if the id is not found in the database, nothing will be inserted
     @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
-        if (objects.isEmpty()) {
+    override fun <M> updateRows(data: Collection<RowData<M>>): Int {
+        if (data.isEmpty()) {
             return 0
         }
         var saved = 0
-        val table = objects.first().table
+        val table = data.first().table
         val c = connection
         val prevAutoCommit = c.autoCommit
         c.autoCommit = false
         try {
-            c.prepareStatement(DatabaseUtils.updateTemplate(table, table.columns, table.idColumn)).use { p ->
-                for (obj in objects) {
-                    LinuxDatabaseUtils.bindData(p, obj.data, table.columns, obj.id)
+            c.prepareStatement(SqlUtils.updateTemplate(table, table.columns, table.idColumn)).use { p ->
+                for (row in data) {
+                    LinuxDatabaseUtils.bindData(p, row, table.columns, row[table.idColumn])
                     saved += p.executeUpdate()
                     p.clearParameters()
                 }
@@ -321,7 +315,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
         val removed: Int
         val c = connection
         try {
-            c.prepareStatement(DatabaseUtils.deleteAllTemplate(t)).use { p -> removed = p.executeUpdate() }
+            c.prepareStatement(SqlUtils.deleteAllTemplate(t)).use { p -> removed = p.executeUpdate() }
         } finally {
             closeIfNecessary(c)
         }
@@ -333,7 +327,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
         val removed: Int
         val c = connection
         try {
-            c.prepareStatement(DatabaseUtils.deleteWhereTemplate(t, whereColumn, whereValues.size)).use { p ->
+            c.prepareStatement(SqlUtils.deleteWhereTemplate(t, whereColumn, whereValues.size)).use { p ->
                 LinuxDatabaseUtils.bindObjects(p, whereValues)
                 removed = p.executeUpdate()
             }
@@ -347,7 +341,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
     override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int {
         val removed: Int
         val c = connection
-        val template = DatabaseUtils.deleteWhereNullTemplate(t, whereColumn, isNotNull = trueForNotNulls)
+        val template = SqlUtils.deleteWhereNullTemplate(t, whereColumn, isNotNull = trueForNotNulls)
         try {
             c.prepareStatement(template).use {
                 removed = it.executeUpdate()

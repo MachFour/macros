@@ -2,14 +2,14 @@
 
 package com.machfour.macros.entities
 
-import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
-class FoodPortion internal constructor(data: ColumnData<FoodPortion>, objectSource: ObjectSource
+class FoodPortion internal constructor(data: RowData<FoodPortion>, objectSource: ObjectSource
 ) : FoodQuantity<FoodPortion>(
     data, objectSource,
     FoodPortionTable.FOOD_ID,

@@ -1,10 +1,10 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.Table
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.queries.RawEntityQueries
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.Table
 import org.supercsv.io.CsvMapWriter
 import org.supercsv.io.ICsvMapWriter
 import org.supercsv.prefs.CsvPreference
@@ -28,7 +28,7 @@ object CsvBackup {
     }
 
     // don't edit keyset!
-    private fun <M> prepareDataForExport(data: ColumnData<M>): Map<String, String> {
+    private fun <M> prepareDataForExport(data: RowData<M>): Map<String, String> {
         return LinkedHashMap<String, String>().apply {
             data.table.columns.forEach { col ->
                 // null data gets mapped to empty string

@@ -1,8 +1,9 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.orm.*
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.ValidationError
@@ -12,7 +13,7 @@ import java.time.Instant
  * parent class for all Macros persistable objects
  */
 abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
-    final override val data: ColumnData<M>,
+    final override val data: RowData<M>,
     final override val objectSource: ObjectSource
 ) : MacrosEntity<M> {
 
@@ -26,10 +27,10 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     val modifyInstant: Instant
 
     // TODO only really need to map to the Natural key value,
-    // but there's no convenient way of enforcing the type relationship except by wrapping it in a ColumnData
-    private val mutableFkForeignKeyMap: MutableMap<Column.Fk<M, *, *>, ColumnData<*>> = HashMap()
+    // but there's no convenient way of enforcing the type relationship except by wrapping it in a RowData
+    private val mutableFkForeignKeyMap: MutableMap<Column.Fk<M, *, *>, RowData<*>> = HashMap()
 
-    override val fkNaturalKeyMap: Map<Column.Fk<M, *, *>, ColumnData<*>>
+    override val fkNaturalKeyMap: Map<Column.Fk<M, *, *>, RowData<*>>
         get() = mutableFkForeignKeyMap // should be immutable
 
 
@@ -39,7 +40,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         if (errors.isNotEmpty()) {
             throw SchemaViolation(errors)
         }
-        //this.dataMap = new ColumnData<>(data);
+        //this.dataMap = new RowData<>(data);
         this.data.setImmutable()
         createInstant = Instant.ofEpochSecond(data[data.table.createTimeColumn]!!)
         modifyInstant = Instant.ofEpochSecond(data[data.table.modifyTimeColumn]!!)
@@ -87,7 +88,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         columnsToCheck.remove(table.idColumn)
         columnsToCheck.remove(table.createTimeColumn)
         columnsToCheck.remove(table.modifyTimeColumn)
-        return ColumnData.columnsAreEqual(this.data, o.data, columnsToCheck)
+        return RowData.columnsAreEqual(this.data, o.data, columnsToCheck)
     }
 
     final override fun <J> getData(col: Column<M, J>): J? {
@@ -100,7 +101,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return data.hasData(col)
     }
 
-    override fun dataCopy(withMetadata: Boolean): ColumnData<M> {
+    override fun dataCopy(withMetadata: Boolean): RowData<M> {
         val copy = data.copy()
         return when (withMetadata) {
             true -> copy
@@ -125,16 +126,16 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     override fun <N, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, data: J) {
         assert(parentNaturalKey.isUnique)
         val parentKeyColAsList: List<Column<N, *>> = listOf(parentNaturalKey)
-        val parentSecondaryKey = ColumnData(fkCol.parentTable, parentKeyColAsList)
+        val parentSecondaryKey = RowData(fkCol.parentTable, parentKeyColAsList)
         parentSecondaryKey.put(parentNaturalKey, data)
         mutableFkForeignKeyMap[fkCol] = parentSecondaryKey
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <N> getFkParentNaturalKey(fkCol: Column.Fk<M, *, N>): ColumnData<N> {
+    override fun <N> getFkParentNaturalKey(fkCol: Column.Fk<M, *, N>): RowData<N> {
         // Generics ensure that the table types match
         assert(fkNaturalKeyMap.containsKey(fkCol)) { "No FK parent data for column: $fkCol" }
-        return fkNaturalKeyMap[fkCol] as ColumnData<N>
+        return fkNaturalKeyMap[fkCol] as RowData<N>
     }
 
     override fun toString(): String {

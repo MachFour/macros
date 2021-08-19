@@ -1,13 +1,12 @@
-package com.machfour.macros.storage
+package com.machfour.macros.persistence
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.orm.ColumnData
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.sql.generator.*
 
-class DummyDatabase: MacrosDatabase {
+class DummyDatabase: SqlDatabase {
     override fun openConnection() {}
 
     override fun closeConnection() {}
@@ -28,17 +27,17 @@ class DummyDatabase: MacrosDatabase {
         return emptyList()
     }
 
-    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>> {
-        return makeDummyColumnData(t, query)
+    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
+        return makeDummyRowData(t, query)
     }
 
-    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>> {
-        return makeDummyColumnData(t, query)
+    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
+        return makeDummyRowData(t, query)
     }
 
-    private fun <M> makeDummyColumnData(t: Table<M>, query: SelectQuery<M>): List<ColumnData<M>> {
+    private fun <M> makeDummyRowData(t: Table<M>, query: SelectQuery<M>): List<RowData<M>> {
         return query.getBindArguments().map {
-            ColumnData(t).apply {
+            RowData(t).apply {
                 put(t.idColumn, it.hashCode().toLong())
                 put(t.createTimeColumn, System.currentTimeMillis()/1000)
                 put(t.modifyTimeColumn, System.currentTimeMillis()/1000)
@@ -46,7 +45,7 @@ class DummyDatabase: MacrosDatabase {
         }
     }
 
-    override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
+    override fun <M> updateRows(data: Collection<RowData<M>>): Int {
         return 0
     }
 
@@ -66,11 +65,18 @@ class DummyDatabase: MacrosDatabase {
         return 0
     }
 
-    override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int {
+    override fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int {
         return 0
     }
 
-    override fun executeRawStatement(sql: String): Int {
+    override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
         return 0
+    }
+
+    override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
+        return 0
+    }
+
+    override fun executeRawStatement(sql: String) {
     }
 }

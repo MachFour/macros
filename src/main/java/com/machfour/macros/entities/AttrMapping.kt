@@ -1,14 +1,14 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.AttrMappingTable
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.AttrMappingTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
-class AttrMapping internal constructor(data: ColumnData<AttrMapping>, objectSource: ObjectSource)
+class AttrMapping internal constructor(data: RowData<AttrMapping>, objectSource: ObjectSource)
     : MacrosEntityImpl<AttrMapping>(data, objectSource) {
 
     companion object {

@@ -1,11 +1,11 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.sql.SqlConfig
-import com.machfour.macros.persistence.MacrosDatabase
-import com.machfour.macros.persistence.MacrosDatabaseImpl
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.queries.StaticDataSource
+import com.machfour.macros.sql.SqlConfig
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlDatabaseImpl
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -47,10 +47,10 @@ class LinuxConfig : MacrosConfig {
     // allows setting up until the database is requested for the first time
     override var dbLocation = dbDefaultLocation
 
-    private lateinit var databaseInstance: MacrosDatabaseImpl
+    private lateinit var databaseInstance: SqlDatabaseImpl
     private lateinit var dataSourceInstance: MacrosDataSource
 
-    override val databaseImpl: MacrosDatabaseImpl
+    override val databaseImpl: SqlDatabaseImpl
         get() {
             if (!::databaseInstance.isInitialized) {
                 databaseInstance = LinuxDatabase.getInstance(dbLocation)
@@ -58,7 +58,7 @@ class LinuxConfig : MacrosConfig {
             return databaseInstance
         }
 
-    override val database: MacrosDatabase
+    override val database: SqlDatabase
         get() = databaseImpl
 
     override val dataSource: MacrosDataSource

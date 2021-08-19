@@ -1,13 +1,13 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.MealTable
-import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 
@@ -64,7 +64,7 @@ class MealSpec {
     ) : this(nameArg.argument, dayArg.argument)
 
     @Throws(SQLException::class)
-    private fun getOrCreateMeal(ds: MacrosDatabase, day: DateStamp, name: String): Meal {
+    private fun getOrCreateMeal(ds: SqlDatabase, day: DateStamp, name: String): Meal {
         // if it already exists return it
         val matchingMeal = MealQueries.getMealForDayWithName(ds, day, name)
         if (matchingMeal != null) {
@@ -72,7 +72,7 @@ class MealSpec {
         }
 
         // else create a new meal, save and return it
-        val newMeal = ColumnData(Meal.table).run {
+        val newMeal = RowData(Meal.table).run {
             put(MealTable.DAY, day)
             put(MealTable.NAME, name)
             Meal.factory.construct(this, ObjectSource.USER_NEW)
@@ -85,7 +85,7 @@ class MealSpec {
         return newlySavedMeal
     }
 
-    fun process(ds: MacrosDatabase, create: Boolean) {
+    fun process(ds: SqlDatabase, create: Boolean) {
         if (processed || error != null) {
             // skip processing if there are already errors
             return

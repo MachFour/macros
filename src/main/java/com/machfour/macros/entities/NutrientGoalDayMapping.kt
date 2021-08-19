@@ -1,17 +1,17 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.NutrientGoalDayMappingTable
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.NutrientGoalDayMappingTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 
 
 class NutrientGoalDayMapping internal constructor(
-    data: ColumnData<NutrientGoalDayMapping>,
+    data: RowData<NutrientGoalDayMapping>,
     objectSource: ObjectSource
 ) : MacrosEntityImpl<NutrientGoalDayMapping>(data, objectSource) {
 

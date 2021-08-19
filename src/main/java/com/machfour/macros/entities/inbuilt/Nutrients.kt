@@ -1,11 +1,11 @@
 package com.machfour.macros.entities.inbuilt
 
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.NutrientTable
-import com.machfour.macros.names.*
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.UnitType
+import com.machfour.macros.names.*
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.NutrientTable
+import com.machfour.macros.sql.RowData
 
 object Nutrients {
 
@@ -64,7 +64,7 @@ object Nutrients {
 
     private fun registerNutrient(name: String, typeFlags: Int, inbuilt: Boolean) : Nutrient {
         val id = nextIndex++
-        val data = ColumnData(Nutrient.table).apply {
+        val data = RowData(Nutrient.table).apply {
             put(NutrientTable.ID, id)
             put(NutrientTable.NAME, name)
             put(NutrientTable.UNIT_TYPES, typeFlags)

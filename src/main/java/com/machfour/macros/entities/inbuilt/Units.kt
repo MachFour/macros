@@ -1,10 +1,10 @@
 package com.machfour.macros.entities.inbuilt
 
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.UnitTable
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.UnitType
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.UnitTable
+import com.machfour.macros.sql.RowData
 
 // Class of inbuilt quantity units
 // These definitions need to be outside the Unit class itself,
@@ -28,7 +28,7 @@ object Units {
 
     private fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType, inbuilt: Boolean): Unit {
         val id = nextIndex++
-        val data = ColumnData(Unit.table).apply {
+        val data = RowData(Unit.table).apply {
             put(UnitTable.ID, id)
             put(UnitTable.NAME, name)
             put(UnitTable.ABBREVIATION, abbr)

@@ -1,32 +1,32 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.queries.FoodQueries.getFoodsById
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 
 object MealQueries {
 
     @Throws(SQLException::class)
-    fun getMealsForDay(ds: MacrosDatabase, day: DateStamp): Map<Long, Meal> {
+    fun getMealsForDay(ds: SqlDatabase, day: DateStamp): Map<Long, Meal> {
         val mealIds = getMealIdsForDay(ds, day)
         return getMealsById(ds, mealIds)
     }
 
     // assumes unique meal name per day
     @Throws(SQLException::class)
-    fun getMealForDayWithName(ds: MacrosDatabase, day: DateStamp, name: String): Meal? {
+    fun getMealForDayWithName(ds: SqlDatabase, day: DateStamp, name: String): Meal? {
         val mealIds = getMealIdsForDay(ds, day)
         return getMealsById(ds, mealIds).filter { it.value.name == name }.values.firstOrNull()
     }
 
     @Throws(SQLException::class)
-    fun getMealIdsForDay(ds: MacrosDatabase, day: DateStamp): List<Long> {
+    fun getMealIdsForDay(ds: SqlDatabase, day: DateStamp): List<Long> {
         val ids = CoreQueries.selectSingleColumn(ds, MealTable.instance, MealTable.ID) {
             where(MealTable.DAY, listOf(day))
         }
@@ -34,7 +34,7 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getMealById(ds: MacrosDatabase, id: Long): Meal? {
+    fun getMealById(ds: SqlDatabase, id: Long): Meal? {
         val resultMeals = getMealsById(ds, listOf(id))
         return resultMeals.getOrDefault(id, null)
     }
@@ -62,7 +62,7 @@ object MealQueries {
     //}
 
     @Throws(SQLException::class)
-    private fun getRawFoodPortionsForMeal(ds: MacrosDatabase, meal: Meal): Map<Long, FoodPortion> {
+    private fun getRawFoodPortionsForMeal(ds: SqlDatabase, meal: Meal): Map<Long, FoodPortion> {
         val fpIds = CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.ID) {
             where(FoodPortionTable.MEAL_ID, listOf(meal.id))
             distinct()
@@ -99,7 +99,7 @@ object MealQueries {
      * It's probably worth caching the results of these!
      */
     @Throws(SQLException::class)
-    fun getMealsById(ds: MacrosDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
+    fun getMealsById(ds: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
         if (mealIds.isEmpty()) {
             return emptyMap()
         }
@@ -118,7 +118,7 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    private fun getFoodIdsForMeals(ds: MacrosDatabase, mealIds: Collection<Long>): List<Long> {
+    private fun getFoodIdsForMeals(ds: SqlDatabase, mealIds: Collection<Long>): List<Long> {
         val ids = CoreQueries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
             where(FoodPortionTable.MEAL_ID, mealIds)
             distinct()
@@ -128,7 +128,7 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getMealIdsForFoodIds(ds: MacrosDatabase, foodIds: Collection<Long>): List<Long> {
+    fun getMealIdsForFoodIds(ds: SqlDatabase, foodIds: Collection<Long>): List<Long> {
         return CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.MEAL_ID) {
             where(FoodPortionTable.FOOD_ID, foodIds)
             distinct()
@@ -136,7 +136,7 @@ object MealQueries {
     }
 
     @Throws(SQLException::class)
-    fun getDaysForMealIds(ds: MacrosDatabase, mealIds: Collection<Long>): List<DateStamp> {
+    fun getDaysForMealIds(ds: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
         return CoreQueries.selectNonNullColumn(ds, Meal.table, MealTable.DAY) {
             where(MealTable.ID, mealIds)
         }

@@ -1,22 +1,22 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.persistence.DatabaseUtils
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
 internal object LinuxDatabaseUtils {
     @Throws(SQLException::class)
-    fun <M> bindData(p: PreparedStatement, values: ColumnData<M>, orderedColumns: List<Column<M, *>>) {
+    fun <M> bindData(p: PreparedStatement, values: RowData<M>, orderedColumns: List<Column<M, *>>) {
         bindData(p, values, orderedColumns, null)
     }
 
     @Throws(SQLException::class)
-    fun <M> bindData(p: PreparedStatement, values: ColumnData<M>, orderedColumns: List<Column<M, *>>, extra: Any?) {
+    fun <M> bindData(p: PreparedStatement, values: RowData<M>, orderedColumns: List<Column<M, *>>, extra: Any?) {
         var colIndex = 1 // parameters are 1 indexed!
         for (col in orderedColumns) {
             // Internally, setObject() relies on a ladder of instanceof checks
@@ -44,27 +44,27 @@ internal object LinuxDatabaseUtils {
             column.type.fromRaw(resultValue)
         } catch (e: TypeCastException) {
             // this line throws an exception, so code won't reach here
-            DatabaseUtils.rethrowAsSqlException(resultValue, column)
+            SqlUtils.rethrowAsSqlException(resultValue, column)
             null
         }
     }
 
     @Throws(SQLException::class)
-    fun <M> fillColumnData(data: ColumnData<M>, rs: ResultSet, columns: Collection<Column<M, *>> = data.table.columns) {
+    fun <M> fillRowData(data: RowData<M>, rs: ResultSet, columns: Collection<Column<M, *>> = data.table.columns) {
         for (col in columns) {
             val rawValue = rs.getObject(col.sqlName)
             try {
                 data.putFromRaw(col, rawValue)
             } catch (e: TypeCastException) {
-                DatabaseUtils.rethrowAsSqlException(rawValue, col)
+                SqlUtils.rethrowAsSqlException(rawValue, col)
             }
         }
     }
 
     @Throws(SQLException::class)
-    fun <M> ResultSet.toColumnData(table: Table<M>, columns: Collection<Column<M, *>> = table.columns) : ColumnData<M> {
-        val data = ColumnData(table, columns)
-        fillColumnData(data, this, columns)
+    fun <M> ResultSet.toRowData(table: Table<M>, columns: Collection<Column<M, *>> = table.columns) : RowData<M> {
+        val data = RowData(table, columns)
+        fillRowData(data, this, columns)
         return data
     }
 

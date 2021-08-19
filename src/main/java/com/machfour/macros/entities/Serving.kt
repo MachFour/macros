@@ -1,16 +1,16 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Nutrients.QUANTITY
 import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
-class Serving internal constructor(data: ColumnData<Serving>, objectSource: ObjectSource)
+class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectSource)
     : MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
 
     companion object {

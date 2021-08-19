@@ -2,20 +2,19 @@
 
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
-
 import java.time.Instant
 
-class Meal internal constructor(data: ColumnData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
+class Meal internal constructor(data: RowData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
     companion object {
         fun sumNutrientData(meals: Collection<Meal>): FoodNutrientData {
             return FoodNutrientData.sum(meals.map { it.nutrientTotal() })

@@ -5,7 +5,7 @@ import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
 
 import java.sql.SQLException
 
@@ -66,7 +66,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
     }
 
-    internal fun process(mealSpec: MealSpec, ds: MacrosDatabase, allMeals: Boolean, verbose: Boolean, per100: Boolean): Int {
+    internal fun process(mealSpec: MealSpec, ds: SqlDatabase, allMeals: Boolean, verbose: Boolean, per100: Boolean): Int {
         if (!allMeals) {
             // total for specific meal
             mealSpec.process(ds, false)

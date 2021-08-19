@@ -1,9 +1,9 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.*
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
-import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.sql.generator.SingleColumnSelect
 import com.machfour.macros.sql.generator.TwoColumnSelect
@@ -15,17 +15,17 @@ internal object CoreQueries {
     internal const val ITERATE_THRESHOLD = 200
 
     @Throws(SQLException::class)
-    fun <M> prefixSearch(ds: MacrosDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
+    fun <M> prefixSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
         return stringSearch(ds, t, cols, keyword, globBefore = false, globAfter = true)
     }
 
     @Throws(SQLException::class)
-    fun <M> substringSearch(ds: MacrosDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
+    fun <M> substringSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
         return stringSearch(ds, t, cols, keyword, globBefore = true, globAfter = true)
     }
 
     @Throws(SQLException::class)
-    fun <M> exactStringSearch(ds: MacrosDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
+    fun <M> exactStringSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
         return stringSearch(ds, t, cols, keyword, globBefore = false, globAfter = false)
     }
 
@@ -34,7 +34,7 @@ internal object CoreQueries {
      */
     @Throws(SQLException::class)
     fun <M> stringSearch(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         t: Table<M>,
         cols: List<Column<M, String>>,
         keyword: String,
@@ -57,7 +57,7 @@ internal object CoreQueries {
     // for convenience
     @Throws(SQLException::class)
     fun <M, I> selectSingleColumn(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         table: Table<M>,
         selectColumn: Column<M, I>,
         queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -67,7 +67,7 @@ internal object CoreQueries {
 
     @Throws(SQLException::class)
     fun <M, I, J> selectTwoColumns(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         table: Table<M>,
         select1: Column<M, I>,
         select2: Column<M, J>,
@@ -77,7 +77,7 @@ internal object CoreQueries {
     }
     @Throws(SQLException::class)
     fun <M, I> selectNonNullColumn(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         table: Table<M>,
         selectColumn: Column<M, I>,
         queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -86,7 +86,7 @@ internal object CoreQueries {
     }
 
     @Throws(SQLException::class)
-    private fun <M : MacrosEntity<M>> isInDatabase(ds: MacrosDatabase, o: M): Boolean {
+    private fun <M : MacrosEntity<M>> isInDatabase(ds: SqlDatabase, o: M): Boolean {
         return if (o.id != MacrosEntity.NO_ID) {
             idExistsInTable(ds, o.table, o.id)
         } else {
@@ -102,7 +102,7 @@ internal object CoreQueries {
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> idExistsInTable(ds: MacrosDatabase, table: Table<M>, id: Long): Boolean {
+    fun <M : MacrosEntity<M>> idExistsInTable(ds: SqlDatabase, table: Table<M>, id: Long): Boolean {
         val idCol = table.idColumn
         val idMatch = selectSingleColumn(ds, table, idCol) {
             where(idCol, id)
@@ -111,7 +111,7 @@ internal object CoreQueries {
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> idsExistInTable(ds: MacrosDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+    fun <M : MacrosEntity<M>> idsExistInTable(ds: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
         val idCol: Column<M, Long> = table.idColumn
         val existingIds = selectNonNullColumn(ds, table, idCol) {
             where(idCol, queryIds)
@@ -126,7 +126,7 @@ internal object CoreQueries {
     }
 
     @Throws(SQLException::class)
-    fun <M, J> getIdsFromKeys(ds: MacrosDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+    fun <M, J> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
         return if (keys.isNotEmpty()) {
             // The resulting map is unordered
             selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }
@@ -139,7 +139,7 @@ internal object CoreQueries {
     // The resulting map is unordered
     @Throws(SQLException::class)
     fun <M, I, J> selectColumnMap(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         t: Table<M>,
         keyColumn: Column<M, I>,
         valueColumn: Column<M, J>,

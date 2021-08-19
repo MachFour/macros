@@ -1,16 +1,16 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
 
 class FoodNutrientValue internal constructor(
-    data: ColumnData<FoodNutrientValue>,
+    data: RowData<FoodNutrientValue>,
     objectSource: ObjectSource
 ) : NutrientValue<FoodNutrientValue>(
     data,
@@ -32,7 +32,7 @@ class FoodNutrientValue internal constructor(
 
         // makes an object without ID or food
         fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit): FoodNutrientValue {
-            val data = ColumnData(table).apply {
+            val data = RowData(table).apply {
                 //put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
                 //put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
                 put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)

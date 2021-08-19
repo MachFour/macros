@@ -1,16 +1,9 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.sql
 
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.generator.AllColumnSelect
-import com.machfour.macros.sql.generator.MultiColumnSelect
-import com.machfour.macros.sql.generator.SingleColumnSelect
-import com.machfour.macros.sql.generator.TwoColumnSelect
+import com.machfour.macros.sql.generator.*
 import java.sql.SQLException
 
-interface MacrosDatabase {
+interface SqlDatabase {
     // Used to create a persistent connection that lasts across calls to the DB.
     // Caller MUST call closeConnection in a finally block
     @Throws(SQLException::class)
@@ -37,13 +30,13 @@ interface MacrosDatabase {
     fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SQLException::class)
-    fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>>
+    fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
-    fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>>
+    fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
+    fun <M> updateRows(data: Collection<RowData<M>>): Int
 
     // TODO replace with delete template
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
@@ -65,9 +58,16 @@ interface MacrosDatabase {
     fun <M> clearTable(t: Table<M>): Int
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
+    fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int
 
-    // XXX
+    @Throws(SQLException::class)
+    fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int
+
+    @Throws(SQLException::class)
+    fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
+
+    // TODO add insert/update template
+
     @Throws(SQLException::class)
     fun executeRawStatement(sql: String)
 

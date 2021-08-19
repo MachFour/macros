@@ -1,23 +1,27 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.core.*
-import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.orm.schema.*
-import com.machfour.macros.names.ENERGY_UNIT_NAME
-import com.machfour.macros.names.QUANTITY_UNIT_NAME
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.names.ENERGY_UNIT_NAME
+import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.sql.Table
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.orm.schema.IngredientTable
+import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.queries.CoreQueries
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys
 import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
-import com.machfour.macros.queries.CoreQueries
 import com.machfour.macros.queries.WriteQueries
-import com.machfour.macros.util.javaTrim
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.util.Pair
+import com.machfour.macros.util.javaTrim
 import com.machfour.macros.validation.SchemaViolation
 import org.supercsv.io.CsvMapReader
 import org.supercsv.io.ICsvMapReader
@@ -29,10 +33,10 @@ import java.sql.SQLException
 object CsvImport {
     // don't edit csvRow keyset!
     @Throws(TypeCastException::class)
-    fun <M> extractData(csvRow: Map<String, String?>, table: Table<M>): ColumnData<M> {
+    fun <M> extractData(csvRow: Map<String, String?>, table: Table<M>): RowData<M> {
         val relevantCols = table.columnsByName.filter { csvRow.keys.contains(it.key) }
         var extractedSomething = false
-        val data = ColumnData(table).apply {
+        val data = RowData(table).apply {
             for ((colName, col) in relevantCols) {
                 when (val valueString = csvRow[colName]) {
                     null -> putFromRaw(col, null)
@@ -49,8 +53,8 @@ object CsvImport {
     }
 
     @Throws(TypeCastException::class)
-    fun extractNutrientData(csvRow: Map<String, String?>): List<ColumnData<FoodNutrientValue>> {
-        val data = ArrayList<ColumnData<FoodNutrientValue>>()
+    fun extractNutrientData(csvRow: Map<String, String?>): List<RowData<FoodNutrientValue>> {
+        val data = ArrayList<RowData<FoodNutrientValue>>()
 
         for (nutrient in Nutrients.nutrients) {
             // we skip adding the nutrient if it's not present in the CSV
@@ -63,7 +67,7 @@ object CsvImport {
             }
             val unit = unitString?.let { Units.fromAbbreviation(it) } ?: DefaultUnits.get(nutrient)
 
-            val nutrientValueData = ColumnData(FoodNutrientValue.table).apply {
+            val nutrientValueData = RowData(FoodNutrientValue.table).apply {
                 // TODO parse constraints
                 putFromString(FoodNutrientValueTable.VALUE, valueString)
                 put(FoodNutrientValueTable.UNIT_ID, unit.id)
@@ -87,10 +91,10 @@ object CsvImport {
     //    return csvRow.values.firstOrNull { s -> !s.isNullOrBlank() } == null
     //}
 
-    // Returns map of food index name to parsed food and nutrition columnData objects
+    // Returns map of food index name to parsed food and nutrition RowData objects
     @Throws(IOException::class, TypeCastException::class)
-    private fun getFoodData(foodCsv: Reader): List<Pair<ColumnData<Food>, List<ColumnData<FoodNutrientValue>>>> {
-        val data: MutableList<Pair<ColumnData<Food>, List<ColumnData<FoodNutrientValue>>>> = ArrayList()
+    private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
+        val data: MutableList<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> = ArrayList()
         getMapReader(foodCsv).use { mapReader ->
             val header = mapReader.getHeader(true)
             var csvRow: Map<String, String?> = emptyMap()
@@ -112,7 +116,7 @@ object CsvImport {
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    private fun makeIngredients(ingredientCsv: Reader, ds: MacrosDatabase): Map<String, MutableList<Ingredient>> {
+    private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String, MutableList<Ingredient>> {
         val data: MutableMap<String, MutableList<Ingredient>> = HashMap()
         try {
             getMapReader(ingredientCsv).use { mapReader ->
@@ -161,7 +165,7 @@ object CsvImport {
     fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, MutableList<Ingredient>>): Map<String, CompositeFood> {
         // preserve insertion order
         val foodMap: MutableMap<String, CompositeFood> = LinkedHashMap()
-        val ndMap: MutableMap<String, List<ColumnData<FoodNutrientValue>>> = LinkedHashMap()
+        val ndMap: MutableMap<String, List<RowData<FoodNutrientValue>>> = LinkedHashMap()
         // nutrition data may not be complete, so we can't create it yet. Just create the foods
         for ((foodData, nutrientValues) in getFoodData(recipeCsv)) {
             foodData.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
@@ -242,7 +246,7 @@ object CsvImport {
     }
 
     @Throws(SQLException::class)
-    private fun findExistingFoodIndexNames(ds: MacrosDatabase, indexNames: Collection<String>): Set<String> {
+    private fun findExistingFoodIndexNames(ds: SqlDatabase, indexNames: Collection<String>): Set<String> {
         val queryResult = CoreQueries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
             where(FoodTable.INDEX_NAME, indexNames, iterate = true)
             distinct()
@@ -252,7 +256,7 @@ object CsvImport {
 
     // foods maps from index name to food object. Food object must have nutrition data attached
     @Throws(SQLException::class)
-    private fun saveImportedFoods(ds: MacrosDatabase, foods: Map<String, Food>) {
+    private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>) {
         // collect all of the index names to be imported, and check if they're already in the DB.
         val existingIndexNames = findExistingFoodIndexNames(ds, foods.keys)
         // remove entries corresponding to existing foods; this actually modifies the original map
@@ -287,21 +291,21 @@ object CsvImport {
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importFoodData(ds: MacrosDatabase, foodCsv: Reader, allowOverwrite: Boolean) {
+    fun importFoodData(ds: SqlDatabase, foodCsv: Reader, allowOverwrite: Boolean) {
         val csvFoods = buildFoodObjectTree(foodCsv)
         saveImportedFoods(ds, csvFoods)
     }
 
     // TODO detect existing servings
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importServings(ds: MacrosDatabase, servingCsv: Reader, allowOverwrite: Boolean) {
+    fun importServings(ds: SqlDatabase, servingCsv: Reader, allowOverwrite: Boolean) {
         val csvServings = buildServings(servingCsv)
         val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
         WriteQueries.saveObjects(ds, completedServings, ObjectSource.IMPORT)
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importRecipes(ds: MacrosDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
+    fun importRecipes(ds: SqlDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
         val ingredientsByRecipe : Map<String, MutableList<Ingredient>> = makeIngredients(ingredientCsv, ds)
         val csvRecipes : Map<String, CompositeFood> = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe)
         //val duplicateRecipes : Set<String> = findExistingFoodIndexNames(csvRecipes.keys, ds)

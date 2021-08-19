@@ -1,8 +1,9 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.orm.*
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
 /**
@@ -34,17 +35,17 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     fun <J> getData(col: Column<M, J>): J?
     fun hasData(col: Column<M, *>): Boolean
 
-    val data: ColumnData<M>
+    val data: RowData<M>
     val table: Table<M>
     val factory: Factory<M>
 
-    fun dataCopy(withMetadata: Boolean): ColumnData<M>
-    fun dataFullCopy(): ColumnData<M> = dataCopy(withMetadata = true)
+    fun dataCopy(withMetadata: Boolean): RowData<M>
+    fun dataFullCopy(): RowData<M> = dataCopy(withMetadata = true)
 
     // ... Alternative methods that can be used with unique columns
     fun <N : MacrosEntity<N>, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, parent: N)
     fun <N, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, data: J)
-    fun <N> getFkParentNaturalKey(fkCol: Column.Fk<M, *, N>): ColumnData<N>
+    fun <N> getFkParentNaturalKey(fkCol: Column.Fk<M, *, N>): RowData<N>
     val fkNaturalKeyMap: Map<Column.Fk<M, *, *>, *>
     fun copyFkNaturalKeyMap(from: MacrosEntity<M>)
 

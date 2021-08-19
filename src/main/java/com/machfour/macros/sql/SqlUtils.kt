@@ -1,8 +1,6 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.sql
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.MacrosType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
@@ -13,7 +11,7 @@ import java.io.IOException
 import java.io.Reader
 import java.sql.SQLException
 
-object DatabaseUtils {
+object SqlUtils {
     internal fun <M> joinColumns(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
         return stringJoin(columns, sep = ", ", itemSuffix = suffix) { it.sqlName }
     }

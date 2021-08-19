@@ -1,24 +1,23 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.entities.*
 import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.sql.RowData
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
 import java.sql.SQLException
-
-import org.junit.jupiter.api.Assertions.*
 
 class IngredientsTest {
     companion object {
         private const val DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
-        private val foodData: ColumnData<Food>? = null
+        private val foodData: RowData<Food>? = null
 
         // the food that will be made up of the other two foods
         private val testCompositeFood: Food? = null

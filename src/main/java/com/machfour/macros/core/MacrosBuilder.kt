@@ -1,11 +1,12 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.names.ColumnStrings
-import com.machfour.macros.orm.*
+import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 
@@ -49,8 +50,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
      * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var originalData: ColumnData<M> = editInstance?.dataFullCopy() ?: ColumnData(table)
-    private val draftData: ColumnData<M> = editInstance?.dataFullCopy() ?: ColumnData(table)
+    private var originalData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
+    private val draftData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
 
     private val validationErrors = HashMap<Column<M, *>, MVErrorList>(table.columns.size, 1f).also {
         // init with empty lists
@@ -86,7 +87,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
 
     // only resets settable fields
     fun resetFields() {
-        ColumnData.copyData(originalData, draftData, settableColumns)
+        RowData.copyData(originalData, draftData, settableColumns)
         validateAll()
     }
 
@@ -267,7 +268,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
          */
         // method used by MacrosEntity
         fun <M : MacrosEntity<M>, J> validate(
-            data: ColumnData<M>,
+            data: RowData<M>,
             col: Column<M, J>,
             customValidations: List<Validation<M>> = emptyList()
         ): List<ValidationError> {
@@ -287,7 +288,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         // method used by MacrosEntity
         // returns a map of ONLY the columns with errors, mapping to list of validation errors
         fun <M : MacrosEntity<M>> validate(
-            data: ColumnData<M>,
+            data: RowData<M>,
             customValidation: Validation<M>? = null
         ): Map<Column<M, *>, List<ValidationError>> {
             val allErrors: MutableMap<Column<M, *>, List<ValidationError>> = HashMap(data.columns.size, 1.0f)

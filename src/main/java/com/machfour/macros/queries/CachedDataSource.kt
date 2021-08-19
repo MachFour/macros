@@ -1,12 +1,12 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.entities.*
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.sql.Table
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.MealTable
-import com.machfour.macros.entities.*
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import java.sql.SQLException
 
 class CachedDataSource(
-    database: MacrosDatabase,
+    database: SqlDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): StaticDataSource(database) {
     private var allFoodsNeedsRefresh: Boolean = true

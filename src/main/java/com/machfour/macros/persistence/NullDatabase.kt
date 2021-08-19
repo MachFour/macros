@@ -1,16 +1,13 @@
 package com.machfour.macros.persistence
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.generator.AllColumnSelect
-import com.machfour.macros.sql.generator.MultiColumnSelect
-import com.machfour.macros.sql.generator.SingleColumnSelect
-import com.machfour.macros.sql.generator.TwoColumnSelect
+import com.machfour.macros.sql.generator.*
 
 // Implementation of MacrosDataSource for testing which does nothing and returns empty data
-class NullDatabase: MacrosDatabase {
+class NullDatabase: SqlDatabase {
     override fun openConnection() {}
 
     override fun closeConnection() {}
@@ -31,15 +28,15 @@ class NullDatabase: MacrosDatabase {
         return emptyList()
     }
 
-    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>> {
+    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
         return emptyList()
     }
 
-    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>> {
+    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
         return emptyList()
     }
 
-    override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
+    override fun <M> updateRows(data: Collection<RowData<M>>): Int {
         return 0
     }
 
@@ -59,7 +56,15 @@ class NullDatabase: MacrosDatabase {
         return 0
     }
 
-    override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int {
+    override fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int {
+        return 0
+    }
+
+    override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+        return 0
+    }
+
+    override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
         return 0
     }
 

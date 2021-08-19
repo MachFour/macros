@@ -1,15 +1,10 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.sql
 
-import com.machfour.macros.core.*
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.sql.SqlConfig
-import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.*
 import java.io.IOException
 import java.sql.SQLException
 
-abstract class MacrosDatabaseImpl : MacrosDatabase {
+abstract class SqlDatabaseImpl : SqlDatabase {
     // caller-managed connection, useful to reduce number of calls to DB
     // caller needs to call closeConnection() after. Use with begin and end transaction
     @Throws(SQLException::class)
@@ -56,10 +51,10 @@ abstract class MacrosDatabaseImpl : MacrosDatabase {
     abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<ColumnData<M>>
+    abstract override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<ColumnData<M>>
+    abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>>
 
     // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
@@ -70,12 +65,21 @@ abstract class MacrosDatabaseImpl : MacrosDatabase {
     abstract override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
 
     @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> insertObjectData(objectData: List<ColumnData<M>>, withId: Boolean): Int
+    abstract override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
 
-    // Note that if the id is not found in the database, nothing will be inserted
     @Throws(SQLException::class)
-    abstract override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
+    abstract override fun <M> updateRows(data: Collection<RowData<M>>): Int
 
     @Throws(SQLException::class)
     abstract override fun <M> clearTable(t: Table<M>): Int
+
+    @Throws(SQLException::class)
+    override fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int {
+        TODO("Not yet implemented")
+    }
+
+    @Throws(SQLException::class)
+    override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+        TODO("Not yet implemented")
+    }
 }

@@ -1,10 +1,10 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
 import java.sql.SQLException
 
 object FkCompletion {
@@ -20,10 +20,10 @@ object FkCompletion {
     // wildcard capture helper for natural key column type
     @Throws(SQLException::class)
     private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
-        ds: MacrosDatabase,
+        ds: SqlDatabase,
         fkColumn: Column.Fk<M, J, N>,
         parentNaturalKeyCol: Column<N, I>,
-        data: List<ColumnData<N>>
+        data: List<RowData<N>>
     ): Map<I, J> {
         assert(parentNaturalKeyCol.isUnique)
         val uniqueColumnValues : Set<I> = data.map {
@@ -46,9 +46,9 @@ object FkCompletion {
 
     // wildcard capture helper for parent unique column type
     @Throws(SQLException::class)
-    private fun <M : MacrosEntity<M>, J, N> completeFkCol(ds: MacrosDatabase, objects: List<M>, fkCol: Column.Fk<M, J, N>): List<M> {
+    private fun <M : MacrosEntity<M>, J, N> completeFkCol(ds: SqlDatabase, objects: List<M>, fkCol: Column.Fk<M, J, N>): List<M> {
         val completedObjects = ArrayList<M>(objects.size)
-        val naturalKeyData = ArrayList<ColumnData<N>>(objects.size)
+        val naturalKeyData = ArrayList<RowData<N>>(objects.size)
         for (obj in objects) {
             // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
             assert(obj.objectSource in allowedObjectSources) { "Object is not from import, new or computed" }
@@ -61,9 +61,9 @@ object FkCompletion {
         val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentNaturalKeyCol, naturalKeyData)
         for (obj in objects) {
             val newData = obj.dataFullCopy()
-            // TODO might be able to remove one level of indirection here because the ColumnData object
+            // TODO might be able to remove one level of indirection here because the RowData object
             // only contains data for the parentNaturalKeyCol
-            val fkParentNaturalKey: ColumnData<N> = obj.getFkParentNaturalKey(fkCol)
+            val fkParentNaturalKey: RowData<N> = obj.getFkParentNaturalKey(fkCol)
             val fkParentNaturalKeyData: Any = fkParentNaturalKey[parentNaturalKeyCol]
                 ?: error("Column data contained no data for natural key column")
             val fkParentId: J = foreignKeyToIdMapping[fkParentNaturalKeyData]
@@ -78,7 +78,7 @@ object FkCompletion {
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> completeForeignKeys(ds: MacrosDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
+    fun <M : MacrosEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
         return completeForeignKeys(ds, objects, listOf(fk))
     }
 
@@ -89,7 +89,7 @@ object FkCompletion {
     // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
     @Throws(SQLException::class)
     // private for now, can make it public if we ever need multiple column completion
-    private fun <M : MacrosEntity<M>> completeForeignKeys(ds: MacrosDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
+    private fun <M : MacrosEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
         if (objects.isEmpty()) {
             return emptyList()
         }

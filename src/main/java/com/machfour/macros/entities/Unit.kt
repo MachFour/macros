@@ -1,17 +1,17 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.UnitTable
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.UnitTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
-class Unit internal constructor(data: ColumnData<Unit>, objectSource: ObjectSource)
+class Unit internal constructor(data: RowData<Unit>, objectSource: ObjectSource)
     : MacrosEntityImpl<Unit>(data, objectSource), PortionMeasurement {
     companion object {
         // factory before table

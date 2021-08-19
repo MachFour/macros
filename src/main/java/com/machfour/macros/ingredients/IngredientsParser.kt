@@ -4,12 +4,15 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonIOException
 import com.google.gson.reflect.TypeToken
 import com.machfour.macros.core.MacrosBuilder
+import com.machfour.macros.entities.CompositeFood
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodType
+import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
-import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.WriteQueries
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.validation.SchemaViolation
 import java.io.IOException
 import java.io.Reader
@@ -118,7 +121,7 @@ object IngredientsParser {
     // THE INGREDIENTS CANNOT BE SAVED INTO THE DATABASE AS IS, because they do not have the proper foreign keys set up
     // to save the object tree correctly, use the method saveCompositeFoods(compositeFoods, ds)
     @Throws(SQLException::class)
-    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: MacrosDatabase): List<CompositeFood> {
+    fun createCompositeFoods(parseResult: Collection<CompositeFoodSpec>, ds: SqlDatabase): List<CompositeFood> {
         val indexNames = extractIngredientIndexNames(parseResult)
         // for invalid index names, the map won't have an entry
         val indexNameMap = FoodQueries.getFoodIdsByIndexName(ds, indexNames)
@@ -150,7 +153,7 @@ object IngredientsParser {
 
     // saves a composite food and all its ingredients into the database
     @Throws(SQLException::class)
-    private fun saveCompositeFood(cf: CompositeFood, ds: MacrosDatabase) {
+    private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
         try {
             ds.openConnection()
             // If inserting ingredients fails, we want to be able to roll back the whole thing.
@@ -181,13 +184,13 @@ object IngredientsParser {
 
     // returns list of index names of foods that were created
     @Throws(SQLException::class, IOException::class)
-    fun readRecipes(json: Reader, ds: MacrosDatabase): List<CompositeFood> {
+    fun readRecipes(json: Reader, ds: SqlDatabase): List<CompositeFood> {
         val ingredientSpecs = deserialiseIngredientsJson(json)
         return createCompositeFoods(ingredientSpecs, ds)
     }
 
     @Throws(SQLException::class)
-    fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: MacrosDatabase) {
+    fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: SqlDatabase) {
         // TODO save all the composite foods and recreate them in one go
         // Then, save the ingredients at the same time.
         for (cf in compositeFoods) {

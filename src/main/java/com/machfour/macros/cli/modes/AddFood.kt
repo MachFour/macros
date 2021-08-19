@@ -1,15 +1,14 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.interactive.FoodEditor
+import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.entities.Food
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.persistence.MacrosDatabase
-
+import com.machfour.macros.sql.SqlDatabase
 import java.io.IOException
 import java.sql.SQLException
 
@@ -23,7 +22,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
          * Ensures the given index name is not already in the database; returns true if it is not present.
          */
         @Throws(SQLException::class)
-        private fun checkIndexName(ds: MacrosDatabase, indexName: String): Boolean {
+        private fun checkIndexName(ds: SqlDatabase, indexName: String): Boolean {
             return FoodQueries.getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
         }
     }

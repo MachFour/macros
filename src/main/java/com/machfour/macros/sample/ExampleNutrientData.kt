@@ -1,19 +1,19 @@
 package com.machfour.macros.sample
 
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.NutrientGoalTable
 import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.entities.inbuilt.Nutrients.CARBOHYDRATE
 import com.machfour.macros.entities.inbuilt.Nutrients.ENERGY
 import com.machfour.macros.entities.inbuilt.Nutrients.FAT
-import com.machfour.macros.entities.inbuilt.Nutrients.PROTEIN
-import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.entities.inbuilt.Nutrients.FIBRE
-import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.entities.inbuilt.Nutrients.PROTEIN
 import com.machfour.macros.entities.inbuilt.Nutrients.WATER
+import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.NutrientGoalTable
+import com.machfour.macros.sql.RowData
 
 
 object ExampleNutrientData {
@@ -27,12 +27,12 @@ object ExampleNutrientData {
         this[WATER] = FoodNutrientValue.makeComputedValue(550.0, WATER, Units.MILLILITRES)
     }
 
-    private val dayGoalColumnData = ColumnData(NutrientGoal.table).apply {
+    private val dayGoalRowData = RowData(NutrientGoal.table).apply {
         put(NutrientGoalTable.NAME, "Example nutrient goal")
         put(NutrientGoalTable.ID, MacrosEntity.NO_ID)
     }
 
-    val dayGoalNd = NutrientGoal(dayGoalColumnData, ObjectSource.COMPUTED).apply {
+    val dayGoalNd = NutrientGoal(dayGoalRowData, ObjectSource.COMPUTED).apply {
         addComputedValue(ENERGY, 2000.0, Units.CALORIES)
         addComputedValue(PROTEIN, 400.0, Units.GRAMS)
         addComputedValue(FAT, 65.0, Units.GRAMS)

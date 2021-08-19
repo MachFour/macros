@@ -1,21 +1,21 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import org.junit.jupiter.api.Test
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.util.DateStamp
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.sql.SQLException
 
@@ -32,7 +32,7 @@ internal class CacheTest {
         @BeforeAll
         @JvmStatic
         fun initDbAndObjects() {
-            with (ColumnData(Food.table)) {
+            with (RowData(Food.table)) {
                 put(FoodTable.ID, MacrosEntity.NO_ID)
                 put(FoodTable.CREATE_TIME, 0L)
                 put(FoodTable.MODIFY_TIME, 0L)
@@ -47,7 +47,7 @@ internal class CacheTest {
                 put(FoodTable.NUTTAB_INDEX, null)
                 testFood = Food.factory.construct(this, ObjectSource.IMPORT)
             }
-            with (ColumnData(Meal.table)) {
+            with (RowData(Meal.table)) {
                 put(MealTable.ID, MacrosEntity.NO_ID)
                 put(MealTable.CREATE_TIME, 0L)
                 put(MealTable.MODIFY_TIME, 0L)
@@ -56,7 +56,7 @@ internal class CacheTest {
                 put(MealTable.DAY, DateStamp(2020, 10, 10))
                 testMeal = Meal.factory.construct(this, ObjectSource.IMPORT)
             }
-            with (ColumnData(FoodPortion.table)) {
+            with (RowData(FoodPortion.table)) {
                 put(FoodPortionTable.ID, MacrosEntity.NO_ID)
                 put(FoodPortionTable.CREATE_TIME, 0L)
                 put(FoodPortionTable.MODIFY_TIME, 0L)

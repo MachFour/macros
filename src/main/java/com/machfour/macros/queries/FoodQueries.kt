@@ -1,13 +1,16 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.schema.*
 import com.machfour.macros.entities.*
-import com.machfour.macros.persistence.DatabaseUtils.makeIdMap
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.orm.schema.IngredientTable
+import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.queries.RawEntityQueries.getAllRawObjects
 import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByIds
 import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByKeys
 import com.machfour.macros.queries.RawEntityQueries.getRawObjectsForParentFk
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlUtils.makeIdMap
 import com.machfour.macros.util.intersectAllOrNull
 import com.machfour.macros.util.unionAllOrNull
 import java.sql.SQLException
@@ -27,7 +30,7 @@ object FoodQueries {
     //  e.g. not just prefix searches as strings get longer
     // returns results matching either all or any of the keywords
     @Throws(SQLException::class)
-    fun foodSearch(ds: MacrosDatabase, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
+    fun foodSearch(ds: SqlDatabase, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
         return keywords.map { foodSearch(ds, it) }.let {
             // map will be empty if keywords is empty
             if (matchAll) {
@@ -48,7 +51,7 @@ object FoodQueries {
     //  - be adaptive - if there only few results, add more results from less selective searches
     //  e.g. not just prefix searches as strings get longer
     @Throws(SQLException::class)
-    fun foodSearch(ds: MacrosDatabase, keyword: String): Set<Long> {
+    fun foodSearch(ds: SqlDatabase, keyword: String): Set<Long> {
         if (keyword.isEmpty()) {
             return emptySet()
         }
@@ -78,20 +81,20 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getAllFoodCategories(ds: MacrosDatabase): Map<String, FoodCategory> {
+    fun getAllFoodCategories(ds: SqlDatabase): Map<String, FoodCategory> {
         val categoriesById = getAllRawObjects(ds, FoodCategory.table)
         // change the map to have keys as category names
         return categoriesById.mapKeys { it.value.name }
     }
 
     @Throws(SQLException::class)
-    fun getFoodByIndexName(ds: MacrosDatabase, indexName: String): Food? {
+    fun getFoodByIndexName(ds: SqlDatabase, indexName: String): Food? {
         val resultFood = getFoodsByIndexName(ds, listOf(indexName))
         return resultFood[indexName]
     }
 
     @Throws(SQLException::class)
-    fun getFoodById(ds: MacrosDatabase, id: Long): Food? {
+    fun getFoodById(ds: SqlDatabase, id: Long): Food? {
         val resultFood = getFoodsById(ds, listOf(id))
         return resultFood[id]
     }
@@ -99,19 +102,19 @@ object FoodQueries {
     // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
     // items in indexNames that do not correspond to a food, will not appear in the output map
     @Throws(SQLException::class)
-    fun getFoodIdsByIndexName(ds: MacrosDatabase, indexNames: Collection<String>): Map<String, Long> {
+    fun getFoodIdsByIndexName(ds: SqlDatabase, indexNames: Collection<String>): Map<String, Long> {
         return CoreQueries.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, indexNames)
     }
     
     @Throws(SQLException::class)
-    fun getFoodIdByIndexName(ds: MacrosDatabase, indexName: String): Long? {
+    fun getFoodIdByIndexName(ds: SqlDatabase, indexName: String): Long? {
         val idMap = CoreQueries.getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, listOf(indexName))
         assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
         return idMap.values.firstOrNull()
     }
 
     // The proper way to get all foods
-    fun getAllFoodsMap(db: MacrosDatabase): Map<Long, Food> {
+    fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
         val allFoods = getAllRawObjects(db, Food.table)
         val allServings = getAllRawObjects(db, Serving.table)
         val allNutrientData = getAllRawObjects(db, FoodNutrientValue.table)
@@ -123,7 +126,7 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getFoodsById(db: MacrosDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
+    fun getFoodsById(db: SqlDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
         // this map is unordered due to order of database results being unpredictable,
         // we can sort it later if necessary
         val unorderedFoods = getRawObjectsByIds(db, Food.table, foodIds)
@@ -141,7 +144,7 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getServingsById(db: MacrosDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
+    fun getServingsById(db: SqlDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
         return getRawObjectsByIds(db, Serving.table, servingIds)
     }
 
@@ -150,7 +153,7 @@ object FoodQueries {
      * Returns a map of index name to food object
      */
     @Throws(SQLException::class)
-    fun getFoodsByIndexName(db: MacrosDatabase, indexNames: Collection<String>): Map<String, Food> {
+    fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Food> {
         val foods = getRawObjectsByKeys(db, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
         // TODO hmm this is kind of inefficient
         val idMap = makeIdMap(foods.values)
@@ -159,7 +162,7 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    fun getParentFoodIdsContainingFoodIds(db: MacrosDatabase, foodIds: List<Long>): List<Long> {
+    fun getParentFoodIdsContainingFoodIds(db: SqlDatabase, foodIds: List<Long>): List<Long> {
         return CoreQueries.selectNonNullColumn(db, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
             where(IngredientTable.FOOD_ID, foodIds)
             distinct()
@@ -167,7 +170,7 @@ object FoodQueries {
     }
 
     @Throws(SQLException::class)
-    internal fun processRawIngredients(ds: MacrosDatabase, ingredientMap: Map<Long, Ingredient>) {
+    internal fun processRawIngredients(ds: SqlDatabase, ingredientMap: Map<Long, Ingredient>) {
         val foodIds = ArrayList<Long>(ingredientMap.size)
         val servingIds = ArrayList<Long>(ingredientMap.size)
         for (i in ingredientMap.values) {
@@ -205,7 +208,7 @@ object FoodQueries {
 
     // foodMap is a map of food IDs to the raw (i.e. unlinked) object created from the database
     @Throws(SQLException::class)
-    private fun processRawFoodMap(ds: MacrosDatabase, foodMap: Map<Long, Food>) {
+    private fun processRawFoodMap(ds: SqlDatabase, foodMap: Map<Long, Food>) {
         if (foodMap.isNotEmpty()) {
             //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
             //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);

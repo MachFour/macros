@@ -1,7 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.validation.Validation
 
 
@@ -11,7 +11,7 @@ interface MacrosValidator<M: MacrosEntity<M>> {
     fun setFieldData(getColumn: (Column<M, *>) -> Any)
 
     // sets the data source, in case database reads are required for validation
-    fun setDataSource(ds: MacrosDatabase)
+    fun setDataSource(ds: SqlDatabase)
 
     fun validateAll() : Map<Column<M, *>, VErrorList>
 

@@ -1,10 +1,10 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.sql.Table
 import com.machfour.macros.entities.*
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 
@@ -13,7 +13,7 @@ import java.sql.SQLException
 interface MacrosDataSource {
 
     // TODO don't expose this publicly
-    val database: MacrosDatabase
+    val database: SqlDatabase
 
     /*
      * The following functions are just simple passthoughs to static queries

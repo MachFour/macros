@@ -6,32 +6,32 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.names.ColumnStrings
-import com.machfour.macros.names.DefaultColumnStrings
+import com.machfour.macros.core.MacrosBuilder
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.names.ColumnStrings
+import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.WriteQueries
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.validation.ValidationError
-
 import java.io.IOException
 import java.sql.SQLException
 
 // TODO servings?
 class FoodEditor constructor(
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
-    private val ds: MacrosDatabase,
+    private val ds: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
     private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
     private val colStrings: ColumnStrings = DefaultColumnStrings.instance,

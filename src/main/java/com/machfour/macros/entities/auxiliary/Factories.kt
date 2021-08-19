@@ -1,12 +1,11 @@
 package com.machfour.macros.entities.auxiliary
 
-import com.machfour.macros.sql.ColumnData
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.sql.RowData
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues
@@ -29,7 +28,7 @@ object Factories {
         }
     }
 
-    private fun <M> defaultFactory(constructor: (ColumnData<M>, ObjectSource) -> M) : Factory<M> {
+    private fun <M> defaultFactory(constructor: (RowData<M>, ObjectSource) -> M) : Factory<M> {
         return Factory { dataMap, objectSource -> constructor(dataMap, objectSource) }
     }
 

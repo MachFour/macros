@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.cli.utils.ArgParsing.findArgument
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.sql.SQLException
@@ -45,7 +45,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         //Meal toEdit = mealSpec.processedObject();
     }
 
-    private fun printMealList(db: MacrosDatabase, d: DateStamp): Int {
+    private fun printMealList(db: SqlDatabase, d: DateStamp): Int {
         try {
             val meals = getMealsForDay(db, d)
             if (meals.isEmpty()) {

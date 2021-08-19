@@ -1,12 +1,12 @@
 package com.machfour.macros.entities
 
+import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
-import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.sql.RowData
 
-class CompositeFood internal constructor(dataMap: ColumnData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
+class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
     private var ingredientNutrientData = FoodNutrientData()

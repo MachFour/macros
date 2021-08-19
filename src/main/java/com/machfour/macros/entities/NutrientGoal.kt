@@ -1,20 +1,21 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.NutrientGoalTable
-import com.machfour.macros.orm.schema.NutrientGoalValueTable
+import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrientdata.FoodNutrientData
 import com.machfour.macros.nutrientdata.GenericNutrientData
-import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.NutrientGoalTable
+import com.machfour.macros.orm.schema.NutrientGoalValueTable
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 
 
 class NutrientGoal internal constructor(
-    data: ColumnData<NutrientGoal>,
+    data: RowData<NutrientGoal>,
     objectSource: ObjectSource
 ) : MacrosEntityImpl<NutrientGoal>(data, objectSource) {
 
@@ -37,7 +38,7 @@ class NutrientGoal internal constructor(
         }
 
         fun makeComputedObject(name: String): NutrientGoal {
-            val data = ColumnData(table).apply {
+            val data = RowData(table).apply {
                 put(NutrientGoalTable.ID, MacrosEntity.NO_ID)
                 put(NutrientGoalTable.NAME, name)
             }
@@ -69,7 +70,7 @@ class NutrientGoal internal constructor(
 
     // make value without ID or nutrition goal object
     fun addComputedValue(nutrient: Nutrient, value: Double, unit: Unit) {
-        val valueData = ColumnData(NutrientGoalValue.table).apply {
+        val valueData = RowData(NutrientGoalValue.table).apply {
             put(NutrientGoalValueTable.ID, MacrosEntity.NO_ID)
             put(NutrientGoalValueTable.GOAL_ID, id)
             put(NutrientGoalValueTable.NUTRIENT_ID, nutrient.id)

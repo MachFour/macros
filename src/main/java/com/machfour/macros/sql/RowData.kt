@@ -3,13 +3,13 @@ package com.machfour.macros.sql
 import com.machfour.macros.sql.datatype.TypeCastException
 
 // Class which maps columns to their data values in instances of Macros objects
-class ColumnData<M> private constructor(
+class RowData<M> private constructor(
     // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
     // Internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     val table: Table<M>,
     cols: Collection<Column<M, *>>,
-    existing: ColumnData<M>?
+    existing: RowData<M>?
 ) {
 
     constructor(t: Table<M>, cols: Collection<Column<M, *>>) : this(t, cols, null)
@@ -19,7 +19,7 @@ class ColumnData<M> private constructor(
     // hold columns of any index, up to the number of columns in the table minus 1.
     private val data: Array<Any?> = arrayOfNulls(table.columns.size)
     private val hasData = BooleanArray(table.columns.size)
-    // which columns have data stored in this ColumnData object;
+    // which columns have data stored in this RowData object;
     val columns: Set<Column<M, *>> = LinkedHashSet(cols)
 
     init {
@@ -39,7 +39,7 @@ class ColumnData<M> private constructor(
 
 
     companion object {
-        fun <M> columnsAreEqual(c1: ColumnData<M>, c2: ColumnData<M>, whichCols: List<Column<M, *>>): Boolean {
+        fun <M> columnsAreEqual(c1: RowData<M>, c2: RowData<M>, whichCols: List<Column<M, *>>): Boolean {
             if (!c1.hasColumns(whichCols) || !c1.hasColumns(whichCols)) {
                 return false
             }
@@ -47,7 +47,7 @@ class ColumnData<M> private constructor(
         }
 
         // columns are the same so there will be no type issues
-        fun <M> copyData(from: ColumnData<M>, to: ColumnData<M>, which: Collection<Column<M, *>>) {
+        fun <M> copyData(from: RowData<M>, to: RowData<M>, which: Collection<Column<M, *>>) {
             assert(to.hasColumns(which) && from.hasColumns(which)) { "Specified columns not present in both from and to" }
             to.assertMutable()
             for (col in which) {
@@ -84,12 +84,12 @@ class ColumnData<M> private constructor(
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other !is ColumnData<*>) {
+        if (other !is RowData<*>) {
             return false
         }
         return table == other.table && data.contentDeepEquals(other.data)
         // the following equality should be implied by the latter one above:
-        // hasData.equals(((ColumnData) o).hasData)
+        // hasData.equals(((RowData) o).hasData)
     }
 
     fun hasColumns(cols: Collection<Column<M, *>>): Boolean {
@@ -102,7 +102,7 @@ class ColumnData<M> private constructor(
     }
 
     override fun toString(): String {
-        val str = StringBuilder("ColumnData<").append(table.name).append("> [")
+        val str = StringBuilder("RowData<").append(table.name).append("> [")
         for (col in columns) {
             str.append("${col.sqlName} = ${data[col.index]}, ")
         }
@@ -122,13 +122,13 @@ class ColumnData<M> private constructor(
 
     }
 
-    fun copy(): ColumnData<M> {
-        return ColumnData(table, table.columns, this)
+    fun copy(): RowData<M> {
+        return RowData(table, table.columns, this)
     }
 
-    fun copy(whichCols: Collection<Column<M, *>>): ColumnData<M> {
+    fun copy(whichCols: Collection<Column<M, *>>): RowData<M> {
         assertHasColumns(whichCols)
-        return ColumnData(table, whichCols, this)
+        return RowData(table, whichCols, this)
     }
 
     private fun assertHasColumn(col: Column<M, *>) {
@@ -140,10 +140,10 @@ class ColumnData<M> private constructor(
     }
 
     private fun assertMutable() {
-        assert(!isImmutable) { "ColumnData has been made immutable" }
+        assert(!isImmutable) { "RowData has been made immutable" }
     }
 
-    // the type of the data is ensured at time of adding it to this columnData object.
+    // the type of the data is ensured at time of adding it to this RowData object.
     operator fun <J> get(col: Column<M, J>): J? {
         assertHasColumn(col)
         return getWithoutAssert(col)

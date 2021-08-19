@@ -1,31 +1,29 @@
 package com.machfour.macros.objects
 
-import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodType
+import com.machfour.macros.linux.LinuxDatabase
+import com.machfour.macros.linux.LinuxSqlConfig
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.sql.RowData
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.sqlite.SQLiteException
-
 import java.io.IOException
 import java.sql.SQLException
-
-import org.junit.jupiter.api.Assertions.*
 
 class FoodTest {
     companion object {
         private const val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
         private lateinit var db: LinuxDatabase
-        private lateinit var foodData: ColumnData<Food>
+        private lateinit var foodData: RowData<Food>
         private lateinit var testFood: Food
 
         @BeforeAll
@@ -47,7 +45,7 @@ class FoodTest {
         @BeforeAll
         @JvmStatic
         fun doFood() {
-            foodData = ColumnData(FoodTable.instance)
+            foodData = RowData(FoodTable.instance)
             foodData.put(FoodTable.ID, MacrosEntity.NO_ID)
             foodData.put(FoodTable.CREATE_TIME, 0L)
             foodData.put(FoodTable.MODIFY_TIME, 0L)

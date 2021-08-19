@@ -1,16 +1,16 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
-import com.machfour.macros.sql.ColumnData
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
@@ -112,7 +112,7 @@ class FileParser {
                 Pair(fps.quantity, fps.unit ?: f.nutrientData.qtyUnit)
             }
 
-            val fp = ColumnData(FoodPortion.table).run {
+            val fp = RowData(FoodPortion.table).run {
                 put(FoodPortionTable.FOOD_ID, f.id)
                 put(FoodPortionTable.SERVING_ID, serving?.id)
                 put(FoodPortionTable.MEAL_ID, m.id)
@@ -230,7 +230,7 @@ class FileParser {
         }
 
         private fun makeMeal(description: String, day: DateStamp): Meal {
-            val mealData = ColumnData(Meal.table)
+            val mealData = RowData(Meal.table)
             mealData.put(MealTable.NAME, description)
             mealData.put(MealTable.DAY, day)
             return Meal.factory.construct(mealData, ObjectSource.USER_NEW)

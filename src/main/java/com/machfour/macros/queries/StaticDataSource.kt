@@ -1,16 +1,16 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.entities.*
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.sql.Table
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.entities.*
-import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
-open class StaticDataSource(override val database: MacrosDatabase): MacrosDataSource {
+open class StaticDataSource(override val database: SqlDatabase): MacrosDataSource {
 
     // Flow functions
     override fun getFood(id: Long): Food? {

@@ -1,10 +1,9 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.entities.*
-import com.machfour.macros.sql.OrderByDirection
 import com.machfour.macros.persistence.MacrosDatabase
-import com.machfour.macros.sql.ColumnMax.Companion.max
+import com.machfour.macros.sql.generator.ColumnMax.Companion.max
 import java.sql.SQLException
 
 object FoodPortionQueries {
@@ -38,7 +37,7 @@ object FoodPortionQueries {
         val (foodId, createTime) = Pair(FoodPortionTable.FOOD_ID, FoodPortionTable.CREATE_TIME)
         // NOTE this can't actually give the create time - need to select MAX(create_time) for that
         val query = CoreQueries.selectTwoColumns(ds, FoodPortion.table, foodId, createTime) {
-            orderBy(FoodPortionTable.CREATE_TIME.max(), OrderByDirection.DESCENDING)
+            orderBy(FoodPortionTable.CREATE_TIME.max(), com.machfour.macros.sql.generator.OrderByDirection.DESCENDING)
             groupBy(FoodPortionTable.FOOD_ID)
             limit(howMany)
             //distinct()

@@ -1,7 +1,7 @@
 package com.machfour.macros.ingredients
 
-import com.machfour.macros.orm.datatype.TypeCastException
-import com.machfour.macros.orm.datatype.Types
+import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.util.StringJoiner
 
 class CompositeFoodSpec(val indexName: String, val name: String, variety: String?, notes: String?) {

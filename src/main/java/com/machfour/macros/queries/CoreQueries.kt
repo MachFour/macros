@@ -1,10 +1,12 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.*
-import com.machfour.macros.orm.Column
-import com.machfour.macros.orm.Table
-import com.machfour.macros.sql.*
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.MacrosDatabase
+import com.machfour.macros.sql.generator.SelectQuery
+import com.machfour.macros.sql.generator.SingleColumnSelect
+import com.machfour.macros.sql.generator.TwoColumnSelect
 import java.sql.SQLException
 
 internal object CoreQueries {

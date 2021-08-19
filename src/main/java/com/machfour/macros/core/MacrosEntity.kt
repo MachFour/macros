@@ -1,6 +1,8 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.orm.*
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.Table
 
 /**
  * Defines common methods for each object to be persisted

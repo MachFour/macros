@@ -1,6 +1,6 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.entities.Nutrient
 
 /*

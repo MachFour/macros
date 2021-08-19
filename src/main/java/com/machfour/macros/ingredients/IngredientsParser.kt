@@ -4,8 +4,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonIOException
 import com.google.gson.reflect.TypeToken
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.schema.FoodTable
-import com.machfour.macros.core.schema.IngredientTable
+import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.orm.schema.IngredientTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.queries.WriteQueries

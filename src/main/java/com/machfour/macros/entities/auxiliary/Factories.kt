@@ -3,7 +3,7 @@ package com.machfour.macros.entities.auxiliary
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.NutrientGoal

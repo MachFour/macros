@@ -2,18 +2,18 @@ package com.machfour.macros.sample
 
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.core.schema.FoodTable.Companion.BRAND
-import com.machfour.macros.core.schema.FoodTable.Companion.CATEGORY
-import com.machfour.macros.core.schema.FoodTable.Companion.EXTRA_DESC
-import com.machfour.macros.core.schema.FoodTable.Companion.FOOD_TYPE
-import com.machfour.macros.core.schema.FoodTable.Companion.INDEX_NAME
-import com.machfour.macros.core.schema.FoodTable.Companion.NAME
-import com.machfour.macros.core.schema.FoodTable.Companion.NOTES
-import com.machfour.macros.core.schema.FoodTable.Companion.NUTTAB_INDEX
+import com.machfour.macros.orm.schema.FoodTable.Companion.BRAND
+import com.machfour.macros.orm.schema.FoodTable.Companion.CATEGORY
+import com.machfour.macros.orm.schema.FoodTable.Companion.EXTRA_DESC
+import com.machfour.macros.orm.schema.FoodTable.Companion.FOOD_TYPE
+import com.machfour.macros.orm.schema.FoodTable.Companion.INDEX_NAME
+import com.machfour.macros.orm.schema.FoodTable.Companion.NAME
+import com.machfour.macros.orm.schema.FoodTable.Companion.NOTES
+import com.machfour.macros.orm.schema.FoodTable.Companion.NUTTAB_INDEX
 import com.machfour.macros.entities.*
 
-import com.machfour.macros.core.schema.FoodTable.Companion.USDA_INDEX
-import com.machfour.macros.core.schema.FoodTable.Companion.VARIETY
+import com.machfour.macros.orm.schema.FoodTable.Companion.USDA_INDEX
+import com.machfour.macros.orm.schema.FoodTable.Companion.VARIETY
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
 

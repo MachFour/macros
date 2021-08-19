@@ -1,17 +1,18 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.schema.Tables
+import com.machfour.macros.orm.schema.Tables
 import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ColumnData
-import com.machfour.macros.orm.Table
-import com.machfour.macros.sql.*
+import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.DatabaseUtils
 import com.machfour.macros.persistence.MacrosDatabase
 import com.machfour.macros.persistence.MacrosDatabaseImpl
+import com.machfour.macros.sql.SqlConfig
+import com.machfour.macros.sql.generator.*
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
@@ -292,7 +293,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
             return 0
         }
         var saved = 0
-        val table = objects.iterator().next().table
+        val table = objects.first().table
         val c = connection
         val prevAutoCommit = c.autoCommit
         c.autoCommit = false

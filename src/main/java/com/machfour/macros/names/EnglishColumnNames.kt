@@ -1,7 +1,7 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.orm.Column
-import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.sql.Column
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.inbuilt.Nutrients
 

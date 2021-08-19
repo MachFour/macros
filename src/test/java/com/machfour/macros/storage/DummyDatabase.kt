@@ -1,11 +1,11 @@
 package com.machfour.macros.storage
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.Table
+import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.MacrosDatabase
-import com.machfour.macros.sql.*
+import com.machfour.macros.sql.generator.*
 
 class DummyDatabase: MacrosDatabase {
     override fun openConnection() {}
@@ -37,7 +37,7 @@ class DummyDatabase: MacrosDatabase {
     }
 
     private fun <M> makeDummyColumnData(t: Table<M>, query: SelectQuery<M>): List<ColumnData<M>> {
-        return query.whereExpression.getBindObjects().map {
+        return query.getBindArguments().map {
             ColumnData(t).apply {
                 put(t.idColumn, it.hashCode().toLong())
                 put(t.createTimeColumn, System.currentTimeMillis()/1000)

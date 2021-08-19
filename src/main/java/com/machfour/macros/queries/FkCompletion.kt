@@ -1,6 +1,6 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.orm.ObjectSource

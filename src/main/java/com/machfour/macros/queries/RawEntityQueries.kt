@@ -1,11 +1,11 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.Table
+import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.MacrosDatabase
-import com.machfour.macros.sql.AllColumnSelect
-import com.machfour.macros.sql.MultiColumnSelect
+import com.machfour.macros.sql.generator.AllColumnSelect
+import com.machfour.macros.sql.generator.MultiColumnSelect
 import java.sql.SQLException
 
 internal object RawEntityQueries {

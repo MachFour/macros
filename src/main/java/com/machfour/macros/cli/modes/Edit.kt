@@ -7,7 +7,7 @@ import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.core.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.MealQueries

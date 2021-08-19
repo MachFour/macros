@@ -7,8 +7,8 @@ import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.machfour.macros.core.*
-import com.machfour.macros.core.schema.FoodNutrientValueTable
-import com.machfour.macros.core.schema.FoodTable
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.entities.Food
@@ -17,7 +17,7 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.WriteQueries

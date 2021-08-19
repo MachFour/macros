@@ -1,6 +1,6 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.schema.*
+import com.machfour.macros.orm.schema.*
 import com.machfour.macros.entities.*
 import com.machfour.macros.persistence.DatabaseUtils.makeIdMap
 import com.machfour.macros.persistence.MacrosDatabase

@@ -1,13 +1,13 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.Table
-import com.machfour.macros.sql.AllColumnSelect
-import com.machfour.macros.sql.MultiColumnSelect
-import com.machfour.macros.sql.SingleColumnSelect
-import com.machfour.macros.sql.TwoColumnSelect
+import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.generator.AllColumnSelect
+import com.machfour.macros.sql.generator.MultiColumnSelect
+import com.machfour.macros.sql.generator.SingleColumnSelect
+import com.machfour.macros.sql.generator.TwoColumnSelect
 
 // Implementation of MacrosDataSource for testing which does nothing and returns empty data
 class NullDatabase: MacrosDatabase {

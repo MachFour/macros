@@ -1,8 +1,8 @@
 package com.machfour.macros.entities.auxiliary
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.core.VErrorList
-import com.machfour.macros.core.schema.FoodNutrientValueTable
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.validation.Validation

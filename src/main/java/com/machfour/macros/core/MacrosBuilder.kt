@@ -1,8 +1,10 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.orm.datatype.TypeCastException
+import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.orm.*
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 

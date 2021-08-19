@@ -1,12 +1,12 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.Table
-import com.machfour.macros.orm.datatype.MacrosType
-import com.machfour.macros.orm.datatype.Types
-import com.machfour.macros.sql.ColumnExpr
-import com.machfour.macros.sql.Conjuction
+import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.generator.ColumnExpr
+import com.machfour.macros.sql.generator.Conjuction
 import com.machfour.macros.util.StringJoiner
 import java.io.BufferedReader
 import java.io.IOException
@@ -39,7 +39,7 @@ object DatabaseUtils {
     }
 
     // creates SQL placeholders for the given (ordered) list of columns
-    private fun <M> makeUpdatePlaceholders(columns: List<Column<M, *>>): String {
+    internal fun <M> makeUpdatePlaceholders(columns: List<Column<M, *>>): String {
         return makePlaceholders(columns) { it.sqlName + " = " + getSqlPlaceholder(it.type) }
     }
 

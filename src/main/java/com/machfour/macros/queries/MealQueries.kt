@@ -1,7 +1,7 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.schema.FoodPortionTable
-import com.machfour.macros.core.schema.MealTable
+import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal

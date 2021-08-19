@@ -1,6 +1,6 @@
 package com.machfour.macros.validation
 
-import com.machfour.macros.orm.Column
+import com.machfour.macros.sql.Column
 import com.machfour.macros.orm.ColumnData
 
 fun interface Validation<M> {

@@ -2,7 +2,7 @@ package com.machfour.macros.persistence
 
 import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.Table
+import com.machfour.macros.sql.Table
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.queries.RawEntityQueries
 import org.supercsv.io.CsvMapWriter

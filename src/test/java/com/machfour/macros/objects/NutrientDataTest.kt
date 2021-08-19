@@ -1,10 +1,10 @@
 package com.machfour.macros.objects
 
 import com.machfour.macros.core.*
-import com.machfour.macros.core.schema.FoodPortionTable.Companion.FOOD_ID
-import com.machfour.macros.core.schema.FoodPortionTable.Companion.MEAL_ID
-import com.machfour.macros.core.schema.FoodPortionTable.Companion.QUANTITY
-import com.machfour.macros.core.schema.FoodPortionTable.Companion.QUANTITY_UNIT
+import com.machfour.macros.orm.schema.FoodPortionTable.Companion.FOOD_ID
+import com.machfour.macros.orm.schema.FoodPortionTable.Companion.MEAL_ID
+import com.machfour.macros.orm.schema.FoodPortionTable.Companion.QUANTITY
+import com.machfour.macros.orm.schema.FoodPortionTable.Companion.QUANTITY_UNIT
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units

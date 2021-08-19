@@ -63,7 +63,6 @@ class NullDatabase: MacrosDatabase {
         return 0
     }
 
-    override fun executeRawStatement(sql: String): Int {
-        return 0
+    override fun executeRawStatement(sql: String) {
     }
 }

@@ -34,10 +34,12 @@ fun <K, V, R> mapValueOrElse(data: Map<K, V>, key: K, elseValue: R, mapping: (V)
     }
 }
 
+@Suppress("unused")
 fun <E> Iterable<Set<E>>.unionAll() : Set<E> {
     return reduce { s, t -> s.union(t) }
 }
 
+@Suppress("unused")
 fun <E> Iterable<Set<E>>.intersectAll() : Set<E> {
     return reduce { s, t -> s.intersect(t) }
 }

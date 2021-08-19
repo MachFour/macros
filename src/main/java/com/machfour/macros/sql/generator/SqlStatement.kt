@@ -7,6 +7,7 @@ sealed interface SqlStatement<M> {
     val table: Table<M>
     val mode: SqlQueryMode
 
+    val whereExpression: SqlWhereExpr<M, *> // XXX needed for Android binding but should remove
 
     // TODO situation when there are a lot of arguments (e.g. in a WHERE clause),
     //  currently iteration is done over all args one by one.
@@ -19,6 +20,7 @@ sealed interface SqlStatement<M> {
     fun getBindArguments(): Collection<*>
 
     fun toSql(): String
+
 
     interface Builder<M> {
         fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J)

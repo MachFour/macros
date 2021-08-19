@@ -66,7 +66,7 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
     }
 
     companion object {
-        private val internalClock = Clock.systemDefaultZone()
+        //private val internalClock = Clock.systemDefaultZone()
         private val internalTz = ZoneId.systemDefault()
         private val utcTz: ZoneId = ZoneOffset.UTC
 

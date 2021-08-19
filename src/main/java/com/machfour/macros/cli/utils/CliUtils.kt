@@ -61,9 +61,7 @@ object CliUtils {
         return "%${n}s"
     }
 
-    /*
-     * Fixed width string format
-     */
+    // Fixed width string format
     private fun strFmt(n: Int, leftAlign: Boolean): String {
         val align = if (leftAlign) "-" else ""
         return "%${align}${n}s"

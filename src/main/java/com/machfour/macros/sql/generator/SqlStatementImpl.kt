@@ -8,7 +8,7 @@ abstract class SqlStatementImpl<M>(
     override val mode: SqlQueryMode,
 ): SqlStatement<M> {
 
-    protected abstract val whereExpression: SqlWhereExpr<M, *>
+    abstract override val whereExpression: SqlWhereExpr<M, *>
 
     override val shouldIterateBindArguments: Boolean
         get() = whereExpression.isIterated

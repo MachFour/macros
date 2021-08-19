@@ -69,6 +69,6 @@ interface MacrosDatabase {
 
     // XXX
     @Throws(SQLException::class)
-    fun executeRawStatement(sql: String): Int
+    fun executeRawStatement(sql: String)
 
 }

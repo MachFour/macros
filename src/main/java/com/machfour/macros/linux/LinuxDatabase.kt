@@ -275,7 +275,7 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
         return saved
     }
 
-    override fun executeRawStatement(sql: String): Int {
+    override fun executeRawStatement(sql: String) {
         val c = connection
 
         try {

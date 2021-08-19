@@ -111,18 +111,18 @@ object WriteQueries {
 
 
     @Throws(SQLException::class)
-    fun deleteAllCompositeFoods(ds: MacrosDatabase) : Int {
-        return ds.deleteByColumn(Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+    fun deleteAllCompositeFoods(db: MacrosDatabase) : Int {
+        return db.deleteByColumn(Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
     }
 
     @Throws(SQLException::class)
-    fun deleteAllIngredients(ds: MacrosDatabase) {
-        ds.clearTable(Ingredient.table)
+    fun deleteAllIngredients(db: MacrosDatabase) {
+        db.clearTable(Ingredient.table)
     }
 
     @Throws(SQLException::class)
-    fun deleteAllFoodPortions(ds: MacrosDatabase) {
-        ds.clearTable(FoodPortion.table)
+    fun deleteAllFoodPortions(db: MacrosDatabase) {
+        db.clearTable(FoodPortion.table)
     }
 
 

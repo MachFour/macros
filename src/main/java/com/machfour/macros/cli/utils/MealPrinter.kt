@@ -9,7 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.util.PrintFormatting
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 import com.machfour.macros.util.UnicodeUtils
 import java.io.PrintStream
 
@@ -113,7 +113,7 @@ object MealPrinter {
         // row separator spans all columns plus each separator, but we discount the space
         // after the last separator
         val rowSepLength = rowWidths.sum() + rowWidths.size * columnSep.length - 1
-        val rowSeparator = StringJoiner.of("=").copies(rowSepLength).join()
+        val rowSeparator = stringJoin(listOf("="), copies = rowSepLength)
         printRow(headingRow, rowWidths, rightAlign, columnSep, out)
         out.println(rowSeparator)
         // now we get to the actual data

@@ -9,7 +9,7 @@ import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
-import com.machfour.macros.util.StringJoiner.Companion.of
+import com.machfour.macros.util.stringJoin
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintStream
@@ -80,7 +80,7 @@ object CliUtils {
     private const val end = " |\n"
     private val lineFormat = start + strFmtL(nameWidth) + sep + strFmt(quantityWidth) + sep + strFmtL(notesWidth) + end
     private const val lineLength = nameWidth + notesWidth + quantityWidth + 2 * sep.length + start.length + end.length - 2
-    private val hLine = " " + of("-").copies(lineLength).join()
+    private val hLine = " " + stringJoin(listOf("-"), copies = lineLength)
 
     fun printIngredients(ingredients: List<Ingredient>, out: PrintStream) {
         // XXX use printLine(text, widths), etc function

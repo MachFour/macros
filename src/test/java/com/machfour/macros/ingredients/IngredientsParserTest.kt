@@ -3,7 +3,7 @@ package com.machfour.macros.ingredients
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.queries.WriteQueries
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -37,7 +37,7 @@ class IngredientsParserTest {
                 @Suppress("UNUSED")
                 val newFoods: Collection<CompositeFood> = IngredientsParser.createCompositeFoods(ingredientSpecs, db)
                 println("Composite Foods Read:")
-                println(StringJoiner.of(ingredientSpecs).sep("\n").join())
+                println(stringJoin(ingredientSpecs, sep = "\n"))
             }
         } catch (e: IOException) {
             Assertions.fail<Any>(e)

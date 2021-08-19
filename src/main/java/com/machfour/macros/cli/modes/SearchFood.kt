@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 import com.machfour.macros.util.UnicodeUtils
 import java.io.PrintStream
 import java.sql.SQLException
@@ -20,7 +20,7 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             val space = "        "
             val formatStr = "%-${nameLength}s${space}%s\n"
             // horizontal line - extra spaces are for whitespace + index name length
-            val hline = StringJoiner.of("=").copies(nameLength + 8 + 14).join()
+            val hline = stringJoin(listOf("="), copies = nameLength + 8 + 14)
 
             out.apply {
                 printf(formatStr, "Food name", "index name")

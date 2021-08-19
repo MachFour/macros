@@ -7,7 +7,7 @@ import com.machfour.macros.sql.datatype.MacrosType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
 import com.machfour.macros.sql.generator.Conjuction
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.Reader
@@ -15,7 +15,7 @@ import java.sql.SQLException
 
 object DatabaseUtils {
     internal fun <M> joinColumns(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
-        return StringJoiner.of(columns).sep(", ").stringFunc { it.sqlName }.suffix(suffix).join()
+        return stringJoin(columns, sep = ", ", itemSuffix = suffix) { it.sqlName }
     }
 
     // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
@@ -30,7 +30,7 @@ object DatabaseUtils {
     }
 
     private fun <M> makePlaceholders(columns: List<Column<M, *>>, placeholderFormat: (c: Column<M, *>) -> String): String {
-        return StringJoiner.of(columns.map { placeholderFormat(it) }).sep(", ").join()
+        return stringJoin(columns, sep = ", ") { placeholderFormat(it) }
     }
 
     // creates SQL placeholders for the given (ordered) list of columns
@@ -72,7 +72,7 @@ object DatabaseUtils {
         return if (nValues == 1) {
             " WHERE $colName = $placeholder"
         } else {
-            val placeholders = StringJoiner.of(placeholder).sep(", ").copies(nValues).join()
+            val placeholders = stringJoin(listOf(placeholder), sep = ", ", copies = nValues)
             " WHERE $colName IN (${placeholders})"
         }
     }
@@ -103,7 +103,7 @@ object DatabaseUtils {
                 for (c in likeColumns) {
                     bracketedWhereClauses.add("(" + c.sqlName + " LIKE ?)")
                 }
-                " WHERE " + StringJoiner.of(bracketedWhereClauses).sep(" ${conjunction.sql} ").join()
+                " WHERE " + stringJoin(bracketedWhereClauses, sep = " ${conjunction.sql} ")
             }
         }
     }
@@ -111,7 +111,8 @@ object DatabaseUtils {
     // columns must be a subset of table.columns()
     fun <M> insertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
         val placeholders = makeInsertPlaceholders(orderedColumns)
-        return String.format("INSERT INTO %s (%s) VALUES (%s)", t.name, joinColumns(orderedColumns), placeholders)
+        val columnSql = joinColumns(orderedColumns)
+        return "INSERT INTO ${t.name} ($columnSql) VALUES ($placeholders)"
     }
 
     fun <M, J> updateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
@@ -173,9 +174,8 @@ object DatabaseUtils {
                 }
             }
         }
-        return StringJoiner.of(trimmedDecommentedLines).sep(lineSep).join()
+        return stringJoin(trimmedDecommentedLines, sep = lineSep)
     }
-
 
     // Returns triggers that update the create and modify times of the given table.
     // Columns are determined using the Schema object so ensure it is updated.
@@ -201,7 +201,7 @@ object DatabaseUtils {
 
         val updateTimestampTrigger = """
             |CREATE TRIGGER update_${table.lowercase()}_timestamp
-            |AFTER UPDATE OF ${StringJoiner.of(columnNames).sep(", ").join()} ON $table
+            |AFTER UPDATE OF ${stringJoin(columnNames, sep = ", ")} ON $table
             |BEGIN UPDATE $table
             |SET $modifyTime = $currentUnixTime
             |WHERE $id = NEW.${id};

@@ -10,17 +10,12 @@ class AllColumnSelect<M> private constructor(
         fun <M> build(
             table: Table<M>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
-        ) : AllColumnSelect<M> {
-            return Builder(table).run {
+        ): AllColumnSelect<M> {
+            val query = SelectQueryImpl.Builder(table, emptyList()).run {
                 queryOptions()
-                build()
+                buildQuery()
             }
-        }
-    }
-
-    private class Builder<M>(table: Table<M>): SelectQueryImpl.Builder<M>(table, emptyList()) {
-        fun build(): AllColumnSelect<M> {
-            return AllColumnSelect(buildQuery())
+            return AllColumnSelect(query)
         }
     }
 }

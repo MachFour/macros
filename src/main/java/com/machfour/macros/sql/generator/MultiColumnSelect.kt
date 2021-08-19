@@ -13,19 +13,11 @@ class MultiColumnSelect<M> private constructor(
             orderedColumns: Collection<Column<M, *>>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : MultiColumnSelect<M> {
-            return Builder(table, orderedColumns).run {
+            val query = SelectQueryImpl.Builder(table, orderedColumns.toList()).run {
                 queryOptions()
-                build()
+                buildQuery()
             }
-        }
-    }
-
-    private class Builder<M>(
-        table: Table<M>,
-        orderedColumns: Collection<Column<M, *>>
-    ): SelectQueryImpl.Builder<M>(table, orderedColumns.toList()) {
-        fun build(): MultiColumnSelect<M> {
-            return MultiColumnSelect(buildQuery())
+            return MultiColumnSelect(query)
         }
     }
 }

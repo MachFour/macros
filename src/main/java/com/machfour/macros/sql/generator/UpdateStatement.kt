@@ -6,6 +6,5 @@ interface UpdateStatement<M>: SqlStatement<M> {
     val columns: List<Column<M, *>>
 
     interface Builder<M>: SqlStatement.Builder<M> {
-
     }
 }

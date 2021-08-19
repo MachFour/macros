@@ -16,20 +16,11 @@ class TwoColumnSelect<M, I, J> private constructor(
             column2: Column<M, J>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : TwoColumnSelect<M, I, J> {
-            return Builder(table, column1, column2).run {
+            val query = SelectQueryImpl.Builder(table, listOf(column1, column2)).run {
                 queryOptions()
-                build()
+                buildQuery()
             }
-        }
-    }
-
-    private class Builder<M, I, J>(
-        table: Table<M>,
-        val column1: Column<M, I>,
-        val column2: Column<M, J>,
-    ) : SelectQueryImpl.Builder<M>(table, listOf(column1, column2)) {
-        fun build(): TwoColumnSelect<M, I, J> {
-            return TwoColumnSelect(column1, column2, buildQuery())
+            return TwoColumnSelect(column1, column2, query)
         }
     }
 }

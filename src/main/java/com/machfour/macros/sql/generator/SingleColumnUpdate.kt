@@ -11,20 +11,14 @@ class SingleColumnUpdate<M, J> private constructor(
     companion object {
         fun <M, J> build(
             table: Table<M>,
-            column: Column<M, J>,
-            queryOptions: UpdateStatement.Builder<M>.() -> Unit
+            updateColumn: Column<M, J>,
+            statementOptions: UpdateStatement.Builder<M>.() -> Unit
         ) : SingleColumnUpdate<M, J> {
-            return Builder(table, column).run {
-                queryOptions()
-                build()
+            val statement = UpdateStatementImpl.Builder(table, listOf(updateColumn)).run {
+                statementOptions()
+                buildQuery()
             }
-        }
-    }
-
-    private class Builder<M, J>(table: Table<M>, private val updateColumn: Column<M, J>)
-        : UpdateStatementImpl.Builder<M>(table, listOf(updateColumn)) {
-        fun build(): SingleColumnUpdate<M, J> {
-            return SingleColumnUpdate(updateColumn, buildQuery())
+            return SingleColumnUpdate(updateColumn, statement)
         }
     }
 }

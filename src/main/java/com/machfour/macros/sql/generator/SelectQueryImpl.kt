@@ -3,9 +3,9 @@ package com.machfour.macros.sql.generator
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.DatabaseUtils
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 
-internal class SelectQueryImpl<M>(
+internal class SelectQueryImpl<M> private constructor(
     table: Table<M>,
     override val columns: List<Column<M, *>>,
     override val whereExpression: SqlWhereExpr<M, *>,
@@ -46,11 +46,11 @@ internal class SelectQueryImpl<M>(
         }
         query.add(suffix)
 
-        return StringJoiner.of(query).sep(" ").join()
+        return stringJoin(query, sep = " ")
             //.also { println("Generated SQL: $it") }
     }
 
-    internal open class Builder<M>(
+    internal class Builder<M>(
         table: Table<M>,
         val columns: List<Column<M, *>>
     ): SqlStatementImpl.Builder<M>(table), SelectQuery.Builder<M> {

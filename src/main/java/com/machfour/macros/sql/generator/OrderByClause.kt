@@ -1,6 +1,6 @@
 package com.machfour.macros.sql.generator
 
-import com.machfour.macros.util.StringJoiner
+import com.machfour.macros.util.stringJoin
 
 class OrderByClause<M>(
     clauseBody: String
@@ -36,7 +36,7 @@ class OrderByClause<M>(
                     it.add(nulls.sql)
                 }
             }
-            return StringJoiner.of(words).sep(" ").join()
+            return stringJoin(words, sep = " ")
         }
         private fun <M> makeClauseBody(
             columnExpr: ColumnExpr<M, *>,

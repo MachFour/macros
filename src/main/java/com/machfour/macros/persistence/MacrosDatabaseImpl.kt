@@ -2,7 +2,7 @@ package com.machfour.macros.persistence
 
 import com.machfour.macros.core.*
 import com.machfour.macros.sql.Column
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.*

@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.entities.Meal

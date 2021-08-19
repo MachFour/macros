@@ -105,7 +105,7 @@ object WriteQueries {
     fun setSearchRelevanceForFoodType(db: MacrosDatabase, foodType: FoodType, value: Int) {
         db.executeRawStatement(
             "UPDATE ${Food.table.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
-                "${FoodTable.FOOD_TYPE} = ${foodType.niceName}"
+                "${FoodTable.FOOD_TYPE} = '${foodType.niceName}'"
         )
     }
 

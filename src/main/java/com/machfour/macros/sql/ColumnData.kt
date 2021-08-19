@@ -1,8 +1,6 @@
-package com.machfour.macros.orm
+package com.machfour.macros.sql
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.sql.Table
 
 // Class which maps columns to their data values in instances of Macros objects
 class ColumnData<M> private constructor(

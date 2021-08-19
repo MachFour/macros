@@ -42,24 +42,24 @@ internal open class ColumnImpl<M, J> private constructor(
         }
     }
 
-    internal class Builder<J>(private val name: String, private val type: MacrosType<J>) {
+    internal class Builder<J>(private val name: String, private val type: MacrosType<J>): Column.Builder<J> {
         private var editable: Boolean = true
         private var nullable: Boolean = true
         private var inSecondaryKey: Boolean = false
         private var unique: Boolean = false
         private var defaultValue: () -> J? = { null }
 
-        fun notEditable() = apply { editable = false }
+        override fun notEditable() = apply { editable = false }
 
-        fun notNull() = apply { nullable = false }
+        override fun notNull() = apply { nullable = false }
 
-        fun inSecondaryKey() = apply { inSecondaryKey = true }
+        override fun inSecondaryKey() = apply { inSecondaryKey = true }
 
-        fun unique() = apply { unique = true }
+        override fun unique() = apply { unique = true }
 
-        fun defaultsTo(value: J?) = apply { defaultValue = { value } }
+        override fun defaultsTo(value: J?) = apply { defaultValue = { value } }
 
-        fun default(getValue: () -> J?) = apply { defaultValue = getValue }
+        override fun default(getValue: () -> J?) = apply { defaultValue = getValue }
 
         private fun <M> build(): ColumnImpl<M, J> {
             return ColumnImpl(name, type, defaultValue, editable, nullable, inSecondaryKey, unique)
@@ -76,13 +76,13 @@ internal open class ColumnImpl<M, J> private constructor(
         }
 
         // sets index
-        fun <M> buildAndAdd(columnList: MutableList<Column<M, *>>): ColumnImpl<M, J> {
+        override fun <M> buildAndAdd(columnList: MutableList<Column<M, *>>): ColumnImpl<M, J> {
             val builtCol: ColumnImpl<M, J> = build()
             addToListAndSetIndex(builtCol, columnList)
             return builtCol
         }
 
-        fun <M, N> buildAndAddFk(parent: Column<N, J>, parentTable: Table<N>, columnList: MutableList<Column<M, *>>): Fk<M, J, N> {
+        override fun <M, N> buildAndAddFk(parent: Column<N, J>, parentTable: Table<N>, columnList: MutableList<Column<M, *>>): Fk<M, J, N> {
             val builtCol = buildFk<M, N>(parent, parentTable)
             addToListAndSetIndex(builtCol, columnList)
             return builtCol

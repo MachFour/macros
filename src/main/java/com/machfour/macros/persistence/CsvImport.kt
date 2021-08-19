@@ -9,7 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Table
 import com.machfour.macros.queries.FkCompletion.completeForeignKeys

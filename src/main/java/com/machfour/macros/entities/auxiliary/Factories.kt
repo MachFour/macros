@@ -1,6 +1,6 @@
 package com.machfour.macros.entities.auxiliary
 
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable

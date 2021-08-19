@@ -40,4 +40,22 @@ interface Column<M, J> : ColumnExpr<M, J> {
 
     // is SQL UNIQUE column
     val isUnique: Boolean
+
+    interface Builder<J> {
+        fun notEditable(): Builder<J>
+
+        fun notNull(): Builder<J>
+
+        fun inSecondaryKey(): Builder<J>
+
+        fun unique(): Builder<J>
+
+        fun defaultsTo(value: J?): Builder<J>
+
+        fun default(getValue: () -> J?): Builder<J>
+
+        fun <M> buildAndAdd(columnList: MutableList<Column<M, *>>): Column<M, J>
+
+        fun <M, N> buildAndAddFk(parent: Column<N, J>, parentTable: Table<N>, columnList: MutableList<Column<M, *>>): Fk<M, J, N>
+    }
 }

@@ -8,7 +8,7 @@ import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.nutrientdata.FoodNutrientData
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Table

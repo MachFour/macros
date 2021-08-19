@@ -1,6 +1,5 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.orm.ColumnData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 

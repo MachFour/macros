@@ -4,6 +4,7 @@ import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.orm.*
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError

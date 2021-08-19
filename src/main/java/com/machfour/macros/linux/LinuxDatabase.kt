@@ -6,7 +6,7 @@ import com.machfour.macros.linux.LinuxDatabaseUtils.getColumn
 import com.machfour.macros.linux.LinuxDatabaseUtils.processResultSet
 import com.machfour.macros.linux.LinuxDatabaseUtils.toColumnData
 import com.machfour.macros.sql.Column
-import com.machfour.macros.orm.ColumnData
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.persistence.DatabaseUtils
 import com.machfour.macros.persistence.MacrosDatabase

@@ -2,6 +2,7 @@ package com.machfour.macros.core
 
 import com.machfour.macros.orm.*
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.ColumnData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.ValidationError

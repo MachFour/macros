@@ -101,16 +101,17 @@ class LinuxDatabase private constructor(dbFile: String) : MacrosDatabaseImpl(), 
 
     @Throws(SQLException::class)
     override fun beginTransaction() {
-        checkNotNull(cachedConnection) { "Connection not open, call openConnection() first" }
-        cachedConnection!!.autoCommit = false
+        val cc = cachedConnection
+        checkNotNull(cc) { "Connection not open, call openConnection() first" }
+        cc.autoCommit = false
     }
 
     @Throws(SQLException::class)
     override fun endTransaction() {
-        // XXX messy variable access
-        checkNotNull(cachedConnection) { "Connection not open, call openConnection first() (and beginTransaction())" }
-        cachedConnection!!.commit()
-        cachedConnection!!.autoCommit = true
+        val cc = cachedConnection
+        checkNotNull(cc) { "Connection not open, call openConnection first() (and beginTransaction())" }
+        cc.commit()
+        cc.autoCommit = true
     }
 
     @Throws(SQLException::class, IOException::class)

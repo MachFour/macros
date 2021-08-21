@@ -32,7 +32,7 @@ internal object RawEntityQueries {
         }
 
         return HashMap<J, M>(keys.size, 1.0f).apply {
-            ds.selectMultipleColumns(t, query).forEach { data ->
+            ds.selectMultipleColumns(query).forEach { data ->
                 val key = data[keyCol]!!
                 assert(!this.containsKey(key)) { "Key $key already in returned objects map!" }
                 val newObject = t.factory.construct(data, ObjectSource.DATABASE)
@@ -44,7 +44,7 @@ internal object RawEntityQueries {
     @Throws(SQLException::class)
     private fun <M> getRawObjectsById(ds: SqlDatabase, t: Table<M>, query: AllColumnSelect<M>): Map<Long, M> {
         val objects = if (query.isOrdered) LinkedHashMap<Long, M>() else HashMap<Long, M>()
-        val resultData = ds.selectAllColumns(t, query)
+        val resultData = ds.selectAllColumns(query)
         for (objectData in resultData) {
             val id = objectData[t.idColumn]
             check(id != null) { "found null ID in $t" }

@@ -5,11 +5,12 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
+import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
-internal object LinuxDatabaseUtils {
+internal object LinuxSqlUtils {
     @Throws(SQLException::class)
     fun <M> bindData(p: PreparedStatement, values: RowData<M>, orderedColumns: List<Column<M, *>>) {
         bindData(p, values, orderedColumns, null)
@@ -78,5 +79,14 @@ internal object LinuxDatabaseUtils {
         }
     }
 
+    fun withDisabledAutoCommit(c: Connection, block: () -> Unit) {
+        val prevAutoCommit = c.autoCommit
+        c.autoCommit = false
+        block()
+        if (prevAutoCommit) {
+            c.commit()
+            c.autoCommit = true
+        }
+    }
 
 }

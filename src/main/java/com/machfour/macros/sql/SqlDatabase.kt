@@ -30,10 +30,10 @@ interface SqlDatabase {
     fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SQLException::class)
-    fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>>
+    fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
-    fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>>
+    fun <M> selectAllColumns(query: AllColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
     fun <M> updateRows(data: Collection<RowData<M>>): Int

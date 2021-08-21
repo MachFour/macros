@@ -27,11 +27,11 @@ class NullDatabase: SqlDatabase {
         return emptyList()
     }
 
-    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
+    override fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>> {
         return emptyList()
     }
 
-    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
+    override fun <M> selectAllColumns(query: AllColumnSelect<M>): List<RowData<M>> {
         return emptyList()
     }
 

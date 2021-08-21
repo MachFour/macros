@@ -48,10 +48,10 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>>
+    abstract override fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
-    abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>>
+    abstract override fun <M> selectAllColumns(query: AllColumnSelect<M>): List<RowData<M>>
 
     @Throws(SQLException::class)
     abstract override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int

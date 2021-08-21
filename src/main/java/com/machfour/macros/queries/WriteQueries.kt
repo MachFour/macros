@@ -9,8 +9,10 @@ import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
+import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.generator.SimpleDelete
 import java.sql.SQLException
 
 /*
@@ -39,21 +41,21 @@ object WriteQueries {
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> deleteObject(ds: SqlDatabase, o: M): Int {
-        return ds.deleteById(o.table, o.id)
+    fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
+        return deleteById(db, o.table, o.id)
     }
 
     // TODO make this the general one
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> deleteObjects(ds: SqlDatabase, objects: Collection<M>): Int {
+    fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
         val table = objects.firstOrNull()?.table ?: return 0
-        return objects.fold(0) { numDeleted, m -> numDeleted + ds.deleteById(table, m.id) }
+        return deleteObjectsById(db, table, objects.map { it.id })
     }
 
     // deletes objects with the given ID from
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> deleteObjectsById(ds: SqlDatabase, table: Table<M>, ids: Collection<Long>): Int {
-        return ds.deleteByColumn(table, table.idColumn, ids)
+    fun <M : MacrosEntity<M>> deleteObjectsById(db: SqlDatabase, table: Table<M>, ids: Collection<Long>): Int {
+        return deleteWhere(db, table, table.idColumn, ids)
     }
 
     // returns number of objects saved correctly (i.e. 0 or 1)
@@ -96,11 +98,12 @@ object WriteQueries {
         // delete nutrition data, foodQuantities, servings, then food
 
         // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
-        db.deleteByColumn(FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
-        db.deleteByColumn(Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
+        deleteWhere(db, FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
+        deleteWhere(db, Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
         deleteObject(db, f)
     }
 
+    // TODO replace with update template
     @Throws(SQLException::class)
     fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
         db.executeRawStatement(
@@ -109,21 +112,42 @@ object WriteQueries {
         )
     }
 
+    @Throws(SQLException::class)
+    fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
+        return db.deleteFromTable(SimpleDelete.build(t) { where(t.idColumn, id) } )
+    }
+
+    // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
+    // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
+    @Throws(SQLException::class)
+    fun <M, J> deleteWhere(db: SqlDatabase, t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int {
+        return db.deleteFromTable(SimpleDelete.build(t) { where(whereColumn, whereValues) } )
+    }
+
+    // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
+    @Throws(SQLException::class)
+    fun <M, J> deleteByNullStatus(db: SqlDatabase, t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int {
+        return db.deleteFromTable(SimpleDelete.build(t) { where(whereColumn, isNotNull = trueForNotNulls) } )
+    }
 
     @Throws(SQLException::class)
     fun deleteAllCompositeFoods(db: SqlDatabase) : Int {
-        return db.deleteByColumn(Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+        return deleteWhere(db, Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
     }
 
     @Throws(SQLException::class)
     fun deleteAllIngredients(db: SqlDatabase) {
-        db.clearTable(Ingredient.table)
+        clearTable(db, Ingredient.table)
     }
 
     @Throws(SQLException::class)
     fun deleteAllFoodPortions(db: SqlDatabase) {
-        db.clearTable(FoodPortion.table)
+        clearTable(db, FoodPortion.table)
     }
 
+    @Throws(SQLException::class)
+    fun <M> clearTable(db: SqlDatabase, t: Table<M>): Int {
+        return db.deleteFromTable(SimpleDelete.build(t) {})
+    }
 
 }

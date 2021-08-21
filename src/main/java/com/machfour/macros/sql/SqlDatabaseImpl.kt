@@ -28,9 +28,6 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract fun execRawSQLString(sql: String)
 
     @Throws(SQLException::class)
-    abstract override fun <M> deleteById(t: Table<M>, id: Long): Int
-
-    @Throws(SQLException::class)
     abstract override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
     @Throws(SQLException::class)
@@ -56,27 +53,15 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     @Throws(SQLException::class)
     abstract override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>>
 
-    // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
-    // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-    @Throws(SQLException::class)
-    abstract override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
-
-    @Throws(SQLException::class)
-    abstract override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
-
     @Throws(SQLException::class)
     abstract override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
 
     @Throws(SQLException::class)
     abstract override fun <M> updateRows(data: Collection<RowData<M>>): Int
 
-    @Throws(SQLException::class)
-    abstract override fun <M> clearTable(t: Table<M>): Int
 
     @Throws(SQLException::class)
-    override fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int {
-        TODO("Not yet implemented")
-    }
+    abstract override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SQLException::class)
     override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {

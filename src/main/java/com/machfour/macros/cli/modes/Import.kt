@@ -3,13 +3,15 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Serving
 import com.machfour.macros.persistence.CsvException
 import com.machfour.macros.persistence.CsvImport.importFoodData
 import com.machfour.macros.persistence.CsvImport.importRecipes
 import com.machfour.macros.persistence.CsvImport.importServings
 import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -71,31 +73,31 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val servingCsvFile = config.servingCsvPath
         val recipeCsvFile = config.recipeCsvPath
         val ingredientsCsvFile = config.ingredientsCsvPath
-        val ds = config.database
+        val db = config.database
         try {
             if (doClear) {
                 if (!noFoodsServings) {
                     out.println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
-                    WriteQueries.deleteAllIngredients(ds)
-                    ds.clearTable(Serving.table)
-                    ds.clearTable(FoodNutrientValue.table)
-                    ds.clearTable(Food.table)
+                    WriteQueries.deleteAllIngredients(db)
+                    WriteQueries.clearTable(db, Serving.table)
+                    WriteQueries.clearTable(db, FoodNutrientValue.table)
+                    WriteQueries.clearTable(db, Food.table)
                 } else if (!noRecipes) {
                     out.println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
-                    WriteQueries.deleteAllIngredients(ds)
-                    WriteQueries.deleteAllCompositeFoods(ds)
+                    WriteQueries.deleteAllIngredients(db)
+                    WriteQueries.deleteAllCompositeFoods(db)
                 } else {
                     out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }
             }
             if (!noFoodsServings) {
                 out.println("Importing foods and nutrition data into database...")
-                FileReader(foodCsvFile).use { importFoodData(ds, it, false) }
+                FileReader(foodCsvFile).use { importFoodData(db, it, false) }
                 out.println("Saved foods and nutrition data")
-                FileReader(servingCsvFile).use { importServings(ds, it, false) }
+                FileReader(servingCsvFile).use { importServings(db, it, false) }
                 out.println("Saved servings")
                 out.println()
             }
@@ -103,7 +105,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 out.println("Importing recipes and ingredients into database...")
                 FileReader(recipeCsvFile).use { recipeCsv ->
                     FileReader(ingredientsCsvFile).use { ingredientsCsv ->
-                        importRecipes(ds, recipeCsv, ingredientsCsv)
+                        importRecipes(db, recipeCsv, ingredientsCsv)
                     }
                 }
                 out.println("Saved recipes and ingredients")

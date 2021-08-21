@@ -48,14 +48,14 @@ object SqlUtils {
     // exception thrown if nValues < 0
     internal fun makeWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
         val colName = whereColumnExpr.sql
-        require ((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
+        require((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
 
         if (isNotNull != null) {
             val not = if (isNotNull) "NOT" else ""
             return " WHERE $colName IS $not NULL"
         }
 
-        require(nValues!! >= 0)
+        check(nValues != null && nValues >= 0)
         if (nValues == 0) {
             return ""
         }

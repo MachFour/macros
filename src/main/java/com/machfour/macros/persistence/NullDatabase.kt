@@ -1,6 +1,5 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -40,23 +39,7 @@ class NullDatabase: SqlDatabase {
         return 0
     }
 
-    override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int {
-        return 0
-    }
-
-    override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int {
-        return 0
-    }
-
-    override fun <M> deleteById(t: Table<M>, id: Long): Int {
-        return 0
-    }
-
-    override fun <M> clearTable(t: Table<M>): Int {
-        return 0
-    }
-
-    override fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int {
+    override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int {
         return 0
     }
 

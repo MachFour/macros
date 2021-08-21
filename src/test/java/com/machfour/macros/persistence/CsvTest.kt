@@ -55,9 +55,9 @@ class CsvTest {
     @BeforeEach
     fun clearDb() {
         WriteQueries.deleteAllIngredients(db)
-        db.clearTable(Serving.table)
-        db.clearTable(FoodNutrientValue.table)
-        db.clearTable(Food.table)
+        WriteQueries.clearTable(db, Serving.table)
+        WriteQueries.clearTable(db, FoodNutrientValue.table)
+        WriteQueries.clearTable(db, Food.table)
     }
 
     @Test

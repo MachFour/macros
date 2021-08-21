@@ -38,27 +38,8 @@ interface SqlDatabase {
     @Throws(SQLException::class)
     fun <M> updateRows(data: Collection<RowData<M>>): Int
 
-    // TODO replace with delete template
-    // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
-    // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Throws(SQLException::class)
-    fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int
-
-    // TODO replace with delete template
-    // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
-    @Throws(SQLException::class)
-    fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int
-
-    // TODO replace with delete template
-    @Throws(SQLException::class)
-    fun <M> deleteById(t: Table<M>, id: Long): Int
-
-    // TODO replace with delete template
-    @Throws(SQLException::class)
-    fun <M> clearTable(t: Table<M>): Int
-
-    @Throws(SQLException::class)
-    fun <M> deleteFromTable(t: Table<M>, delete: SimpleDelete<M>): Int
+    fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SQLException::class)
     fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int

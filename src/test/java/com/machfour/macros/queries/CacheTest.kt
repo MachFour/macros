@@ -88,11 +88,11 @@ internal class CacheTest {
     fun saveObjects() {
         try {
             println("Clearing tables")
-            db.clearTable(FoodPortion.table)
-            db.clearTable(Meal.table)
-            db.clearTable(Serving.table)
-            db.clearTable(FoodNutrientValue.table)
-            db.clearTable(Food.table)
+            WriteQueries.clearTable(db, FoodPortion.table)
+            WriteQueries.clearTable(db, Meal.table)
+            WriteQueries.clearTable(db, Serving.table)
+            WriteQueries.clearTable(db, FoodNutrientValue.table)
+            WriteQueries.clearTable(db, Food.table)
 
             println("Saving objects")
             WriteQueries.saveObject(db, testFood)

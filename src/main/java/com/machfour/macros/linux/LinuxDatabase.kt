@@ -150,25 +150,10 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SQLException::class)
-    override fun <M> deleteById(t: Table<M>, id: Long): Int {
-        val c = connection
-        try {
-            val sqlTemplate = SqlUtils.deleteWhereTemplate(t, t.idColumn, 1)
-            c.prepareStatement(sqlTemplate).use { statement ->
-                LinuxDatabaseUtils.bindObjects(statement, listOf(id))
-                statement.executeUpdate()
-                return 1
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-    }
-
-    @Throws(SQLException::class)
     override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
         val selectColumn = query.selectColumn
         val resultList = ArrayList<I?>()
-        executeQuery(query) {
+        executeSelectQuery(query) {
             val value = it.getColumn(selectColumn)
             resultList.add(value)
         }
@@ -180,7 +165,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
         val column1 = query.column1
         val column2 = query.column2
         val resultData = ArrayList<Pair<I?, J?>>()
-        executeQuery(query) {
+        executeSelectQuery(query) {
             resultData.add(Pair(it.getColumn(column1), it.getColumn(column2)))
         }
         return resultData
@@ -190,7 +175,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
         val resultData = ArrayList<RowData<M>>()
         val columns = query.columns
-        executeQuery(query) {
+        executeSelectQuery(query) {
             resultData.add(it.toRowData(t, columns))
         }
         return resultData
@@ -199,13 +184,13 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SQLException::class)
     override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
         val resultData = ArrayList<RowData<M>>()
-        executeQuery(query) {
+        executeSelectQuery(query) {
             resultData.add(it.toRowData(t))
         }
         return resultData
     }
 
-    private fun executeQuery(query: SelectQuery<*>, resultSetAction: (ResultSet) -> Unit) {
+    private fun executeSelectQuery(query: SelectQuery<*>, resultSetAction: (ResultSet) -> Unit) {
         val c = connection
         try {
             val sql = query.toSql()
@@ -272,11 +257,8 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
     override fun executeRawStatement(sql: String) {
         val c = connection
-
         try {
-            c.createStatement().use {
-                it.executeUpdate(sql)
-            }
+            c.createStatement().use { it.executeUpdate(sql) }
         } finally {
             closeIfNecessary(c)
         }
@@ -311,45 +293,32 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SQLException::class)
-    override fun <M> clearTable(t: Table<M>): Int {
-        val removed: Int
+    override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int {
+        var removed: Int
         val c = connection
         try {
-            c.prepareStatement(SqlUtils.deleteAllTemplate(t)).use { p -> removed = p.executeUpdate() }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return removed
-    }
-
-    @Throws(SQLException::class)
-    override fun <M, J> deleteByColumn(t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int {
-        val removed: Int
-        val c = connection
-        try {
-            c.prepareStatement(SqlUtils.deleteWhereTemplate(t, whereColumn, whereValues.size)).use { p ->
-                LinuxDatabaseUtils.bindObjects(p, whereValues)
-                removed = p.executeUpdate()
+            val sql = delete.toSql()
+            if (delete.hasBindArguments) {
+                c.prepareStatement(sql).use {
+                    if (delete.shouldIterateBindArguments) {
+                        removed = 0
+                        for (arg in delete.getBindArguments()) {
+                            LinuxDatabaseUtils.bindObjects(it, listOf(arg))
+                            removed += it.executeUpdate()
+                            it.clearParameters()
+                        }
+                    } else {
+                        LinuxDatabaseUtils.bindObjects(it, delete.getBindArguments())
+                        removed = it.executeUpdate()
+                    }
+                }
+            } else {
+                removed = c.createStatement().executeUpdate(sql)
             }
         } finally {
             closeIfNecessary(c)
         }
+
         return removed
     }
-
-    @Throws(SQLException::class)
-    override fun <M, J> deleteByNullStatus(t: Table<M>, whereColumn: Column<M, J>, trueForNotNulls: Boolean): Int {
-        val removed: Int
-        val c = connection
-        val template = SqlUtils.deleteWhereNullTemplate(t, whereColumn, isNotNull = trueForNotNulls)
-        try {
-            c.prepareStatement(template).use {
-                removed = it.executeUpdate()
-            }
-        } finally {
-            closeIfNecessary(c)
-        }
-        return removed
-    }
-
 }

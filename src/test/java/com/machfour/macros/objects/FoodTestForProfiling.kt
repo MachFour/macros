@@ -60,7 +60,7 @@ class FoodTestForProfiling {
 
     fun clearFoodTable() {
         try {
-            db.clearTable(FoodTable.instance)
+            WriteQueries.clearTable(db, FoodTable.instance)
         } catch (e: SQLException) {
             e.printStackTrace()
         }

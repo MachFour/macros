@@ -166,7 +166,7 @@ class FoodTest {
 
     private fun clearFoodTable() {
         try {
-            db.clearTable(FoodTable.instance)
+            WriteQueries.clearTable(db, FoodTable.instance)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

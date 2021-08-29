@@ -1,7 +1,7 @@
 package com.machfour.macros.entities.inbuilt
 
 import com.machfour.macros.entities.Nutrient
-import com.machfour.macros.entities.UnitType
+import com.machfour.macros.core.UnitType
 import com.machfour.macros.names.*
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.NutrientTable

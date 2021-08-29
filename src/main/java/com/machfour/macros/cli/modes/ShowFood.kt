@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.CliUtils.printNutrientData
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodType
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.DateTimeUtils
 

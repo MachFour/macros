@@ -5,7 +5,7 @@ package com.machfour.macros.nutrientdata
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.UnitType
+import com.machfour.macros.core.UnitType
 import com.machfour.macros.entities.inbuilt.DefaultUnits
 import com.machfour.macros.entities.inbuilt.Nutrients
 import com.machfour.macros.entities.inbuilt.Units

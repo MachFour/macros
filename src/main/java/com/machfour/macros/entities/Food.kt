@@ -2,7 +2,10 @@
 
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.PortionMeasurement
+import com.machfour.macros.core.UnitType
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Units
 import com.machfour.macros.nutrientdata.FoodNutrientData
@@ -94,6 +97,13 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             return prettyName.toString()
         }
 
+        fun processFoodType(rowData: RowData<Food>): FoodType {
+            val foodTypeString = rowData[FoodTable.FOOD_TYPE]
+            requireNotNull(foodTypeString) { "Null food type string for rowData: $rowData" }
+            val foodType = FoodType.fromString(foodTypeString)
+            requireNotNull(foodType) { "Invalid food type string: $foodTypeString" }
+            return foodType
+        }
     }
 
     private val servingsInternal: MutableList<Serving> = ArrayList()
@@ -107,7 +117,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     // TODO check nutrient data is initialised
     open val nutrientData: FoodNutrientData = FoodNutrientData()
 
-    val foodType: FoodType = FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!)
+    val foodType: FoodType = processFoodType(dataMap)
 
     lateinit var foodCategory: FoodCategory
         private set

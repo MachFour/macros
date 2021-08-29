@@ -1,5 +1,6 @@
 package com.machfour.macros.nutrientdata
 
+import com.machfour.macros.core.UnitType
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.inbuilt.DefaultUnits

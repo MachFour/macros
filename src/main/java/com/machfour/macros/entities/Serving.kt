@@ -1,6 +1,7 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.PortionMeasurement
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.inbuilt.Nutrients.QUANTITY
 import com.machfour.macros.entities.inbuilt.Units

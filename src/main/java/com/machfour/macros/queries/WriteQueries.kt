@@ -3,7 +3,7 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
-import com.machfour.macros.entities.FoodType
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodPortionTable

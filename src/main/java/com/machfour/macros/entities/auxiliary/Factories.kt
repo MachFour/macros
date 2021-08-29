@@ -1,5 +1,6 @@
 package com.machfour.macros.entities.auxiliary
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.orm.Factory

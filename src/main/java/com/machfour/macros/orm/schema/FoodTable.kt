@@ -5,7 +5,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodCategory
-import com.machfour.macros.entities.FoodType
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.auxiliary.Factories
 
 class FoodTable private constructor() : TableImpl<Food>(TABLE_NAME, Factories.food, COLUMNS) {

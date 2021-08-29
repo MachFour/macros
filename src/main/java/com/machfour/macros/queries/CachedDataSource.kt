@@ -17,7 +17,7 @@ class CachedDataSource(
     database: SqlDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): StaticDataSource(database) {
-    private var allFoodsNeedsRefresh: Boolean = true
+    var allFoodsNeedsRefresh: Boolean = true
 
     private val foodRefreshQueue = HashSet<Long>()
     private val mealRefreshQueue = HashSet<Long>()

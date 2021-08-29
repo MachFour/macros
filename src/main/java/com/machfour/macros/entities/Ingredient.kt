@@ -2,6 +2,7 @@
 
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource

@@ -1,5 +1,6 @@
 package com.machfour.macros.persistence
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.inbuilt.DefaultUnits
@@ -57,8 +58,11 @@ object CsvImport {
         val data = ArrayList<RowData<FoodNutrientValue>>()
 
         for (nutrient in Nutrients.nutrients) {
+            val valueString = csvRow[nutrient.csvName]
             // we skip adding the nutrient if it's not present in the CSV
-            val valueString = csvRow[nutrient.csvName]?.takeIf { it.isNotBlank() } ?: continue
+            if (valueString.isNullOrBlank()) {
+                continue
+            }
 
             val unitString = when(nutrient) {
                 Nutrients.QUANTITY -> csvRow[QUANTITY_UNIT_NAME]
@@ -87,25 +91,20 @@ object CsvImport {
 
     // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
     private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { it.isNullOrBlank() }
-    //private fun allValuesEmpty(csvRow: Map<String, String?>): Boolean {
-    //    return csvRow.values.firstOrNull { s -> !s.isNullOrBlank() } == null
-    //}
 
     // Returns map of food index name to parsed food and nutrition RowData objects
     @Throws(IOException::class, TypeCastException::class)
     private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
-        val data: MutableList<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> = ArrayList()
+        val data = ArrayList<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>>()
         getMapReader(foodCsv).use { mapReader ->
             val header = mapReader.getHeader(true)
-            var csvRow: Map<String, String?> = emptyMap()
+            var csvRow = emptyMap<String, String?>()
             while (mapReader.read(*header)?.also { csvRow = it } != null) {
                 if (allValuesEmpty(csvRow)) {
                     continue  // it's a blank row
                 }
                 val foodData = extractData(csvRow, FoodTable.instance)
                 val ndData = extractNutrientData(csvRow)
-
-                //assert(foodData.hasData(FoodTable.NAME)) { "Food is missing its name" }
 
                 data.add(Pair(foodData, ndData))
             }
@@ -116,8 +115,8 @@ object CsvImport {
     // map from composite food index name to list of ingredients
     // XXX adding the db to get ingredient food objects looks ugly
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String, MutableList<Ingredient>> {
-        val data: MutableMap<String, MutableList<Ingredient>> = HashMap()
+    private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String, List<Ingredient>> {
+        val data = HashMap<String, MutableList<Ingredient>>()
         try {
             getMapReader(ingredientCsv).use { mapReader ->
                 val header = mapReader.getHeader(true)
@@ -142,14 +141,8 @@ object CsvImport {
                     i.setFkParentNaturalKey(IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     i.initFoodAndNd(ingredientFood)
 
-                    // add the new ingredient data to the existing list in the map, or create one if it doesn't yet exist.
-                    if (data.containsKey(compositeIndexName)) {
-                        data.getValue(compositeIndexName).add(i)
-                    } else {
-                        val recipeIngredients: MutableList<Ingredient> = ArrayList()
-                        recipeIngredients.add(i)
-                        data[compositeIndexName] = recipeIngredients
-                    }
+                    // add new ingredient data to existing list in the map, or create one if it doesn't exist.
+                    data.getOrPut(compositeIndexName) { ArrayList() }.add(i)
                 }
             }
         } catch (e: SQLException) {
@@ -162,7 +155,7 @@ object CsvImport {
     // (don't have linked food objects of their own)
     //
     @Throws(IOException::class, TypeCastException::class)
-    fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, MutableList<Ingredient>>): Map<String, CompositeFood> {
+    fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, List<Ingredient>>): Map<String, CompositeFood> {
         // preserve insertion order
         val foodMap: MutableMap<String, CompositeFood> = LinkedHashMap()
         val ndMap: MutableMap<String, List<RowData<FoodNutrientValue>>> = LinkedHashMap()
@@ -198,30 +191,37 @@ object CsvImport {
     // returns a pair of maps from food index name to corresponding food objects and nutrition data objects respectively
     // TODO can probably refactor this to just return one food
     @Throws(IOException::class, TypeCastException::class)
-    fun buildFoodObjectTree(foodCsv: Reader): Map<String, Food> {
+    fun buildFoodObjectTree(
+        foodCsv: Reader,
+        modifyFoodData: ((RowData<Food>) -> Unit)? = null,
+        modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
+    ): Map<String, Food> {
         // preserve insertion order
         val foodMap: MutableMap<String, Food> = LinkedHashMap()
         for ((foodData, nutrientValueData) in getFoodData(foodCsv)) {
-            val f: Food = try {
+            modifyFoodData?.let { modify -> modify(foodData) }
+            
+            val food = try {
                 Food.factory.construct(foodData, ObjectSource.IMPORT)
             } catch (e: SchemaViolation) {
                 throw CsvException("Schema violation detected in food: ${e.message} Data: $foodData")
                 //continue;
             }
             nutrientValueData.forEach {
+                modifyNutrientValueData?.let { modify -> modify(it) }
                 try {
                     val nv = FoodNutrientValue.factory.construct(it, ObjectSource.IMPORT)
                     // without pairs, needed to recover nutrition data from return value
-                    f.addNutrientValue(nv)
+                    food.addNutrientValue(nv)
                 } catch (e: SchemaViolation) {
                     throw CsvException("Schema violation detected in nutrition data: ${e.message} Data: $it")
                     //continue;
                 }
             }
-            if (foodMap.containsKey(f.indexName)) {
-                throw CsvException("Imported foods contained duplicate index name: " + f.indexName)
+            if (foodMap.containsKey(food.indexName)) {
+                throw CsvException("Imported foods contained duplicate index name: " + food.indexName)
             }
-            foodMap[f.indexName] = f
+            foodMap[food.indexName] = food
         }
         return foodMap
     }
@@ -291,9 +291,28 @@ object CsvImport {
     }
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importFoodData(ds: SqlDatabase, foodCsv: Reader, allowOverwrite: Boolean) {
-        val csvFoods = buildFoodObjectTree(foodCsv)
-        saveImportedFoods(ds, csvFoods)
+    fun importFoodData(
+        db: SqlDatabase,
+        foodCsv: Reader,
+        allowOverwrite: Boolean,
+        modifyFoodData: ((RowData<Food>) -> Unit)? = null,
+        modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
+    ) {
+        val csvFoods = buildFoodObjectTree(
+            foodCsv,
+            modifyFoodData = { data ->
+                //assert(foodData.hasData(FoodTable.NAME)) { "Food is missing its name" }
+                // set search relevance
+                data[FoodTable.FOOD_TYPE]
+                    ?.let { FoodType.fromString(it) }
+                    ?.let { data.put(FoodTable.SEARCH_RELEVANCE, it.defaultSearchRelevance.value) }
+
+                modifyFoodData ?.let { it(data) }
+            },
+            modifyNutrientValueData
+        )
+
+        saveImportedFoods(db, csvFoods)
     }
 
     // TODO detect existing servings
@@ -306,15 +325,15 @@ object CsvImport {
 
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
     fun importRecipes(ds: SqlDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
-        val ingredientsByRecipe : Map<String, MutableList<Ingredient>> = makeIngredients(ingredientCsv, ds)
-        val csvRecipes : Map<String, CompositeFood> = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe)
+        val ingredientsByRecipe = makeIngredients(ingredientCsv, ds)
+        val csvRecipes = buildCompositeFoodObjectTree(recipeCsv, ingredientsByRecipe)
         //val duplicateRecipes : Set<String> = findExistingFoodIndexNames(csvRecipes.keys, ds)
         //duplicateRecipes.removeAll(ingredientsByRecipe.keys)
         // todo remove the extra duplicate check from inside this function, do it here
         saveImportedFoods(ds, csvRecipes)
 
         // add all the ingredients for non-duplicated recipes to one big list, then save them all
-        val allIngredients: List<Ingredient> = ingredientsByRecipe.flatMap { it.value }
+        val allIngredients = ingredientsByRecipe.flatMap { it.value }
 
         val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
         WriteQueries.saveObjects(ds, completedIngredients, ObjectSource.IMPORT)

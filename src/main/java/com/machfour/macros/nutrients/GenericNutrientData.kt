@@ -1,11 +1,10 @@
-package com.machfour.macros.nutrientdata
+package com.machfour.macros.nutrients
 
-import com.machfour.macros.core.UnitType
+import com.machfour.macros.units.UnitType
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.inbuilt.DefaultUnits
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.units.DefaultUnits
+import com.machfour.macros.units.Units
 
 // class storing a set of nutrient values for any purpose.
 // It could be for a food or meal, or for a nutrition goal

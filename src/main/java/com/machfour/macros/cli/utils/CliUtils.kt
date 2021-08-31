@@ -4,9 +4,9 @@ import com.machfour.macros.names.ColumnNamer
 import com.machfour.macros.names.DefaultColumnStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.entities.Ingredient
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.stringJoin

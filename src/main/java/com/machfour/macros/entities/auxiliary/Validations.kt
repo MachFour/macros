@@ -4,7 +4,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.core.VErrorList
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 

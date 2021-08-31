@@ -1,4 +1,4 @@
-package com.machfour.macros.core
+package com.machfour.macros.units
 
 enum class UnitType(val id: Int, val niceName: String) {
     NONE(0, "none"),

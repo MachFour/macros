@@ -1,6 +1,6 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.units.Units
 import com.machfour.macros.entities.Unit
 
 /*

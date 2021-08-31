@@ -1,7 +1,8 @@
-package com.machfour.macros.entities.inbuilt
+package com.machfour.macros.units
 
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.Nutrients
 
 
 object DefaultUnits {

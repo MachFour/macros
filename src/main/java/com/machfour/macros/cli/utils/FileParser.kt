@@ -5,7 +5,7 @@ import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.units.Units
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.orm.schema.MealTable

@@ -2,7 +2,7 @@ package com.machfour.macros.insulin
 
 import com.machfour.macros.insulin.InsulinCalculations.insulinForCarbs
 import com.machfour.macros.insulin.InsulinCalculations.insulinForProtein
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import java.io.PrintStream
 
 object InsulinCmdlineUtils {

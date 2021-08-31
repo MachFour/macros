@@ -11,11 +11,11 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
-import com.machfour.macros.entities.inbuilt.DefaultUnits
-import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.units.DefaultUnits
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.DefaultColumnStrings
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable

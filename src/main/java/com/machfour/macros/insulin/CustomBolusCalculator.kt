@@ -1,8 +1,8 @@
 package com.machfour.macros.insulin
 
 import com.github.keelar.exprk.Expressions
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.FoodNutrientData
 
 
 fun interface CustomBolusCalculator {

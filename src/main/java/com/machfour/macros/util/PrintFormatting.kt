@@ -1,11 +1,11 @@
 package com.machfour.macros.util
 
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.names.ColumnStrings
 import com.machfour.macros.names.UnitNamer
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.nutrients.Nutrients
 
 object PrintFormatting {
     fun nutrient(

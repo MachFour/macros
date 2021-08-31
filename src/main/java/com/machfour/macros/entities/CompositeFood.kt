@@ -1,7 +1,7 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.FoodType
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable

@@ -3,8 +3,8 @@ package com.machfour.macros.sample
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.core.FoodType
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.units.Units
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable.Companion.BRAND
 import com.machfour.macros.orm.schema.FoodTable.Companion.CATEGORY

@@ -2,12 +2,12 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.cli.utils.CliUtils.printEnergyProportions
 import com.machfour.macros.cli.utils.CliUtils.printNutrientData
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.inbuilt.Nutrients
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.util.PrintFormatting
 import com.machfour.macros.util.stringJoin
 import com.machfour.macros.util.UnicodeUtils

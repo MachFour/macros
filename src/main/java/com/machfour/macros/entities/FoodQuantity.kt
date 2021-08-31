@@ -1,8 +1,8 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.units.Units
+import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData

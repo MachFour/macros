@@ -1,7 +1,7 @@
 package com.machfour.macros.insulin
 
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.FoodNutrientData
 
 object InsulinCalculations {
     // Calculates insulin dosage (in units) given a carb amount (in grams) and I/C ratio (in U/g).

@@ -3,9 +3,9 @@ package com.machfour.macros.persistence
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.*
-import com.machfour.macros.entities.inbuilt.DefaultUnits
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
+import com.machfour.macros.units.DefaultUnits
+import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.units.Units
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.orm.ObjectSource

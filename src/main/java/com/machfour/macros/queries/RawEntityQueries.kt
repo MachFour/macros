@@ -5,70 +5,77 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.AllColumnSelect
-import com.machfour.macros.sql.generator.MultiColumnSelect
+import com.machfour.macros.sql.generator.SelectQuery
 import java.sql.SQLException
 
 internal object RawEntityQueries {
 
-    // Constructs a map of key column value to raw object data (i.e. no object references initialised
-    // Keys that do not exist in the database will not be contained in the output map
-    // The returned map is never null and is unordered
+    // Constructs a map of ID to raw object data (i.e. no object references initialised)
+    // IDs that do not exist in the database will not be contained in the output map.
     @Throws(SQLException::class)
-    internal fun <M, J> getRawObjectsByKeys(
-        ds: SqlDatabase,
-        t: Table<M>,
-        keyCol: Column<M, J>,
-        keys: Collection<J>,
-        // if the number of keys exceeds this number, the query will be iterated
-        iterateThreshold: Int = CoreQueries.ITERATE_THRESHOLD,
-    ): Map<J, M> {
-        require(keyCol.isUnique) { "Key column must be unique" }
-        // Without this check, if the list of keys is empty, every row will be returned
-        if (keys.isEmpty()) {
-            return emptyMap()
-        }
-        val query = MultiColumnSelect.build(t, t.columns) {
-            where(keyCol, keys, iterate = keys.size > iterateThreshold)
-        }
+    internal fun <M, J> getRawObjects(ds: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
+        require(keyColumn.isUnique) { "Key column must be unique" }
 
-        return HashMap<J, M>(keys.size, 1.0f).apply {
-            ds.selectMultipleColumns(query).forEach { data ->
-                val key = data[keyCol]!!
-                assert(!this.containsKey(key)) { "Key $key already in returned objects map!" }
-                val newObject = t.factory.construct(data, ObjectSource.DATABASE)
-                this[key] = newObject
-            }
-        }
-    }
+        val t = keyColumn.table
+        val query = AllColumnSelect.build(t, queryOptions)
+        
+        val objects = if (query.isOrdered) LinkedHashMap<J, M>() else HashMap<J, M>()
 
-    @Throws(SQLException::class)
-    private fun <M> getRawObjectsById(ds: SqlDatabase, t: Table<M>, query: AllColumnSelect<M>): Map<Long, M> {
-        val objects = if (query.isOrdered) LinkedHashMap<Long, M>() else HashMap<Long, M>()
         val resultData = ds.selectAllColumns(query)
         for (objectData in resultData) {
-            val id = objectData[t.idColumn]
-            check(id != null) { "found null ID in $t" }
-            assert(!objects.containsKey(id)) { "ID $id already in returned objects map!" }
-            val newObject = t.factory.construct(objectData, ObjectSource.DATABASE)
-            objects[id] = newObject
+            val key = objectData[keyColumn]
+            checkNotNull(key) { "found null key in $t" }
+            assert(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
+            objects[key] = t.factory.construct(objectData, ObjectSource.DATABASE)
         }
         return objects
     }
 
     @Throws(SQLException::class)
     internal fun <M> getAllRawObjects(ds: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
-        val query = AllColumnSelect.build(t) {
+        return getRawObjects(ds, t.idColumn) {
             if (orderBy != null) {
                 orderBy(orderBy)
             }
         }
-        return getRawObjectsById(ds, t, query)
     }
 
     @Throws(SQLException::class)
-    internal fun <M> getRawObjectsByIds(ds: SqlDatabase, t: Table<M>, ids: Collection<Long>): Map<Long, M> {
-        return getRawObjectsByKeys(ds, t, t.idColumn, ids)
+    internal fun <M> getRawObjectsWithIds(
+        ds: SqlDatabase,
+        t: Table<M>,
+        ids: Collection<Long>,
+        preserveIdOrder: Boolean = false,
+        // if the number of keys exceeds this number, the query will be iterated
+        iterateThreshold: Int = CoreQueries.ITERATE_THRESHOLD,
+    ): Map<Long, M> {
+        return getRawObjectsWithKeys(ds, t.idColumn, ids, preserveIdOrder, iterateThreshold)
     }
+
+    @Throws(SQLException::class)
+    internal fun <M, J> getRawObjectsWithKeys(
+        ds: SqlDatabase,
+        keyCol: Column<M, J>,
+        keys: Collection<J>,
+        preserveKeyOrder: Boolean = false,
+        // if the number of keys exceeds this number, the query will be iterated
+        iterateThreshold: Int = CoreQueries.ITERATE_THRESHOLD,
+    ): Map<J, M> {
+        if (keys.isEmpty()) {
+            return emptyMap()
+        }
+        val unorderedObjects = getRawObjects(ds, keyCol) {
+            where(keyCol, keys, iterate = keys.size > iterateThreshold)
+        }
+
+        return if (preserveKeyOrder) {
+            // match order of ids in input
+            keys.intersect(unorderedObjects.keys).associateWith { unorderedObjects.getValue(it) }
+        } else {
+            unorderedObjects
+        }
+    }
+
 
     @Throws(SQLException::class)
     internal fun <M, N> getRawObjectsForParentFk(
@@ -77,17 +84,14 @@ internal object RawEntityQueries {
         childTable: Table<M>,
         fkCol: Column.Fk<M, Long, N>
     ): Map<Long, M> {
-        if (parentObjectMap.isNotEmpty()) {
-            val childIdCol = childTable.idColumn
-            val ids = CoreQueries.selectNonNullColumn(ds, childTable, childIdCol) {
-                where(fkCol, parentObjectMap.keys)
-            }
-            if (ids.isNotEmpty()) {
-                return getRawObjectsByKeys(ds, childTable, childIdCol, ids)
-            }
-            // else no objects in the child table refer to any of the parent objects/rows
+        if (parentObjectMap.isEmpty()) {
+            return emptyMap()
         }
-        return emptyMap()
+        val ids = CoreQueries.selectNonNullColumn(ds, childTable.idColumn) {
+            where(fkCol, parentObjectMap.keys, iterate = parentObjectMap.size > CoreQueries.ITERATE_THRESHOLD)
+        }
+        // if empty, no objects in the child table refer to any of the parent objects/rows
+        return if (ids.isEmpty()) emptyMap() else getRawObjectsWithIds(ds, childTable, ids)
     }
 
 }

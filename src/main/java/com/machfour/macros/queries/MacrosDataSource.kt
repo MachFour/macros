@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.SqlDatabase
@@ -20,10 +21,14 @@ interface MacrosDataSource {
      */
 
     @Throws(SQLException::class)
-    fun foodSearch(keywords: List<String>, matchAll: Boolean = true): Set<Long>
+    fun foodSearch(
+        keywords: List<String>,
+        matchAll: Boolean = true,
+        minRelevance: Int = SearchRelevance.MIN_VISIBLE.value
+    ): Set<Long>
 
     @Throws(SQLException::class)
-    fun foodSearch(keyword: String): Set<Long>
+    fun foodSearch(keyword: String, minRelevance: Int = SearchRelevance.MIN_VISIBLE.value): Set<Long>
 
     @Throws(SQLException::class)
     fun recentFoodIds(howMany: Int) : List<Long>

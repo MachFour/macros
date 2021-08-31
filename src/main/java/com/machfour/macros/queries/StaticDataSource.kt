@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
@@ -193,11 +194,11 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
      * Passthrough fuunctions
      */
 
-    override fun foodSearch(keywords: List<String>, matchAll: Boolean): Set<Long> {
-        return FoodQueries.foodSearch(database, keywords, matchAll)
+    override fun foodSearch(keywords: List<String>, matchAll: Boolean, minRelevance: Int): Set<Long> {
+        return FoodQueries.foodSearch(database, keywords, matchAll, minRelevance)
     }
 
-    override fun foodSearch(keyword: String): Set<Long> {
+    override fun foodSearch(keyword: String, minRelevance: Int): Set<Long> {
         return FoodQueries.foodSearch(database, keyword)
     }
 

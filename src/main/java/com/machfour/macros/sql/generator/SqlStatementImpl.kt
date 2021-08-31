@@ -14,7 +14,7 @@ abstract class SqlStatementImpl<M>(
         get() = whereExpression.isIterated
 
     override val hasBindArguments: Boolean
-        get() = whereExpression.numArgs > 0
+        get() = whereExpression.hasBindObjects
 
     override fun getBindArguments(): Collection<*> {
         return whereExpression.getBindObjects()
@@ -39,6 +39,13 @@ abstract class SqlStatementImpl<M>(
 
         override fun where(whereString: String) {
             whereExpression = SqlWhereExpr.where(whereString)
+        }
+
+        override fun andWhere(expr: String) {
+            whereExpression.alsoWhere(Conjuction.AND, expr)
+        }
+        override fun orWhere(expr: String) {
+            whereExpression.alsoWhere(Conjuction.OR, expr)
         }
 
         override fun whereLike(

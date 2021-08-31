@@ -10,11 +10,10 @@ class SingleColumnSelect<M, J> private constructor(
 
     companion object {
         fun <M, J> build(
-            table: Table<M>,
             selectColumn: Column<M, J>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : SingleColumnSelect<M, J> {
-            val query = SelectQueryImpl.Builder(table, listOf(selectColumn)).run {
+            val query = SelectQueryImpl.Builder(selectColumn.table, listOf(selectColumn)).run {
                 queryOptions()
                 buildQuery()
             }

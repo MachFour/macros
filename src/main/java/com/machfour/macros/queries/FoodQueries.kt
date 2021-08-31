@@ -1,19 +1,20 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.FoodType
+import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
 import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.queries.RawEntityQueries.getAllRawObjects
-import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByIds
-import com.machfour.macros.queries.RawEntityQueries.getRawObjectsByKeys
+import com.machfour.macros.queries.RawEntityQueries.getRawObjectsWithIds
 import com.machfour.macros.queries.RawEntityQueries.getRawObjectsForParentFk
 import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.SqlUtils.makeIdMap
-import com.machfour.macros.util.intersectAllOrNull
-import com.machfour.macros.util.unionAllOrNull
+import com.machfour.macros.sql.SqlUtils
+import com.machfour.macros.sql.generator.SelectQuery
+import com.machfour.macros.util.intersectAll
+import com.machfour.macros.util.unionAll
 import java.sql.SQLException
 
 object FoodQueries {
@@ -31,15 +32,20 @@ object FoodQueries {
     //  e.g. not just prefix searches as strings get longer
     // returns results matching either all or any of the keywords
     @Throws(SQLException::class)
-    fun foodSearch(ds: SqlDatabase, keywords: List<String>, matchAll: Boolean = true): Set<Long> {
-        return keywords.map { foodSearch(ds, it) }.let {
-            // map will be empty if keywords is empty
+    fun foodSearch(
+        db: SqlDatabase,
+        keywords: List<String>,
+        matchAll: Boolean = true,
+        minRelevance: Int = SearchRelevance.MIN_VISIBLE.value
+    ): Set<Long> {
+        // map will be empty if keywords is empty
+        return keywords.map { foodSearch(db, it, minRelevance) }.let {
             if (matchAll) {
-                it.intersectAllOrNull()
+                it.intersectAll()
             } else {
-                it.unionAllOrNull()
+                it.unionAll()
             }
-        } ?: emptySet()
+        }
     }
 
     // Searches Index name, name, variety and brand for prefix, then index name for anywhere
@@ -52,29 +58,36 @@ object FoodQueries {
     //  - be adaptive - if there only few results, add more results from less selective searches
     //  e.g. not just prefix searches as strings get longer
     @Throws(SQLException::class)
-    fun foodSearch(ds: SqlDatabase, keyword: String): Set<Long> {
+    fun foodSearch(
+        db: SqlDatabase,
+        keyword: String,
+        minRelevance: Int = SearchRelevance.MIN_VISIBLE.value
+    ): Set<Long> {
         if (keyword.isEmpty()) {
             return emptySet()
         }
 
-        val indexNameCol = listOf(FoodTable.INDEX_NAME)
-        val table = Food.table
+        val indexName = listOf(FoodTable.INDEX_NAME)
+        
+        val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
+            andWhere("${FoodTable.SEARCH_RELEVANCE} >= $minRelevance")
+        }
 
         val results = LinkedHashSet<Long>()
         with (results) {
             // add exact matches on index name
-            addAll(CoreQueries.exactStringSearch(ds, table, indexNameCol, keyword).toSet())
+            addAll(CoreQueries.exactStringSearch(db, indexName, keyword, queryOptions).toSet())
             // add exact matches on any other column
-            addAll(CoreQueries.exactStringSearch(ds, table, foodSearchCols, keyword).toSet())
+            addAll(CoreQueries.exactStringSearch(db, foodSearchCols, keyword, queryOptions).toSet())
 
             if (keyword.length <= 2) {
                 // just match prefix of index name
-                addAll(CoreQueries.prefixSearch(ds, table, indexNameCol, keyword))
+                addAll(CoreQueries.prefixSearch(db, indexName, keyword, queryOptions))
             } else {
                 // match any column prefix
-                addAll(CoreQueries.prefixSearch(ds, table, foodSearchCols, keyword))
+                addAll(CoreQueries.prefixSearch(db, foodSearchCols, keyword, queryOptions))
                 // match anywhere in index name
-                addAll(CoreQueries.substringSearch(ds, table, indexNameCol, keyword))
+                addAll(CoreQueries.substringSearch(db, indexName, keyword, queryOptions))
             }
         }
         return results
@@ -130,41 +143,30 @@ object FoodQueries {
     fun getFoodsById(db: SqlDatabase, foodIds: Collection<Long>, preserveOrder: Boolean = false): Map<Long, Food> {
         // this map is unordered due to order of database results being unpredictable,
         // we can sort it later if necessary
-        val unorderedFoods = getRawObjectsByIds(db, Food.table, foodIds)
-        processRawFoodMap(db, unorderedFoods)
-        return if (!preserveOrder) {
-            unorderedFoods
-        } else {
-            // match order of ids in input
-            val orderedFoods = LinkedHashMap<Long, Food>(unorderedFoods.size)
-            for (id in foodIds) {
-                unorderedFoods[id]?.let { orderedFoods[id] = it }
-            }
-            orderedFoods
-        }
-    }
-
-    @Throws(SQLException::class)
-    fun getServingsById(db: SqlDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
-        return getRawObjectsByIds(db, Serving.table, servingIds)
-    }
-
-    /*
-     * Constructs full food objects by their index name
-     * Returns a map of index name to food object
-     */
-    @Throws(SQLException::class)
-    fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Food> {
-        val foods = getRawObjectsByKeys(db, FoodTable.instance, FoodTable.INDEX_NAME, indexNames)
-        // TODO hmm this is kind of inefficient
-        val idMap = makeIdMap(foods.values)
-        processRawFoodMap(db, idMap)
+        val foods = getRawObjectsWithIds(db, Food.table, foodIds, preserveOrder)
+        processRawFoodMap(db, foods)
         return foods
     }
 
     @Throws(SQLException::class)
+    fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Food> {
+        // map by ID
+        val foods = RawEntityQueries.getRawObjects(db, FoodTable.ID) {
+            where(FoodTable.INDEX_NAME, indexNames, iterate = indexNames.size > CoreQueries.ITERATE_THRESHOLD)
+        }
+        processRawFoodMap(db, foods)
+        return foods.mapKeys { it.value.indexName }
+    }
+
+
+    @Throws(SQLException::class)
+    fun getServingsById(db: SqlDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
+        return getRawObjectsWithIds(db, Serving.table, servingIds)
+    }
+
+    @Throws(SQLException::class)
     fun getParentFoodIdsContainingFoodIds(db: SqlDatabase, foodIds: List<Long>): List<Long> {
-        return CoreQueries.selectNonNullColumn(db, Ingredient.table, IngredientTable.PARENT_FOOD_ID) {
+        return CoreQueries.selectNonNullColumn(db, IngredientTable.PARENT_FOOD_ID) {
             where(IngredientTable.FOOD_ID, foodIds)
             distinct()
         }

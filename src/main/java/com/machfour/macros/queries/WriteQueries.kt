@@ -121,7 +121,9 @@ object WriteQueries {
     // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
     @Throws(SQLException::class)
     fun <M, J> deleteWhere(db: SqlDatabase, t: Table<M>, whereColumn: Column<M, J>, whereValues: Collection<J>): Int {
-        return db.deleteFromTable(SimpleDelete.build(t) { where(whereColumn, whereValues) } )
+        return db.deleteFromTable(SimpleDelete.build(t) {
+            where(whereColumn, whereValues, iterate = whereValues.size > CoreQueries.ITERATE_THRESHOLD)
+        })
     }
 
     // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL

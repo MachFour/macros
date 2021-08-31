@@ -13,6 +13,7 @@ class SqlWhereExpr<M, J> private constructor(
     private val whereColumnType: MacrosType<J>? = null,
     private val whereValues: Collection<J>? = null,
     val isIterated: Boolean = false,
+    private var suffix: String = ""
 ) {
 
     internal companion object {
@@ -32,6 +33,7 @@ class SqlWhereExpr<M, J> private constructor(
         // can specify iterated = true so that a separate query will be carried out for each where value
         // useful when the number of where values is large
         fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
+            require(whereValues.isNotEmpty()) { "whereValues cannot be empty" }
             val nValues = if (iterated) 1 else whereValues.size
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
@@ -71,8 +73,13 @@ class SqlWhereExpr<M, J> private constructor(
         }
     }
 
+    fun alsoWhere(conjunction: Conjuction, sql: String) {
+        check(whereClause.isNotBlank()) { "Where clause is blank; use a primary condition instead"}
+        suffix = " $conjunction ($sql)"
+    }
+
     fun toSql(): String {
-        return whereClause
+        return whereClause + suffix
     }
 
     fun getBindObjects(): Collection<J> {

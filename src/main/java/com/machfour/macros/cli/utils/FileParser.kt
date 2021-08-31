@@ -189,7 +189,7 @@ class FileParser {
                         }
 
                         val unitString = quantityMatch.groupValues[2]
-                        val matchUnit = Units.fromAbbreviationNoThrow(unitString)
+                        val matchUnit = Units.fromAbbreviationOrNull(unitString)
                         when {
                             // default unit?
                             unitString.isEmpty() -> unit = null

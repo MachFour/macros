@@ -27,7 +27,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getMealIdsForDay(ds: SqlDatabase, day: DateStamp): List<Long> {
-        val ids = CoreQueries.selectSingleColumn(ds, MealTable.instance, MealTable.ID) {
+        val ids = CoreQueries.selectSingleColumn(ds, MealTable.ID) {
             where(MealTable.DAY, listOf(day))
         }
         return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
@@ -63,12 +63,12 @@ object MealQueries {
 
     @Throws(SQLException::class)
     private fun getRawFoodPortionsForMeal(ds: SqlDatabase, meal: Meal): Map<Long, FoodPortion> {
-        val fpIds = CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.ID) {
+        val fpIds = CoreQueries.selectNonNullColumn(ds, FoodPortionTable.ID) {
             where(FoodPortionTable.MEAL_ID, listOf(meal.id))
             distinct()
         }
         return if (fpIds.isNotEmpty()) {
-            RawEntityQueries.getRawObjectsByIds(ds, FoodPortion.table, fpIds)
+            RawEntityQueries.getRawObjectsWithIds(ds, FoodPortion.table, fpIds)
         } else {
             emptyMap()
         }
@@ -105,7 +105,7 @@ object MealQueries {
         }
         // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
         // all meals will be returned.
-        val meals = RawEntityQueries.getRawObjectsByKeys(ds, Meal.table, MealTable.ID, mealIds)
+        val meals = RawEntityQueries.getRawObjectsWithIds(ds, Meal.table, mealIds)
         val foodIds = getFoodIdsForMeals(ds, mealIds)
         if (foodIds.isNotEmpty()) {
             val foodMap = getFoodsById(ds, foodIds)
@@ -119,7 +119,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     private fun getFoodIdsForMeals(ds: SqlDatabase, mealIds: Collection<Long>): List<Long> {
-        val ids = CoreQueries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
+        val ids = CoreQueries.selectSingleColumn(ds, FoodPortionTable.FOOD_ID) {
             where(FoodPortionTable.MEAL_ID, mealIds)
             distinct()
         }
@@ -129,7 +129,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getMealIdsForFoodIds(ds: SqlDatabase, foodIds: Collection<Long>): List<Long> {
-        return CoreQueries.selectNonNullColumn(ds, FoodPortion.table, FoodPortionTable.MEAL_ID) {
+        return CoreQueries.selectNonNullColumn(ds, FoodPortionTable.MEAL_ID) {
             where(FoodPortionTable.FOOD_ID, foodIds)
             distinct()
         }
@@ -137,7 +137,7 @@ object MealQueries {
 
     @Throws(SQLException::class)
     fun getDaysForMealIds(ds: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
-        return CoreQueries.selectNonNullColumn(ds, Meal.table, MealTable.DAY) {
+        return CoreQueries.selectNonNullColumn(ds, MealTable.DAY) {
             where(MealTable.ID, mealIds)
         }
     }

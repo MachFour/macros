@@ -36,5 +36,10 @@ sealed interface SqlStatement<M> {
             whereLikeValues: Collection<String>,
             conjunction: Conjuction = Conjuction.OR
         )
+
+        // TODO XXX these are mad hacks
+        fun andWhere(expr: String)
+        fun orWhere(expr: String)
+
     }
 }

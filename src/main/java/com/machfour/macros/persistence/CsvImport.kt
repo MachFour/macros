@@ -247,7 +247,7 @@ object CsvImport {
 
     @Throws(SQLException::class)
     private fun findExistingFoodIndexNames(ds: SqlDatabase, indexNames: Collection<String>): Set<String> {
-        val queryResult = CoreQueries.selectSingleColumn(ds, Food.table, FoodTable.INDEX_NAME) {
+        val queryResult = CoreQueries.selectSingleColumn(ds, FoodTable.INDEX_NAME) {
             where(FoodTable.INDEX_NAME, indexNames, iterate = true)
             distinct()
         }

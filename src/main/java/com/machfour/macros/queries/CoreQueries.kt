@@ -15,18 +15,33 @@ internal object CoreQueries {
     internal const val ITERATE_THRESHOLD = 200
 
     @Throws(SQLException::class)
-    fun <M> prefixSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
-        return stringSearch(ds, t, cols, keyword, globBefore = false, globAfter = true)
+    fun <M> prefixSearch(
+        db: SqlDatabase,
+        cols: List<Column<M, String>>,
+        keyword: String,
+        extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
+    ): List<Long> {
+        return stringSearch(db, cols, keyword, globBefore = false, globAfter = true, extraOptions = extraOptions)
     }
 
     @Throws(SQLException::class)
-    fun <M> substringSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
-        return stringSearch(ds, t, cols, keyword, globBefore = true, globAfter = true)
+    fun <M> substringSearch(
+        db: SqlDatabase,
+        cols: List<Column<M, String>>,
+        keyword: String,
+        extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
+    ): List<Long> {
+        return stringSearch(db, cols, keyword, globBefore = true, globAfter = true, extraOptions = extraOptions)
     }
 
     @Throws(SQLException::class)
-    fun <M> exactStringSearch(ds: SqlDatabase, t: Table<M>, cols: List<Column<M, String>>, keyword: String): List<Long> {
-        return stringSearch(ds, t, cols, keyword, globBefore = false, globAfter = false)
+    fun <M> exactStringSearch(
+        db: SqlDatabase,
+        cols: List<Column<M, String>>,
+        keyword: String,
+        extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
+    ): List<Long> {
+        return stringSearch(db, cols, keyword, globBefore = false, globAfter = false, extraOptions = extraOptions)
     }
 
     /*
@@ -34,61 +49,61 @@ internal object CoreQueries {
      */
     @Throws(SQLException::class)
     fun <M> stringSearch(
-        ds: SqlDatabase,
-        t: Table<M>,
+        db: SqlDatabase,
         cols: List<Column<M, String>>,
         keyword: String,
         globBefore: Boolean,
-        globAfter: Boolean
+        globAfter: Boolean,
+        extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
     ): List<Long> {
         if (keyword.isEmpty() || cols.isEmpty()) {
             return emptyList()
         }
+        val idColumn = cols.first().table.idColumn
 
         val keywordGlob = (if (globBefore) "%" else "") + keyword + if (globAfter) "%" else ""
         val keywordCopies = List(cols.size) { keywordGlob }
-        val query = SingleColumnSelect.build(t, t.idColumn) {
+        val query = SingleColumnSelect.build(idColumn) {
             whereLike(cols, keywordCopies)
+            extraOptions()
         }
-        return ds.selectNonNullColumn(query)
+        return db.selectNonNullColumn(query)
     }
 
 
     // for convenience
     @Throws(SQLException::class)
     fun <M, I> selectSingleColumn(
-        ds: SqlDatabase,
-        table: Table<M>,
+        db: SqlDatabase,
         selectColumn: Column<M, I>,
         queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<I?> {
-        return ds.selectColumn(SingleColumnSelect.build(table, selectColumn, queryOptions))
+        return db.selectColumn(SingleColumnSelect.build(selectColumn, queryOptions))
     }
 
     @Throws(SQLException::class)
     fun <M, I, J> selectTwoColumns(
-        ds: SqlDatabase,
+        db: SqlDatabase,
         table: Table<M>,
         select1: Column<M, I>,
         select2: Column<M, J>,
         queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<Pair<I?, J?>> {
-        return ds.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
+        return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
     }
     @Throws(SQLException::class)
     fun <M, I> selectNonNullColumn(
-        ds: SqlDatabase,
-        table: Table<M>,
+        db: SqlDatabase,
         selectColumn: Column<M, I>,
         queryOptions: SelectQuery.Builder<M>.() -> Unit
     ): List<I> {
-        return ds.selectNonNullColumn(SingleColumnSelect.build(table, selectColumn, queryOptions))
+        return db.selectNonNullColumn(SingleColumnSelect.build(selectColumn, queryOptions))
     }
 
     @Throws(SQLException::class)
-    private fun <M : MacrosEntity<M>> isInDatabase(ds: SqlDatabase, o: M): Boolean {
+    private fun <M : MacrosEntity<M>> isInDatabase(db: SqlDatabase, o: M): Boolean {
         return if (o.id != MacrosEntity.NO_ID) {
-            idExistsInTable(ds, o.table, o.id)
+            idExistsInTable(db, o.table, o.id)
         } else {
             val secondaryKey = o.table.secondaryKeyCols
             if (secondaryKey.isEmpty()) {
@@ -102,27 +117,22 @@ internal object CoreQueries {
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> idExistsInTable(ds: SqlDatabase, table: Table<M>, id: Long): Boolean {
+    fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
         val idCol = table.idColumn
-        val idMatch = selectSingleColumn(ds, table, idCol) {
+        val idMatch = selectSingleColumn(db, idCol) {
             where(idCol, id)
         }
         return idMatch.size == 1
     }
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> idsExistInTable(ds: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
-        val idCol: Column<M, Long> = table.idColumn
-        val existingIds = selectNonNullColumn(ds, table, idCol) {
+    fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+        val idCol = table.idColumn
+        val existingIds = selectNonNullColumn(db, idCol) {
             where(idCol, queryIds)
         }.toSet()
 
-        return LinkedHashMap<Long, Boolean>(queryIds.size, 1f).apply {
-            for (id in queryIds) {
-                this[id] = existingIds.contains(id)
-            }
-
-        }
+        return queryIds.associateWith { existingIds.contains(it) }
     }
 
     @Throws(SQLException::class)

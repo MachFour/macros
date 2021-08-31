@@ -81,6 +81,8 @@ object Nutrients {
 
     fun fromId(id: Long): Nutrient = idMap.getValue(id)
 
+
+    // TODO make explicit initialisation function
     init {
         QUANTITY = registerInbuiltNutrient(QUANTITY_NAME, UnitType.MASS, UnitType.VOLUME)
         ENERGY = registerInbuiltNutrient(ENERGY_NAME, UnitType.ENERGY)

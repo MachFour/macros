@@ -34,22 +34,12 @@ fun <K, V, R> mapValueOrElse(data: Map<K, V>, key: K, elseValue: R, mapping: (V)
     }
 }
 
-@Suppress("unused")
 fun <E> Iterable<Set<E>>.unionAll() : Set<E> {
-    return reduce { s, t -> s.union(t) }
+    return reduceOrNull { s, t -> s.union(t) } ?: emptySet()
 }
 
-@Suppress("unused")
 fun <E> Iterable<Set<E>>.intersectAll() : Set<E> {
-    return reduce { s, t -> s.intersect(t) }
-}
-
-fun <E> Iterable<Set<E>>.unionAllOrNull() : Set<E>? {
-    return reduceOrNull { s, t -> s.union(t) }
-}
-
-fun <E> Iterable<Set<E>>.intersectAllOrNull() : Set<E>? {
-    return reduceOrNull { s, t -> s.intersect(t) }
+    return reduceOrNull { s, t -> s.intersect(t) } ?: emptySet()
 }
 
 fun Double.toRoundedString(decimalPlaces: Int = 3, eps: Double = 1e-4): String {

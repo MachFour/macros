@@ -5,7 +5,7 @@ import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.nutrients.Nutrients
 
-object EnglishColumnNames: ColumnNamer, NutrientStrings {
+object EnglishColumnNames: ColumnStrings, NutrientStrings {
     // shortest name for each nutrient printed in default mode
     private val briefNutrientNames = mapOf(
               Nutrients.ENERGY to "Energy"

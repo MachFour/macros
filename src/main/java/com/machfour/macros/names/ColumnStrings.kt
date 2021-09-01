@@ -1,8 +1,12 @@
 package com.machfour.macros.names
 
+import com.machfour.macros.sql.Column
+import com.machfour.macros.entities.Nutrient
+
 /*
- * Interface to provide dynamic names and units (and hence strings) for Nutrition data columns
- * Combines interfaces ColumnNamer, ColumnUnits, UnitNames
+ * Interface to provide user-readable names (strings) for nutrition data columns
  */
-// TODO rename ColumnStrings to DisplayStrings
-interface ColumnStrings : ColumnNamer, UnitStrings, NutrientStrings
+interface ColumnStrings {
+    fun getFullName(col: Column<*, *>): String
+    fun getAbbreviatedName(col: Column<*, *>): String
+}

@@ -1,7 +1,7 @@
 package com.machfour.macros.util
 
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.names.ColumnStrings
+import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.names.UnitStrings
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
@@ -11,7 +11,7 @@ object PrintFormatting {
     fun nutrient(
         nd: FoodNutrientData,
         n: Nutrient,
-        colStrings: ColumnStrings? = null,
+        displayStrings: DisplayStrings? = null,
         withUnit: Boolean = false,
         width: Int = 0,
         unitWidth: Int = 0,
@@ -22,7 +22,7 @@ object PrintFormatting {
     ): String {
         val qty = nd.amountOf(n, defaultValue = 0.0)
         val unit = if (withUnit) {
-            requireNotNull(colStrings) { "If units are needed, colStrings must be given" }
+            requireNotNull(displayStrings) { "If units are needed, displayStrings must be given" }
             nd.getUnitOrDefault(n)
         } else {
             null
@@ -32,7 +32,7 @@ object PrintFormatting {
         return quantity(
             qty = qty,
             unit = unit,
-            unitStrings = colStrings,
+            unitStrings = displayStrings,
             width = width,
             unitWidth = unitWidth,
             withDp = withDp,
@@ -99,7 +99,7 @@ object PrintFormatting {
 
     fun nutrientData(
         nd: FoodNutrientData,
-        colStrings: ColumnStrings,
+        displayStrings: DisplayStrings,
         nutrients: Collection<Nutrient> = defaultNutrientsToPrint,
         withDp: Boolean = false,
         monoSpaceAligned: Boolean = false,
@@ -114,9 +114,9 @@ object PrintFormatting {
 
         return buildString {
             for (n in nutrients) {
-                val colName = colStrings.getFullName(n)
-                val value = nutrient(nd, n, colStrings, withUnit = false, withDp = withDp)
-                val unitStr = colStrings.getAbbr(nd.getUnitOrDefault(n))
+                val colName = displayStrings.getFullName(n)
+                val value = nutrient(nd, n, displayStrings, withUnit = false, withDp = withDp)
+                val unitStr = displayStrings.getAbbr(nd.getUnitOrDefault(n))
                 append(lineFormat.format(colName, value, unitStr))
                 //append("$colName: $value $unitStr")
                 if (!nd.hasCompleteData(n)) {

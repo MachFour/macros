@@ -1,6 +1,6 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.names.ColumnStrings
+import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
@@ -244,12 +244,12 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     val invalidFields: List<Column<M, *>>
         get() = validationErrors.entries.filter { it.value.isNotEmpty() }.map { it.key }
 
-    fun invalidFieldNames(colStrings: ColumnStrings): List<String> {
-        return invalidFields.map { colStrings.getFullName(it) }
+    fun invalidFieldNames(displayStrings: DisplayStrings): List<String> {
+        return invalidFields.map { displayStrings.getFullName(it) }
     }
 
-    fun invalidFieldNamesString(colStrings: ColumnStrings): String {
-        return invalidFieldNames(colStrings).toString()
+    fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
+        return invalidFieldNames(displayStrings).toString()
     }
 
     val hasAnyInvalidFields: Boolean

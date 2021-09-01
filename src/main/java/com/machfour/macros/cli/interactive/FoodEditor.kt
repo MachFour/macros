@@ -13,8 +13,8 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.units.DefaultUnits
 import com.machfour.macros.nutrients.Nutrients
-import com.machfour.macros.names.ColumnStrings
-import com.machfour.macros.names.DefaultColumnStrings
+import com.machfour.macros.names.DisplayStrings
+import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
@@ -34,7 +34,7 @@ class FoodEditor constructor(
     private val ds: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
     private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
-    private val colStrings: ColumnStrings = DefaultColumnStrings,
+    private val displayStrings: DisplayStrings = DefaultDisplayStrings,
     private val screen: Screen = defaultScreen()) {
 
     companion object {
@@ -481,7 +481,7 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printField(colStrings.getFullName(col), builder.getAsString(col), columnIndex)
+            printField(displayStrings.getFullName(col), builder.getAsString(col), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index
@@ -491,7 +491,7 @@ class FoodEditor constructor(
         var columnIndex = initialColumnIndex
         for (n in nutrients) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
-            printField(colStrings.getFullName(n), nutrientData[n].toString(), columnIndex)
+            printField(displayStrings.getFullName(n), nutrientData[n].toString(), columnIndex)
             columnIndex++
         }
         return columnIndex // final column index

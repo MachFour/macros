@@ -15,7 +15,7 @@ object CliUtils {
     fun FoodNutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
         val string = PrintFormatting.nutrientData(
             nd = this,
-            colStrings = DefaultColumnStrings,
+            displayStrings = DefaultDisplayStrings,
             nutrients = PrintFormatting.defaultNutrientsToPrint,
             withDp = verbose,
             monoSpaceAligned = true

@@ -64,7 +64,7 @@ class FoodNutrientData(
                 var completeData = true
                 var existsData = false
                 var sumValue = 0.0
-                val unit = DefaultUnits.get(n)
+                val unit = DefaultUnits[n]
                 for (data in items) {
                     data[n]?.let {
                         sumValue += it.convertValueTo(unit)
@@ -186,13 +186,13 @@ class FoodNutrientData(
 
     fun withDefaultUnits(includingQuantity: Boolean = false, density: Double? = null) : FoodNutrientData {
         val convertedData = if (includingQuantity) {
-            withQuantityUnit(DefaultUnits.get(Nutrients.QUANTITY), density, false)
+            withQuantityUnit(DefaultUnits[Nutrients.QUANTITY], density, false)
         } else {
             copy()
         }
         for (nv in nutrientValuesExcludingQuantity) {
             val n = nv.nutrient
-            convertedData[n] = nv.convert(DefaultUnits.get(n))
+            convertedData[n] = nv.convert(DefaultUnits[n])
             convertedData.markCompleteData(n, hasCompleteData(n))
         }
         return convertedData

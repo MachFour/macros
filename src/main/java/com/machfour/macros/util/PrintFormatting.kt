@@ -2,7 +2,7 @@ package com.machfour.macros.util
 
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.names.ColumnStrings
-import com.machfour.macros.names.UnitNamer
+import com.machfour.macros.names.UnitStrings
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.Nutrients
@@ -32,7 +32,7 @@ object PrintFormatting {
         return quantity(
             qty = qty,
             unit = unit,
-            unitNamer = colStrings,
+            unitStrings = colStrings,
             width = width,
             unitWidth = unitWidth,
             withDp = withDp,
@@ -45,7 +45,7 @@ object PrintFormatting {
     fun quantity(
         qty: Double,
         unit: Unit? = null,
-        unitNamer: UnitNamer? = null,
+        unitStrings: UnitStrings? = null,
         width: Int = 0,
         unitWidth: Int = 0,
         withDp: Boolean = false,
@@ -58,7 +58,7 @@ object PrintFormatting {
         }
 
         val unitAbbr = if (unit != null) {
-            unitNamer?.getAbbr(unit) ?: unit.abbr
+            unitStrings?.getAbbr(unit) ?: unit.abbr
         } else {
             ""
         }

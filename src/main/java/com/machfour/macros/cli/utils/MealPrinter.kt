@@ -72,7 +72,7 @@ object MealPrinter {
             this += PrintFormatting.quantity(
                     qty = qty,
                     unit = unit,
-                    unitNamer = EnglishUnitNames.instance,
+                    unitStrings = EnglishUnitNames,
                     width = servingWidth,
                     unitWidth = 2,
                     alignLeft = false,
@@ -97,16 +97,16 @@ object MealPrinter {
         // next columns have names for each nutrient (heading) then corresponding data
         for (col in nutrientCols) {
             if (verbose) {
-                headingRow.add(EnglishColumnNames.longerNutrientNames.getValue(col))
+                headingRow.add(EnglishColumnNames.getDisplayName(col))
                 rowWidths.add(longDataWidth)
             } else {
-                headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(col))
+                headingRow.add(EnglishColumnNames.getAbbreviatedName(col))
                 rowWidths.add(shortDataWidth)
             }
             rightAlign.add(true)
         }
         // last column is quantity, so is a bit longer
-        headingRow.add(EnglishColumnNames.briefNutrientNames.getValue(Nutrients.QUANTITY))
+        headingRow.add(EnglishColumnNames.getAbbreviatedName(Nutrients.QUANTITY))
         rowWidths.add(servingWidth)
         rightAlign.add(true)
 

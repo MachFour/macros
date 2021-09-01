@@ -69,7 +69,7 @@ object CsvImport {
                 Nutrients.ENERGY -> csvRow[ENERGY_UNIT_NAME]
                 else -> null // default unit
             }
-            val unit = unitString?.let { Units.fromAbbreviation(it) } ?: DefaultUnits.get(nutrient)
+            val unit = unitString?.let { Units.fromAbbreviation(it) } ?: DefaultUnits[nutrient]
 
             val nutrientValueData = RowData(FoodNutrientValue.table).apply {
                 // TODO parse constraints

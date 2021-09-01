@@ -153,7 +153,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
 
     fun getUnitOrDefault(n: Nutrient) : Unit {
-        return this[n]?.unit ?: DefaultUnits.get(n)
+        return this[n]?.unit ?: DefaultUnits[n]
     }
 
     // hack for USDA foods

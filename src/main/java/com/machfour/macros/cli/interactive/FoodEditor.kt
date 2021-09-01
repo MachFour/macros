@@ -34,7 +34,7 @@ class FoodEditor constructor(
     private val ds: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
     private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
-    private val colStrings: ColumnStrings = DefaultColumnStrings.instance,
+    private val colStrings: ColumnStrings = DefaultColumnStrings,
     private val screen: Screen = defaultScreen()) {
 
     companion object {
@@ -621,7 +621,7 @@ class FoodEditor constructor(
             // try to build and save into NutrientData
             nutrientBuilder.run {
                 resetFields()
-                setField(FoodNutrientValueTable.UNIT_ID, DefaultUnits.get(nutrient).id)
+                setField(FoodNutrientValueTable.UNIT_ID, DefaultUnits[nutrient].id)
                 setField(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
                 setFieldFromString(FoodNutrientValueTable.VALUE, input)
                 if (canBuild()) {

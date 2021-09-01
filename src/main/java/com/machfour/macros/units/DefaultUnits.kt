@@ -5,7 +5,7 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.Nutrients
 
 
-object DefaultUnits {
+object DefaultUnits: NutrientUnits {
     private val defaultUnitMap = mapOf(
         Nutrients.QUANTITY to Units.GRAMS,
         Nutrients.ENERGY to Units.CALORIES,
@@ -32,7 +32,7 @@ object DefaultUnits {
         Nutrients.CAFFEINE to Units.MILLIGRAMS,
     )
 
-    fun get(n: Nutrient) : Unit {
-        return defaultUnitMap.getValue(n)
+    override operator fun get(n: Nutrient) : Unit {
+        return defaultUnitMap[n] ?: throw IllegalArgumentException("Nutrient $n has no default unit")
     }
 }

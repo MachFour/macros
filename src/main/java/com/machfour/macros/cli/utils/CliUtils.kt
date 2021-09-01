@@ -1,11 +1,8 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.names.ColumnNamer
-import com.machfour.macros.names.DefaultColumnStrings
-import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.entities.Ingredient
+import com.machfour.macros.names.*
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.util.PrintFormatting
@@ -18,7 +15,7 @@ object CliUtils {
     fun FoodNutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
         val string = PrintFormatting.nutrientData(
             nd = this,
-            colStrings = DefaultColumnStrings.instance,
+            colStrings = DefaultColumnStrings,
             nutrients = PrintFormatting.defaultNutrientsToPrint,
             withDp = verbose,
             monoSpaceAligned = true
@@ -38,7 +35,7 @@ object CliUtils {
     fun FoodNutrientData.printEnergyProportions(
         verbose: Boolean,
         out: PrintStream,
-        colNames: ColumnNamer = EnglishColumnNames.instance
+        colNames: NutrientStrings = EnglishColumnNames
     ) {
         out.println("Energy proportions (approx.)")
         val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
@@ -93,7 +90,7 @@ object CliUtils {
             val quantityString = PrintFormatting.quantity(
                     qty = i.quantity,
                     unit = i.qtyUnit,
-                    unitNamer = EnglishUnitNames.instance,
+                    unitStrings = EnglishUnitNames,
                     width = quantityWidth,
                     unitWidth = 2)
             out.printf(lineFormat, name, quantityString, noteString)

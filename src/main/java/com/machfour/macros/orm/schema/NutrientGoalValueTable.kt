@@ -9,39 +9,39 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "NutrientGoalValue"
+private const val tableName = "NutrientGoalValue"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<NutrientGoalValue, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<NutrientGoalValue, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
 
-private val _NUTRIENT_ID = nutrientValueNutrientColumn(COLUMNS)
-private val _UNIT_ID = nutrientValueUnitColumn(COLUMNS)
-private val _VALUE = nutrientValueValueColumn(COLUMNS)
-private val _CONSTRAINT_SPEC = nutrientValueConstraintColumn(COLUMNS)
+private val nutrientId = nutrientValueNutrientColumn(columns)
+private val unitId = nutrientValueUnitColumn(columns)
+private val value = nutrientValueValueColumn(columns)
+private val constraintSpec = nutrientValueConstraintColumn(columns)
 
-private val _GOAL_ID =
+private val goalId =
     builder("goal_id", Types.ID).notEditable().notNull()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, COLUMNS)
+        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
 
-object NutrientGoalValueTable: TableImpl<NutrientGoalValue>(TABLE_NAME, Factories.nutrientGoalValue, COLUMNS) {
+object NutrientGoalValueTable: TableImpl<NutrientGoalValue>(tableName, Factories.nutrientGoalValue, columns) {
     val ID: Column<NutrientGoalValue, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<NutrientGoalValue, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<NutrientGoalValue, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val NUTRIENT_ID: Column.Fk<NutrientGoalValue, Long, Nutrient>
-        get() = _NUTRIENT_ID
+        get() = nutrientId
     val VALUE: Column<NutrientGoalValue, Double>
-        get() = _VALUE
+        get() = value
     val CONSTRAINT_SPEC: Column<NutrientGoalValue, Int>
-        get() = _CONSTRAINT_SPEC
+        get() = constraintSpec
     val UNIT_ID: Column.Fk<NutrientGoalValue, Long, Unit>
-        get() = _UNIT_ID
+        get() = unitId
     val GOAL_ID: Column.Fk<NutrientGoalValue, Long, NutrientGoal>
-        get() = _GOAL_ID
+        get() = goalId
 }

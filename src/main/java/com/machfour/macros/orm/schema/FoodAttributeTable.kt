@@ -5,24 +5,24 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "FoodAttribute"
+private const val tableName = "FoodAttribute"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<FoodAttribute, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<FoodAttribute, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NAME = builder("name", Types.TEXT).notNull().inSecondaryKey().unique().buildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val name = builder("name", Types.TEXT).notNull().inSecondaryKey().unique().buildFor(columns)
 
-object FoodAttributeTable: TableImpl<FoodAttribute>(TABLE_NAME, FoodAttribute.factory, COLUMNS) {
+object FoodAttributeTable: TableImpl<FoodAttribute>(tableName, FoodAttribute.factory, columns) {
     val ID: Column<FoodAttribute, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<FoodAttribute, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<FoodAttribute, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val NAME: Column<FoodAttribute, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
 }
 

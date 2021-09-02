@@ -10,46 +10,46 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "FoodNutrientValue"
+private const val tableName = "FoodNutrientValue"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<FoodNutrientValue, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<FoodNutrientValue, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
 
-private val _NUTRIENT_ID = nutrientValueNutrientColumn(COLUMNS)
-private val _UNIT_ID = nutrientValueUnitColumn(COLUMNS)
-private val _VALUE = nutrientValueValueColumn(COLUMNS)
-private val _CONSTRAINT_SPEC = nutrientValueConstraintColumn(COLUMNS)
+private val nutrientId = nutrientValueNutrientColumn(columns)
+private val unitId = nutrientValueUnitColumn(columns)
+private val value = nutrientValueValueColumn(columns)
+private val constraintSpec = nutrientValueConstraintColumn(columns)
 
 // might have NO_ID value if it's not being stored in the database (i.e computed value)
-private val _FOOD_ID =
+private val foodId =
     builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
-        .buildFkFor(FoodTable, FoodTable.ID, COLUMNS)
-private val _VERSION =
-    builder("version", Types.INTEGER).notNull().defaultsTo(1).buildFor(COLUMNS)
+        .buildFkFor(FoodTable, FoodTable.ID, columns)
+private val version =
+    builder("version", Types.INTEGER).notNull().defaultsTo(1).buildFor(columns)
 
-object FoodNutrientValueTable: TableImpl<FoodNutrientValue>(TABLE_NAME, Factories.foodNutrientValue, COLUMNS) {
+object FoodNutrientValueTable: TableImpl<FoodNutrientValue>(tableName, Factories.foodNutrientValue, columns) {
     val ID: Column<FoodNutrientValue, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<FoodNutrientValue, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<FoodNutrientValue, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
 
     val NUTRIENT_ID: Column.Fk<FoodNutrientValue, Long, Nutrient>
-        get() = _NUTRIENT_ID
+        get() = nutrientId
     val VALUE: Column<FoodNutrientValue, Double>
-        get() = _VALUE
+        get() = value
     val CONSTRAINT_SPEC: Column<FoodNutrientValue, Int>
-        get() = _CONSTRAINT_SPEC
+        get() = constraintSpec
     val UNIT_ID: Column.Fk<FoodNutrientValue, Long, Unit>
-        get() = _UNIT_ID
+        get() = unitId
 
     val FOOD_ID: Column.Fk<FoodNutrientValue, Long, Food>
-        get() = _FOOD_ID
+        get() = foodId
     val VERSION: Column<FoodNutrientValue, Int>
-        get() = _VERSION
+        get() = version
 }

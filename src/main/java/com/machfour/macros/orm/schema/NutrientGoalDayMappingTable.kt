@@ -7,29 +7,29 @@ import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.util.DateStamp
 
-private const val TABLE_NAME = "NutrientGoalDayMapping"
+private const val tableName = "NutrientGoalDayMapping"
 // holds the following columns in the order initialised in the static block
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<NutrientGoalDayMapping, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<NutrientGoalDayMapping, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _DAY =
-    builder("day", Types.DATESTAMP).notNull().buildFor(COLUMNS)
-private val _GOAL_ID =
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val day =
+    builder("day", Types.DATESTAMP).notNull().buildFor(columns)
+private val goalId =
     builder("goal_id", Types.ID).notNull().notEditable().unique()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, COLUMNS)
+        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
 
-object NutrientGoalDayMappingTable: TableImpl<NutrientGoalDayMapping>(TABLE_NAME, NutrientGoalDayMapping.factory, COLUMNS) {
+object NutrientGoalDayMappingTable: TableImpl<NutrientGoalDayMapping>(tableName, NutrientGoalDayMapping.factory, columns) {
     val ID: Column<NutrientGoalDayMapping, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<NutrientGoalDayMapping, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<NutrientGoalDayMapping, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val GOAL_ID: Column.Fk<NutrientGoalDayMapping, Long, NutrientGoal>
-        get() = _GOAL_ID
+        get() = goalId
     val DAY: Column<NutrientGoalDayMapping, DateStamp>
-        get() = _DAY
+        get() = day
 }

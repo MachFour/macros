@@ -8,30 +8,30 @@ import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 
-private const val TABLE_NAME = "AttributeMapping"
+private const val tableName = "AttributeMapping"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<AttrMapping, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<AttrMapping, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _FOOD_ID =
+private val id = idColumnBuildFor(columns)
+private val create_time = createTimeColumnBuildFor(columns)
+private val modify_time = modifyTimeColumnBuildFor(columns)
+private val food_id =
     builder("food_id", Types.ID).notEditable().notNull().inSecondaryKey()
-        .buildFkFor(FoodTable, FoodTable.ID, COLUMNS )
-private val _ATTRIBUTE_ID =
+        .buildFkFor(FoodTable, FoodTable.ID, columns )
+private val attribute_id =
     builder("attribute_id", Types.ID).notEditable().notNull().inSecondaryKey()
-        .buildFkFor(FoodAttributeTable, FoodAttributeTable.ID, COLUMNS)
+        .buildFkFor(FoodAttributeTable, FoodAttributeTable.ID, columns)
 
-object AttrMappingTable: TableImpl<AttrMapping>(TABLE_NAME, AttrMapping.factory, COLUMNS) {
+object AttrMappingTable: TableImpl<AttrMapping>(tableName, AttrMapping.factory, columns) {
     val ID: Column<AttrMapping, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<AttrMapping, Long>
-        get() = _CREATE_TIME
+        get() = create_time
     val MODIFY_TIME: Column<AttrMapping, Long>
-        get() = _MODIFY_TIME
+        get() = modify_time
     val FOOD_ID: Column.Fk<AttrMapping, Long, Food>
-        get() = _FOOD_ID
+        get() = food_id
     val ATTRIBUTE_ID: Column.Fk<AttrMapping, Long, FoodAttribute>
-        get() = _ATTRIBUTE_ID
+        get() = attribute_id
 }

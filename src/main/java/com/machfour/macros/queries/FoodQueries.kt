@@ -8,10 +8,9 @@ import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
 import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.queries.RawEntityQueries.getAllRawObjects
-import com.machfour.macros.queries.RawEntityQueries.getRawObjectsWithIds
 import com.machfour.macros.queries.RawEntityQueries.getRawObjectsForParentFk
+import com.machfour.macros.queries.RawEntityQueries.getRawObjectsWithIds
 import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll
 import com.machfour.macros.util.unionAll

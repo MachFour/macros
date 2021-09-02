@@ -9,43 +9,43 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "Serving"
+private const val tableName = "Serving"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<Serving, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<Serving, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NAME =
-   builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
-private val _QUANTITY =
-   builder("quantity", Types.REAL).notNull().buildFor(COLUMNS)
-private val _QUANTITY_UNIT =
-   builder("quantity_unit", Types.TEXT).notNull().buildFkFor(UnitTable, UnitTable.ABBREVIATION, COLUMNS)
-private val _IS_DEFAULT =
-   builder("is_default", Types.NULLBOOLEAN).notNull().defaultsTo(false).buildFor(COLUMNS)
-private val _FOOD_ID =
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val name =
+   builder("name", Types.TEXT).notNull().buildFor(columns)
+private val quantity =
+   builder("quantity", Types.REAL).notNull().buildFor(columns)
+private val quantityUnit =
+   builder("quantity_unit", Types.TEXT).notNull().buildFkFor(UnitTable, UnitTable.ABBREVIATION, columns)
+private val isDefault =
+   builder("is_default", Types.NULLBOOLEAN).notNull().defaultsTo(false).buildFor(columns)
+private val foodId =
    builder("food_id", Types.ID).notEditable().notNull().defaultsTo(MacrosEntity.NO_ID)
-      .buildFkFor(FoodTable, FoodTable.ID, COLUMNS)
+      .buildFkFor(FoodTable, FoodTable.ID, columns)
 
-object ServingTable: TableImpl<Serving>(TABLE_NAME, Factories.serving, COLUMNS) {
+object ServingTable: TableImpl<Serving>(tableName, Factories.serving, columns) {
 
    val ID: Column<Serving, Long>
-      get() = _ID
+      get() = id
    val CREATE_TIME: Column<Serving, Long>
-      get() = _CREATE_TIME
+      get() = createTime
    val MODIFY_TIME: Column<Serving, Long>
-      get() = _MODIFY_TIME
+      get() = modifyTime
    val NAME: Column<Serving, String>
-      get() = _NAME
+      get() = com.machfour.macros.orm.schema.name
    val QUANTITY: Column<Serving, Double>
-      get() = _QUANTITY
+      get() = quantity
    val IS_DEFAULT: Column<Serving, Boolean>
-      get() = _IS_DEFAULT
+      get() = isDefault
    val FOOD_ID: Column.Fk<Serving, Long, Food>
-      get() = _FOOD_ID
+      get() = foodId
    val QUANTITY_UNIT: Column.Fk<Serving, String, Unit>
-      get() = _QUANTITY_UNIT
+      get() = quantityUnit
 
 }

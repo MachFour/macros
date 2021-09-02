@@ -8,76 +8,76 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "Food"
+private const val tableName = "Food"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<Food, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<Food, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NOTES = notesColumnBuildAndAdd(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val notes = notesColumnBuildAndAdd(columns)
 
-private val _INDEX_NAME =
-    builder("index_name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(COLUMNS)
-private val _NAME =
-    builder("name", Types.TEXT).buildFor(COLUMNS)
-private val _BRAND =
-    builder("brand", Types.TEXT).buildFor(COLUMNS)
-private val _VARIETY =
-    builder("variety", Types.TEXT).buildFor(COLUMNS)
-private val _EXTRA_DESC =
-    builder("extra_desc", Types.TEXT).buildFor(COLUMNS)
-private val _CATEGORY =
-    builder("category", Types.TEXT).buildFkFor(FoodCategoryTable, FoodCategoryTable.NAME, COLUMNS)
-private val _FOOD_TYPE =
-    builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.niceName).buildFor(COLUMNS)
-private val _USDA_INDEX =
-    builder("usda_index", Types.INTEGER).notEditable().buildFor(COLUMNS)
-private val _NUTTAB_INDEX =
-    builder("nuttab_index", Types.TEXT).notEditable().buildFor(COLUMNS)
-private val _DATA_SOURCE =
-    builder("data_source", Types.TEXT).buildFor(COLUMNS)
-private val _DATA_NOTES =
-    builder("data_notes", Types.TEXT).buildFor(COLUMNS)
-private val _DENSITY =
-    builder("density", Types.REAL).buildFor(COLUMNS)
-private val _SEARCH_RELEVANCE =
-    builder("search_relevance", Types.INTEGER).notEditable().defaultsTo(0).buildFor(COLUMNS)
+private val indexName =
+    builder("index_name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(columns)
+private val name =
+    builder("name", Types.TEXT).buildFor(columns)
+private val brand =
+    builder("brand", Types.TEXT).buildFor(columns)
+private val variety =
+    builder("variety", Types.TEXT).buildFor(columns)
+private val extraDesc =
+    builder("extra_desc", Types.TEXT).buildFor(columns)
+private val category =
+    builder("category", Types.TEXT).buildFkFor(FoodCategoryTable, FoodCategoryTable.NAME, columns)
+private val foodType =
+    builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.niceName).buildFor(columns)
+private val usdaIndex =
+    builder("usda_index", Types.INTEGER).notEditable().buildFor(columns)
+private val nuttabIndex =
+    builder("nuttab_index", Types.TEXT).notEditable().buildFor(columns)
+private val dataSource =
+    builder("data_source", Types.TEXT).buildFor(columns)
+private val dataNotes =
+    builder("data_notes", Types.TEXT).buildFor(columns)
+private val density =
+    builder("density", Types.REAL).buildFor(columns)
+private val searchRelevance =
+    builder("search_relevance", Types.INTEGER).notEditable().defaultsTo(0).buildFor(columns)
 
-object FoodTable: TableImpl<Food>(TABLE_NAME, Factories.food, COLUMNS) {
+object FoodTable: TableImpl<Food>(tableName, Factories.food, columns) {
     val ID: Column<Food, Long>
-        get() =_ID
+        get() = id
     val CREATE_TIME: Column<Food, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<Food, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val INDEX_NAME: Column<Food, String>
-        get() = _INDEX_NAME
+        get() = indexName
     val BRAND: Column<Food, String>
-        get() = _BRAND
+        get() = brand
     val VARIETY: Column<Food, String>
-        get() = _VARIETY
+        get() = variety
     val EXTRA_DESC: Column<Food, String>
-        get() = _EXTRA_DESC
+        get() = extraDesc
     val NAME: Column<Food, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
     val NOTES: Column<Food, String>
-        get() = _NOTES
+        get() = notes
     val FOOD_TYPE: Column<Food, String>
-        get() = _FOOD_TYPE
+        get() = foodType
     val USDA_INDEX: Column<Food, Int>
-        get() = _USDA_INDEX
+        get() = usdaIndex
     val NUTTAB_INDEX: Column<Food, String>
-        get() = _NUTTAB_INDEX
+        get() = nuttabIndex
     val DATA_SOURCE: Column<Food, String>
-        get() = _DATA_SOURCE
+        get() = dataSource
     val DATA_NOTES: Column<Food, String>
-        get() = _DATA_NOTES
+        get() = dataNotes
     val DENSITY: Column<Food, Double>
-        get() = _DENSITY
+        get() = density
     val SEARCH_RELEVANCE: Column<Food, Int>
-        get() = _SEARCH_RELEVANCE
+        get() = searchRelevance
     val CATEGORY: Column.Fk<Food, String, FoodCategory>
-        get() = _CATEGORY
+        get() = category
 }

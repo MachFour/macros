@@ -6,30 +6,30 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "Nutrient"
+private const val tableName = "Nutrient"
 
-private val COLUMNS = ArrayList<Column<Nutrient, *>>()
+private val columns = ArrayList<Column<Nutrient, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NAME = builder("name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(COLUMNS)
-private val _UNIT_TYPES = builder("unit_types", Types.INTEGER).notNull().buildFor(COLUMNS)
-private val _INBUILT = builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val name = builder("name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(columns)
+private val unitTypes = builder("unit_types", Types.INTEGER).notNull().buildFor(columns)
+private val inbuilt = builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(columns)
 
-object NutrientTable: TableImpl<Nutrient>(TABLE_NAME, Factories.nutrient, COLUMNS) {
+object NutrientTable: TableImpl<Nutrient>(tableName, Factories.nutrient, columns) {
    val ID: Column<Nutrient, Long>
-      get() = _ID
+      get() = id
    val CREATE_TIME: Column<Nutrient, Long>
-      get() = _CREATE_TIME
+      get() = createTime
    val MODIFY_TIME: Column<Nutrient, Long>
-      get() = _MODIFY_TIME
+      get() = modifyTime
    val NAME: Column<Nutrient, String>
-      get() = _NAME
+      get() = com.machfour.macros.orm.schema.name
    val UNIT_TYPES: Column<Nutrient, Int>
-      get() = _UNIT_TYPES
+      get() = unitTypes
    val INBUILT: Column<Nutrient, Boolean>
-      get() = _INBUILT
+      get() = inbuilt
 
 }
 

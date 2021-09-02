@@ -10,46 +10,46 @@ import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.time.Instant
 
-private const val TABLE_NAME = "Meal"
+private const val tableName = "Meal"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<Meal, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<Meal, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NOTES = notesColumnBuildAndAdd(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val notes = notesColumnBuildAndAdd(columns)
 
-private val _NAME =
-    builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
-private val _DAY =
-    builder("day", Types.DATESTAMP).notNull().default { currentDate() }.buildFor(COLUMNS)
-private val _START_TIME =
-    builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildFor(COLUMNS)
-private val _DURATION =
-    builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildFor(COLUMNS)
-private val _GOAL_ID =
+private val name =
+    builder("name", Types.TEXT).notNull().buildFor(columns)
+private val day =
+    builder("day", Types.DATESTAMP).notNull().default { currentDate() }.buildFor(columns)
+private val startTime =
+    builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildFor(columns)
+private val duration =
+    builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildFor(columns)
+private val goalId =
     builder("goal_id", Types.ID).defaultsTo(null).notEditable().unique()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, COLUMNS)
+        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
 
-object MealTable: TableImpl<Meal>(TABLE_NAME, Factories.meal, COLUMNS) {
+object MealTable: TableImpl<Meal>(tableName, Factories.meal, columns) {
     val ID: Column<Meal, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<Meal, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<Meal, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val NAME: Column<Meal, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
     val DAY: Column<Meal, DateStamp>
-        get() = _DAY
+        get() = day
     val START_TIME: Column<Meal, Long>
-        get() = _START_TIME
+        get() = startTime
     val DURATION: Column<Meal, Int>
-        get() = _DURATION
+        get() = duration
     val NOTES: Column<Meal, String>
-        get() = _NOTES
+        get() = notes
     val GOAL_ID: Column.Fk<Meal, Long, NutrientGoal>
-        get() = _GOAL_ID
+        get() = goalId
 
 }

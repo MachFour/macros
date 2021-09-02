@@ -6,29 +6,29 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "RegularMeal"
+private const val tableName = "RegularMeal"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<RegularMeal, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<RegularMeal, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NAME =
-    builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
-private val _MEAL_ID =
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val name =
+    builder("name", Types.TEXT).notNull().buildFor(columns)
+private val mealId =
     builder("meal_id", Types.ID).notEditable().notNull().inSecondaryKey().unique()
-        .buildFkFor(MealTable, MealTable.ID, COLUMNS)
+        .buildFkFor(MealTable, MealTable.ID, columns)
 
-object RegularMealTable: TableImpl<RegularMeal>(TABLE_NAME, RegularMeal.factory, COLUMNS) {
+object RegularMealTable: TableImpl<RegularMeal>(tableName, RegularMeal.factory, columns) {
     val ID: Column<RegularMeal, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<RegularMeal, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<RegularMeal, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val NAME: Column<RegularMeal, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
     val MEAL_ID: Column.Fk<RegularMeal, Long, Meal>
-        get() = _MEAL_ID
+        get() = mealId
 }

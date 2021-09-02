@@ -6,45 +6,45 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "Unit"
+private const val tableName = "Unit"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<Unit, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<Unit, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
 
-private val _NAME =
-    builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
-private val _TYPE_ID =
-    builder("type_id", Types.INTEGER).notEditable().notNull().buildFor(COLUMNS)
-private val _ABBREVIATION =
-    builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildFor(COLUMNS)
-private val _METRIC_EQUIVALENT =
-    builder("metric_equivalent", Types.REAL).notNull().buildFor(COLUMNS)
-private val _INBUILT =
-    builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(COLUMNS)
+private val name =
+    builder("name", Types.TEXT).notNull().buildFor(columns)
+private val typeId =
+    builder("type_id", Types.INTEGER).notEditable().notNull().buildFor(columns)
+private val abbreviation =
+    builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildFor(columns)
+private val metricEquivalent =
+    builder("metric_equivalent", Types.REAL).notNull().buildFor(columns)
+private val inbuilt =
+    builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(columns)
 
 // Unit.factory() causes initialisation of Unit, which depends on this class.
 // So the columns are initialised as a side effect of calling that function.
-object UnitTable: TableImpl<Unit>(TABLE_NAME, Factories.unit, COLUMNS) {
+object UnitTable: TableImpl<Unit>(tableName, Factories.unit, columns) {
 
     val ID: Column<Unit, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<Unit, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<Unit, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val TYPE_ID: Column<Unit, Int>
-        get() = _TYPE_ID
+        get() = typeId
     val NAME: Column<Unit, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
     val ABBREVIATION: Column<Unit, String>
-        get() = _ABBREVIATION
+        get() = abbreviation
     val METRIC_EQUIVALENT: Column<Unit, Double>
-        get() = _METRIC_EQUIVALENT
+        get() = metricEquivalent
     val INBUILT: Column<Unit, Boolean>
-        get() = _INBUILT
+        get() = inbuilt
 }
 

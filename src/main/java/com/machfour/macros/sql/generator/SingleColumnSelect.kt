@@ -1,7 +1,6 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.Table
 
 class SingleColumnSelect<M, J> private constructor(
     val selectColumn: Column<M, J>,

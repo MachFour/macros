@@ -6,23 +6,23 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
-private const val TABLE_NAME = "NutrientGoal"
+private const val tableName = "NutrientGoal"
 
-// iteration order of COLUMNS is the order in which columns are defined below
-private val COLUMNS = ArrayList<Column<NutrientGoal, *>>()
+// iteration order of columns is the order in which columns are defined below
+private val columns = ArrayList<Column<NutrientGoal, *>>()
 
-private val _ID = idColumnBuildFor(COLUMNS)
-private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
-private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
-private val _NAME = builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
+private val id = idColumnBuildFor(columns)
+private val createTime = createTimeColumnBuildFor(columns)
+private val modifyTime = modifyTimeColumnBuildFor(columns)
+private val name = builder("name", Types.TEXT).notNull().buildFor(columns)
 
-object NutrientGoalTable: TableImpl<NutrientGoal>(TABLE_NAME, Factories.nutrientGoal, COLUMNS) {
+object NutrientGoalTable: TableImpl<NutrientGoal>(tableName, Factories.nutrientGoal, columns) {
     val ID: Column<NutrientGoal, Long>
-        get() = _ID
+        get() = id
     val CREATE_TIME: Column<NutrientGoal, Long>
-        get() = _CREATE_TIME
+        get() = createTime
     val MODIFY_TIME: Column<NutrientGoal, Long>
-        get() = _MODIFY_TIME
+        get() = modifyTime
     val NAME: Column<NutrientGoal, String>
-        get() = _NAME
+        get() = com.machfour.macros.orm.schema.name
 }

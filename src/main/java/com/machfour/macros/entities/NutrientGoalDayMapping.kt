@@ -20,7 +20,7 @@ class NutrientGoalDayMapping internal constructor(
         get() = Factories.nutrientGoalDayMapping
 
     val table: Table<NutrientGoalDayMapping>
-        get() = NutrientGoalDayMappingTable.instance
+        get() = NutrientGoalDayMappingTable
     }
 
     override val factory: Factory<NutrientGoalDayMapping>

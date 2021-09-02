@@ -6,16 +6,16 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.units.Units
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable.Companion.BRAND
-import com.machfour.macros.orm.schema.FoodTable.Companion.CATEGORY
-import com.machfour.macros.orm.schema.FoodTable.Companion.EXTRA_DESC
-import com.machfour.macros.orm.schema.FoodTable.Companion.FOOD_TYPE
-import com.machfour.macros.orm.schema.FoodTable.Companion.INDEX_NAME
-import com.machfour.macros.orm.schema.FoodTable.Companion.NAME
-import com.machfour.macros.orm.schema.FoodTable.Companion.NOTES
-import com.machfour.macros.orm.schema.FoodTable.Companion.NUTTAB_INDEX
-import com.machfour.macros.orm.schema.FoodTable.Companion.USDA_INDEX
-import com.machfour.macros.orm.schema.FoodTable.Companion.VARIETY
+import com.machfour.macros.orm.schema.FoodTable.BRAND
+import com.machfour.macros.orm.schema.FoodTable.CATEGORY
+import com.machfour.macros.orm.schema.FoodTable.EXTRA_DESC
+import com.machfour.macros.orm.schema.FoodTable.FOOD_TYPE
+import com.machfour.macros.orm.schema.FoodTable.INDEX_NAME
+import com.machfour.macros.orm.schema.FoodTable.NAME
+import com.machfour.macros.orm.schema.FoodTable.NOTES
+import com.machfour.macros.orm.schema.FoodTable.NUTTAB_INDEX
+import com.machfour.macros.orm.schema.FoodTable.USDA_INDEX
+import com.machfour.macros.orm.schema.FoodTable.VARIETY
 import com.machfour.macros.sql.RowData
 
 object ExampleFood {

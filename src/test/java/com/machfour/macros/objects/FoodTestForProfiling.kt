@@ -33,7 +33,7 @@ class FoodTestForProfiling {
         }
 
         private fun doFood() {
-            foodDc = RowData(FoodTable.instance)
+            foodDc = RowData(FoodTable)
             foodDc.put(FoodTable.ID, MacrosEntity.NO_ID)
             foodDc.put(FoodTable.CREATE_TIME, 0L)
             foodDc.put(FoodTable.MODIFY_TIME, 0L)
@@ -60,7 +60,7 @@ class FoodTestForProfiling {
 
     fun clearFoodTable() {
         try {
-            WriteQueries.clearTable(db, FoodTable.instance)
+            WriteQueries.clearTable(db, FoodTable)
         } catch (e: SQLException) {
             e.printStackTrace()
         }

@@ -12,7 +12,7 @@ class FoodAttribute private constructor(data: RowData<FoodAttribute>, objectSour
 
     companion object {
         val table: Table<FoodAttribute>
-            get() = FoodAttributeTable.instance
+            get() = FoodAttributeTable
         val factory: Factory<FoodAttribute> = Factory { dataMap, objectSource -> FoodAttribute(dataMap, objectSource) }
     }
 

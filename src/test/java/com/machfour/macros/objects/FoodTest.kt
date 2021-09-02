@@ -45,7 +45,7 @@ class FoodTest {
         @BeforeAll
         @JvmStatic
         fun doFood() {
-            foodData = RowData(FoodTable.instance)
+            foodData = RowData(FoodTable)
             foodData.put(FoodTable.ID, MacrosEntity.NO_ID)
             foodData.put(FoodTable.CREATE_TIME, 0L)
             foodData.put(FoodTable.MODIFY_TIME, 0L)
@@ -166,7 +166,7 @@ class FoodTest {
 
     private fun clearFoodTable() {
         try {
-            WriteQueries.clearTable(db, FoodTable.instance)
+            WriteQueries.clearTable(db, FoodTable)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

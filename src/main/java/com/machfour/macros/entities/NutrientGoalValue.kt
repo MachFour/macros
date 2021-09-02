@@ -26,7 +26,7 @@ class NutrientGoalValue internal constructor(
             get() = Factories.nutrientGoalValue
 
         val table: Table<NutrientGoalValue>
-            get() = NutrientGoalValueTable.instance
+            get() = NutrientGoalValueTable
 
     }
 

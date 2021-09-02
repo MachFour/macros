@@ -13,7 +13,7 @@ class FoodCategory(data: RowData<FoodCategory>, objectSource: ObjectSource) : Ma
         val factory: Factory<FoodCategory>
             get() = Factories.foodCategory
         val table: Table<FoodCategory>
-            get() = FoodCategoryTable.instance
+            get() = FoodCategoryTable
     }
 
     override val factory: Factory<FoodCategory>

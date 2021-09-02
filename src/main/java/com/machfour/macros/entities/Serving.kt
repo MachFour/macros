@@ -19,7 +19,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
         val factory: Factory<Serving>
             get() = Factories.serving
         val table: Table<Serving>
-            get() = ServingTable.instance
+            get() = ServingTable
     }
 
     val qtyUnitAbbr: String

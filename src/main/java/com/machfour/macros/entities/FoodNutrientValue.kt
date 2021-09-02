@@ -28,7 +28,7 @@ class FoodNutrientValue internal constructor(
             get() = Factories.foodNutrientValue
 
         val table: Table<FoodNutrientValue>
-            get() = FoodNutrientValueTable.instance
+            get() = FoodNutrientValueTable
 
         // makes an object without ID or food
         fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit): FoodNutrientValue {

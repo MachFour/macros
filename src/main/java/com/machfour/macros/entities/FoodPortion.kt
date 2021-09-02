@@ -25,7 +25,7 @@ class FoodPortion internal constructor(data: RowData<FoodPortion>, objectSource:
             get() = Factories.foodPortion
 
         val table: Table<FoodPortion>
-            get() = FoodPortionTable.instance
+            get() = FoodPortionTable
     }
 
     override val table: Table<FoodPortion>

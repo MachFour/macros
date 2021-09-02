@@ -4,7 +4,7 @@ import com.machfour.macros.linux.LinuxSqlUtils.getColumn
 import com.machfour.macros.linux.LinuxSqlUtils.processResultSet
 import com.machfour.macros.linux.LinuxSqlUtils.toRowData
 import com.machfour.macros.linux.LinuxSqlUtils.withDisabledAutoCommit
-import com.machfour.macros.orm.schema.Tables
+import com.machfour.macros.orm.schema.AllTables
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.generator.*
 import java.io.File
@@ -111,7 +111,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                 s.executeUpdate(getSqlFromFile(config.initSqlFile))
 
                 println("Add timestamp triggers...")
-                Tables.all
+                AllTables
                     .flatMap { SqlUtils.createInitTimestampTriggers(it) }
                     .forEach { s.executeUpdate(it) }
 

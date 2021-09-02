@@ -16,7 +16,7 @@ class AttrMapping internal constructor(data: RowData<AttrMapping>, objectSource:
             get() = Factories.attributeMapping
 
         val table: Table<AttrMapping>
-            get() = AttrMappingTable.instance
+            get() = AttrMappingTable
     }
 
     override val factory: Factory<AttrMapping>

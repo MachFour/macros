@@ -27,7 +27,7 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
             get() = Factories.ingredient
 
         val table: Table<Ingredient>
-            get() = IngredientTable.instance
+            get() = IngredientTable
     }
 
     override val table: Table<Ingredient>

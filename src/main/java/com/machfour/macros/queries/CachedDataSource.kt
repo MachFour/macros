@@ -237,12 +237,12 @@ class CachedDataSource(
 
     private fun <M : MacrosEntity<M>> afterDbChange(obj: M) {
         when (obj) {
-            is Food -> afterDbChange(obj.id, FoodTable.instance)
-            is Meal -> afterDbChange(obj.id, MealTable.instance)
+            is Food -> afterDbChange(obj.id, FoodTable)
+            is Meal -> afterDbChange(obj.id, MealTable)
 
-            is FoodNutrientValue -> afterDbChange(obj.foodId, FoodTable.instance)
-            is FoodPortion -> afterDbChange(obj.mealId, MealTable.instance)
-            is Serving -> afterDbChange(obj.foodId, FoodTable.instance)
+            is FoodNutrientValue -> afterDbChange(obj.foodId, FoodTable)
+            is FoodPortion -> afterDbChange(obj.mealId, MealTable)
+            is Serving -> afterDbChange(obj.foodId, FoodTable)
         }
     }
 

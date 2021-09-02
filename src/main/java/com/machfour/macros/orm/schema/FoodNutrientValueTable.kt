@@ -1,53 +1,55 @@
 package com.machfour.macros.orm.schema
 
-import com.machfour.macros.sql.TableImpl
-import com.machfour.macros.sql.Column
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.sql.datatype.Types
 
-class FoodNutrientValueTable private constructor() : TableImpl<FoodNutrientValue>(TABLE_NAME, Factories.foodNutrientValue, COLUMNS) {
-    companion object {
-        private const val TABLE_NAME = "FoodNutrientValue"
+private const val TABLE_NAME = "FoodNutrientValue"
 
-        // holds the following columns in the order initialised in the static block
-        private val COLUMNS = ArrayList<Column<FoodNutrientValue, *>>()
+// iteration order of COLUMNS is the order in which columns are defined below
+private val COLUMNS = ArrayList<Column<FoodNutrientValue, *>>()
 
-        val ID: Column<FoodNutrientValue, Long>
-        val CREATE_TIME: Column<FoodNutrientValue, Long>
-        val MODIFY_TIME: Column<FoodNutrientValue, Long>
+private val _ID = idColumnBuildFor(COLUMNS)
+private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
+private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
 
-        val NUTRIENT_ID: Column.Fk<FoodNutrientValue, Long, Nutrient>
-        val VALUE: Column<FoodNutrientValue, Double>
-        val CONSTRAINT_SPEC: Column<FoodNutrientValue, Int>
-        val UNIT_ID: Column.Fk<FoodNutrientValue, Long, Unit>
+private val _NUTRIENT_ID = nutrientValueNutrientColumn(COLUMNS)
+private val _UNIT_ID = nutrientValueUnitColumn(COLUMNS)
+private val _VALUE = nutrientValueValueColumn(COLUMNS)
+private val _CONSTRAINT_SPEC = nutrientValueConstraintColumn(COLUMNS)
 
-        val FOOD_ID: Column.Fk<FoodNutrientValue, Long, Food>
-        val VERSION: Column<FoodNutrientValue, Int>
+// might have NO_ID value if it's not being stored in the database (i.e computed value)
+private val _FOOD_ID =
+    builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
+        .buildFkFor(FoodTable, FoodTable.ID, COLUMNS)
+private val _VERSION =
+    builder("version", Types.INTEGER).notNull().defaultsTo(1).buildFor(COLUMNS)
 
-        init {
-            ID = SchemaHelpers.idColumnBuildAndAdd(COLUMNS)
-            CREATE_TIME = SchemaHelpers.createTimeColumnBuildAndAdd(COLUMNS)
-            MODIFY_TIME = SchemaHelpers.modifyTimeColumnBuildAndAdd(COLUMNS)
+object FoodNutrientValueTable: TableImpl<FoodNutrientValue>(TABLE_NAME, Factories.foodNutrientValue, COLUMNS) {
+    val ID: Column<FoodNutrientValue, Long>
+        get() = _ID
+    val CREATE_TIME: Column<FoodNutrientValue, Long>
+        get() = _CREATE_TIME
+    val MODIFY_TIME: Column<FoodNutrientValue, Long>
+        get() = _MODIFY_TIME
 
-            NUTRIENT_ID = SchemaHelpers.nutrientValueNutrientColumn(COLUMNS)
-            UNIT_ID = SchemaHelpers.nutrientValueUnitColumn(COLUMNS)
-            VALUE = SchemaHelpers.nutrientValueValueColumn(COLUMNS)
-            CONSTRAINT_SPEC = SchemaHelpers.nutrientValueConstraintColumn(COLUMNS)
+    val NUTRIENT_ID: Column.Fk<FoodNutrientValue, Long, Nutrient>
+        get() = _NUTRIENT_ID
+    val VALUE: Column<FoodNutrientValue, Double>
+        get() = _VALUE
+    val CONSTRAINT_SPEC: Column<FoodNutrientValue, Int>
+        get() = _CONSTRAINT_SPEC
+    val UNIT_ID: Column.Fk<FoodNutrientValue, Long, Unit>
+        get() = _UNIT_ID
 
-            // might have NO_ID value if it's not being stored in the database (i.e computed value)
-            FOOD_ID = SchemaHelpers.builder("food_id", Types.ID)
-                .notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
-                .buildAndAddFk(FoodTable.ID, FoodTable.instance, COLUMNS)
-            VERSION = SchemaHelpers.builder("version", Types.INTEGER).notNull().defaultsTo(1).buildAndAdd(COLUMNS)
-        }
-
-        // this part has to be last (static initialisation order)
-        val instance = FoodNutrientValueTable()
-    }
-
+    val FOOD_ID: Column.Fk<FoodNutrientValue, Long, Food>
+        get() = _FOOD_ID
+    val VERSION: Column<FoodNutrientValue, Int>
+        get() = _VERSION
 }

@@ -24,7 +24,7 @@ class Meal internal constructor(data: RowData<Meal>, objectSource: ObjectSource)
         val factory: Factory<Meal>
             get() = Factories.meal
         val table: Table<Meal>
-            get() = MealTable.instance
+            get() = MealTable
     }
 
     private val foodPortions: MutableList<FoodPortion> = ArrayList()

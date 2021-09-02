@@ -1,48 +1,47 @@
 package com.machfour.macros.orm.schema
 
-import com.machfour.macros.sql.TableImpl
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.datatype.Types
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.entities.NutrientGoalValue
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.sql.datatype.Types
 
-class NutrientGoalValueTable private constructor() : TableImpl<NutrientGoalValue>(
-    TABLE_NAME, Factories.nutrientGoalValue, COLUMNS
-) {
-    companion object {
-        private const val TABLE_NAME = "NutrientGoalValue"
+private const val TABLE_NAME = "NutrientGoalValue"
 
-        // holds the following columns in the order initialised in the static block
-        private val COLUMNS = ArrayList<Column<NutrientGoalValue, *>>()
+// iteration order of COLUMNS is the order in which columns are defined below
+private val COLUMNS = ArrayList<Column<NutrientGoalValue, *>>()
 
-        val ID: Column<NutrientGoalValue, Long>
-        val CREATE_TIME: Column<NutrientGoalValue, Long>
-        val MODIFY_TIME: Column<NutrientGoalValue, Long>
-        val NUTRIENT_ID: Column.Fk<NutrientGoalValue, Long, Nutrient>
-        val VALUE: Column<NutrientGoalValue, Double>
-        val CONSTRAINT_SPEC: Column<NutrientGoalValue, Int>
-        val UNIT_ID: Column.Fk<NutrientGoalValue, Long, Unit>
+private val _ID = idColumnBuildFor(COLUMNS)
+private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
+private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
 
-        val GOAL_ID: Column.Fk<NutrientGoalValue, Long, NutrientGoal>
+private val _NUTRIENT_ID = nutrientValueNutrientColumn(COLUMNS)
+private val _UNIT_ID = nutrientValueUnitColumn(COLUMNS)
+private val _VALUE = nutrientValueValueColumn(COLUMNS)
+private val _CONSTRAINT_SPEC = nutrientValueConstraintColumn(COLUMNS)
 
-        init {
-            ID = SchemaHelpers.idColumnBuildAndAdd(COLUMNS)
-            CREATE_TIME = SchemaHelpers.createTimeColumnBuildAndAdd(COLUMNS)
-            MODIFY_TIME = SchemaHelpers.modifyTimeColumnBuildAndAdd(COLUMNS)
+private val _GOAL_ID =
+    builder("goal_id", Types.ID).notEditable().notNull()
+        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, COLUMNS)
 
-            NUTRIENT_ID = SchemaHelpers.nutrientValueNutrientColumn(COLUMNS)
-            UNIT_ID = SchemaHelpers.nutrientValueUnitColumn(COLUMNS)
-            VALUE = SchemaHelpers.nutrientValueValueColumn(COLUMNS)
-            CONSTRAINT_SPEC = SchemaHelpers.nutrientValueConstraintColumn(COLUMNS)
-
-            GOAL_ID = SchemaHelpers.builder("goal_id", Types.ID).notEditable().notNull()
-                .buildAndAddFk(NutrientGoalTable.ID, NutrientGoalTable.instance, COLUMNS)
-        }
-
-        // this part has to be last (static initialisation order)
-        val instance = NutrientGoalValueTable()
-    }
-
+object NutrientGoalValueTable: TableImpl<NutrientGoalValue>(TABLE_NAME, Factories.nutrientGoalValue, COLUMNS) {
+    val ID: Column<NutrientGoalValue, Long>
+        get() = _ID
+    val CREATE_TIME: Column<NutrientGoalValue, Long>
+        get() = _CREATE_TIME
+    val MODIFY_TIME: Column<NutrientGoalValue, Long>
+        get() = _MODIFY_TIME
+    val NUTRIENT_ID: Column.Fk<NutrientGoalValue, Long, Nutrient>
+        get() = _NUTRIENT_ID
+    val VALUE: Column<NutrientGoalValue, Double>
+        get() = _VALUE
+    val CONSTRAINT_SPEC: Column<NutrientGoalValue, Int>
+        get() = _CONSTRAINT_SPEC
+    val UNIT_ID: Column.Fk<NutrientGoalValue, Long, Unit>
+        get() = _UNIT_ID
+    val GOAL_ID: Column.Fk<NutrientGoalValue, Long, NutrientGoal>
+        get() = _GOAL_ID
 }

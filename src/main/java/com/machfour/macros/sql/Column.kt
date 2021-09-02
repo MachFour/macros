@@ -54,8 +54,12 @@ interface Column<M, J> : ColumnExpr<M, J> {
 
         fun default(getValue: () -> J?): Builder<J>
 
-        fun <M> buildAndAdd(columnList: MutableList<Column<M, *>>): Column<M, J>
+        fun <M> buildFor(columnList: MutableList<Column<M, *>>): Column<M, J>
 
-        fun <M, N> buildAndAddFk(parent: Column<N, J>, parentTable: Table<N>, columnList: MutableList<Column<M, *>>): Fk<M, J, N>
+        fun <M, N> buildFkFor(
+            parentTable: Table<N>,
+            parentCol: Column<N, J>,
+            columnList: MutableList<Column<M, *>>
+        ): Fk<M, J, N>
     }
 }

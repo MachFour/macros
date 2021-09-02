@@ -24,7 +24,7 @@ class NutrientGoal internal constructor(
             get() = Factories.nutrientGoal
 
         val table: Table<NutrientGoal>
-            get() = NutrientGoalTable.instance
+            get() = NutrientGoalTable
 
         // returns amount of nutrient in food nutrient data divided by goal amount, if both are present
         // and goal is nonzero.

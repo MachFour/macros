@@ -76,14 +76,18 @@ internal open class ColumnImpl<M, J> private constructor(
         }
 
         // sets index
-        override fun <M> buildAndAdd(columnList: MutableList<Column<M, *>>): ColumnImpl<M, J> {
+        override fun <M> buildFor(columnList: MutableList<Column<M, *>>): ColumnImpl<M, J> {
             val builtCol: ColumnImpl<M, J> = build()
             addToListAndSetIndex(builtCol, columnList)
             return builtCol
         }
 
-        override fun <M, N> buildAndAddFk(parent: Column<N, J>, parentTable: Table<N>, columnList: MutableList<Column<M, *>>): Fk<M, J, N> {
-            val builtCol = buildFk<M, N>(parent, parentTable)
+        override fun <M, N> buildFkFor(
+            parentTable: Table<N>,
+            parentCol: Column<N, J>,
+            columnList: MutableList<Column<M, *>>
+        ): Fk<M, J, N> {
+            val builtCol = buildFk<M, N>(parentCol, parentTable)
             addToListAndSetIndex(builtCol, columnList)
             return builtCol
         }

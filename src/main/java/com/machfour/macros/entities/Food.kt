@@ -37,7 +37,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             get() = Factories.food
         
         val table: Table<Food>
-            get() = FoodTable.instance
+            get() = FoodTable
 
         fun indexNamePrototype(
             basicName: String,

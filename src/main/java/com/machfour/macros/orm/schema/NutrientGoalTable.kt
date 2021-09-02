@@ -1,31 +1,28 @@
 package com.machfour.macros.orm.schema
 
-import com.machfour.macros.sql.TableImpl
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.datatype.Types
-import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.sql.datatype.Types
 
-class NutrientGoalTable private constructor() : TableImpl<NutrientGoal>(TABLE_NAME, Factories.nutrientGoal, COLUMNS) {
-    companion object {
-        private const val TABLE_NAME = "NutrientGoal"
+private const val TABLE_NAME = "NutrientGoal"
 
-        // holds the following columns in the order initialised in the static block
-        private val COLUMNS = ArrayList<Column<NutrientGoal, *>>()
+// iteration order of COLUMNS is the order in which columns are defined below
+private val COLUMNS = ArrayList<Column<NutrientGoal, *>>()
 
-        val ID: Column<NutrientGoal, Long>
-        val CREATE_TIME: Column<NutrientGoal, Long>
-        val MODIFY_TIME: Column<NutrientGoal, Long>
-        val NAME: Column<NutrientGoal, String>
+private val _ID = idColumnBuildFor(COLUMNS)
+private val _CREATE_TIME = createTimeColumnBuildFor(COLUMNS)
+private val _MODIFY_TIME = modifyTimeColumnBuildFor(COLUMNS)
+private val _NAME = builder("name", Types.TEXT).notNull().buildFor(COLUMNS)
 
-        init {
-            ID = SchemaHelpers.idColumnBuildAndAdd(COLUMNS)
-            CREATE_TIME = SchemaHelpers.createTimeColumnBuildAndAdd(COLUMNS)
-            MODIFY_TIME = SchemaHelpers.modifyTimeColumnBuildAndAdd(COLUMNS)
-
-            NAME = SchemaHelpers.builder("name", Types.TEXT).notNull().buildAndAdd(COLUMNS)
-        }
-
-        val instance = NutrientGoalTable()
-    }
+object NutrientGoalTable: TableImpl<NutrientGoal>(TABLE_NAME, Factories.nutrientGoal, COLUMNS) {
+    val ID: Column<NutrientGoal, Long>
+        get() = _ID
+    val CREATE_TIME: Column<NutrientGoal, Long>
+        get() = _CREATE_TIME
+    val MODIFY_TIME: Column<NutrientGoal, Long>
+        get() = _MODIFY_TIME
+    val NAME: Column<NutrientGoal, String>
+        get() = _NAME
 }

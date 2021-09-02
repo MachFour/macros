@@ -19,7 +19,7 @@ class Nutrient internal constructor(dataMap: RowData<Nutrient>, objectSource: Ob
             get() = Factories.nutrient
 
         val table: Table<Nutrient>
-            get() = NutrientTable.instance
+            get() = NutrientTable
     }
 
     override val factory: Factory<Nutrient>

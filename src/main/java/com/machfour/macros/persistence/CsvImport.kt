@@ -103,7 +103,7 @@ object CsvImport {
                 if (allValuesEmpty(csvRow)) {
                     continue  // it's a blank row
                 }
-                val foodData = extractData(csvRow, FoodTable.instance)
+                val foodData = extractData(csvRow, FoodTable)
                 val ndData = extractNutrientData(csvRow)
 
                 data.add(Pair(foodData, ndData))
@@ -290,6 +290,7 @@ object CsvImport {
         WriteQueries.saveObjects(ds, completedNv, ObjectSource.IMPORT)
     }
 
+    @Suppress("UNUSED_EXPRESSION")
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
     fun importFoodData(
         db: SqlDatabase,
@@ -298,6 +299,8 @@ object CsvImport {
         modifyFoodData: ((RowData<Food>) -> Unit)? = null,
         modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
     ) {
+        allowOverwrite // TODO use
+        
         val csvFoods = buildFoodObjectTree(
             foodCsv,
             modifyFoodData = { data ->
@@ -315,9 +318,11 @@ object CsvImport {
         saveImportedFoods(db, csvFoods)
     }
 
+    @Suppress("UNUSED_EXPRESSION")
     // TODO detect existing servings
     @Throws(IOException::class, SQLException::class, TypeCastException::class)
     fun importServings(ds: SqlDatabase, servingCsv: Reader, allowOverwrite: Boolean) {
+        allowOverwrite // TODO use
         val csvServings = buildServings(servingCsv)
         val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
         WriteQueries.saveObjects(ds, completedServings, ObjectSource.IMPORT)

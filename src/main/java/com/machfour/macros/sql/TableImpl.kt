@@ -1,7 +1,9 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.orm.schema.SchemaHelpers
 import com.machfour.macros.orm.Factory
+import com.machfour.macros.orm.schema.CREATE_TIME_COLUMN_NAME
+import com.machfour.macros.orm.schema.ID_COLUMN_NAME
+import com.machfour.macros.orm.schema.MODIFY_TIME_COLUMN_NAME
 
 abstract class TableImpl<M>(
     final override val name: String,
@@ -26,9 +28,9 @@ abstract class TableImpl<M>(
 
     // first three columns must be ID, create time, modify time
     init {
-        require(SchemaHelpers.ID_COLUMN_NAME == idColumn.sqlName)
-        require(SchemaHelpers.CREATE_TIME_COLUMN_NAME == createTimeColumn.sqlName)
-        require(SchemaHelpers.MODIFY_TIME_COLUMN_NAME == modifyTimeColumn.sqlName)
+        require(ID_COLUMN_NAME == idColumn.sqlName)
+        require(CREATE_TIME_COLUMN_NAME == createTimeColumn.sqlName)
+        require(MODIFY_TIME_COLUMN_NAME == modifyTimeColumn.sqlName)
 
         // make name map and secondary key cols list. Linked hash map keeps insertion order
         val tmpColumnsByName = LinkedHashMap<String, Column<M, *>>(cols.size, 1.0f)

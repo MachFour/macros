@@ -21,7 +21,7 @@ class Unit internal constructor(data: RowData<Unit>, objectSource: ObjectSource)
             get() = Factories.unit
 
         val table: Table<Unit>
-            get() = UnitTable.instance
+            get() = UnitTable
     }
 
     override val factory: Factory<Unit>

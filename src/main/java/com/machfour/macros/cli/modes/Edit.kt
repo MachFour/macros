@@ -1,10 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
-import com.machfour.macros.cli.utils.CliUtils
-import com.machfour.macros.cli.utils.FileParser
-import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.cli.utils.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -78,7 +75,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             out.println("Editing meal: ${toEdit.name} on ${toEdit.day.prettyPrint()}")
             out.println()
             out.print("Action (? for help): ")
-            val action = CliUtils.getChar(input, out)
+            val action = getChar(input, out)
             out.println()
             when (action) {
                 'a' -> addPortion(toEdit, ds)
@@ -117,7 +114,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     private fun addPortion(toEdit: Meal, db: SqlDatabase) {
         out.println("Please enter the portion information (see help for how to specify a food portion)")
         // copy from portion
-        val inputString = CliUtils.getStringInput(input, out)
+        val inputString = getStringInput(input, out)
         if (inputString != null && inputString.isNotEmpty()) {
             val spec = FileParser.makefoodPortionSpecFromLine(inputString)
             Portion.process(toEdit, listOf(spec), db, out, err)
@@ -137,7 +134,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     private fun deleteMeal(toDelete: Meal, db: SqlDatabase) {
         out.print("Delete meal")
         out.print("Are you sure? [y/N] ")
-        if ((CliUtils.getChar(input, out) == 'y') or (CliUtils.getChar(input, out) == 'Y')) {
+        if ((getChar(input, out) == 'y') or (getChar(input, out) == 'Y')) {
             try {
                 WriteQueries.deleteObject(db, toDelete)
             } catch (e: SQLException) {
@@ -152,7 +149,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         showFoodPortions(toEdit)
         out.print("Enter the number of the food portion to delete and press enter: ")
         val portions = toEdit.getFoodPortions()
-        val n = CliUtils.getIntegerInput(input, out, 0, portions.size - 1)
+        val n = getIntegerInput(input, out, 0, portions.size - 1)
         if (n == null) {
             out.println("Invalid number")
             return
@@ -173,13 +170,13 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         showFoodPortions(m)
         out.print("Enter the number of the food portion to edit and press enter: ")
         val portions = m.getFoodPortions()
-        val n = CliUtils.getIntegerInput(input, out, 0, portions.size - 1)
+        val n = getIntegerInput(input, out, 0, portions.size - 1)
         if (n == null) {
             out.println("Invalid number")
             return
         }
         out.print("Enter a new quantity (in the same unit) and press enter: ")
-        val newQty = CliUtils.getDoubleInput(input, out)
+        val newQty = getDoubleInput(input, out)
         if (newQty == null) {
             out.println("Invalid quantity")
             return
@@ -201,7 +198,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     private fun renameMeal() {
         out.println("Rename meal")
         out.print("Type a new name and press enter: ")
-        val newName = CliUtils.getStringInput(input, out) ?: return
+        val newName = getStringInput(input, out) ?: return
         out.println("The new name is: $newName")
     }
 

@@ -11,11 +11,10 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
-import com.machfour.macros.units.DefaultUnits
-import com.machfour.macros.nutrients.Nutrients
-import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.names.DefaultDisplayStrings
+import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
@@ -23,6 +22,7 @@ import com.machfour.macros.queries.FkCompletion
 import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
@@ -621,7 +621,7 @@ class FoodEditor constructor(
             // try to build and save into NutrientData
             nutrientBuilder.run {
                 resetFields()
-                setField(FoodNutrientValueTable.UNIT_ID, DefaultUnits[nutrient].id)
+                setField(FoodNutrientValueTable.UNIT_ID, LegacyNutrientUnits[nutrient].id)
                 setField(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
                 setFieldFromString(FoodNutrientValueTable.VALUE, input)
                 if (canBuild()) {

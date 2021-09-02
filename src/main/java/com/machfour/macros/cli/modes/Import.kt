@@ -42,7 +42,6 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     }
 
 
-
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {
             printHelp()

@@ -1,6 +1,6 @@
 package com.machfour.macros.ingredients
 
-import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.WriteQueries
@@ -66,11 +66,11 @@ class IngredientsTest {
 
         checkNotNull(recipe)
         println("Nutrition data total")
-        recipe.nutrientData.printNutrientData(false, System.out)
+        System.out.printNutrientData(recipe.nutrientData, false)
         println()
         println("Nutrition data per 100g")
         val rescaled = recipe.nutrientData.rescale100()
-        rescaled.printNutrientData(false, System.out)
+        System.out.printNutrientData(rescaled, false)
     }
 
 

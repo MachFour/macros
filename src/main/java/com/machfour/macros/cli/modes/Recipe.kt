@@ -1,12 +1,12 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.CliUtils
-import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.cli.utils.getChar
+import com.machfour.macros.cli.utils.printIngredients
+import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.ingredients.IngredientsParser
 import com.machfour.macros.entities.CompositeFood
-
+import com.machfour.macros.ingredients.IngredientsParser
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -56,7 +56,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             out.println()
             out.println("Ingredients:")
             out.println()
-            CliUtils.printIngredients(cf.ingredients, out)
+            out.printIngredients(cf.ingredients)
             out.println()
             out.println("Nutrition Information:")
             out.println()
@@ -65,11 +65,11 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
                 out.printf("Per %.0f%s:\n", nd.quantity, unit)
-                nd.printNutrientData(false, out)
+                out.printNutrientData(nd, false)
                 out.println()
             }
             out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
-            nd.rescale100().printNutrientData(false, out)
+            out.printNutrientData(nd.rescale100(), false)
             out.println()
             out.println("================================================")
             out.println()
@@ -78,7 +78,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         val article = if (recipes.size == 1) "this" else "these"
         val plural = if (recipes.size == 1) "" else "s"
         out.print("Would you like to save $article food$plural? [y/N] ")
-        val response = CliUtils.getChar(input, out)
+        val response = getChar(input, out)
         out.println()
         if (response == 'y' || response == 'Y') {
             try {

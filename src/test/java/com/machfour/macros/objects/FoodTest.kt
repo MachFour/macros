@@ -1,8 +1,8 @@
 package com.machfour.macros.objects
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodType
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.orm.ObjectSource

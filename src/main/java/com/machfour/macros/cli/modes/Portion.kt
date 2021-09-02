@@ -3,9 +3,9 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.FileParser.Companion.makefoodPortionSpecFromLine
 import com.machfour.macros.cli.utils.FileParser.Companion.processFpSpec
-import com.machfour.macros.cli.utils.MealPrinter.printMeal
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
+import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
@@ -61,7 +61,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
                 return 1
             }
             out.println()
-            printMeal(toAddTo, false, out)
+            out.printMeal(toAddTo, false)
             return 0
         }
     }

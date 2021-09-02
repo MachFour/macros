@@ -1,15 +1,14 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.CliUtils
-import com.machfour.macros.cli.utils.CliUtils.printNutrientData
+import com.machfour.macros.cli.utils.printIngredients
+import com.machfour.macros.cli.utils.printNutrientData
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
-import com.machfour.macros.core.FoodType
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.util.DateTimeUtils
-
 import java.io.PrintStream
 import java.sql.SQLException
 
@@ -57,11 +56,11 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
                 out.printf("Per %.0f%s:\n", nd.quantity, unit)
-                nd.printNutrientData(verbose, out)
+                out.printNutrientData(nd, verbose)
                 out.println()
             }
             out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
-            nd.rescale100().printNutrientData(verbose, out)
+            out.printNutrientData(nd.rescale100(), verbose)
             out.println()
 
             /*
@@ -99,7 +98,7 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             out.println()
             val ingredients = cf.ingredients
             if (ingredients.isNotEmpty()) {
-                CliUtils.printIngredients(ingredients, out)
+                out.printIngredients(ingredients)
                 out.println()
             } else {
                 out.println("(No ingredients recorded (but there probably should be!)")
@@ -117,10 +116,7 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
             return -1
         }
-        var verbose = false
-        if (args.contains("-v") || args.contains("--verbose")) {
-            verbose = true
-        }
+        val verbose = args.contains("-v") || args.contains("--verbose")
 
         val ds = config.database
         val indexName = args[1]

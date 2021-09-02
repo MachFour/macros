@@ -5,8 +5,8 @@ package com.machfour.macros.nutrients
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.UnitType
-import com.machfour.macros.units.DefaultUnits
 import com.machfour.macros.units.Units
 
 // class storing nutrition data for a food or meal
@@ -64,7 +64,7 @@ class FoodNutrientData(
                 var completeData = true
                 var existsData = false
                 var sumValue = 0.0
-                val unit = DefaultUnits[n]
+                val unit = LegacyNutrientUnits[n]
                 for (data in items) {
                     data[n]?.let {
                         sumValue += it.convertValueTo(unit)
@@ -186,13 +186,13 @@ class FoodNutrientData(
 
     fun withDefaultUnits(includingQuantity: Boolean = false, density: Double? = null) : FoodNutrientData {
         val convertedData = if (includingQuantity) {
-            withQuantityUnit(DefaultUnits[Nutrients.QUANTITY], density, false)
+            withQuantityUnit(LegacyNutrientUnits[Nutrients.QUANTITY], density, false)
         } else {
             copy()
         }
         for (nv in nutrientValuesExcludingQuantity) {
             val n = nv.nutrient
-            convertedData[n] = nv.convert(DefaultUnits[n])
+            convertedData[n] = nv.convert(LegacyNutrientUnits[n])
             convertedData.markCompleteData(n, hasCompleteData(n))
         }
         return convertedData

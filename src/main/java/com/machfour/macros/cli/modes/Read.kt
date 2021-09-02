@@ -3,11 +3,10 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.FileParser
-import com.machfour.macros.cli.utils.MealPrinter
+import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.insulin.InsulinCmdlineUtils
 import com.machfour.macros.entities.Meal
-
+import com.machfour.macros.insulin.InsulinCmdlineUtils
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -86,7 +85,7 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
 
         val fileParser = FileParser()
-        var meals: List<Meal>
+        val meals: List<Meal>
         try {
             FileReader(filename).use { meals = fileParser.parseFile(ds, it) }
         } catch (e1: IOException) {
@@ -97,7 +96,7 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 1
         }
 
-        MealPrinter.printMeals(meals, out, verbose, per100, true)
+        out.printMeals(meals, verbose, per100, true)
         val errors = fileParser.getErrorLines()
         if (errors.isNotEmpty()) {
             out.println()

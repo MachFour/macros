@@ -26,12 +26,12 @@ class DummyDatabase: SqlDatabase {
         return emptyList()
     }
 
-    override fun <M> selectMultipleColumns(t: Table<M>, query: MultiColumnSelect<M>): List<RowData<M>> {
-        return makeDummyRowData(t, query)
+    override fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>> {
+        return emptyList()
     }
 
-    override fun <M> selectAllColumns(t: Table<M>, query: AllColumnSelect<M>): List<RowData<M>> {
-        return makeDummyRowData(t, query)
+    override fun <M> selectAllColumns(query: AllColumnSelect<M>): List<RowData<M>> {
+        return emptyList()
     }
 
     private fun <M> makeDummyRowData(t: Table<M>, query: SelectQuery<M>): List<RowData<M>> {

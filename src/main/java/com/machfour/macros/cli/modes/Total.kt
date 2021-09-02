@@ -1,8 +1,9 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.MealPrinter
 import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.cli.utils.printMeal
+import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.sql.SqlDatabase
@@ -33,20 +34,14 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     nonOptionArgs.add(arg)
                 }
             }
-            var mealName: String? = null
-            var dayString: String? = null
-            if (nonOptionArgs.size >= 1) {
-                if (isAllMeals) {
-                    // just look for day
-                    dayString = nonOptionArgs[0]
-                } else {
-                    // look for day and meal
-                    mealName = nonOptionArgs[0]
-                    if (nonOptionArgs.size >= 2) {
-                        dayString = nonOptionArgs[1]
-                    }
-                }
+            val mealName = if (nonOptionArgs.size >= 1 && !isAllMeals) nonOptionArgs[0] else null
+            val dayString = when {
+                nonOptionArgs.size < 1 -> null
+                isAllMeals -> nonOptionArgs[0] // just look for day
+                nonOptionArgs.size >= 2 -> nonOptionArgs[1] // look for meal and day
+                else -> null
             }
+
             return MealSpec.makeMealSpec(mealName, dayString)
         }
     }
@@ -75,7 +70,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 return 1
             }
             out.println()
-            MealPrinter.printMeal(mealSpec.processedObject!!, verbose, out)
+            out.printMeal(mealSpec.processedObject!!, verbose)
 
         } else {
             try {
@@ -83,7 +78,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 if (mealsForDay.isEmpty()) {
                     out.println("No meals recorded on " + mealSpec.day.prettyPrint())
                 } else {
-                    MealPrinter.printMeals(mealsForDay.values, out, verbose, per100, true)
+                    out.printMeals(mealsForDay.values, verbose, per100, true)
                 }
             } catch (e: SQLException) {
                 out.println()

@@ -1,18 +1,19 @@
 package com.machfour.macros.objects
 
-import com.machfour.macros.core.*
-import com.machfour.macros.orm.schema.FoodPortionTable.Companion.FOOD_ID
-import com.machfour.macros.orm.schema.FoodPortionTable.Companion.MEAL_ID
-import com.machfour.macros.orm.schema.FoodPortionTable.Companion.QUANTITY
-import com.machfour.macros.orm.schema.FoodPortionTable.Companion.QUANTITY_UNIT
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.core.MacrosBuilder
+import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.orm.schema.FoodPortionTable.FOOD_ID
+import com.machfour.macros.orm.schema.FoodPortionTable.MEAL_ID
+import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY
+import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.sample.ExampleFood
+import com.machfour.macros.units.Units
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 class NutrientDataTest {
     companion object {

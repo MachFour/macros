@@ -1,12 +1,12 @@
 package com.machfour.macros.objects
 
+import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.inbuilt.Nutrients
-import com.machfour.macros.entities.inbuilt.Units
-import com.machfour.macros.nutrientdata.FoodNutrientData
+import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.units.Units
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test

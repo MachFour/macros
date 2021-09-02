@@ -1,148 +1,91 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.entities.Ingredient
-import com.machfour.macros.names.*
+import com.machfour.macros.names.DefaultDisplayStrings
+import com.machfour.macros.names.EnglishColumnNames
+import com.machfour.macros.names.NutrientStrings
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.util.defaultNutrientsToPrint
+import com.machfour.macros.util.formatNutrientData
 import com.machfour.macros.util.javaTrim
-import com.machfour.macros.util.PrintFormatting
-import com.machfour.macros.util.stringJoin
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintStream
 
-object CliUtils {
-    fun FoodNutrientData.printNutrientData(verbose: Boolean, out: PrintStream) {
-        val string = PrintFormatting.nutrientData(
-            nd = this,
-            displayStrings = DefaultDisplayStrings,
-            nutrients = PrintFormatting.defaultNutrientsToPrint,
-            withDp = verbose,
-            monoSpaceAligned = true
-        )
-        out.println(string)
-    }
-
-    private val energyProportionNutrientsToPrint = setOf(
-        Nutrients.PROTEIN,
-        Nutrients.FAT,
-        Nutrients.SATURATED_FAT,
-        Nutrients.CARBOHYDRATE,
-        Nutrients.SUGAR,
-        Nutrients.FIBRE
+fun PrintStream.printNutrientData(foodNutrientData: FoodNutrientData, verbose: Boolean) {
+    val string = formatNutrientData(
+        data = foodNutrientData,
+        displayStrings = DefaultDisplayStrings,
+        nutrients = defaultNutrientsToPrint,
+        withDp = verbose,
+        monoSpaceAligned = true
     )
+    println(string)
+}
 
-    fun FoodNutrientData.printEnergyProportions(
-        verbose: Boolean,
-        out: PrintStream,
-        colNames: NutrientStrings = EnglishColumnNames
-    ) {
-        out.println("Energy proportions (approx.)")
-        val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
-        for (n in energyProportionNutrientsToPrint) {
-            out.printf(fmt, colNames.getFullName(n), getEnergyProportion(n)*100)
-        }
+fun PrintStream.printEnergyProportions(
+    foodNutrientData: FoodNutrientData,
+    verbose: Boolean,
+    colNames: NutrientStrings = EnglishColumnNames
+) {
+    println("Energy proportions (approx.)")
+    val fmt = if (verbose) "%15s: %5.1f%%\n" else "%15s: %4.0f %%\n"
+    for (n in energyProportionNutrientsToPrint) {
+        printf(fmt, colNames.getFullName(n), foodNutrientData.getEnergyProportion(n) *100)
     }
+}
 
-    /*
-     * Fixed width string format, left aligned
-     */
-    private fun strFmtL(n: Int): String {
-        return "%-${n}s"
+
+private val energyProportionNutrientsToPrint = setOf(
+    Nutrients.PROTEIN,
+    Nutrients.FAT,
+    Nutrients.SATURATED_FAT,
+    Nutrients.CARBOHYDRATE,
+    Nutrients.SUGAR,
+    Nutrients.FIBRE
+)
+
+// command line inputs
+// returns null if there was an error or input was invalid
+fun getIntegerInput(input: BufferedReader, out: PrintStream, min: Int, max: Int): Int? {
+    val inputString = getStringInput(input, out) ?: return null
+    return try {
+        inputString.toInt().takeIf { it in min..max }
+    } catch (ignore: NumberFormatException) {
+        out.println("Bad number format: '$inputString'")
+        null
     }
+}
 
-    /*
-     * Fixed width string format
-     */
-    private fun strFmt(n: Int): String {
-        return "%${n}s"
+// command line inputs
+// returns null if there was an error or input was invalid
+fun getDoubleInput(input: BufferedReader, out: PrintStream): Double? {
+    val inputString = getStringInput(input, out) ?: return null
+    return try {
+        inputString.toDouble().takeIf { it.isFinite() }
+    } catch (ignore: NumberFormatException) {
+        out.println("Bad number format: '$inputString'")
+        null
     }
+}
 
-    // Fixed width string format
-    private fun strFmt(n: Int, leftAlign: Boolean): String {
-        val align = if (leftAlign) "-" else ""
-        return "%${align}${n}s"
+fun getStringInput(input: BufferedReader, out: PrintStream): String? {
+    return try {
+        input.readLine()?.javaTrim()
+    } catch (e: IOException) {
+        out.println("Error reading input: " + e.message)
+        null
     }
+}
 
-    /*
-     * Ingredients printing parameters
-     */
-    private const val quantityWidth = 10
-    private const val notesWidth = 25
-    private const val nameWidth = MealPrinter.nameWidth
-    private const val start = " | "
-    private const val sep = "  "
-    private const val end = " |\n"
-    private val lineFormat = start + strFmtL(nameWidth) + sep + strFmt(quantityWidth) + sep + strFmtL(notesWidth) + end
-    private const val lineLength = nameWidth + notesWidth + quantityWidth + 2 * sep.length + start.length + end.length - 2
-    private val hLine = " " + stringJoin(listOf("-"), copies = lineLength)
+fun clearTerminal(out: PrintStream) {
+    // this is what /usr/bin/clear outputs on my terminal
+    //out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a");
+    // equivalent in octal
+    out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a")
+}
 
-    fun printIngredients(ingredients: List<Ingredient>, out: PrintStream) {
-        // XXX use printLine(text, widths), etc function
-        out.printf(lineFormat, "Name", "Quantity", "Notes")
-        out.println(hLine)
-        for (i in ingredients) {
-            // format:  <name>          (<notes>)     <quantity/serving>
-            val iFood = i.food
-            val notes = i.notes
-            val name = iFood.mediumName
-            val noteString = notes ?: ""
-            val quantityString = PrintFormatting.quantity(
-                    qty = i.quantity,
-                    unit = i.qtyUnit,
-                    unitStrings = EnglishUnitNames,
-                    width = quantityWidth,
-                    unitWidth = 2)
-            out.printf(lineFormat, name, quantityString, noteString)
-            // TODO replace quantity with serving if specified
-            //Serving iServing = i.getServing();
-            //out.printf(" %-8s", iServing != null ? "(" + i.servingCountString() + " " +  iServing.name() + ")" : "");
-        }
-        out.println(hLine)
-    }
-
-    // command line inputs
-    // returns null if there was an error or input was invalid
-    fun getIntegerInput(input: BufferedReader, out: PrintStream, min: Int, max: Int): Int? {
-        val inputString = getStringInput(input, out) ?: return null
-        return try {
-            inputString.toInt().takeIf { it in min..max }
-        } catch (ignore: NumberFormatException) {
-            out.println("Bad number format: '$inputString'")
-            null
-        }
-    }
-
-    // command line inputs
-    // returns null if there was an error or input was invalid
-    fun getDoubleInput(input: BufferedReader, out: PrintStream): Double? {
-        val inputString = getStringInput(input, out) ?: return null
-        return try {
-            inputString.toDouble().takeIf { it.isFinite() }
-        } catch (ignore: NumberFormatException) {
-            out.println("Bad number format: '$inputString'")
-            null
-        }
-    }
-
-    fun getStringInput(input: BufferedReader, out: PrintStream): String? {
-        return try {
-            input.readLine()?.javaTrim()
-        } catch (e: IOException) {
-            out.println("Error reading input: " + e.message)
-            null
-        }
-    }
-
-    fun clearTerminal(out: PrintStream) {
-        // this is what /usr/bin/clear outputs on my terminal
-        //out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a");
-        // equivalent in octal
-        out.println("\u001b\u005b\u0048\u001b\u005b\u0032\u004a")
-    }
-
-    fun getChar(input: BufferedReader, out: PrintStream): Char {
-        val inputString = getStringInput(input, out)
-        return if (inputString.isNullOrEmpty()) '\u0000' else inputString[0]
-    }
+fun getChar(input: BufferedReader, out: PrintStream): Char {
+    val inputString = getStringInput(input, out)
+    return if (inputString.isNullOrEmpty()) '\u0000' else inputString[0]
 }

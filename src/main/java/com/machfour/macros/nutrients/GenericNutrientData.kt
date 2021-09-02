@@ -1,9 +1,10 @@
 package com.machfour.macros.nutrients
 
-import com.machfour.macros.units.UnitType
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.NutrientValue
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.units.DefaultUnits
+import com.machfour.macros.units.NutrientUnits
+import com.machfour.macros.units.UnitType
 import com.machfour.macros.units.Units
 
 // class storing a set of nutrient values for any purpose.
@@ -152,8 +153,12 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     }
 
 
-    fun getUnitOrDefault(n: Nutrient) : Unit {
-        return this[n]?.unit ?: DefaultUnits[n]
+    fun getUnit(n: Nutrient, defaultUnits: NutrientUnits, forceDefault: Boolean = false) : Unit {
+        return if (forceDefault) {
+            defaultUnits[n]
+        } else {
+            this[n]?.unit ?: defaultUnits[n]
+        }
     }
 
     // hack for USDA foods
@@ -188,7 +193,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
 
     // total energy predicted by macronutrient contents, rather than actual energy value
-    fun calculateMacroEnergy(unit: Unit = Units.KILOJOULES): Double {
+    private fun calculateMacroEnergy(unit: Unit = Units.KILOJOULES): Double {
         require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
         // this is also ensured by database
         assert(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }

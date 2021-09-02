@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.CliUtils
+import com.machfour.macros.cli.utils.getChar
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
@@ -62,7 +62,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         out.println()
         val plural = if (foodsToDelete.size != 1) "s" else ""
         out.print("Confirm delete " + foodsToDelete.size + " food" + plural + "? [y/N] ")
-        val response = CliUtils.getChar(input, out)
+        val response = getChar(input, out)
         out.println()
         if (response == 'y' || response == 'Y') {
             out.println("Deleting foods...")

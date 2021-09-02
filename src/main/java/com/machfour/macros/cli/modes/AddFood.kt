@@ -34,7 +34,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
         val indexNameArg = ArgParsing.findArgument(args, 1)
         if (indexNameArg !is ArgParsing.Result.KeyValFound) {
-            out.print(usage)
+            print(usage)
             return -1
         }
         val indexName = indexNameArg.argument
@@ -44,11 +44,11 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             // TODO move this check inside MacrosBuilder validations
             if (!checkIndexName(ds, indexName)) {
-                out.println("Index name $indexName already exists in the database, cannot continue.")
+                println("Index name $indexName already exists in the database, cannot continue.")
                 return 1
             }
         } catch (e: SQLException) {
-            out.println(e.message)
+            println(e.message)
             return 1
         }
 
@@ -66,7 +66,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 editorInitialised = true
                 editor.run()
             } catch (e: IOException) {
-                out.println("IO Error: " + e.localizedMessage)
+                println("IO Error: " + e.localizedMessage)
                 return 1
             } finally {
                 if (editorInitialised) {
@@ -74,7 +74,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 }
             }
         } catch (e: IOException) {
-            out.println("IO Error: " + e.localizedMessage)
+            println("IO Error: " + e.localizedMessage)
             return 1
         }
 

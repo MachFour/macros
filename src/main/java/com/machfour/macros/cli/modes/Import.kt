@@ -2,6 +2,7 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
@@ -24,20 +25,20 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     }
 
     override fun printHelp() {
-        out.println("Imports CSV data for foods, servings, recipes and ingredients into the database.")
-        out.println("Only foods with index names not already in the database will be imported.")
-        out.println("However, it will try to import all servings, and so will fail if duplicate servings exist.")
-        out.println()
-        out.println("Options:")
-        out.println("  --clear               removes existing data before import")
-        out.println("  --nofoods             don't import food and serving data (if --clear is used, do not clear)")
-        out.println("  --norecipes           don't import recipe data (if --clear is used, do not clear)")
-        out.println("  -f <foods.csv>        read custom foods file (default: ${config.foodCsvPath}")
-        out.println("  -s <servings.csv>     read custom servings file (default: ${config.servingCsvPath}")
-        out.println("  -r <recipes.csv>      read custom recipes file (default: ${config.recipeCsvPath}")
-        out.println("  -i <ingredients.csv>  read custom ingredients file (default: ${config.ingredientsCsvPath}")
-        out.println()
-        out.println("Note: If any custom CSV files are specified, no default paths will be used.")
+        println("Imports CSV data for foods, servings, recipes and ingredients into the database.")
+        println("Only foods with index names not already in the database will be imported.")
+        println("However, it will try to import all servings, and so will fail if duplicate servings exist.")
+        println()
+        println("Options:")
+        println("  --clear               removes existing data before import")
+        println("  --nofoods             don't import food and serving data (if --clear is used, do not clear)")
+        println("  --norecipes           don't import recipe data (if --clear is used, do not clear)")
+        println("  -f <foods.csv>        read custom foods file (default: ${config.foodCsvPath}")
+        println("  -s <servings.csv>     read custom servings file (default: ${config.servingCsvPath}")
+        println("  -r <recipes.csv>      read custom recipes file (default: ${config.recipeCsvPath}")
+        println("  -i <ingredients.csv>  read custom ingredients file (default: ${config.ingredientsCsvPath}")
+        println()
+        println("Note: If any custom CSV files are specified, no default paths will be used.")
 
     }
 
@@ -58,7 +59,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         when (foodCsvArg) {
             is ArgParsing.Result.KeyValFound -> foodCsvOverride = foodCsvArg.argument
             is ArgParsing.Result.ValNotFound -> {
-                err.println("Error - '-f' flag given but no food.csv specified")
+                printlnErr("Error - '-f' flag given but no food.csv specified")
                 return 1
             }
             else -> {
@@ -66,6 +67,9 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
         }
         // TODO servings, etc
+        println("servingCsvArg: $servingCsvArg")
+        println("recipeCsvArg: $recipeCsvArg")
+        println("ingredientCsvArg: $ingredientCsvArg")
 
 
         val foodCsvFile = foodCsvOverride ?: config.foodCsvPath
@@ -76,7 +80,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             if (doClear) {
                 if (!noFoodsServings) {
-                    out.println("Clearing existing foods, servings, nutrition data and ingredients...")
+                    println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
                     WriteQueries.deleteAllIngredients(db)
@@ -84,53 +88,53 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     WriteQueries.clearTable(db, FoodNutrientValue.table)
                     WriteQueries.clearTable(db, Food.table)
                 } else if (!noRecipes) {
-                    out.println("Clearing existing recipes and ingredients...")
+                    println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
                     WriteQueries.deleteAllIngredients(db)
                     WriteQueries.deleteAllCompositeFoods(db)
                 } else {
-                    out.println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
+                    println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }
             }
             if (!noFoodsServings) {
-                out.println("Importing foods and nutrition data into database...")
+                println("Importing foods and nutrition data into database...")
                 FileReader(foodCsvFile).use { importFoodData(db, it, false) }
-                out.println("Saved foods and nutrition data")
+                println("Saved foods and nutrition data")
                 FileReader(servingCsvFile).use { importServings(db, it, false) }
-                out.println("Saved servings")
-                out.println()
+                println("Saved servings")
+                println()
             }
             if (!noRecipes) {
-                out.println("Importing recipes and ingredients into database...")
+                println("Importing recipes and ingredients into database...")
                 FileReader(recipeCsvFile).use { recipeCsv ->
                     FileReader(ingredientsCsvFile).use { ingredientsCsv ->
                         importRecipes(db, recipeCsv, ingredientsCsv)
                     }
                 }
-                out.println("Saved recipes and ingredients")
-                out.println()
+                println("Saved recipes and ingredients")
+                println()
             }
         } catch (e1: SQLException) {
-            out.println()
-            err.println("SQL Exception occurred: ${e1.message}")
+            println()
+            printlnErr("SQL Exception occurred: ${e1.message}")
             return 1
         } catch (e2: IOException) {
-            out.println()
-            err.println("IO exception occurred: ${e2.message}")
+            println()
+            printlnErr("IO exception occurred: ${e2.message}")
             return 1
         } catch (e3: TypeCastException) {
-            out.println()
-            err.println("Type cast exception occurred: ${e3.message}")
-            err.println("Please check the format of the CSV files")
+            println()
+            printlnErr("Type cast exception occurred: ${e3.message}")
+            printlnErr("Please check the format of the CSV files")
             return 1
         } catch (e4: CsvException) {
-            out.println()
-            err.println("CSV import exception occurred: ${e4.message}")
-            err.println("Please check the format of the CSV files")
+            println()
+            printlnErr("CSV import exception occurred: ${e4.message}")
+            printlnErr("Please check the format of the CSV files")
         }
 
-        out.println()
-        out.println("Import completed successfully")
+        println()
+        println("Import completed successfully")
         return 0
     }
 }

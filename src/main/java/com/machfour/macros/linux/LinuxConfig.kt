@@ -7,9 +7,6 @@ import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlDatabaseImpl
 import com.machfour.macros.util.FileUtils.joinPath
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintStream
 
 class LinuxConfig : MacrosConfig {
     companion object {
@@ -31,15 +28,9 @@ class LinuxConfig : MacrosConfig {
 
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR
 
-        private val inputReader = BufferedReader(InputStreamReader(System.`in`))
-
         private val dbDefaultLocation = joinPath(DB_DIR, DEFAULT_DB_NAME)
 
     }
-
-    override val outStream: PrintStream = System.out
-    override val errStream: PrintStream = System.err
-    override val inputReader: BufferedReader = Companion.inputReader
 
     override val programName = Companion.programName
     override val dbName = DEFAULT_DB_NAME

@@ -47,12 +47,12 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         mealSpec.process(ds, true)
 
         if (mealSpec.error != null) {
-            err.println(mealSpec.error)
+            printlnErr(mealSpec.error)
             return 1
         }
         if (mealSpec.isCreated) {
             val createMsg = String.format("Created meal '%s' on %s", mealSpec.name, mealSpec.day)
-            out.println(createMsg)
+            println(createMsg)
         }
         val toEdit = mealSpec.processedObject
         return startEditor(ds, toEdit!!.id)
@@ -63,7 +63,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             toEdit = MealQueries.getMealById(ds, mealId)
         } catch (e: SQLException) {
-            err.println(e)
+            printlnErr(e)
             return 1
         }
         requireNotNull(toEdit) { "Could not re-retrieve meal with id given by processed MealSpec" }
@@ -71,114 +71,114 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         while (true) {
             // TODO reload meal
-            out.println()
-            out.println("Editing meal: ${toEdit.name} on ${toEdit.day.prettyPrint()}")
-            out.println()
-            out.print("Action (? for help): ")
-            val action = getChar(input, out)
-            out.println()
+            println()
+            println("Editing meal: ${toEdit.name} on ${toEdit.day.prettyPrint()}")
+            println()
+            print("Action (? for help): ")
+            val action = cliGetChar()
+            println()
             when (action) {
                 'a' -> addPortion(toEdit, ds)
                 'd' -> {
                     deleteFoodPortion(toEdit, ds)
-                    out.println("WARNING: meal is not reloaded")
+                    println("WARNING: meal is not reloaded")
                 }
                 'D' -> deleteMeal(toEdit, ds)
                 'e' -> {
                     editFoodPortion(toEdit, ds)
-                    out.println("WARNING: meal is not reloaded")
+                    println("WARNING: meal is not reloaded")
                 }
                 'm' -> {
-                    out.println("Meal")
-                    err.println("Not implemented yet, sorry!")
+                    println("Meal")
+                    printlnErr("Not implemented yet, sorry!")
                 }
                 'n' -> {
                     renameMeal()
-                    err.println("WARNING: meal is not reloaded")
+                    printlnErr("WARNING: meal is not reloaded")
                 }
                 's' -> showFoodPortions(toEdit)
                 '?' -> {
-                    out.println()
-                    out.println("Please choose from one of the following options")
-                    out.println(interactiveHelpString())
+                    println()
+                    println("Please choose from one of the following options")
+                    println(interactiveHelpString())
                 }
                 'x', 'q', '\u0000' -> return 0
                 else -> {
-                    out.println("Unrecognised action: '${action}'")
-                    out.println()
+                    println("Unrecognised action: '${action}'")
+                    println()
                 }
             }// TODO exit if deleted
         }
     }
 
     private fun addPortion(toEdit: Meal, db: SqlDatabase) {
-        out.println("Please enter the portion information (see help for how to specify a food portion)")
+        println("Please enter the portion information (see help for how to specify a food portion)")
         // copy from portion
-        val inputString = getStringInput(input, out)
+        val inputString = cliGetStringInput()
         if (inputString != null && inputString.isNotEmpty()) {
             val spec = FileParser.makefoodPortionSpecFromLine(inputString)
-            Portion.process(toEdit, listOf(spec), db, out, err)
+            Portion.process(toEdit, listOf(spec), db)
         }
     }
 
     private fun showFoodPortions(toEdit: Meal) {
-        out.println("Food portions:")
+        println("Food portions:")
         val foodPortions = toEdit.getFoodPortions()
         for (i in foodPortions.indices) {
             val fp = foodPortions[i]
-            out.println("$i: ${fp.prettyFormat(true)}")
+            println("$i: ${fp.prettyFormat(true)}")
         }
-        out.println()
+        println()
     }
 
     private fun deleteMeal(toDelete: Meal, db: SqlDatabase) {
-        out.print("Delete meal")
-        out.print("Are you sure? [y/N] ")
-        if ((getChar(input, out) == 'y') or (getChar(input, out) == 'Y')) {
+        print("Delete meal")
+        print("Are you sure? [y/N] ")
+        if ((cliGetChar() == 'y') or (cliGetChar() == 'Y')) {
             try {
                 WriteQueries.deleteObject(db, toDelete)
             } catch (e: SQLException) {
-                out.println("Error deleting meal: " + e.message)
+                println("Error deleting meal: " + e.message)
             }
 
         }
     }
 
     private fun deleteFoodPortion(toEdit: Meal, ds: SqlDatabase) {
-        out.println("Delete food portion")
+        println("Delete food portion")
         showFoodPortions(toEdit)
-        out.print("Enter the number of the food portion to delete and press enter: ")
+        print("Enter the number of the food portion to delete and press enter: ")
         val portions = toEdit.getFoodPortions()
-        val n = getIntegerInput(input, out, 0, portions.size - 1)
+        val n = cliGetInteger(0, portions.size - 1)
         if (n == null) {
-            out.println("Invalid number")
+            println("Invalid number")
             return
         }
         try {
             WriteQueries.deleteObject(ds, portions[n])
         } catch (e3: SQLException) {
-            out.println("Error deleting the food portion: " + e3.message)
+            println("Error deleting the food portion: " + e3.message)
             return
         }
 
-        out.println("Deleted the food portion")
-        out.println()
+        println("Deleted the food portion")
+        println()
     }
 
     private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
-        out.println("Edit food portion")
+        println("Edit food portion")
         showFoodPortions(m)
-        out.print("Enter the number of the food portion to edit and press enter: ")
+        print("Enter the number of the food portion to edit and press enter: ")
         val portions = m.getFoodPortions()
-        val n = getIntegerInput(input, out, 0, portions.size - 1)
+        val n = cliGetInteger(0, portions.size - 1)
         if (n == null) {
-            out.println("Invalid number")
+            println("Invalid number")
             return
         }
-        out.print("Enter a new quantity (in the same unit) and press enter: ")
-        val newQty = getDoubleInput(input, out)
+        print("Enter a new quantity (in the same unit) and press enter: ")
+        val newQty = cliGetDouble()
         if (newQty == null) {
-            out.println("Invalid quantity")
+            println("Invalid quantity")
             return
         }
 
@@ -187,33 +187,33 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             newData.put(FoodPortionTable.QUANTITY, newQty)
             WriteQueries.saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
         } catch (e3: SQLException) {
-            out.println("Error modifying the food portion: " + e3.message)
+            println("Error modifying the food portion: " + e3.message)
             return
         }
 
-        out.println("Successfully saved the food portion")
-        out.println()
+        println("Successfully saved the food portion")
+        println()
     }
 
     private fun renameMeal() {
-        out.println("Rename meal")
-        out.print("Type a new name and press enter: ")
-        val newName = getStringInput(input, out) ?: return
-        out.println("The new name is: $newName")
+        println("Rename meal")
+        print("Type a new name and press enter: ")
+        val newName = cliGetStringInput() ?: return
+        println("The new name is: $newName")
     }
 
     override fun printHelp() {
-        out.println(USAGE)
-        out.println("Interactive meal editor")
-        out.println()
-        out.println()
-        out.println(interactiveHelpString())
-        out.println()
-        out.println("Food portions can be entered in one of the following forms:")
-        out.println("1. <food index name>, <quantity>[quantity unit]")
-        out.println("2. <food index name>, [<serving name>], <serving count> (omit serving name for default serving)")
-        out.println("3. <food index name> (this means 1 of the default serving)")
-        out.println("(<> denotes a mandatory argument and [] denotes an optional argument)")
+        println(USAGE)
+        println("Interactive meal editor")
+        println()
+        println()
+        println(interactiveHelpString())
+        println()
+        println("Food portions can be entered in one of the following forms:")
+        println("1. <food index name>, <quantity>[quantity unit]")
+        println("2. <food index name>, [<serving name>], <serving count> (omit serving name for default serving)")
+        println("3. <food index name> (this means 1 of the default serving)")
+        println("(<> denotes a mandatory argument and [] denotes an optional argument)")
     }
 
 }

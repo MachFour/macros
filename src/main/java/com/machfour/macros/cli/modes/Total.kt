@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printMeals
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries
 import com.machfour.macros.sql.SqlDatabase
@@ -61,28 +62,28 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
     }
 
-    internal fun process(mealSpec: MealSpec, ds: SqlDatabase, allMeals: Boolean, verbose: Boolean, per100: Boolean): Int {
+    private fun process(mealSpec: MealSpec, ds: SqlDatabase, allMeals: Boolean, verbose: Boolean, per100: Boolean): Int {
         if (!allMeals) {
             // total for specific meal
             mealSpec.process(ds, false)
             if (mealSpec.error != null) {
-                err.println(mealSpec.error)
+                printlnErr(mealSpec.error)
                 return 1
             }
-            out.println()
-            out.printMeal(mealSpec.processedObject!!, verbose)
+            println()
+            printMeal(mealSpec.processedObject!!, verbose)
 
         } else {
             try {
                 val mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.day!!)
                 if (mealsForDay.isEmpty()) {
-                    out.println("No meals recorded on " + mealSpec.day.prettyPrint())
+                    println("No meals recorded on " + mealSpec.day.prettyPrint())
                 } else {
-                    out.printMeals(mealsForDay.values, verbose, per100, true)
+                    printMeals(mealsForDay.values, verbose, per100, true)
                 }
             } catch (e: SQLException) {
-                out.println()
-                err.println("Error retrieving meals: " + e.message)
+                println()
+                printlnErr("Error retrieving meals: " + e.message)
                 return 1
             }
 

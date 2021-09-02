@@ -1,7 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.getChar
+import com.machfour.macros.cli.utils.cliGetChar
 import com.machfour.macros.cli.utils.printIngredients
 import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.core.MacrosConfig
@@ -23,7 +23,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             printHelp()
             return -1
         } else if (args.size < 2) {
-            out.println(usage)
+            println(usage)
             return -1
         }
 
@@ -32,65 +32,65 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
 
         try {
             FileReader(args[1]).use { jsonReader ->
-                out.println("Importing recipes...")
+                println("Importing recipes...")
                 recipes.addAll(IngredientsParser.readRecipes(jsonReader, ds))
             }
         } catch (e1: IOException) {
-            out.println("IO exception occurred while reading recipes file: " + e1.message)
+            println("IO exception occurred while reading recipes file: " + e1.message)
             return 1
         } catch (e2: SQLException) {
-            out.println("SQL exception occurred while creating recipe objects: " + e2.message)
+            println("SQL exception occurred while creating recipe objects: " + e2.message)
             return 1
         }
 
         if (recipes.isEmpty()) {
-            out.println("No recipes read! Check the recipes file")
+            println("No recipes read! Check the recipes file")
             return 2
         }
 
-        out.println("The following recipes were found:")
+        println("The following recipes were found:")
 
         for (cf in recipes) {
-            out.println()
-            out.println("Name: " + cf.mediumName)
-            out.println()
-            out.println("Ingredients:")
-            out.println()
-            out.printIngredients(cf.ingredients)
-            out.println()
-            out.println("Nutrition Information:")
-            out.println()
+            println()
+            println("Name: " + cf.mediumName)
+            println()
+            println("Ingredients:")
+            println()
+            printIngredients(cf.ingredients)
+            println()
+            println("Nutrition Information:")
+            println()
             val nd = cf.nutrientData
             val unit = nd.qtyUnitAbbr
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
-                out.printf("Per %.0f%s:\n", nd.quantity, unit)
-                out.printNutrientData(nd, false)
-                out.println()
+                println("Per %.0f%s:".format(nd.quantity, unit))
+                printNutrientData(nd, false)
+                println()
             }
-            out.printf("Per %.0f%s:\n", nd.quantity, unit) // should now be 100
-            out.printNutrientData(nd.rescale100(), false)
-            out.println()
-            out.println("================================================")
-            out.println()
+            println("Per %.0f%s:".format(nd.quantity, unit)) // should now be 100
+            printNutrientData(nd.rescale100(), false)
+            println()
+            println("================================================")
+            println()
         }
 
         val article = if (recipes.size == 1) "this" else "these"
         val plural = if (recipes.size == 1) "" else "s"
-        out.print("Would you like to save $article food$plural? [y/N] ")
-        val response = getChar(input, out)
-        out.println()
+        print("Would you like to save $article food$plural? [y/N] ")
+        val response = cliGetChar()
+        println()
         if (response == 'y' || response == 'Y') {
             try {
                 IngredientsParser.saveRecipes(recipes, ds)
-                out.println("Recipes saved!")
+                println("Recipes saved!")
             } catch (e: SQLException) {
-                out.println("SQL exception occurred while saving recipe objects: " + e.message)
-                out.println("Recipes not saved")
+                println("SQL exception occurred while saving recipe objects: " + e.message)
+                println("Recipes not saved")
                 return 1
             }
         } else {
-            out.println("Okay.")
+            println("Okay.")
         }
         return 0
     }

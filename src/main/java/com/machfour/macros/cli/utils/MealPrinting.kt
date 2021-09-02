@@ -10,7 +10,6 @@ import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.util.formatNutrient
 import com.machfour.macros.util.formatQuantity
 import com.machfour.macros.util.stringJoin
-import java.io.PrintStream
 
 // printing widths
 const val foodNameWidth = 41
@@ -42,7 +41,7 @@ private val verboseTableCols = listOf(
 /*
  * Prints a row of a table (helper method for printMeal())
  */
-private fun PrintStream.printRow(row: List<String>, widths: List<Int>, rightAlign: List<Boolean>, sep: String) {
+private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Boolean>, sep: String) {
     assert(row.size == widths.size && row.size == rightAlign.size)
     for (i in row.indices) {
         print(UnicodeUtils.formatString(row[i], widths[i], !rightAlign[i]) + sep)
@@ -80,7 +79,7 @@ private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, 
     }
 }
 
-fun PrintStream.printMeal(meal: Meal, verbose: Boolean) {
+fun printMeal(meal: Meal, verbose: Boolean) {
     val nutrientCols = if (verbose) verboseTableCols else conciseTableCols
     //Columns: first the food name, then one for each nutrient, then quantity/serving
     val numCols = 1 + nutrientCols.size + 1
@@ -133,7 +132,7 @@ fun PrintStream.printMeal(meal: Meal, verbose: Boolean) {
     printRow(totalRow, rowWidths, rightAlign, columnSep)
 }
 
-fun PrintStream.printMeals(
+fun printMeals(
     meals: Collection<Meal>,
     verbose: Boolean = false,
     per100: Boolean = false,

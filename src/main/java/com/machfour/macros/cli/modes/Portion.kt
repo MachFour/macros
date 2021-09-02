@@ -6,6 +6,7 @@ import com.machfour.macros.cli.utils.FileParser.Companion.processFpSpec
 import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
@@ -14,7 +15,6 @@ import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
 import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.FoodPortionSpec
-import java.io.PrintStream
 import java.sql.SQLException
 
 class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
@@ -31,37 +31,37 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             }
         }
 
-        fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, ds: SqlDatabase, out: PrintStream, err: PrintStream): Int {
+        fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
             if (specs.isEmpty()) {
-                out.println("No food portions specified, nothing to do")
+                println("No food portions specified, nothing to do")
                 return 0
             }
             val spec = specs[0]
             val f: Food? = try {
-                getFoodByIndexName(ds, spec.foodIndexName)
+                getFoodByIndexName(db, spec.foodIndexName)
             } catch (e: SQLException) {
-                err.println("Could not retrieve food. Reason: " + e.message)
+                printlnErr("Could not retrieve food. Reason: " + e.message)
                 return 1
             }
             if (f == null) {
-                err.println("Unrecognised food with index name '${spec.foodIndexName}'")
+                printlnErr("Unrecognised food with index name '${spec.foodIndexName}'")
                 return 1
             }
             processFpSpec(spec, toAddTo, f)
             if (spec.error.isNotEmpty()) {
-                err.println(spec.error)
+                printlnErr(spec.error)
                 return 1
             }
             assert(spec.createdObject != null) { "No object created but no error message either" }
             toAddTo.addFoodPortion(spec.createdObject!!)
             try {
-                saveFoodPortions(ds, toAddTo)
+                saveFoodPortions(db, toAddTo)
             } catch (e: SQLException) {
-                err.println("Error saving food portion. Reason: " + e.message)
+                printlnErr("Error saving food portion. Reason: " + e.message)
                 return 1
             }
-            out.println()
-            out.printMeal(toAddTo, false)
+            println()
+            printMeal(toAddTo, false)
             return 0
         }
     }
@@ -93,22 +93,22 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             }
             0 -> {
                 assert(false) { "'-s' is where the command name should be!" }
-                out.println("There can only be at most two arguments before '-s'")
+                println("There can only be at most two arguments before '-s'")
                 return 1
             }
             else -> {
-                out.println("There can only be at most two arguments before '-s'")
+                println("There can only be at most two arguments before '-s'")
                 return 1
             }
         }
         if (!mealSpec.isMealSpecified) {
             val name = mealSpec.name
             val dayString = if (mealSpec.day != null) mealSpec.day.prettyPrint() else "(invalid day)"
-            out.println("No meal specified, assuming $name on $dayString")
+            println("No meal specified, assuming $name on $dayString")
         }
         mealSpec.process(ds, true)
         if (mealSpec.error != null) {
-            err.println(mealSpec.error)
+            printlnErr(mealSpec.error)
             return 1
         }
 
@@ -118,7 +118,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             specs.add(makefoodPortionSpecFromLine(args[index]))
         }
         assert (mealSpec.processedObject != null) { "mealspec did not correctly process object but no error was given "}
-        return process(mealSpec.processedObject!!, specs, ds, out, err)
+        return process(mealSpec.processedObject!!, specs, ds)
     }
 
 }

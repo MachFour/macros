@@ -1,13 +1,14 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.Table
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvBackup
 import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.Table
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileWriter
 import java.io.IOException
@@ -20,13 +21,13 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     override fun printHelp() {
-        out.println("Exports complete CSV data (foods and servings) from the database.")
-        out.println("Please specify the containing directory. It will be created if it doesn't exist.")
+        println("Exports complete CSV data (foods and servings) from the database.")
+        println("Please specify the containing directory. It will be created if it doesn't exist.")
     }
 
     @Throws(SQLException::class, IOException::class)
     private fun <M : MacrosEntity<M>> exportTable(ds: MacrosDataSource, outDir: String, t: Table<M>) {
-        out.println("Exporting ${t.name} table...")
+        println("Exporting ${t.name} table...")
         val outCsvPath = joinPath(outDir, t.name + ".csv")
         FileWriter(outCsvPath).use { CsvBackup.exportTable(ds, t, it) }
     }
@@ -52,14 +53,14 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         } catch (e: IOException) {
             return handleException(e)
         }
-        out.println()
-        out.println("Export completed successfully")
+        println()
+        println("Export completed successfully")
         return 0
     }
 
     private fun handleException(e: Exception): Int {
-        out.println()
-        err.println("Exception occurred (${e.javaClass}). Message: ${e.message}")
+        println()
+        printlnErr("Exception occurred (${e.javaClass}). Message: ${e.message}")
         return 1
     }
 

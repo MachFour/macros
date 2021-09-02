@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.cli.utils.ArgParsing.findArgument
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
@@ -31,12 +32,12 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val date = when (val dateArg = findArgument(args, 1)) {
             is ArgParsing.Result.KeyValFound -> {
                 dayStringParse(dateArg.argument) ?: run {
-                    err.println("Invalid date format: '${dateArg.argument}'.")
+                    printlnErr("Invalid date format: '${dateArg.argument}'.")
                     return 1
                 }
             }
             is ArgParsing.Result.ValNotFound -> {
-                err.println("-d option requires a day specified")
+                printlnErr("-d option requires a day specified")
                 return 1
             }
             else -> currentDate()
@@ -49,20 +50,20 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             val meals = getMealsForDay(db, d)
             if (meals.isEmpty()) {
-                out.println("No meals recorded on " + d.prettyPrint())
+                println("No meals recorded on " + d.prettyPrint())
             } else {
-                out.println("Meals recorded on " + d.prettyPrint() + ":")
-                out.println()
-                out.println("%-16s %-16s".format("Name", "Last Modified"))
-                out.println("=================================")
+                println("Meals recorded on " + d.prettyPrint() + ":")
+                println()
+                println("%-16s %-16s".format("Name", "Last Modified"))
+                println("=================================")
                 val dateFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.LONG)
                 for (m in meals.values) {
                     val mealDate = m.modifyInstant.atZone(ZoneId.systemDefault())
-                    out.println("%-16s %16s".format(m.name, dateFormat.format(mealDate)))
+                    println("%-16s %16s".format(m.name, dateFormat.format(mealDate)))
                 }
             }
         } catch (e: SQLException) {
-            out.println("SQL Exception: " + e.message)
+            println("SQL Exception: " + e.message)
             return 1
         }
         return 0

@@ -1,13 +1,12 @@
 package com.machfour.macros.persistence
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.queries.MacrosDataSource
 import java.io.IOException
-import java.io.PrintStream
 import java.io.Reader
 import java.sql.SQLException
 
@@ -17,7 +16,7 @@ object CsvRestore {
      * 'out' is for printing error messages
      */
     @Throws(IOException::class, TypeCastException::class)
-    private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader, out: PrintStream): List<M> {
+    private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M> {
         val columnsByName: Map<String, Column<M, *>> = table.columnsByName
         val objectList: MutableList<M> = ArrayList()
         val unrecognisedColumns: MutableSet<String> = HashSet()
@@ -25,7 +24,7 @@ object CsvRestore {
             // header columns are used as the keys to the Map
             val header : Array<String>? = mapReader.getHeader(true)
             if (header == null) {
-                out.println("Warning: EOF encountered when reading header")
+                println("Warning: EOF encountered when reading header")
                 return emptyList()
             }
             // store unrecognised header columns in map
@@ -37,13 +36,13 @@ object CsvRestore {
                 objectList += table.factory.construct(data, ObjectSource.RESTORE)
             }
         }
-        out.println("Warning: unknown columns: $unrecognisedColumns")
+        println("Warning: unknown columns: $unrecognisedColumns")
         return objectList
     }
 
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, t: Table<M>, csvData: Reader, out: PrintStream) {
-        val objects = buildObjectsForRestore(t, csvData, out)
+    fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, t: Table<M>, csvData: Reader) {
+        val objects = buildObjectsForRestore(t, csvData)
         ds.saveObjects(objects, ObjectSource.RESTORE)
     }
 }

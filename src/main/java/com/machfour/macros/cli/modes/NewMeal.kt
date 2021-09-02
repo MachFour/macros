@@ -29,12 +29,12 @@ class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         mealSpec.process(ds, true)
 
         if (mealSpec.error != null) {
-            out.println(mealSpec.error)
+            println(mealSpec.error)
             return 1
         }
         if (mealSpec.isCreated) {
             val prettyDay = mealSpec.day!!.prettyPrint()
-            out.println("Created meal '${mealSpec.name}' on $prettyDay")
+            println("Created meal '${mealSpec.name}' on $prettyDay")
         }
         //Meal toEdit = mealSpec.processedObject();
         return 0

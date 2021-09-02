@@ -11,18 +11,18 @@ class Help(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     }
 
     override fun printHelp() {
-        out.println("################################")
-        out.println("## Max's nutrition calculator ##")
-        out.println("################################")
-        out.println()
-        out.println("Available commands:")
+        println("################################")
+        println("## Max's nutrition calculator ##")
+        println("################################")
+        println()
+        println("Available commands:")
         Commands.commands.forEach {
             if (it.isUserCommand) {
-                out.println(it.name)
+                println(it.name)
             }
         }
-        out.println()
-        out.println("For help using a particular command, run $programName $NAME <command>" +
+        println()
+        println("For help using a particular command, run $programName $NAME <command>" +
                 " or $programName <command> --$NAME")
     }
 

@@ -1,6 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.linux.LinuxDatabase
 import java.io.IOException
@@ -13,7 +14,7 @@ class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     }
 
     override fun printHelp() {
-        out.println("Recreates and initialises the database. All previous data is deleted!")
+        println("Recreates and initialises the database. All previous data is deleted!")
     }
 
     override fun doAction(args: List<String>): Int {
@@ -24,7 +25,7 @@ class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val db = config.databaseImpl
         try {
             LinuxDatabase.deleteIfExists(config.dbLocation)
-            out.println("Deleted database at ${config.dbLocation}")
+            println("Deleted database at ${config.dbLocation}")
         } catch (e: IOException) {
             return handleDeleteException(e)
         }
@@ -36,12 +37,12 @@ class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return handleInitException(e)
         }
 
-        out.println("Database re-initialised at ${config.dbLocation}")
+        println("Database re-initialised at ${config.dbLocation}")
         return 0
     }
 
     private fun printExceptionMessage(e: Exception, message: String) {
-        err.println(message + ": " + e.message)
+        printlnErr(message + ": " + e.message)
 
     }
     private fun handleDeleteException(e: Exception): Int {

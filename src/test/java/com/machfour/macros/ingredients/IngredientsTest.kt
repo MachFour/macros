@@ -66,11 +66,11 @@ class IngredientsTest {
 
         checkNotNull(recipe)
         println("Nutrition data total")
-        System.out.printNutrientData(recipe.nutrientData, false)
+        printNutrientData(recipe.nutrientData, false)
         println()
         println("Nutrition data per 100g")
         val rescaled = recipe.nutrientData.rescale100()
-        System.out.printNutrientData(rescaled, false)
+        printNutrientData(rescaled, false)
     }
 
 

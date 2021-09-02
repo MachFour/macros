@@ -1,6 +1,9 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.printErr
+import com.machfour.macros.cli.utils.printFoodList
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
@@ -32,18 +35,18 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             allFoods = FoodQueries.getAllFoodsMap(ds).values
         } catch (e: SQLException) {
-            err.print("SQL exception occurred: ")
-            err.println(e.errorCode)
+            printErr("SQL exception occurred: ")
+            printlnErr(e.errorCode)
             return
         }
 
         if (allFoods.isEmpty()) {
-            out.println("No foods currently recorded in the database.")
+            println("No foods currently recorded in the database.")
         } else {
-            out.println("============")
-            out.println(" All Foods  ")
-            out.println("============")
-            SearchFood.printFoodList(allFoods, out)
+            println("============")
+            println(" All Foods  ")
+            println("============")
+            printFoodList(allFoods)
         }
         //DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         //dateFormat.setTimeZone(TimeZone.getDefault());

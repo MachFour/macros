@@ -1,7 +1,9 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.getChar
+import com.machfour.macros.cli.utils.cliGetChar
+import com.machfour.macros.cli.utils.printFoodSummary
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.FoodQueries
@@ -21,14 +23,14 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return -1
         } else if (args.size < 2) {
-            out.println(usage)
+            println(usage)
             return -1
         }
 
         val ds = config.database
 
-        out.println("Retrieving foods...")
-        out.println()
+        println("Retrieving foods...")
+        println()
 
         val indexNamesToDelete = args.subList(1, args.size)
         val foodsToDelete: List<Food>
@@ -36,60 +38,60 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             val retrievedFoods = FoodQueries.getFoodsByIndexName(ds, indexNamesToDelete)
             foodsToDelete = ArrayList(retrievedFoods.values)
         } catch (e: SQLException) {
-            out.println("SQL Exception while retrieving foods: $e")
+            println("SQL Exception while retrieving foods: $e")
             return 1
         }
 
         when (foodsToDelete.size) {
             0 -> {
-                out.println("No matching foods found!")
+                println("No matching foods found!")
                 return 2
             }
             1 -> {
-                out.println("===== Food to delete =====")
-                out.println()
+                println("===== Food to delete =====")
+                println()
             }
             else -> {
-                out.println("===== Foods to delete =====")
-                out.println()
+                println("===== Foods to delete =====")
+                println()
             }
         }
 
         for (f in foodsToDelete) {
-            ShowFood.printFoodSummary(f, out)
+            printFoodSummary(f)
         }
 
-        out.println()
+        println()
         val plural = if (foodsToDelete.size != 1) "s" else ""
-        out.print("Confirm delete " + foodsToDelete.size + " food" + plural + "? [y/N] ")
-        val response = getChar(input, out)
-        out.println()
+        print("Confirm delete " + foodsToDelete.size + " food" + plural + "? [y/N] ")
+        val response = cliGetChar()
+        println()
         if (response == 'y' || response == 'Y') {
-            out.println("Deleting foods...")
-            out.println()
+            println("Deleting foods...")
+            println()
             try {
                 ds.openConnection()
                 ds.beginTransaction()
                 for (f in foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
                     WriteQueries.deleteObject(ds, f)
-                    out.println("Deleted " + f.indexName)
+                    println("Deleted " + f.indexName)
                 }
                 ds.endTransaction()
             } catch (e: SQLException) {
-                err.println("SQL Exception occurred while deleting foods: $e")
-                err.println("No foods deleted")
+                printlnErr("SQL Exception occurred while deleting foods: $e")
+                printlnErr("No foods deleted")
                 return 1
             } finally {
                 try {
                     ds.closeConnection()
                 } catch (e: SQLException) {
-                    err.println("Warning: SQL exception occurred when closing the DB")
+                    printlnErr("Warning: SQL exception occurred when closing the DB")
                 }
 
             }
         } else {
-            out.println("No action performed")
+            println("No action performed")
         }
         return 0
 

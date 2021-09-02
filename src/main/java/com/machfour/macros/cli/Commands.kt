@@ -90,7 +90,7 @@ object Commands {
         }
 
         override fun doAction(args: List<String>): Int {
-            out.println("Command not recognised: '${args[0]}'\n")
+            println("Command not recognised: '${args[0]}'\n")
             return noArgsCommand().doAction(emptyList())
         }
     }
@@ -101,10 +101,10 @@ object Commands {
         }
 
         override fun doAction(args: List<String>): Int {
-            out.println("Please specify one of the following commands:")
+            println("Please specify one of the following commands:")
             for (m in commands) {
                 if (m.isUserCommand) {
-                    out.println(m.name)
+                    println(m.name)
                 }
             }
             return -1

@@ -4,6 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.FileParser
 import com.machfour.macros.cli.utils.printMeals
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.insulin.InsulinCmdlineUtils
@@ -13,10 +14,11 @@ import java.sql.SQLException
 
 
 class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
-    data class Flag(val name: String,
-                    val mnemonic: String? = null,
-                    val hasArg: Boolean = false,
-                    val argOptional: Boolean = false
+    data class Flag(
+        val name: String,
+        val mnemonic: String? = null,
+        val hasArg: Boolean = false,
+        val argOptional: Boolean = false
     ) {
         val full: String
             get() = "--$name"
@@ -43,8 +45,8 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     override fun doAction(args: List<String>): Int {
         if (args.size < 2) {
             printHelp()
-            out.println()
-            out.println("Please specify a file to read")
+            println()
+            println("Please specify a file to read")
             return -1
         } else if (helpFlag.containedIn(args)) {
             printHelp()
@@ -66,13 +68,13 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                         proteinFactor = it.second
                     }
                 } catch (e: NumberFormatException) {
-                    err.println("I:C ratio and protein factor in ${insulinFlag.full} argument " +
+                    printlnErr("I:C ratio and protein factor in ${insulinFlag.full} argument " +
                             "must be numeric and separated by a colon with no space")
                     return 1
                 }
             }
             is ArgParsing.Result.ValNotFound -> {
-                err.println("${insulinFlag.full} requires an argument")
+                printlnErr("${insulinFlag.full} requires an argument")
                 return 1
             }
             else -> {
@@ -89,26 +91,26 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             FileReader(filename).use { meals = fileParser.parseFile(ds, it) }
         } catch (e1: IOException) {
-            err.println("IO exception occurred: " + e1.message)
+            printlnErr("IO exception occurred: " + e1.message)
             return 1
         } catch (e2: SQLException) {
-            err.println("SQL exception occurred: " + e2.message)
+            printlnErr("SQL exception occurred: " + e2.message)
             return 1
         }
 
-        out.printMeals(meals, verbose, per100, true)
+        printMeals(meals, verbose, per100, true)
         val errors = fileParser.getErrorLines()
         if (errors.isNotEmpty()) {
-            out.println()
-            out.println("Warning: the following lines were skipped")
+            println()
+            println("Warning: the following lines were skipped")
             for ((key, value) in errors) {
-                out.println("'$key' - $value")
+                println("'$key' - $value")
             }
             return 2
         }
 
         if (icRatio != null) {
-            InsulinCmdlineUtils.printInsulin(out, Meal.sumNutrientData(meals), icRatio, proteinFactor)
+            InsulinCmdlineUtils.printInsulin(Meal.sumNutrientData(meals), icRatio, proteinFactor)
         }
 
         return 0

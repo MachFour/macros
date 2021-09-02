@@ -3,7 +3,6 @@ package com.machfour.macros.insulin
 import com.machfour.macros.insulin.InsulinCalculations.insulinForCarbs
 import com.machfour.macros.insulin.InsulinCalculations.insulinForProtein
 import com.machfour.macros.nutrients.FoodNutrientData
-import java.io.PrintStream
 
 object InsulinCmdlineUtils {
     // parses a commmand line for the given flag, then tries to parse the string following that flag
@@ -20,11 +19,11 @@ object InsulinCmdlineUtils {
     private const val unitsPrintWidth = "6"
     private val labels = listOf("Carbs", "Protein", "Total")
 
-    fun printInsulin(out: PrintStream, nd: FoodNutrientData, icRatio: Double, proteinFactor: Double?) {
-        out.println("========")
-        out.println("Insulin:")
-        out.println("========")
-        out.println()
+    fun printInsulin(nd: FoodNutrientData, icRatio: Double, proteinFactor: Double?) {
+        println("========")
+        println("Insulin:")
+        println("========")
+        println()
 
         val insulinParams = InsulinParams(icRatio, proteinFactor ?: 0.0)
 
@@ -34,12 +33,12 @@ object InsulinCmdlineUtils {
 
         val values = listOf(forCarbs, forProtein, total)
         for (i in 0 until 3) {
-            out.printf("%${labelPrintWidth}s: %${unitsPrintWidth}.2fU\n", labels[i], values[i])
+            println("%${labelPrintWidth}s: %${unitsPrintWidth}.2fU".format(labels[i], values[i]))
         }
 
-        out.println()
-        out.println("IC Ratio: $icRatio")
-        out.println("Protein factor: $proteinFactor")
+        println()
+        println("IC Ratio: $icRatio")
+        println("Protein factor: $proteinFactor")
 
     }
 }

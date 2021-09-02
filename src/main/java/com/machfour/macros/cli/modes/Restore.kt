@@ -1,14 +1,15 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.persistence.CsvRestore
 import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileReader
 import java.io.IOException
@@ -22,15 +23,15 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     override fun printHelp() {
-        out.println("Restores the database using CSV data saved using the 'export' command.")
-        out.println("Warning: this will overwrite all data in the database!")
+        println("Restores the database using CSV data saved using the 'export' command.")
+        println("Warning: this will overwrite all data in the database!")
     }
 
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
     private fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, exportDir: String, t: Table<M>) {
-        out.println("Restoring " + t.name + " table...")
+        println("Restoring " + t.name + " table...")
         val csvPath = joinPath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(ds, t, csvData, out) }
+        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(ds, t, csvData) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -61,14 +62,14 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         } catch (e: TypeCastException) {
             return handleException(e)
         }
-        out.println()
-        out.println("Database successfully restored from CSV data in $csvDir")
+        println()
+        println("Database successfully restored from CSV data in $csvDir")
         return 0
     }
 
     private fun handleException(e: Exception) : Int {
-        out.println()
-        err.println("Exception occurred (${e.javaClass}). Message: ${e.message}")
+        println()
+        printlnErr("Exception occurred (${e.javaClass}). Message: ${e.message}")
         return 1
     }
 }

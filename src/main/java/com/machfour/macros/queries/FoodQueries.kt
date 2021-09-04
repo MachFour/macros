@@ -35,7 +35,7 @@ object FoodQueries {
         db: SqlDatabase,
         keywords: List<String>,
         matchAll: Boolean = true,
-        minRelevance: Int = SearchRelevance.MIN_VISIBLE.value
+        minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value
     ): Set<Long> {
         // map will be empty if keywords is empty
         return keywords.map { foodSearch(db, it, minRelevance) }.let {
@@ -60,7 +60,7 @@ object FoodQueries {
     fun foodSearch(
         db: SqlDatabase,
         keyword: String,
-        minRelevance: Int = SearchRelevance.MIN_VISIBLE.value
+        minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value
     ): Set<Long> {
         if (keyword.isEmpty()) {
             return emptySet()

@@ -2,10 +2,12 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.formatNutrient
 import com.machfour.macros.util.formatQuantity
 import com.machfour.macros.util.formatUnicodeString
@@ -61,6 +63,8 @@ private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, 
             this += formatNutrient(
                 data = nd,
                 nutrient = nutrient,
+                displayStrings = DefaultDisplayStrings,
+                nutrientUnits = LegacyNutrientUnits,
                 width = nutrientWidth,
                 withDp = verbose
             )

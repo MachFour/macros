@@ -28,7 +28,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     val qtyUnit = unitWithAbbr(qtyUnitAbbr)
 
     init {
-        check(QUANTITY.compatibleWithUnit(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }
+        check(QUANTITY.compatibleWith(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }
     }
 
     lateinit var food: Food

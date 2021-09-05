@@ -14,10 +14,10 @@ import com.machfour.macros.units.StandardNutrientUnits
 fun formatNutrient(
     data: FoodNutrientData,
     nutrient: Nutrient,
-    displayStrings: DisplayStrings = DefaultDisplayStrings,
-    nutrientUnits: NutrientUnits = StandardNutrientUnits,
+    displayStrings: DisplayStrings,
+    nutrientUnits: NutrientUnits,
     withUnit: Boolean = false,
-    unitOverride: Boolean = false,
+    preferDataUnit: Boolean = false,
     width: Int = 0,
     unitWidth: Int = 0,
     withDp: Boolean = false,
@@ -25,13 +25,19 @@ fun formatNutrient(
     unitAlignLeft: Boolean = false,
     spaceBeforeUnit: Boolean = false
 ): String {
-    val unit = data.getUnit(nutrient, nutrientUnits, unitOverride)
-    val qty = data.amountOf(nutrient, unit = unit, defaultValue = 0.0)
+    val convertUnit = if (preferDataUnit) {
+        data.getUnit(nutrient, nutrientUnits)
+    } else {
+        nutrientUnits[nutrient]
+    }
+    
+    val displayUnit = if (withUnit) convertUnit else null
+    val qty = data.amountOf(nutrient, unit = convertUnit, defaultValue = 0.0)
 
     // TODO add asterisk to incomplete quantities
     return formatQuantity(
         qty = qty,
-        unit = if (withUnit) unit else null,
+        unit = displayUnit,
         unitStrings = displayStrings,
         width = width,
         unitWidth = unitWidth,
@@ -100,9 +106,9 @@ val defaultNutrientsToPrint = listOf(
 fun formatNutrientData(
     data: FoodNutrientData,
     displayStrings: DisplayStrings,
+    nutrientUnits: NutrientUnits,
     nutrients: Collection<Nutrient> = defaultNutrientsToPrint,
-    nutrientUnits: NutrientUnits = StandardNutrientUnits,
-    nutrientUnitsOverrideData: Boolean = false,
+    preferDataUnits: Boolean = false,
     withDp: Boolean = false,
     monoSpaceAligned: Boolean = false,
 ): String {
@@ -117,15 +123,14 @@ fun formatNutrientData(
     return buildString {
         for (n in nutrients) {
             val colName = displayStrings.getFullName(n)
-            val unit = data.getUnit(n, nutrientUnits, nutrientUnitsOverrideData)
+            val unit = if (preferDataUnits) data.getUnit(n, nutrientUnits) else nutrientUnits[n]
             val unitStr = displayStrings.getAbbr(unit)
             val value = formatNutrient(
                 data = data,
                 nutrient = n,
                 displayStrings = displayStrings,
                 nutrientUnits = nutrientUnits,
-                withUnit = false,
-                unitOverride = nutrientUnitsOverrideData,
+                preferDataUnit = preferDataUnits,
                 withDp = withDp
             )
             append(lineFormat.format(colName, value, unitStr))

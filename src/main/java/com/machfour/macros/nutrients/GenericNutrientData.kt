@@ -124,7 +124,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
     fun amountOf(n: Nutrient, unit: Unit? = null): Double? {
         return if (unit != null) {
-            require(n.compatibleWithUnit(unit)) { "Cannot convert nutrient $n to $unit" }
+            require(n.compatibleWith(unit)) { "Cannot convert nutrient $n to $unit" }
             this[n]?.convertValueTo(unit)
         } else {
             this[n]?.value
@@ -154,12 +154,8 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     }
 
 
-    fun getUnit(n: Nutrient, defaultUnits: NutrientUnits, forceDefault: Boolean = false) : Unit {
-        return if (forceDefault) {
-            defaultUnits[n]
-        } else {
-            this[n]?.unit ?: defaultUnits[n]
-        }
+    fun getUnit(n: Nutrient, defaultUnits: NutrientUnits) : Unit {
+        return this[n]?.unit ?: defaultUnits[n]
     }
 
     // hack for USDA foods

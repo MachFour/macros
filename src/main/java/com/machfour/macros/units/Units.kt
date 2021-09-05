@@ -91,7 +91,7 @@ val inbuiltUnits = listOf(
     FLUID_OUNCES,
 )
 
-private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr }.toMutableMap() }
+private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr.toMapKey }.toMutableMap() }
 
 private val idMap: MutableMap<Long, Unit> by lazy { inbuiltUnits.associateBy { it.id }.toMutableMap() }
 
@@ -128,6 +128,6 @@ fun unitWithId(id: Long): Unit {
     return requireNotNull(unitWithIdOrNull(id)) { "No unit found with id $id" }
 }
 
-fun unitsCompatibleWith(n: Nutrient): List<Unit> {
-    return idMap.values.filter { n.compatibleWithUnit(it) }
+fun unitsCompatibleWith(n: Nutrient): Set<Unit> {
+    return idMap.filterValues { n.compatibleWith(it) }.values.toSet()
 }

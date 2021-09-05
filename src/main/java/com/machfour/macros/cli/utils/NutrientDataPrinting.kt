@@ -5,6 +5,7 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.NutrientStrings
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.defaultNutrientsToPrint
 import com.machfour.macros.util.formatNutrientData
 
@@ -12,6 +13,7 @@ fun printNutrientData(foodNutrientData: FoodNutrientData, verbose: Boolean) {
     val string = formatNutrientData(
         data = foodNutrientData,
         displayStrings = DefaultDisplayStrings,
+        nutrientUnits = LegacyNutrientUnits,
         nutrients = defaultNutrientsToPrint,
         withDp = verbose,
         monoSpaceAligned = true

@@ -35,7 +35,7 @@ abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
             return value
         }
 
-        require(nutrient.compatibleWithUnit(newUnit)) { "Cannot convert $nutrient to $newUnit (incompatible types)" }
+        require(nutrient.compatibleWith(newUnit)) { "Cannot convert $nutrient to $newUnit (incompatible types)" }
 
         var conversionRatio = unit.metricEquivalent / newUnit.metricEquivalent
 

@@ -34,7 +34,7 @@ class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSourc
     private val unitFlags: Int = getData(NutrientTable.UNIT_TYPES)!!
     private val unitTypes: Set<UnitType> = UnitType.fromFlags(unitFlags)
 
-    fun compatibleWithUnit(unit: Unit) : Boolean {
+    fun compatibleWith(unit: Unit) : Boolean {
         return unit.type.matchedByFlags(unitFlags)
     }
 

@@ -16,10 +16,7 @@ import com.machfour.macros.orm.schema.FoodTable.NUTTAB_INDEX
 import com.machfour.macros.orm.schema.FoodTable.USDA_INDEX
 import com.machfour.macros.orm.schema.FoodTable.VARIETY
 import com.machfour.macros.sql.RowData
-import com.machfour.macros.units.GRAMS
-import com.machfour.macros.units.KILOJOULES
-import com.machfour.macros.units.MILLIGRAMS
-import com.machfour.macros.units.MILLILITRES
+import com.machfour.macros.units.*
 
 object ExampleFood {
     private val foodTable = Food.table
@@ -66,7 +63,7 @@ object ExampleFood {
         val f = Food.factory.construct(data, ObjectSource.IMPORT)
 
         val nutritionData = listOf(
-              FoodNutrientValue.makeComputedValue(3400.0, Nutrients.ENERGY, KILOJOULES)
+              FoodNutrientValue.makeComputedValue(1000.0, Nutrients.ENERGY, CALORIES)
             , FoodNutrientValue.makeComputedValue(40.0, Nutrients.PROTEIN, GRAMS)
             , FoodNutrientValue.makeComputedValue(20.0, Nutrients.CARBOHYDRATE, GRAMS)
             , FoodNutrientValue.makeComputedValue(90.0, Nutrients.FAT, GRAMS)

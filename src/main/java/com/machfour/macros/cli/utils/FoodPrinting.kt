@@ -4,12 +4,13 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
 import com.machfour.macros.util.DateTimeUtils
-import com.machfour.macros.util.UnicodeUtils
+import com.machfour.macros.util.displayLength
+import com.machfour.macros.util.formatUnicodeString
 import com.machfour.macros.util.stringJoin
 
 fun printFoodList(foods: Collection<Food>) {
     // work out how wide the column should be
-    val nameLength = foods.maxOf { UnicodeUtils.displayLength(it.mediumName) }
+    val nameLength = foods.maxOf { it.mediumName.displayLength() }
     val space = "        "
     val formatStr = "%-${nameLength}s${space}%s"
     // horizontal line - extra spaces are for whitespace + index name length
@@ -18,7 +19,7 @@ fun printFoodList(foods: Collection<Food>) {
     println(formatStr.format("Food name", "index name"))
     println(hline)
     for (f in foods) {
-        print(UnicodeUtils.formatString(f.mediumName, nameLength, true))
+        print(formatUnicodeString(f.mediumName, nameLength, true))
         print(space)
         println(f.indexName)
     }

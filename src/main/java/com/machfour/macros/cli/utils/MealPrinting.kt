@@ -6,9 +6,9 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
-import com.machfour.macros.util.UnicodeUtils
 import com.machfour.macros.util.formatNutrient
 import com.machfour.macros.util.formatQuantity
+import com.machfour.macros.util.formatUnicodeString
 import com.machfour.macros.util.stringJoin
 
 // printing widths
@@ -44,7 +44,7 @@ private val verboseTableCols = listOf(
 private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Boolean>, sep: String) {
     assert(row.size == widths.size && row.size == rightAlign.size)
     for (i in row.indices) {
-        print(UnicodeUtils.formatString(row[i], widths[i], !rightAlign[i]) + sep)
+        print(formatUnicodeString(row[i], widths[i], !rightAlign[i]) + sep)
     }
     println()
 }

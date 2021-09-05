@@ -23,7 +23,7 @@ import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.units.LegacyNutrientUnits
-import com.machfour.macros.util.UnicodeUtils
+import com.machfour.macros.util.displayLength
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
 import java.sql.SQLException
@@ -389,14 +389,14 @@ class FoodEditor constructor(
             return s
         } else {
             // account for wide characters - these take twice as much space
-            var wideChars = UnicodeUtils.countDoubleWidthChars(s)
+            var wideChars = s.displayLength()
             var displayLength = s.length + wideChars
             if (displayLength > width) {
                 // string has to be truncated: subtract (displayLength - width) chars
                 val maxIndex = s.length - (displayLength - width) // == width - wideChars
                 s = s.substring(0, maxIndex)
                 // recount the wide characters and display length
-                wideChars = UnicodeUtils.countDoubleWidthChars(s)
+                wideChars = s.displayLength()
                 displayLength = s.length + wideChars
             }
             assert(displayLength <= width)

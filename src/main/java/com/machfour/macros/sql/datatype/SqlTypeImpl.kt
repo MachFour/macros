@@ -1,6 +1,6 @@
 package com.machfour.macros.sql.datatype
 
-abstract class MacrosTypeImpl<J> : MacrosType<J> {
+abstract class SqlTypeImpl<J> : SqlType<J> {
     // gets the java class associated with this type
     abstract fun javaClass(): Class<J>
 

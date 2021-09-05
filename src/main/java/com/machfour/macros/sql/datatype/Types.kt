@@ -51,7 +51,7 @@ class Types {
         }
     }
 
-    open class Bool internal constructor(): MacrosTypeImpl<Boolean>() {
+    open class Bool internal constructor(): SqlTypeImpl<Boolean>() {
         companion object {
             // TODO internationalisation lol
             private val truthyStrings = setOf("true", "t", "yes", "y", "1")
@@ -122,7 +122,7 @@ class Types {
         }
     }
 
-    class Id internal constructor(): MacrosTypeImpl<Long>() {
+    class Id internal constructor(): SqlTypeImpl<Long>() {
         override fun toString(): String = "id"
 
         @Throws(TypeCastException::class)
@@ -136,7 +136,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Integer internal constructor(): MacrosTypeImpl<Int>() {
+    class Integer internal constructor(): SqlTypeImpl<Int>() {
         override fun toString(): String = "integer"
 
         @Throws(TypeCastException::class)
@@ -149,7 +149,7 @@ class Types {
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
-    class LongInteger internal constructor(): MacrosTypeImpl<Long>() {
+    class LongInteger internal constructor(): SqlTypeImpl<Long>() {
         override fun toString(): String = "long"
 
         @Throws(TypeCastException::class)
@@ -163,7 +163,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Real internal constructor(): MacrosTypeImpl<Double>() {
+    class Real internal constructor(): SqlTypeImpl<Double>() {
         override fun toString(): String = "real"
 
         @Throws(TypeCastException::class)
@@ -188,7 +188,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.REAL
     }
 
-    class Text internal constructor(): MacrosTypeImpl<String>() {
+    class Text internal constructor(): SqlTypeImpl<String>() {
         override fun toString(): String = "text"
         override fun fromNonEmptyString(data: String): String = data
         override fun fromRawNotNull(data: Any): String = data.toString()
@@ -196,7 +196,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.TEXT
     }
 
-    class Time internal constructor(): MacrosTypeImpl<Long>() {
+    class Time internal constructor(): SqlTypeImpl<Long>() {
         override fun toString(): String = "time"
 
         @Throws(TypeCastException::class)
@@ -210,7 +210,7 @@ class Types {
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
 
-    class Date internal constructor(): MacrosTypeImpl<DateStamp>() {
+    class Date internal constructor(): SqlTypeImpl<DateStamp>() {
         override fun toString(): String = "date"
 
         @Throws(TypeCastException::class)

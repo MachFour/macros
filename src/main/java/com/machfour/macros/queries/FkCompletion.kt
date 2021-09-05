@@ -51,7 +51,7 @@ object FkCompletion {
         val naturalKeyData = ArrayList<RowData<N>>(objects.size)
         for (obj in objects) {
             // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
-            assert(obj.objectSource in allowedObjectSources) { "Object is not from import, new or computed" }
+            assert(obj.source in allowedObjectSources) { "Object is not from import, new or computed" }
             assert(obj.fkNaturalKeyMap.isNotEmpty()) { "Object has no FK data maps" }
             val objectNkData = obj.getFkParentNaturalKey(fkCol)
             naturalKeyData.add(objectNkData)
@@ -69,7 +69,7 @@ object FkCompletion {
             val fkParentId: J = foreignKeyToIdMapping[fkParentNaturalKeyData]
                 ?: error("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
             newData.put(fkCol, fkParentId)
-            val newObject = obj.table.construct(newData, obj.objectSource)
+            val newObject = obj.table.construct(newData, obj.source)
             // copy over old FK data to new object
             newObject.copyFkNaturalKeyMap(obj)
             completedObjects.add(newObject)
@@ -105,7 +105,7 @@ object FkCompletion {
         return partiallyCompletedObjects.map {
             // Check everything's fine and (not yet implemented) change source to ObjectSource.IMPORT_FK_PRESENT
             assert(fkIdsPresent(it))
-            factory.construct(it.data, it.objectSource)
+            factory.construct(it.data, it.source)
         }
     }
 }

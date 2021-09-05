@@ -2,18 +2,20 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.nutrients.Nutrients
-import com.machfour.macros.units.Units
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.units.unitWithId
 
-abstract class NutrientValue<M: NutrientValue<M>> protected constructor(
+abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
     data: RowData<M>,
     objectSource: ObjectSource,
 
     private val nutrientIdCol: Column.Fk<M, Long, Nutrient>,
-    /* private val */ unitIdCol: Column.Fk<M, Long, Unit>,
-    /* private val */ valueCol: Column<M, Double>,
+    /* private val */
+    unitIdCol: Column.Fk<M, Long, Unit>,
+    /* private val */
+    valueCol: Column<M, Double>,
     private val constraintSpecCol: Column<M, Int>,
 ) : MacrosEntityImpl<M>(data, objectSource) {
 
@@ -22,13 +24,13 @@ abstract class NutrientValue<M: NutrientValue<M>> protected constructor(
         get() = getData(nutrientIdCol)!!
 
     val value: Double = getData(valueCol)!!
-    val unit: Unit = Units.fromId(getData(unitIdCol)!!)
+    val unit: Unit = unitWithId(getData(unitIdCol)!!)
     val nutrient: Nutrient = Nutrients.fromId(nutrientId)
 
     // Converts this value into the given unit, if possible.
     // Density is only used when converting quantity (usually in the context of a FoodNutrientValue)
     // An exception is thrown if the conversion is not possible
-    open fun convertValueTo(newUnit: Unit, density: Double? = null) : Double {
+    open fun convertValueTo(newUnit: Unit, density: Double? = null): Double {
         if (unit == newUnit) {
             return value
         }

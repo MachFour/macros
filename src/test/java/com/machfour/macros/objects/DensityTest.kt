@@ -6,7 +6,8 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.units.Units
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.MILLILITRES
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -47,8 +48,8 @@ class DensityTest {
         val density = chickpeaFlour.density
         Assertions.assertNotNull(density)
         requireNotNull(density)
-        val millilitresNd = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale(100 / density)
-        val backConverted = millilitresNd.withQuantityUnit(Units.GRAMS, density).rescale100()
+        val millilitresNd = chickpeaNd.withQuantityUnit(MILLILITRES, density).rescale(100 / density)
+        val backConverted = millilitresNd.withQuantityUnit(GRAMS, density).rescale100()
         val carbs = Nutrients.CARBOHYDRATE
         println("Default quantity: " + chickpeaNd.quantityObj)
         println("mls quantity: " + millilitresNd.quantityObj)
@@ -62,10 +63,10 @@ class DensityTest {
         val density = chickpeaFlour.density
         Assertions.assertNotNull(density)
         requireNotNull(density)
-        val chickPea100mL = chickpeaNd.withQuantityUnit(Units.MILLILITRES, density).rescale100()
-        val water100mL = waterNd.withQuantityUnit(Units.MILLILITRES, 1.0).rescale100()
+        val chickPea100mL = chickpeaNd.withQuantityUnit(MILLILITRES, density).rescale100()
+        val water100mL = waterNd.withQuantityUnit(MILLILITRES, 1.0).rescale100()
         val combined = FoodNutrientData.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
-        Assertions.assertEquals(Units.GRAMS, combined.quantityObj.unit)
+        Assertions.assertEquals(GRAMS, combined.quantityObj.unit)
         Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)
         Assertions.assertTrue(combined.hasCompleteData(Nutrients.QUANTITY))
     }

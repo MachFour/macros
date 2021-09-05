@@ -2,7 +2,7 @@ package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlUtils
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column
@@ -10,7 +10,7 @@ import com.machfour.macros.sql.datatype.Types
 class SqlWhereExpr<M, J> private constructor(
     private val whereClause: String = "",
     private val whereColumnExpr: ColumnExpr<M, J>? = null,
-    private val whereColumnType: MacrosType<J>? = null,
+    private val whereColumnType: SqlType<J>? = null,
     private val whereValues: Collection<J>? = null,
     val isIterated: Boolean = false,
     private var suffix: String = ""
@@ -92,7 +92,7 @@ class SqlWhereExpr<M, J> private constructor(
         get() = numArgs > 0
 
     // for Android
-    val bindArgumentType: MacrosType<J>?
+    val bindArgumentType: SqlType<J>?
         get() = whereColumnType
 
 }

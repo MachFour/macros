@@ -20,7 +20,7 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.units.LegacyNutrientUnits
-import com.machfour.macros.units.Units
+import com.machfour.macros.units.unitWithAbbr
 import com.machfour.macros.util.Pair
 import com.machfour.macros.util.javaTrim
 import com.machfour.macros.validation.SchemaViolation
@@ -69,7 +69,7 @@ object CsvImport {
                 Nutrients.ENERGY -> csvRow[ENERGY_UNIT_NAME]
                 else -> null // default unit
             }
-            val unit = unitString?.let { Units.fromAbbreviation(it) } ?: LegacyNutrientUnits[nutrient]
+            val unit = unitString?.let { unitWithAbbr(it) } ?: LegacyNutrientUnits[nutrient]
 
             val nutrientValueData = RowData(FoodNutrientValue.table).apply {
                 // TODO parse constraints

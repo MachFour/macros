@@ -5,9 +5,10 @@ package com.machfour.macros.nutrients
 import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.LegacyNutrientUnits
+import com.machfour.macros.units.NutrientUnits
 import com.machfour.macros.units.UnitType
-import com.machfour.macros.units.Units
 
 // class storing nutrition data for a food or meal
 
@@ -17,7 +18,7 @@ class FoodNutrientData(
     companion object {
         // lazy because otherwise having it here messes up static initialisation
         val dummyQuantity by lazy {
-            FoodNutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, Units.GRAMS)
+            FoodNutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, GRAMS)
         }
 
         // Sums each nutrition component
@@ -35,7 +36,7 @@ class FoodNutrientData(
                 val qtyUnit = qtyObject.unit
                 val quantity = when (qtyUnit.type) {
                     UnitType.MASS -> {
-                        qtyObject.convertValueTo(Units.GRAMS)
+                        qtyObject.convertValueTo(GRAMS)
                     }
                     UnitType.VOLUME -> {
                         val density = when (densities != null) {
@@ -45,7 +46,7 @@ class FoodNutrientData(
                                 1.0
                             }
                         }
-                        qtyObject.convertValueTo(Units.GRAMS, density)
+                        qtyObject.convertValueTo(GRAMS, density)
                     }
                     else -> {
                         assert(false) { "Invalid unit type for quantity value object $qtyObject" }
@@ -57,7 +58,11 @@ class FoodNutrientData(
                 //unnormalisedDensity += density * quantity
             }
 
-            sumData.quantityObj = FoodNutrientValue.makeComputedValue(sumQuantity, Nutrients.QUANTITY, Units.GRAMS)
+            sumData.quantityObj = FoodNutrientValue.makeComputedValue(
+                sumQuantity,
+                Nutrients.QUANTITY,
+                GRAMS
+            )
             sumData.markCompleteData(Nutrients.QUANTITY, !densityGuessed)
 
             for (n in Nutrients.nutrientsExceptQuantity) {
@@ -184,15 +189,19 @@ class FoodNutrientData(
         }
     }
 
-    fun withDefaultUnits(includingQuantity: Boolean = false, density: Double? = null) : FoodNutrientData {
+    fun withDefaultUnits(
+        defaultUnits: NutrientUnits = LegacyNutrientUnits,
+        includingQuantity: Boolean = false,
+        density: Double? = null
+    ) : FoodNutrientData {
         val convertedData = if (includingQuantity) {
-            withQuantityUnit(LegacyNutrientUnits[Nutrients.QUANTITY], density, false)
+            withQuantityUnit(defaultUnits[Nutrients.QUANTITY], density, false)
         } else {
             copy()
         }
         for (nv in nutrientValuesExcludingQuantity) {
             val n = nv.nutrient
-            convertedData[n] = nv.convert(LegacyNutrientUnits[n])
+            convertedData[n] = nv.convert(defaultUnits[n])
             convertedData.markCompleteData(n, hasCompleteData(n))
         }
         return convertedData

@@ -1,9 +1,9 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
-import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodPortionTable
@@ -62,7 +62,7 @@ object WriteQueries {
     // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> saveObject(ds: SqlDatabase, o: M): Int {
-        return saveObjects(ds, listOf(o), o.objectSource)
+        return saveObjects(ds, listOf(o), o.source)
     }
 
     @Throws(SQLException::class)
@@ -94,7 +94,7 @@ object WriteQueries {
      */
     @Throws(SQLException::class)
     fun forgetFood(db: SqlDatabase, f: Food) {
-        require(f.objectSource === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
+        require(f.source === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
         // delete nutrition data, foodQuantities, servings, then food
 
         // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities

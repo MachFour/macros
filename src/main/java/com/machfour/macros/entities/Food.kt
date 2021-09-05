@@ -5,9 +5,7 @@ package com.machfour.macros.entities
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.PortionMeasurement
-import com.machfour.macros.units.UnitType
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.units.Units
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
@@ -15,6 +13,9 @@ import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.MILLILITRES
+import com.machfour.macros.units.UnitType
 
 open class Food internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) :
         MacrosEntityImpl<Food>(dataMap, objectSource) {
@@ -171,9 +172,9 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
                 // allow conversion if density is given
                 if (density != null) {
                     if (naturalUnit.type === UnitType.VOLUME) {
-                        add(Units.GRAMS)
+                        add(GRAMS)
                     } else {
-                        add(Units.MILLILITRES)
+                        add(MILLILITRES)
                     }
                 }
             }

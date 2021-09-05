@@ -67,7 +67,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 1
         }
         requireNotNull(toEdit) { "Could not re-retrieve meal with id given by processed MealSpec" }
-        require(toEdit.objectSource === ObjectSource.DATABASE) { "Not editing an object from the database" }
+        require(toEdit.source === ObjectSource.DATABASE) { "Not editing an object from the database" }
 
         while (true) {
             // TODO reload meal

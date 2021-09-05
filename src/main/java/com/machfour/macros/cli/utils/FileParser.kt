@@ -5,12 +5,12 @@ import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.units.Units
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.units.unitWithAbbrOrNull
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
@@ -189,7 +189,7 @@ class FileParser {
                         }
 
                         val unitString = quantityMatch.groupValues[2]
-                        val matchUnit = Units.fromAbbreviationOrNull(unitString)
+                        val matchUnit = unitWithAbbrOrNull(unitString)
                         when {
                             // default unit?
                             unitString.isEmpty() -> unit = null

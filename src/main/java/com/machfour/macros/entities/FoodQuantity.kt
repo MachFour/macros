@@ -1,14 +1,14 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.units.Units
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.units.unitWithAbbr
 import com.machfour.macros.util.toRoundedString
 
-abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
+abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
     data: RowData<M>,
     objectSource: ObjectSource,
     private val foodIdCol: Column.Fk<M, Long, Food>,
@@ -17,8 +17,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     /* private val */ quantityUnitCol: Column<M, String>,
     private val notesCol: Column<M, String>,
     private val maxNutrientVersionCol: Column<M, Int>
-)
-    : MacrosEntityImpl<M>(data, objectSource) {
+) : MacrosEntityImpl<M>(data, objectSource) {
 
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.
@@ -28,7 +27,7 @@ abstract class FoodQuantity<M: FoodQuantity<M>> protected constructor(
     lateinit var nutrientData: FoodNutrientData
         private set
 
-    val qtyUnit = Units.fromAbbreviation(data[quantityUnitCol]!!)
+    val qtyUnit = unitWithAbbr(data[quantityUnitCol]!!)
 
     // this is the only thing that may remain null after all initialisation is complete
     var serving: Serving? = null

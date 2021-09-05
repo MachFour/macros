@@ -10,7 +10,7 @@ import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.sql.RowData
-import com.machfour.macros.units.Units
+import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -64,10 +64,9 @@ internal class CacheTest {
                 put(FoodPortionTable.FOOD_ID, 1L)
                 put(FoodPortionTable.MEAL_ID, 1L)
                 put(FoodPortionTable.QUANTITY, 100.0)
-                put(FoodPortionTable.QUANTITY_UNIT, Units.GRAMS.abbr)
+                put(FoodPortionTable.QUANTITY_UNIT, GRAMS.abbr)
                 put(FoodPortionTable.NOTES, "food portion notes")
                 testFoodPortion = FoodPortion.factory.construct(this, ObjectSource.IMPORT)
-
             }
 
             db = LinuxDatabase.getInstance(DB_LOCATION)

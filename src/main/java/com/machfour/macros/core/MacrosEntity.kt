@@ -29,7 +29,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
 
     val createTime: Long
     val modifyTime: Long
-    val objectSource: ObjectSource
+    val source: ObjectSource
 
     // Used to get data by column objects
     fun <J> getData(col: Column<M, J>): J?

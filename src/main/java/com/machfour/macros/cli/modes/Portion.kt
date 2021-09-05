@@ -25,7 +25,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         @Throws(SQLException::class)
         private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
             for (fp in meal.getFoodPortions()) {
-                if (fp.objectSource != ObjectSource.DATABASE) {
+                if (fp.source != ObjectSource.DATABASE) {
                     WriteQueries.saveObject(ds, fp)
                 }
             }

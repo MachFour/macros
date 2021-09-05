@@ -2,19 +2,19 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.PortionMeasurement
-import com.machfour.macros.units.UnitType
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.UnitTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.units.UnitType
 
 /*
  * Units for measuring quantities of food (only). Not for nutrition measurements.
  */
-class Unit internal constructor(data: RowData<Unit>, objectSource: ObjectSource)
-    : MacrosEntityImpl<Unit>(data, objectSource), PortionMeasurement {
+class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
+    : MacrosEntityImpl<Unit>(data, source), PortionMeasurement {
     companion object {
         // factory before table
         val factory : Factory<Unit>

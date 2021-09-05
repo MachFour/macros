@@ -1,7 +1,7 @@
 package com.machfour.macros.sql
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
 import com.machfour.macros.sql.generator.Conjuction
@@ -18,7 +18,7 @@ object SqlUtils {
 
     // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
     // needs to be entered as DATE('date_string'), so that logic is implemented here
-    private fun getSqlPlaceholder(columnType: MacrosType<*>): String {
+    private fun getSqlPlaceholder(columnType: SqlType<*>): String {
         // for now, DateStamp is the only special one
         return when (columnType) {
             // need the space here in order for the JDBC binding code to work properly

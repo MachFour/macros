@@ -14,7 +14,7 @@ import java.time.Instant
  */
 abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     final override val data: RowData<M>,
-    final override val objectSource: ObjectSource
+    final override val source: ObjectSource
 ) : MacrosEntity<M> {
 
 
@@ -56,7 +56,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     // ensures that the presence of the ID is consistent with the semantics of the objectSource
     // see ObjectSource class for more documentation
     private fun checkObjectSource() {
-        when (objectSource) {
+        when (source) {
             ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED -> {
                 assert(!hasId) { "Object should not have an ID" }
             }
@@ -139,7 +139,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     }
 
     override fun toString(): String {
-        return "${table.name} id=${id}, objSrc=${objectSource}, data=${data}"
+        return "${table.name} id=${id}, objSrc=${source}, data=${data}"
     }
 
     // this also works for import (without IDs) because both columns are NO_ID

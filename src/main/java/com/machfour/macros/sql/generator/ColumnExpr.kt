@@ -1,7 +1,7 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 
 /*
  * Represents a generalised column expression, which may be either a column itself,
@@ -14,5 +14,5 @@ import com.machfour.macros.sql.datatype.MacrosType
 interface ColumnExpr<M, J> {
     val sql: String
     val table: Table<M>
-    val type: MacrosType<J>
+    val type: SqlType<J>
 }

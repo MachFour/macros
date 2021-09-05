@@ -3,9 +3,10 @@ package com.machfour.macros.nutrients
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.NutrientValue
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.KILOJOULES
 import com.machfour.macros.units.NutrientUnits
 import com.machfour.macros.units.UnitType
-import com.machfour.macros.units.Units
 
 // class storing a set of nutrient values for any purpose.
 // It could be for a food or meal, or for a nutrition goal
@@ -193,12 +194,13 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
 
     // total energy predicted by macronutrient contents, rather than actual energy value
-    private fun calculateMacroEnergy(unit: Unit = Units.KILOJOULES): Double {
+    private fun calculateMacroEnergy(unit: Unit = KILOJOULES): Double {
         require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
         // this is also ensured by database
         assert(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
 
-        val totalEnergy = totalEnergyNutrients.fold(0.0) { s, n -> s + energyComponentsMapKj.getValue(n) }
+        val totalEnergy =
+            totalEnergyNutrients.fold(0.0) { s, n -> s + energyComponentsMapKj.getValue(n) }
         // have to divide by kJ/calories ratio if desired unit is calories
         return totalEnergy / unit.metricEquivalent
     }
@@ -208,7 +210,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         // preserve iteration order
         val componentMap = LinkedHashMap<Nutrient, Double>()
 
-        val g = Units.GRAMS
+        val g = GRAMS
         // energy from...
         val satFat = amountOf(Nutrients.SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
         val monoFat = amountOf(Nutrients.MONOUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT

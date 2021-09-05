@@ -3,7 +3,7 @@ package com.machfour.macros.orm.schema
 import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.ColumnImpl
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 
 /**
@@ -17,7 +17,7 @@ internal const val CREATE_TIME_COLUMN_NAME = "create_time"
 internal const val MODIFY_TIME_COLUMN_NAME = "modify_time"
 internal const val NOTES_COLUMN_NAME = "notes"
 
-internal fun <J: Any> builder(name: String, type: MacrosType<J>): ColumnImpl.Builder<J> {
+internal fun <J: Any> builder(name: String, type: SqlType<J>): ColumnImpl.Builder<J> {
     return ColumnImpl.Builder(name, type)
 }
 

@@ -10,7 +10,9 @@ import com.machfour.macros.orm.schema.FoodPortionTable.MEAL_ID
 import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY
 import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.sample.ExampleFood
-import com.machfour.macros.units.Units
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.MILLIGRAMS
+import com.machfour.macros.units.MILLILITRES
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -28,12 +30,12 @@ class NutrientDataTest {
             fpBuilder.setField(FOOD_ID, f.id)
             fpBuilder.setField(MEAL_ID, MacrosEntity.NO_ID)
             fpBuilder.setField(QUANTITY, 100.0)
-            fpBuilder.setField(QUANTITY_UNIT, Units.GRAMS.abbr)
+            fpBuilder.setField(QUANTITY_UNIT, GRAMS.abbr)
             val fp1 = fpBuilder.build()
-            fpBuilder.setField(QUANTITY_UNIT, Units.MILLILITRES.abbr)
+            fpBuilder.setField(QUANTITY_UNIT, MILLILITRES.abbr)
             val fp2 = fpBuilder.build()
             fpBuilder.setField(QUANTITY, 100000.0)
-            fpBuilder.setField(QUANTITY_UNIT, Units.MILLIGRAMS.abbr)
+            fpBuilder.setField(QUANTITY_UNIT, MILLIGRAMS.abbr)
             val fp3 = fpBuilder.build()
 
 

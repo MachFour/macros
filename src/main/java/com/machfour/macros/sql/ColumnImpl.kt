@@ -1,12 +1,12 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 
 import kotlin.properties.Delegates
 
 internal open class ColumnImpl<M, J> private constructor(
     override val sqlName: String,
-    override val type: MacrosType<J>,
+    override val type: SqlType<J>,
     private val defaultValue: () -> J?,
     override val isUserEditable: Boolean,
     override val isNullable: Boolean,
@@ -27,7 +27,7 @@ internal open class ColumnImpl<M, J> private constructor(
     }
 
     internal class Fk<M, J, N> internal constructor(
-        name: String, type: MacrosType<J>,
+        name: String, type: SqlType<J>,
         defaultValue: () -> J?,
         editable: Boolean,
         nullable: Boolean,
@@ -42,7 +42,7 @@ internal open class ColumnImpl<M, J> private constructor(
         }
     }
 
-    internal class Builder<J>(private val name: String, private val type: MacrosType<J>): Column.Builder<J> {
+    internal class Builder<J>(private val name: String, private val type: SqlType<J>): Column.Builder<J> {
         private var editable: Boolean = true
         private var nullable: Boolean = true
         private var inSecondaryKey: Boolean = false
@@ -76,19 +76,19 @@ internal open class ColumnImpl<M, J> private constructor(
         }
 
         // sets index
-        override fun <M> buildFor(columnList: MutableList<Column<M, *>>): ColumnImpl<M, J> {
+        override fun <M> buildFor(tableColumns: MutableList<Column<M, *>>): ColumnImpl<M, J> {
             val builtCol: ColumnImpl<M, J> = build()
-            addToListAndSetIndex(builtCol, columnList)
+            addToListAndSetIndex(builtCol, tableColumns)
             return builtCol
         }
 
         override fun <M, N> buildFkFor(
             parentTable: Table<N>,
             parentCol: Column<N, J>,
-            columnList: MutableList<Column<M, *>>
+            tableColumns: MutableList<Column<M, *>>
         ): Fk<M, J, N> {
             val builtCol = buildFk<M, N>(parentCol, parentTable)
-            addToListAndSetIndex(builtCol, columnList)
+            addToListAndSetIndex(builtCol, tableColumns)
             return builtCol
         }
     }

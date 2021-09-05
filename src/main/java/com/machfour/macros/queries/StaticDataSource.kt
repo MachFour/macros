@@ -148,7 +148,7 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
     override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
         val foodIdCol = FoodNutrientValueTable.FOOD_ID
         try {
-            val (insertNutrients, updateNutrients) = nutrients.partition { it.objectSource == ObjectSource.USER_NEW }
+            val (insertNutrients, updateNutrients) = nutrients.partition { it.source == ObjectSource.USER_NEW }
 
             // link the new FoodNutrientValues to the food
             for (nv in insertNutrients) {

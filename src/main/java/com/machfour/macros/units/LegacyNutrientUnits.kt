@@ -8,9 +8,10 @@ import com.machfour.macros.nutrients.Nutrients
 // Keeps legacy behaviour (default energy unit is calories)
 object LegacyNutrientUnits: NutrientUnits {
     override operator fun get(n: Nutrient) : Unit {
-        return when(n) {
-            Nutrients.ENERGY -> Units.CALORIES
-            else -> standardUnitMap[n] ?: throw IllegalArgumentException("Nutrient $n has no default unit")
+        return when (n) {
+            Nutrients.ENERGY -> CALORIES
+            else -> standardUnitMap[n]
+                ?: throw IllegalArgumentException("Nutrient $n has no default unit")
         }
     }
 }

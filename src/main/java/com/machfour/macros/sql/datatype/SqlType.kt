@@ -1,6 +1,6 @@
 package com.machfour.macros.sql.datatype
 
-interface MacrosType<J> {
+interface SqlType<J> {
     // These methods perform type-specific conversion is necessary
     // if raw is null then null will be returned
     @Throws(TypeCastException::class)
@@ -35,6 +35,6 @@ interface MacrosType<J> {
     // A dumb Java cast from the given object to the Java class associated with this Type
     fun cast(o: Any?): J?
 
-    // used in Android database code
+    // may not be needed anymore - was used in Android DB code
     fun sqliteType(): SqliteType
 }

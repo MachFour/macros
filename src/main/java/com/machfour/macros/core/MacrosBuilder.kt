@@ -217,7 +217,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     private fun newObjectSource(): ObjectSource {
         val editSource = when (val it = editInstance) {
             null -> ObjectSource.USER_NEW
-            else -> it.objectSource
+            else -> it.source
         }
         return when (editSource) {
             // database objects are edited

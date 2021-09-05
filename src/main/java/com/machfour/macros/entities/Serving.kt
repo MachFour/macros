@@ -4,15 +4,15 @@ import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.PortionMeasurement
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrients.Nutrients.QUANTITY
-import com.machfour.macros.units.Units
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.units.unitWithAbbr
 
-class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectSource)
-    : MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
+class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectSource) :
+    MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
 
     companion object {
         // factory has to come before table if it's an instance variable
@@ -25,7 +25,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     val qtyUnitAbbr: String
         get() = getData(ServingTable.QUANTITY_UNIT)!!
 
-    val qtyUnit = Units.fromAbbreviation(qtyUnitAbbr)
+    val qtyUnit = unitWithAbbr(qtyUnitAbbr)
 
     init {
         check(QUANTITY.compatibleWithUnit(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }

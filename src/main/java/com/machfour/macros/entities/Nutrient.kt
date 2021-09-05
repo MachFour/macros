@@ -1,16 +1,16 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.units.UnitType
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.orm.Factory
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.NutrientTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.units.UnitType
 
-class Nutrient internal constructor(dataMap: RowData<Nutrient>, objectSource: ObjectSource)
-    : MacrosEntityImpl<Nutrient>(dataMap, objectSource) {
+class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSource)
+    : MacrosEntityImpl<Nutrient>(data, source) {
 
     companion object {
         // Factory has to be initialised first before table is referenced.

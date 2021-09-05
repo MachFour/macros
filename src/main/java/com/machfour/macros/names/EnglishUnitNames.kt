@@ -1,7 +1,7 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.units.Units
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.units.*
 
 object EnglishUnitNames: UnitStrings {
 
@@ -9,12 +9,12 @@ object EnglishUnitNames: UnitStrings {
     override fun getAbbr(unit: Unit): String = unit.abbr
     
     override val availableUnits: List<Unit> = listOf(
-        Units.GRAMS,
-        Units.MILLIGRAMS,
-        Units.MILLILITRES,
-        Units.KILOJOULES,
-        Units.CALORIES,
-        Units.OUNCES,
-        Units.FLUID_OUNCES,
+        GRAMS,
+        MILLIGRAMS,
+        MILLILITRES,
+        KILOJOULES,
+        CALORIES,
+        OUNCES,
+        FLUID_OUNCES,
     )
 }

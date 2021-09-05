@@ -17,7 +17,7 @@ fun formatNutrient(
     displayStrings: DisplayStrings = DefaultDisplayStrings,
     nutrientUnits: NutrientUnits = StandardNutrientUnits,
     withUnit: Boolean = false,
-    nutrientUnitsOverrideData: Boolean = false,
+    unitOverride: Boolean = false,
     width: Int = 0,
     unitWidth: Int = 0,
     withDp: Boolean = false,
@@ -25,7 +25,7 @@ fun formatNutrient(
     unitAlignLeft: Boolean = false,
     spaceBeforeUnit: Boolean = false
 ): String {
-    val unit = data.getUnit(nutrient, nutrientUnits, nutrientUnitsOverrideData)
+    val unit = data.getUnit(nutrient, nutrientUnits, unitOverride)
     val qty = data.amountOf(nutrient, unit = unit, defaultValue = 0.0)
 
     // TODO add asterisk to incomplete quantities
@@ -125,7 +125,7 @@ fun formatNutrientData(
                 displayStrings = displayStrings,
                 nutrientUnits = nutrientUnits,
                 withUnit = false,
-                nutrientUnitsOverrideData = nutrientUnitsOverrideData,
+                unitOverride = nutrientUnitsOverrideData,
                 withDp = withDp
             )
             append(lineFormat.format(colName, value, unitStr))

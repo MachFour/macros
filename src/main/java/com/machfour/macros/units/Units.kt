@@ -1,81 +1,133 @@
 package com.machfour.macros.units
 
+import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.UnitTable
 import com.machfour.macros.sql.RowData
 
-// Class of inbuilt quantity units
+private fun makeInbuiltUnit(id: Int, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
+    return RowData(Unit.table).run {
+        put(UnitTable.ID, id.toLong())
+        put(UnitTable.NAME, name)
+        put(UnitTable.ABBREVIATION, abbr)
+        put(UnitTable.METRIC_EQUIVALENT, metricEquivalent)
+        put(UnitTable.TYPE_ID, unitType.id)
+        put(UnitTable.INBUILT, true)
+        Unit.factory.construct(this, ObjectSource.INBUILT)
+    }
+}
+
 // These definitions need to be outside the Unit class itself,
 // to avoid static initialisation problems between the Unit and UnitTable classes
-object Units {
-    val GRAMS: Unit
-    val MILLIGRAMS: Unit
-    val MILLILITRES: Unit
-    val LITRES: Unit
-    val KILOJOULES: Unit
-    val CALORIES: Unit
-    val OUNCES: Unit
-    val FLUID_OUNCES: Unit
 
-    private val abbrMap: MutableMap<String, Unit> = LinkedHashMap(8, 1f)
-    private val idMap: MutableMap<Long, Unit> = LinkedHashMap(8, 1f)
+val GRAMS = makeInbuiltUnit(
+    id = 0,
+    name = "grams",
+    abbr = "g",
+    metricEquivalent = 1.0,
+    unitType = UnitType.MASS
+)
+val MILLIGRAMS = makeInbuiltUnit(
+    id = 1,
+    name = "milligrams",
+    abbr = "mg",
+    metricEquivalent = 0.001,
+    unitType = UnitType.MASS
+)
+val MILLILITRES = makeInbuiltUnit(
+    id = 2,
+    name = "milligrams",
+    abbr = "ml",
+    metricEquivalent = 1.0,
+    unitType = UnitType.VOLUME
+)
+val LITRES = makeInbuiltUnit(
+    id = 3,
+    name = "litres",
+    abbr = "L",
+    metricEquivalent = 1000.0,
+    unitType = UnitType.VOLUME
+)
+val KILOJOULES = makeInbuiltUnit(
+    id = 4,
+    name = "kilojoules",
+    abbr = "kJ",
+    metricEquivalent = 1.0,
+    unitType = UnitType.ENERGY
+)
+val CALORIES = makeInbuiltUnit(
+    id = 5,
+    name = "calories",
+    abbr = "kcal",
+    metricEquivalent = 4.186,
+    unitType = UnitType.ENERGY
+)
+// International avoirdupois ounce
+val OUNCES = makeInbuiltUnit(
+    id = 6,
+    name = "ounces",
+    abbr = "oz",
+    metricEquivalent = 28.349523125,
+    unitType = UnitType.MASS
+)
+// US fluid ounce
+val FLUID_OUNCES = makeInbuiltUnit(
+    id = 7,
+    name = "fluid ounces",
+    abbr = "fl oz",
+    metricEquivalent = 30.0,
+    unitType = UnitType.VOLUME
+)
 
-    private var nextIndex = 0L
+val inbuiltUnits = listOf(
+    GRAMS,
+    MILLIGRAMS,
+    MILLILITRES,
+    LITRES,
+    KILOJOULES,
+    CALORIES,
+    OUNCES,
+    FLUID_OUNCES,
+)
 
-    // this is lowercase so that CSV units can be lower case
-    private val String.toMapKey: String
-        get() = this.lowercase()
+private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr }.toMutableMap() }
 
-    private fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType, inbuilt: Boolean): Unit {
-        val id = nextIndex++
-        val data = RowData(Unit.table).apply {
-            put(UnitTable.ID, id)
-            put(UnitTable.NAME, name)
-            put(UnitTable.ABBREVIATION, abbr)
-            put(UnitTable.METRIC_EQUIVALENT, metricEquivalent)
-            put(UnitTable.TYPE_ID, unitType.id)
-            put(UnitTable.INBUILT, inbuilt)
-        }
+private val idMap: MutableMap<Long, Unit> by lazy { inbuiltUnits.associateBy { it.id }.toMutableMap() }
 
-        return Unit.factory.construct(data, ObjectSource.INBUILT).also {
-            idMap[id] = it
-            val abbrKey = abbr.toMapKey
-            require (!abbrMap.containsKey(abbrKey)) {
-                "Cannot register unit $name - abbr $abbrKey is already used by ${abbrMap[abbrKey]}"
-            }
-            abbrMap[abbrKey] = it
-        }
+// this is lowercase so that CSV units can be lower case
+private val String.toMapKey: String
+    get() = this.lowercase()
+
+fun registerUnit(unit: Unit) {
+    val id = unit.id
+    val abbrKey = unit.abbr.toMapKey
+
+    require (!idMap.containsKey(id)) {
+        "Cannot register unit ${unit.name} - id $id is already used by ${idMap[id]}"
+    }
+    require (!abbrMap.containsKey(abbrKey)) {
+        "Cannot register unit ${unit.name} - abbr $abbrKey is already used by ${abbrMap[abbrKey]}"
     }
 
-    private fun registerInbuiltUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
-        return registerUnit(name, abbr, metricEquivalent, unitType, true)
-    }
+    idMap[id] = unit
+    abbrMap[abbrKey] = unit
+}
 
-    fun registerUnit(name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
-        return registerUnit(name, abbr, metricEquivalent, unitType, false)
-    }
+fun unitWithAbbrOrNull(abbr: String) = abbrMap[abbr.toMapKey]
 
-    // TODO make explicit initialisation function
-    init {
-        // XXX ORDER IS SENSITIVE
-        GRAMS = registerInbuiltUnit("grams", "g", 1.0, UnitType.MASS)
-        MILLIGRAMS = registerInbuiltUnit("milligrams", "mg", 0.001, UnitType.MASS)
-        MILLILITRES = registerInbuiltUnit("milligrams", "ml", 1.0, UnitType.VOLUME)
-        LITRES = registerInbuiltUnit("litres", "L", 1000.0, UnitType.VOLUME)
-        KILOJOULES = registerInbuiltUnit("kilojoules", "kJ", 1.0, UnitType.ENERGY)
-        CALORIES = registerInbuiltUnit("calories", "kcal", 4.186, UnitType.ENERGY)
-        OUNCES = registerInbuiltUnit("ounces", "oz", 28.349523125, UnitType.MASS)
-        FLUID_OUNCES = registerInbuiltUnit("fluid ounces", "fl oz", 30.0, UnitType.VOLUME)
-    }
+@Suppress("private")
+fun unitWithIdOrNull(id: Long) = idMap[id]
 
-    // case insensitive
-    fun fromAbbreviationOrNull(abbr: String): Unit? = abbrMap[abbr.toMapKey]
+// case insensitive
+fun unitWithAbbr(abbr: String): Unit {
+    return requireNotNull(unitWithAbbrOrNull(abbr)) { "No unit found with abbreviation $abbr" }
+}
 
-    // case insensitive
-    fun fromAbbreviation(abbr: String): Unit = abbrMap.getValue(abbr.toMapKey)
+fun unitWithId(id: Long): Unit {
+    return requireNotNull(unitWithIdOrNull(id)) { "No unit found with id $id" }
+}
 
-    fun fromIdOrNull(id: Long): Unit? = idMap[id]
-
-    fun fromId(id: Long): Unit = idMap.getValue(id)
+fun unitsCompatibleWith(n: Nutrient): List<Unit> {
+    return idMap.values.filter { n.compatibleWithUnit(it) }
 }

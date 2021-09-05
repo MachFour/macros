@@ -1,6 +1,6 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.sql.datatype.MacrosType
+import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.generator.ColumnExpr
 
 /**
@@ -19,7 +19,7 @@ interface Column<M, J> : ColumnExpr<M, J> {
     val defaultData: J?
 
     // overriden ColumnExpr fields
-    override val type: MacrosType<J>
+    override val type: SqlType<J>
     override val table: Table<M>
     override val sql: String
         get() = sqlName
@@ -54,12 +54,12 @@ interface Column<M, J> : ColumnExpr<M, J> {
 
         fun default(getValue: () -> J?): Builder<J>
 
-        fun <M> buildFor(columnList: MutableList<Column<M, *>>): Column<M, J>
+        fun <M> buildFor(tableColumns: MutableList<Column<M, *>>): Column<M, J>
 
         fun <M, N> buildFkFor(
             parentTable: Table<N>,
             parentCol: Column<N, J>,
-            columnList: MutableList<Column<M, *>>
+            tableColumns: MutableList<Column<M, *>>
         ): Fk<M, J, N>
     }
 }

@@ -74,12 +74,12 @@ class FoodNutrientValue internal constructor(
     }
 
     // if the food associated with this NutrientValue has a density, it will be used instead of the given one
-    fun convert(newUnit: Unit, densityIfNoFood: Double? = null) : FoodNutrientValue {
+    fun convert(newUnit: Unit, densityIfNoFood: Double? = null): FoodNutrientValue {
         return makeComputedValue(convertValueTo(newUnit, densityIfNoFood), nutrient, newUnit)
     }
 
     // Food's density will be used if present. If food does not have a density, it can be specified here.
-    override fun convertValueTo(newUnit: Unit, density: Double?) : Double {
+    override fun convertValueTo(newUnit: Unit, density: Double?): Double {
         return super.convertValueTo(newUnit, food?.density ?: density)
     }
 

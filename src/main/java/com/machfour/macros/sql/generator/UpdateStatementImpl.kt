@@ -1,8 +1,8 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.makeSqlUpdatePlaceholders
 import com.machfour.macros.util.stringJoin
 
 internal class UpdateStatementImpl<M> private constructor(
@@ -16,7 +16,7 @@ internal class UpdateStatementImpl<M> private constructor(
             it.add(mode.sql)
             it.add(table.name)
             it.add("SET")
-            it.add(SqlUtils.makeUpdatePlaceholders(columns))
+            it.add(makeSqlUpdatePlaceholders(columns))
             it.add(whereExpression.toSql())
             stringJoin(it, sep = " ")
         }

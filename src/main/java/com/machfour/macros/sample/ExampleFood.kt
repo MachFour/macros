@@ -22,7 +22,7 @@ import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES
 
 // Food with no nutrition data
-val food1: Food by lazy {
+val exampleFood1: Food by lazy {
     init1()
 }
 

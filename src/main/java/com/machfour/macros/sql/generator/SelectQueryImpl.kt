@@ -1,8 +1,8 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.joinColumnNames
 import com.machfour.macros.util.stringJoin
 
 internal class SelectQueryImpl<M> private constructor(
@@ -28,7 +28,7 @@ internal class SelectQueryImpl<M> private constructor(
         if (columns.isEmpty()) {
             query.add("*")
         } else {
-            query.add(SqlUtils.joinColumns(columns))
+            query.add(joinColumnNames(columns))
         }
         query.add("FROM")
         query.add(table.name)

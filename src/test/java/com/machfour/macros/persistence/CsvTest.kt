@@ -167,13 +167,13 @@ class CsvTest {
             }
         } catch (e: SQLException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 

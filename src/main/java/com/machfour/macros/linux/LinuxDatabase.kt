@@ -99,7 +99,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SQLException::class, IOException::class)
     override fun initDb(config: SqlConfig) {
         // TODO insert data from Units and Nutrients classes instead of initial data
-        val getSqlFromFile: (File) -> String = { FileReader(it).use { r -> SqlUtils.createStatements(r) } }
+        val getSqlFromFile: (File) -> String = { FileReader(it).use { r -> createSqlStatements(r) } }
         val c = connection
         try {
             c.createStatement().use { s ->
@@ -108,7 +108,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
                 println("Add timestamp triggers...")
                 AllTables
-                    .flatMap { SqlUtils.createInitTimestampTriggers(it) }
+                    .flatMap { createInitTimestampTriggers(it) }
                     .forEach { s.executeUpdate(it) }
 
                 println("Add other triggers...")
@@ -216,7 +216,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             table.columns.filter { it != table.idColumn }
         }
         val c = connection
-        val statement = SqlUtils.insertTemplate(table, columnsToInsert)
+        val statement = sqlInsertTemplate(table, columnsToInsert)
         var currentRow: RowData<M>? = null
         try {
             withDisabledAutoCommit(c) {
@@ -257,7 +257,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
         val c = connection
         try {
             withDisabledAutoCommit(c) {
-                c.prepareStatement(SqlUtils.updateTemplate(table, table.columns, table.idColumn)).use { p ->
+                c.prepareStatement(sqlUpdateTemplate(table, table.columns, table.idColumn)).use { p ->
                     for (row in data) {
                         bindData(p, row, table.columns, row[table.idColumn])
                         saved += p.executeUpdate()

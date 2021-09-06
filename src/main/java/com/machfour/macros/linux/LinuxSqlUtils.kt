@@ -1,9 +1,6 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
-import com.machfour.macros.sql.SqlUtils
-import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -44,7 +41,7 @@ internal fun <J> ResultSet.getColumn(column: Column<*, J>) : J? {
         column.type.fromRaw(resultValue)
     } catch (e: TypeCastException) {
         // this line throws an exception, so code won't reach here
-        SqlUtils.rethrowAsSqlException(resultValue, column)
+        rethrowAsSqlException(resultValue, column)
         null
     }
 }
@@ -56,7 +53,7 @@ internal fun <M> fillRowData(data: RowData<M>, rs: ResultSet, columns: Collectio
         try {
             data.putFromRaw(col, rawValue)
         } catch (e: TypeCastException) {
-            SqlUtils.rethrowAsSqlException(rawValue, col)
+            rethrowAsSqlException(rawValue, col)
         }
     }
 }

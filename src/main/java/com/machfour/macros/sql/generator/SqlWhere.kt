@@ -1,9 +1,10 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.SqlUtils
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.makeSqlWhereString
+import com.machfour.macros.sql.makeSqlWhereLikeString
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column
 //  make into sealed class with subclasses for each kind of where (multivalue, single value, LIKE, etc.)
@@ -25,7 +26,7 @@ class SqlWhereExpr<M, J> private constructor(
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
-                whereClause = SqlUtils.makeWhereString(whereColumnExpr, nValues = 1),
+                whereClause = makeSqlWhereString(whereColumnExpr, nValues = 1),
                 whereValues = listOf(whereValue)
             )
         }
@@ -39,7 +40,7 @@ class SqlWhereExpr<M, J> private constructor(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
                 whereValues = whereValues,
-                whereClause = SqlUtils.makeWhereString(whereColumnExpr, nValues = nValues),
+                whereClause = makeSqlWhereString(whereColumnExpr, nValues = nValues),
                 isIterated = iterated
             )
         }
@@ -48,7 +49,7 @@ class SqlWhereExpr<M, J> private constructor(
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
-                whereClause = SqlUtils.makeWhereString(whereColumnExpr, isNotNull = isNotNull)
+                whereClause = makeSqlWhereString(whereColumnExpr, isNotNull = isNotNull)
             )
         }
 
@@ -67,7 +68,7 @@ class SqlWhereExpr<M, J> private constructor(
         ): SqlWhereExpr<M, String> {
             return SqlWhereExpr(
                 whereColumnType = Types.TEXT,
-                whereClause = SqlUtils.makeWhereLikeString(likeColumns, conjunction),
+                whereClause = makeSqlWhereLikeString(likeColumns, conjunction),
                 whereValues = whereLikeValues
             )
         }

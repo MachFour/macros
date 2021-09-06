@@ -2,53 +2,45 @@ package com.machfour.macros.util
 
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.names.UnitStrings
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.Nutrients
 import com.machfour.macros.units.NutrientUnits
-import com.machfour.macros.units.StandardNutrientUnits
 
 
-fun formatNutrient(
+fun formatNutrientValue(
     data: FoodNutrientData,
     nutrient: Nutrient,
-    displayStrings: DisplayStrings,
     nutrientUnits: NutrientUnits,
-    withUnit: Boolean = false,
     preferDataUnit: Boolean = false,
-    width: Int = 0,
-    unitWidth: Int = 0,
     withDp: Boolean = false,
-    alignLeft: Boolean = false,
-    unitAlignLeft: Boolean = false,
-    spaceBeforeUnit: Boolean = false
+    defaultValue: Double = 0.0,
+    width: Int = 0,
 ): String {
-    val convertUnit = if (preferDataUnit) {
+    val unit = if (preferDataUnit) {
         data.getUnit(nutrient, nutrientUnits)
     } else {
         nutrientUnits[nutrient]
     }
-    
-    val displayUnit = if (withUnit) convertUnit else null
-    val qty = data.amountOf(nutrient, unit = convertUnit, defaultValue = 0.0)
-
-    // TODO add asterisk to incomplete quantities
-    return formatQuantity(
-        qty = qty,
-        unit = displayUnit,
-        unitStrings = displayStrings,
-        width = width,
-        unitWidth = unitWidth,
-        withDp = withDp,
-        alignLeft = alignLeft,
-        unitAlignLeft = unitAlignLeft,
-        spaceBeforeUnit = spaceBeforeUnit
-    )
+    return formatNutrientValue(data, nutrient, unit, withDp, defaultValue, width)
 }
 
-fun formatQuantity(
+fun formatNutrientValue(
+    data: FoodNutrientData,
+    nutrient: Nutrient,
+    unit: Unit,
+    withDp: Boolean = false,
+    defaultValue: Double = 0.0,
+    width: Int = 0,
+): String {
+    val widthFmt = if (width > 0) "$width" else ""
+    val floatFmt = if (withDp) ".1f" else ".0f"
+    val qty = data.amountOf(nutrient, unit, defaultValue)
+    return "%$widthFmt$floatFmt".format(qty)
+}
+
+internal fun formatQuantity(
     qty: Double,
     unit: Unit? = null,
     unitStrings: UnitStrings? = null,
@@ -112,7 +104,6 @@ fun formatNutrientData(
     withDp: Boolean = false,
     monoSpaceAligned: Boolean = false,
 ): String {
-    // TODO get these lengths from ColumnStrings?
     val lineFormat = if (monoSpaceAligned) {
         val qtyLength = if (withDp) 6 else 4
         "%15s: %${qtyLength}s %-2s"
@@ -125,10 +116,9 @@ fun formatNutrientData(
             val colName = displayStrings.getFullName(n)
             val unit = if (preferDataUnits) data.getUnit(n, nutrientUnits) else nutrientUnits[n]
             val unitStr = displayStrings.getAbbr(unit)
-            val value = formatNutrient(
+            val value = formatNutrientValue(
                 data = data,
                 nutrient = n,
-                displayStrings = displayStrings,
                 nutrientUnits = nutrientUnits,
                 preferDataUnit = preferDataUnits,
                 withDp = withDp

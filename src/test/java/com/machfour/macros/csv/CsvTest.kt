@@ -1,7 +1,6 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.csv.*
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Serving
@@ -38,10 +37,10 @@ class CsvTest {
                 db.initDb(config.sqlConfig)
             } catch (e1: IOException) {
                 e1.printStackTrace()
-                Assertions.fail<Any>("Database initialisation threw IO exception")
+                Assertions.fail("Database initialisation threw IO exception")
             } catch (e2: SQLException) {
                 e2.printStackTrace()
-                Assertions.fail<Any>("Database initialisation threw SQL exception")
+                Assertions.fail("Database initialisation threw SQL exception")
             }
         }
 
@@ -65,10 +64,10 @@ class CsvTest {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 
@@ -83,10 +82,10 @@ class CsvTest {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 
@@ -96,13 +95,13 @@ class CsvTest {
             FileReader(config.foodCsvPath).use { importFoodData(db, it, true) }
         } catch (e: SQLException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 
@@ -114,16 +113,16 @@ class CsvTest {
             FileReader(config.servingCsvPath).use { importServings(db, it, true) }
         } catch (e: SQLException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: SchemaViolation) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 
@@ -134,10 +133,10 @@ class CsvTest {
             FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(Food.table, it, foods.values) }
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("IOException was thrown")
+            Assertions.fail("IOException was thrown")
         } catch (e2: SQLException) {
             e2.printStackTrace()
-            Assertions.fail<Any>("Database save threw SQL exception")
+            Assertions.fail("Database save threw SQL exception")
         }
     }
 
@@ -148,10 +147,10 @@ class CsvTest {
             FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(Serving.table, it, servings.values) }
         } catch (e: SQLException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Exception was thrown")
+            Assertions.fail("Exception was thrown")
         }
     }
 

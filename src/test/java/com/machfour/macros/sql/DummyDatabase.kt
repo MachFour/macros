@@ -1,8 +1,5 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.sql
 
-import com.machfour.macros.sql.RowData
-import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.*
 
 class DummyDatabase: SqlDatabase {

@@ -39,7 +39,7 @@ class DensityTest {
                 Assertions.assertNotNull(water.density)
             } catch (e: SQLException) {
                 println(failMsg)
-                Assertions.fail<Any>(e)
+                Assertions.fail(e)
             }
         }
     }

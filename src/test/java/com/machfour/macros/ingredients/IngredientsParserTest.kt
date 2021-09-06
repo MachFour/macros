@@ -1,7 +1,7 @@
 package com.machfour.macros.ingredients
 
-import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.entities.CompositeFood
+import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.WriteQueries
 import com.machfour.macros.util.stringJoin
 import org.junit.jupiter.api.Assertions
@@ -24,7 +24,7 @@ class IngredientsParserTest {
                 WriteQueries.deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
-                Assertions.fail<Any>(e)
+                Assertions.fail(e)
             }
         }
     }
@@ -40,9 +40,9 @@ class IngredientsParserTest {
                 println(stringJoin(ingredientSpecs, sep = "\n"))
             }
         } catch (e: IOException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         } catch (e: SQLException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         }
     }
 
@@ -58,9 +58,9 @@ class IngredientsParserTest {
                 }
             }
         } catch (e: IOException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         } catch (e: SQLException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         }
     }
 
@@ -72,9 +72,9 @@ class IngredientsParserTest {
                 IngredientsParser.saveRecipes(recipes, db)
             }
         } catch (e: IOException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         } catch (e: SQLException) {
-            Assertions.fail<Any>(e)
+            Assertions.fail(e)
         }
     }
 

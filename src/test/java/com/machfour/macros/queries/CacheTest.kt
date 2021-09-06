@@ -75,10 +75,10 @@ internal class CacheTest {
                 db.initDb(LinuxSqlConfig())
             } catch (e1: IOException) {
                 e1.printStackTrace()
-                Assertions.fail<Any>("Database initialisation threw IO exception")
+                Assertions.fail("Database initialisation threw IO exception")
             } catch (e2: SQLException) {
                 e2.printStackTrace()
-                Assertions.fail<Any>("Database initialisation threw SQL exception")
+                Assertions.fail("Database initialisation threw SQL exception")
             }
         }
 
@@ -100,7 +100,7 @@ internal class CacheTest {
             WriteQueries.saveObject(db, testFoodPortion)
         } catch (e: SQLException) {
             e.printStackTrace()
-            Assertions.fail<Any>("Saving objects threw SQL exception")
+            Assertions.fail("Saving objects threw SQL exception")
         }
     }
 

@@ -4,9 +4,7 @@ import com.machfour.macros.cli.modes.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.util.javaTrim
 
-/*
- * Helper class that holds static instances of all the other commands
- */
+// Helper class that holds static instances of all the other commands
 object Commands {
     private val COMMAND_CONSTRUCTORS = listOf<(MacrosConfig) -> Command>(
         { config -> Help(config) },

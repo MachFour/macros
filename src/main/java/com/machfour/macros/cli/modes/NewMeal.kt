@@ -1,8 +1,8 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
 import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.core.MacrosConfig
 
 
@@ -12,7 +12,7 @@ class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         private const val USAGE = "Usage: $programName $NAME <meal name> [<day>]"
     }
 
-    override fun doAction(args: List<String>) : Int {
+    override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {
             printHelp()
             return -1
@@ -22,8 +22,8 @@ class NewMeal(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         // meal exists with that name, or doesn't exist
         val ds = config.database
 
-        val mealNameArg = ArgParsing.findArgument(args, 1)
-        val dayArg = ArgParsing.findArgument(args, 2)
+        val mealNameArg = findArgument(args, 1)
+        val dayArg = findArgument(args, 2)
         val mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg)
 
         mealSpec.process(ds, true)

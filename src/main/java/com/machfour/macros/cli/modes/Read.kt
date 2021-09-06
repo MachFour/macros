@@ -1,13 +1,11 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
-import com.machfour.macros.cli.utils.FileParser
-import com.machfour.macros.cli.utils.printMeals
-import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.cli.utils.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.insulin.InsulinCmdlineUtils
+import com.machfour.macros.insulin.parseInsulinArgument
+import com.machfour.macros.insulin.printInsulin
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -56,24 +54,26 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val verbose = verboseFlag.containedIn(args)
         val per100 = per100Flag.containedIn(args)
 
-        val insulinArg = ArgParsing.findArgumentFromFlag(args, insulinFlag.full)
+        val insulinArg = findArgumentFromFlag(args, insulinFlag.full)
         val icRatio: Double?
         val proteinFactor: Double?
 
         when (insulinArg) {
-            is ArgParsing.Result.KeyValFound -> {
+            is ArgParsingResult.KeyValFound -> {
                 try {
-                    InsulinCmdlineUtils.parseArgument(insulinArg.argument).let {
+                    parseInsulinArgument(insulinArg.argument).let {
                         icRatio = it.first
                         proteinFactor = it.second
                     }
                 } catch (e: NumberFormatException) {
-                    printlnErr("I:C ratio and protein factor in ${insulinFlag.full} argument " +
-                            "must be numeric and separated by a colon with no space")
+                    printlnErr(
+                        "I:C ratio and protein factor in ${insulinFlag.full} argument " +
+                                "must be numeric and separated by a colon with no space"
+                    )
                     return 1
                 }
             }
-            is ArgParsing.Result.ValNotFound -> {
+            is ArgParsingResult.ValNotFound -> {
                 printlnErr("${insulinFlag.full} requires an argument")
                 return 1
             }
@@ -110,7 +110,7 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         }
 
         if (icRatio != null) {
-            InsulinCmdlineUtils.printInsulin(Meal.sumNutrientData(meals), icRatio, proteinFactor)
+            printInsulin(Meal.sumNutrientData(meals), icRatio, proteinFactor)
         }
 
         return 0

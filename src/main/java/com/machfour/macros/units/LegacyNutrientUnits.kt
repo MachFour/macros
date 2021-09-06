@@ -10,8 +10,7 @@ object LegacyNutrientUnits: NutrientUnits {
     override operator fun get(n: Nutrient) : Unit {
         return when (n) {
             Nutrients.ENERGY -> CALORIES
-            else -> standardUnitMap[n]
-                ?: throw IllegalArgumentException("Nutrient $n has no default unit")
+            else -> standardUnitMap[n] ?: throw IllegalArgumentException("Nutrient $n has no default unit")
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.MealTable
@@ -48,7 +47,7 @@ class MealSpec {
     }
 
     private constructor(name: String?, dayString: String?) {
-        val day = dayStringParse(dayString)
+        val day = com.machfour.macros.cli.utils.dayStringParse(dayString)
         if (day == null) {
             error = String.format("Invalid day format: '%s'. ", dayString)
             error += "Must be a number (e.g. 0 for today, -1 for yesterday), or a date: yyyy-mm-dd"
@@ -59,8 +58,8 @@ class MealSpec {
     }
 
     private constructor(
-        nameArg: ArgParsing.Result.KeyValFound,
-        dayArg: ArgParsing.Result.KeyValFound
+        nameArg: ArgParsingResult.KeyValFound,
+        dayArg: ArgParsingResult.KeyValFound
     ) : this(nameArg.argument, dayArg.argument)
 
     @Throws(SQLException::class)
@@ -154,24 +153,24 @@ class MealSpec {
         // If -d is omitted then the current day is used.
         // If there are no meals recorded for the day, then an error is given.
         //fun makeMealSpec(args: List<String>): MealSpec {
-        //    val dayArg: ArgParsing.Result = findArgumentFromFlag(args, "-d")
-        //    val mealArg: ArgParsing.Result = findArgumentFromFlag(args, "-m")
+        //    val dayArg: ArgParsingResult = findArgumentFromFlag(args, "-d")
+        //    val mealArg: ArgParsingResult = findArgumentFromFlag(args, "-m")
         //    return MealSpec(dayArg, mealArg)
         //}
 
         fun makeMealSpec(name: String? = null, dayString: String? = null): MealSpec {
-            val day = dayStringParse(dayString)
+            val day = com.machfour.macros.cli.utils.dayStringParse(dayString)
             return MealSpec(name, day)
         }
 
-        fun makeMealSpec(nameArg: ArgParsing.Result, dayArg: ArgParsing.Result): MealSpec {
+        fun makeMealSpec(nameArg: ArgParsingResult, dayArg: ArgParsingResult): MealSpec {
             return when {
-                nameArg !is ArgParsing.Result.KeyValFound -> {
+                nameArg !is ArgParsingResult.KeyValFound -> {
                     MealSpec(name = null, day = null).also {
                         it.error = "-d option requires an argument: <day>"
                     }
                 }
-                dayArg !is ArgParsing.Result.KeyValFound -> {
+                dayArg !is ArgParsingResult.KeyValFound -> {
                     MealSpec(name = null, day = null).also {
                         it.error = "-m option requires an argument: <meal>"
                     }

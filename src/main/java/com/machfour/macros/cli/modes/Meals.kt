@@ -1,9 +1,7 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
-import com.machfour.macros.cli.utils.ArgParsing.dayStringParse
-import com.machfour.macros.cli.utils.ArgParsing.findArgument
+import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.MealQueries.getMealsForDay
@@ -29,14 +27,14 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         // cases: day not specified vs day specified
         val ds = config.database
-        val date = when (val dateArg = findArgument(args, 1)) {
-            is ArgParsing.Result.KeyValFound -> {
-                dayStringParse(dateArg.argument) ?: run {
+        val date = when (val dateArg = com.machfour.macros.cli.utils.findArgument(args, 1)) {
+            is ArgParsingResult.KeyValFound -> {
+                com.machfour.macros.cli.utils.dayStringParse(dateArg.argument) ?: run {
                     printlnErr("Invalid date format: '${dateArg.argument}'.")
                     return 1
                 }
             }
-            is ArgParsing.Result.ValNotFound -> {
+            is ArgParsingResult.ValNotFound -> {
                 printlnErr("-d option requires a day specified")
                 return 1
             }

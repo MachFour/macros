@@ -1,7 +1,8 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.ArgParsing
+import com.machfour.macros.cli.utils.ArgParsingResult
+import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
@@ -51,14 +52,14 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val doClear = args.contains("--clear")
         val noRecipes = args.contains("--norecipes")
         val noFoodsServings = args.contains("--nofoods")
-        val foodCsvArg = ArgParsing.findArgumentFromFlag(args, "-f")
-        val servingCsvArg = ArgParsing.findArgumentFromFlag(args, "-s")
-        val recipeCsvArg = ArgParsing.findArgumentFromFlag(args, "-r")
-        val ingredientCsvArg = ArgParsing.findArgumentFromFlag(args, "-i")
+        val foodCsvArg = findArgumentFromFlag(args, "-f")
+        val servingCsvArg = findArgumentFromFlag(args, "-s")
+        val recipeCsvArg = findArgumentFromFlag(args, "-r")
+        val ingredientCsvArg = findArgumentFromFlag(args, "-i")
         val foodCsvOverride: String?
         when (foodCsvArg) {
-            is ArgParsing.Result.KeyValFound -> foodCsvOverride = foodCsvArg.argument
-            is ArgParsing.Result.ValNotFound -> {
+            is ArgParsingResult.KeyValFound -> foodCsvOverride = foodCsvArg.argument
+            is ArgParsingResult.ValNotFound -> {
                 printlnErr("Error - '-f' flag given but no food.csv specified")
                 return 1
             }

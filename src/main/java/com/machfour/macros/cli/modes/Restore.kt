@@ -6,11 +6,9 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.persistence.CsvRestore
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.util.FileUtils.joinPath
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -30,8 +28,14 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
     private fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, exportDir: String, t: Table<M>) {
         println("Restoring " + t.name + " table...")
-        val csvPath = joinPath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> CsvRestore.restoreTable(ds, t, csvData) }
+        val csvPath = com.machfour.macros.util.joinFilePath(exportDir, t.name + ".csv")
+        FileReader(csvPath).use { csvData ->
+            com.machfour.macros.persistence.restoreTable(
+                ds,
+                t,
+                csvData
+            )
+        }
     }
 
     override fun doAction(args: List<String>): Int {

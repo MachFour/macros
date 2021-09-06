@@ -38,8 +38,8 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 0
         }
 
-        val mealNameArg = ArgParsing.findArgument(args, 1)
-        val dayArg = ArgParsing.findArgument(args, 2)
+        val mealNameArg = findArgument(args, 1)
+        val dayArg = findArgument(args, 2)
 
         val ds = config.database
 

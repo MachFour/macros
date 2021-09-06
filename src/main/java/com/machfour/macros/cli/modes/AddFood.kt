@@ -2,7 +2,8 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.interactive.FoodEditor
-import com.machfour.macros.cli.utils.ArgParsing
+import com.machfour.macros.cli.utils.ArgParsingResult
+import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
@@ -32,8 +33,8 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             printHelp()
             return -1
         }
-        val indexNameArg = ArgParsing.findArgument(args, 1)
-        if (indexNameArg !is ArgParsing.Result.KeyValFound) {
+        val indexNameArg = findArgument(args, 1)
+        if (indexNameArg !is ArgParsingResult.KeyValFound) {
             print(usage)
             return -1
         }

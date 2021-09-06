@@ -1,9 +1,5 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.linux.LinuxSqlUtils.getColumn
-import com.machfour.macros.linux.LinuxSqlUtils.processResultSet
-import com.machfour.macros.linux.LinuxSqlUtils.toRowData
-import com.machfour.macros.linux.LinuxSqlUtils.withDisabledAutoCommit
 import com.machfour.macros.orm.schema.AllTables
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.generator.*
@@ -45,7 +41,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
     }
 
-    private val dataSource = SQLiteDatabaseUtils.makeSQLiteDataSource(dbFile)
+    private val dataSource = makeSQLiteDataSource(dbFile)
 
     // records how much time spent in database transactions
     private var cachedConnection: Connection? = null
@@ -189,12 +185,12 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                 c.prepareStatement(sql).use {
                     if (query.shouldIterateBindArguments) {
                         for (arg in query.getBindArguments()) {
-                            LinuxSqlUtils.bindObjects(it, listOf(arg))
+                            bindObjects(it, listOf(arg))
                             it.executeQuery().processResultSet(resultSetAction)
                             it.clearParameters()
                         }
                     } else {
-                        LinuxSqlUtils.bindObjects(it, query.getBindArguments())
+                        bindObjects(it, query.getBindArguments())
                         it.executeQuery().processResultSet(resultSetAction)
                     }
                 }
@@ -227,7 +223,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                 c.prepareStatement(statement).use { p ->
                     for (row in data) {
                         currentRow = row
-                        LinuxSqlUtils.bindData(p, row, columnsToInsert)
+                        bindData(p, row, columnsToInsert)
                         saved += p.executeUpdate()
                         p.clearParameters()
                     }
@@ -263,7 +259,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             withDisabledAutoCommit(c) {
                 c.prepareStatement(SqlUtils.updateTemplate(table, table.columns, table.idColumn)).use { p ->
                     for (row in data) {
-                        LinuxSqlUtils.bindData(p, row, table.columns, row[table.idColumn])
+                        bindData(p, row, table.columns, row[table.idColumn])
                         saved += p.executeUpdate()
                         p.clearParameters()
                     }
@@ -286,14 +282,14 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                         var removed = 0
                         withDisabledAutoCommit(c) {
                             for (arg in delete.getBindArguments()) {
-                                LinuxSqlUtils.bindObjects(it, listOf(arg))
+                                bindObjects(it, listOf(arg))
                                 removed += it.executeUpdate()
                                 it.clearParameters()
                             }
                         }
                         removed
                     } else {
-                        LinuxSqlUtils.bindObjects(it, delete.getBindArguments())
+                        bindObjects(it, delete.getBindArguments())
                         it.executeUpdate()
                     }
                 }

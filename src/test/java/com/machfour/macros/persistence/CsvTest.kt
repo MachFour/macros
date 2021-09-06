@@ -8,7 +8,6 @@ import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.persistence.CsvBackup.writeObjectsToCsv
 import com.machfour.macros.persistence.CsvImport.buildFoodObjectTree
 import com.machfour.macros.persistence.CsvImport.buildServings
 import com.machfour.macros.persistence.CsvImport.importFoodData

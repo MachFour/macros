@@ -4,7 +4,7 @@ import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.Nutrients
 
-internal val standardUnitMap = mapOf(
+private val standardUnitMap = mapOf(
     Nutrients.QUANTITY to GRAMS,
     Nutrients.ENERGY to KILOJOULES,
     Nutrients.PROTEIN to GRAMS,

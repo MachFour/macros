@@ -30,7 +30,7 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         println("Restoring " + t.name + " table...")
         val csvPath = com.machfour.macros.util.joinFilePath(exportDir, t.name + ".csv")
         FileReader(csvPath).use { csvData ->
-            com.machfour.macros.persistence.restoreTable(
+            com.machfour.macros.csv.restoreTable(
                 ds,
                 t,
                 csvData

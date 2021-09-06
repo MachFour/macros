@@ -1,4 +1,4 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.csv
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
@@ -92,10 +92,10 @@ private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { i
 @Throws(IOException::class, TypeCastException::class)
 private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
     val data = ArrayList<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>>()
-    getCsvMapReader(foodCsv).use { mapReader ->
-        val header = mapReader.getHeader(true)
-        var csvRow = emptyMap<String, String?>()
-        while (mapReader.read(*header)?.also { csvRow = it } != null) {
+    getCsvMapReader(foodCsv).use { reader ->
+        val header = reader.getHeader(true)
+        while (true) {
+            val csvRow = reader.read(*header) ?: break
             if (allValuesEmpty(csvRow)) {
                 continue  // it's a blank row
             }
@@ -114,17 +114,17 @@ private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<
 private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String, List<Ingredient>> {
     val data = HashMap<String, MutableList<Ingredient>>()
     try {
-        getCsvMapReader(ingredientCsv).use { mapReader ->
-            val header = mapReader.getHeader(true)
-            var csvRow: Map<String, String?> = emptyMap()
-            while (mapReader.read(*header)?.also { csvRow = it } != null) {
+        getCsvMapReader(ingredientCsv).use { reader ->
+            val header = reader.getHeader(true)
+            while (true) {
+                val csvRow = reader.read(*header) ?: break
                 if (allValuesEmpty(csvRow)) {
                     continue  // it's a blank row
                 }
                 // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
                 val ingredientData = extractCsvData(csvRow, Ingredient.table)
-                val compositeIndexName = csvRow.getValue("recipe_index_name")
-                    ?: throw CsvException("No value for field: composite_index_name")
+                val compositeIndexName = csvRow["recipe_index_name"]
+                    ?: throw CsvException("No value for field: recipe_index_name")
                 val ingredientIndexName = csvRow["ingredient_index_name"]
                     ?: throw CsvException("No value for field: ingredient_index_name")
                 // TODO error handling
@@ -197,7 +197,7 @@ fun buildFoodObjectTree(
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
 ): Map<String, Food> {
     // preserve insertion order
-    val foodMap: MutableMap<String, Food> = LinkedHashMap()
+    val foodMap = LinkedHashMap<String, Food>()
     for ((foodData, nutrientValueData) in getFoodData(foodCsv)) {
         modifyFoodData?.let { modify -> modify(foodData) }
 
@@ -228,11 +228,11 @@ fun buildFoodObjectTree(
 
 @Throws(IOException::class, TypeCastException::class)
 fun buildServings(servingCsv: Reader): List<Serving> {
-    val servings: MutableList<Serving> = ArrayList()
-    getCsvMapReader(servingCsv).use { mapReader ->
-        val header = mapReader.getHeader(true)
-        var csvRow: Map<String, String> = emptyMap()
-        while (mapReader.read(*header)?.also { csvRow = it } != null) {
+    val servings = ArrayList<Serving>()
+    getCsvMapReader(servingCsv).use { reader ->
+        val header = reader.getHeader(true)
+        while (true) {
+            val csvRow = reader.read(*header) ?: break
             val servingData = extractCsvData(csvRow, Serving.table)
             val foodIndexName = csvRow[FoodTable.INDEX_NAME.sqlName]
                 ?: throw CsvException("Food index name was null for row: $csvRow")
@@ -342,37 +342,4 @@ fun importRecipes(ds: SqlDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
 
     val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
     WriteQueries.saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
-}
-
-object CsvImport {
-    @Throws(IOException::class, TypeCastException::class)
-    fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, List<Ingredient>>): Map<String, CompositeFood> = com.machfour.macros.persistence.buildCompositeFoodObjectTree(recipeCsv, ingredients)
-
-    @Throws(IOException::class, TypeCastException::class)
-    fun buildFoodObjectTree(
-        foodCsv: Reader,
-        modifyFoodData: ((RowData<Food>) -> Unit)? = null,
-        modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
-    ): Map<String, Food> = com.machfour.macros.persistence.buildFoodObjectTree(foodCsv, modifyFoodData, modifyNutrientValueData)
-
-    @Throws(IOException::class, TypeCastException::class)
-    fun buildServings(servingCsv: Reader): List<Serving> = com.machfour.macros.persistence.buildServings(servingCsv)
-
-    @Suppress("UNUSED_EXPRESSION")
-    @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importFoodData(
-        db: SqlDatabase,
-        foodCsv: Reader,
-        allowOverwrite: Boolean,
-        modifyFoodData: ((RowData<Food>) -> Unit)? = null,
-        modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
-    ) = com.machfour.macros.persistence.importFoodData(db, foodCsv, allowOverwrite, modifyFoodData, modifyNutrientValueData)
-
-    @Suppress("UNUSED_EXPRESSION")
-    // TODO detect existing servings
-    @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importServings(ds: SqlDatabase, servingCsv: Reader, allowOverwrite: Boolean) = com.machfour.macros.persistence.importServings(ds, servingCsv, allowOverwrite)
-
-    @Throws(IOException::class, SQLException::class, TypeCastException::class)
-    fun importRecipes(ds: SqlDatabase, recipeCsv: Reader, ingredientCsv: Reader) = com.machfour.macros.persistence.importRecipes(ds, recipeCsv, ingredientCsv)
 }

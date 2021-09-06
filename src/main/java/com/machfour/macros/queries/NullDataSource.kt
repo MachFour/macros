@@ -1,5 +1,5 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.persistence.NullDatabase
+import com.machfour.macros.sql.NullDatabase
 
 open class NullDataSource: StaticDataSource(NullDatabase())

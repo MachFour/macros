@@ -16,74 +16,67 @@ import com.machfour.macros.orm.schema.FoodTable.NUTTAB_INDEX
 import com.machfour.macros.orm.schema.FoodTable.USDA_INDEX
 import com.machfour.macros.orm.schema.FoodTable.VARIETY
 import com.machfour.macros.sql.RowData
-import com.machfour.macros.units.*
+import com.machfour.macros.units.CALORIES
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.MILLIGRAMS
+import com.machfour.macros.units.MILLILITRES
 
-object ExampleFood {
-    private val foodTable = Food.table
+// Food with no nutrition data
+val food1: Food by lazy {
+    init1()
+}
 
+// Food with nutrition data that has nonunit density
+val exampleFood2: Food by lazy {
+    init2()
+}
 
-    /*
-     * Food with no nutrition data
-     */
-    val food1: Food by lazy {
-        init1()
+private fun init1(): Food {
+    val data = RowData(Food.table)
+    data.put(INDEX_NAME, "food1")
+    data.put(BRAND, "Max's")
+    data.put(VARIETY, "really good")
+    data.put(NAME, "food")
+    data.put(NOTES, "notes")
+    data.put(CATEGORY, "dairy")
+    data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
+    data.put(USDA_INDEX, null)
+    data.put(NUTTAB_INDEX, null)
+    return Food.factory.construct(data, ObjectSource.IMPORT)
+}
+
+private fun init2(): Food {
+    val data = RowData(Food.table)
+    data.put(INDEX_NAME, "generic-oil")
+    data.put(VARIETY, "Super oily")
+    data.put(EXTRA_DESC, "in a bottle")
+    data.put(NAME, "Generic Oil")
+    data.put(BRAND, "Max's")
+    data.put(NOTES, "it's still organic though")
+    data.put(CATEGORY, "oils")
+    data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
+    val f = Food.factory.construct(data, ObjectSource.IMPORT)
+
+    val nutritionData = listOf(
+          FoodNutrientValue.makeComputedValue(1000.0, Nutrients.ENERGY, CALORIES)
+        , FoodNutrientValue.makeComputedValue(40.0, Nutrients.PROTEIN, GRAMS)
+        , FoodNutrientValue.makeComputedValue(20.0, Nutrients.CARBOHYDRATE, GRAMS)
+        , FoodNutrientValue.makeComputedValue(90.0, Nutrients.FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(12.0, Nutrients.SATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(50.0, Nutrients.SUGAR, GRAMS)
+        , FoodNutrientValue.makeComputedValue(20.0, Nutrients.POLYUNSATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(10.0, Nutrients.MONOUNSATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(100.0, Nutrients.WATER, GRAMS)
+        , FoodNutrientValue.makeComputedValue(2.0, Nutrients.FIBRE, GRAMS)
+        , FoodNutrientValue.makeComputedValue(1000.0, Nutrients.SODIUM, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(200.0, Nutrients.CALCIUM, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(40.0, Nutrients.IRON, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(100.0, Nutrients.QUANTITY, MILLILITRES)
+    )
+
+    for (nv in nutritionData) {
+        f.addNutrientValue(nv)
     }
 
-    /*
-     * Food with nutrition data that has nonunit density
-     */
-    val food2: Food by lazy {
-        init2()
-    }
-
-    private fun init1(): Food {
-        val data = RowData(foodTable)
-        data.put(INDEX_NAME, "food1")
-        data.put(BRAND, "Max's")
-        data.put(VARIETY, "really good")
-        data.put(NAME, "food")
-        data.put(NOTES, "notes")
-        data.put(CATEGORY, "dairy")
-        data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
-        data.put(USDA_INDEX, null)
-        data.put(NUTTAB_INDEX, null)
-        return Food.factory.construct(data, ObjectSource.IMPORT)
-    }
-
-    private fun init2(): Food {
-        val data = RowData(foodTable)
-        data.put(INDEX_NAME, "generic-oil")
-        data.put(VARIETY, "Super oily")
-        data.put(EXTRA_DESC, "in a bottle")
-        data.put(NAME, "Generic Oil")
-        data.put(BRAND, "Max's")
-        data.put(NOTES, "it's still organic though")
-        data.put(CATEGORY, "oils")
-        data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
-        val f = Food.factory.construct(data, ObjectSource.IMPORT)
-
-        val nutritionData = listOf(
-              FoodNutrientValue.makeComputedValue(1000.0, Nutrients.ENERGY, CALORIES)
-            , FoodNutrientValue.makeComputedValue(40.0, Nutrients.PROTEIN, GRAMS)
-            , FoodNutrientValue.makeComputedValue(20.0, Nutrients.CARBOHYDRATE, GRAMS)
-            , FoodNutrientValue.makeComputedValue(90.0, Nutrients.FAT, GRAMS)
-            , FoodNutrientValue.makeComputedValue(12.0, Nutrients.SATURATED_FAT, GRAMS)
-            , FoodNutrientValue.makeComputedValue(50.0, Nutrients.SUGAR, GRAMS)
-            , FoodNutrientValue.makeComputedValue(20.0, Nutrients.POLYUNSATURATED_FAT, GRAMS)
-            , FoodNutrientValue.makeComputedValue(10.0, Nutrients.MONOUNSATURATED_FAT, GRAMS)
-            , FoodNutrientValue.makeComputedValue(100.0, Nutrients.WATER, GRAMS)
-            , FoodNutrientValue.makeComputedValue(2.0, Nutrients.FIBRE, GRAMS)
-            , FoodNutrientValue.makeComputedValue(1000.0, Nutrients.SODIUM, MILLIGRAMS)
-            , FoodNutrientValue.makeComputedValue(200.0, Nutrients.CALCIUM, MILLIGRAMS)
-            , FoodNutrientValue.makeComputedValue(40.0, Nutrients.IRON, MILLIGRAMS)
-            , FoodNutrientValue.makeComputedValue(100.0, Nutrients.QUANTITY, MILLILITRES)
-        )
-
-        for (nv in nutritionData) {
-            f.addNutrientValue(nv)
-        }
-
-        return f
-    }
-
+    return f
 }

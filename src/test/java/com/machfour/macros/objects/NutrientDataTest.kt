@@ -9,7 +9,7 @@ import com.machfour.macros.orm.schema.FoodPortionTable.FOOD_ID
 import com.machfour.macros.orm.schema.FoodPortionTable.MEAL_ID
 import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY
 import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY_UNIT
-import com.machfour.macros.sample.ExampleFood
+import com.machfour.macros.sample.exampleFood2
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
 class NutrientDataTest {
     companion object {
 
-        private val f = ExampleFood.food2
+        private val f = exampleFood2
         private val nd1: FoodNutrientData // grams
         private val nd2: FoodNutrientData // ml
         private val nd3: FoodNutrientData // mg

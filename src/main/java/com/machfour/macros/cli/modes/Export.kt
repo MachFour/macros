@@ -4,9 +4,9 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.csv.exportTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.persistence.exportTable
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.Table
 import java.io.FileWriter

@@ -1,4 +1,4 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.csv
 
 class CsvException : RuntimeException {
     constructor(message: String): super(message)

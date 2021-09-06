@@ -1,4 +1,4 @@
-package com.machfour.macros.persistence
+package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.orm.ObjectSource

@@ -26,7 +26,12 @@ unset _JAVA_OPTIONS
 
 #archlinux-java-run --min 14 -- -jar build/libs/macros-1.0-SNAPSHOT.jar
 
-java -enableassertions \
-    -XX:+UnlockExperimentalVMOptions \
-    -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so \
-	-jar "$JAR_PATH" "$@"
+JAVA_ARGS="-enableassertions"
+
+USE_AOT_LIB=1
+if [[ $USE_AOT_LIB ]]; then
+	JAVA_ARGS="$JAVA_ARGS -XX:+UnlockExperimentalVMOptions -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so"
+fi
+
+
+java ${JAVA_ARGS} -jar "$JAR_PATH" "$@"

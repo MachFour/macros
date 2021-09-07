@@ -3,8 +3,7 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.NutrientStrings
-import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.defaultNutrientsToPrint
 import com.machfour.macros.util.formatNutrientData
@@ -34,11 +33,11 @@ fun printEnergyProportions(
 }
 
 private val energyProportionNutrientsToPrint = setOf(
-    Nutrients.PROTEIN,
-    Nutrients.FAT,
-    Nutrients.SATURATED_FAT,
-    Nutrients.CARBOHYDRATE,
-    Nutrients.SUGAR,
-    Nutrients.FIBRE
+    PROTEIN,
+    FAT,
+    SATURATED_FAT,
+    CARBOHYDRATE,
+    SUGAR,
+    FIBRE
 )
 

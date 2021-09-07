@@ -1,59 +1,59 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.sql.Column
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.entities.Nutrient
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.*
+import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.sql.Column
 
 object EnglishColumnNames: ColumnStrings, NutrientStrings {
     // shortest name for each nutrient printed in default mode
     private val briefNutrientNames = mapOf(
-              Nutrients.ENERGY to "Energy"
-            , Nutrients.PROTEIN to "Prot"
-            , Nutrients.FAT to "Fat"
-            , Nutrients.CARBOHYDRATE to "Carb"
-            , Nutrients.QUANTITY to "Qty"
+        ENERGY to "Energy",
+        PROTEIN to "Prot",
+        FAT to "Fat",
+        CARBOHYDRATE to "Carb",
+        QUANTITY to "Qty"
     )
 
     // longer (but really medium name for nutrients printed in verbose mode
     private val longerNutrientNames = mapOf(
-              Nutrients.ENERGY to "Energy"
-            , Nutrients.PROTEIN to "Protein"
-            , Nutrients.FAT to "Fat"
-            , Nutrients.SATURATED_FAT to "Sat Fat"
-            , Nutrients.CARBOHYDRATE to "Carbs"
-            , Nutrients.SUGAR to "Sugar"
-            , Nutrients.FIBRE to "Fibre"
-            , Nutrients.SODIUM to "Sodium"
-            , Nutrients.CALCIUM to "Calcium"
-            , Nutrients.QUANTITY to "Qty"
+        ENERGY to "Energy",
+        PROTEIN to "Protein",
+        FAT to "Fat",
+        SATURATED_FAT to "Sat Fat",
+        CARBOHYDRATE to "Carbs",
+        SUGAR to "Sugar",
+        FIBRE to "Fibre",
+        SODIUM to "Sodium",
+        CALCIUM to "Calcium",
+        QUANTITY to "Qty"
     )
 
     private val nutrientNames = mapOf(
         // Nutrient columns
-          Nutrients.ENERGY to "Energy"
-        , Nutrients.PROTEIN to "Protein"
-        , Nutrients.FAT to "Fat"
-        , Nutrients.SATURATED_FAT to "Saturated Fat"
-        , Nutrients.CARBOHYDRATE to "Carbohydrate"
-        , Nutrients.SUGAR to "Sugars"
-        , Nutrients.FIBRE to "Fibre"
-        , Nutrients.SODIUM to "Sodium"
-        , Nutrients.CALCIUM to "Calcium"
-        , Nutrients.QUANTITY to "Quantity"
-        , Nutrients.IRON to "Iron"
-        , Nutrients.STARCH to "Starch"
-        , Nutrients.CARBOHYDRATE_BY_DIFF to "Carbohydrate by difference"
-        , Nutrients.OMEGA_3_FAT to "Omega 3"
-        , Nutrients.OMEGA_6_FAT to "Omega 6"
-        , Nutrients.MONOUNSATURATED_FAT to "Monounsaturated Fat"
-        , Nutrients.POLYUNSATURATED_FAT to "Polyunsaturated Fat"
-        , Nutrients.SUGAR_ALCOHOL to "Sugar Alcohol"
-        , Nutrients.WATER to "Water"
-        , Nutrients.POTASSIUM to "Potassium"
-        , Nutrients.SALT to "Salt"
-        , Nutrients.ALCOHOL to "Alcohol"
-        , Nutrients.CAFFEINE to "Caffeine"
+        ENERGY to "Energy",
+        PROTEIN to "Protein",
+        FAT to "Fat",
+        SATURATED_FAT to "Saturated Fat",
+        CARBOHYDRATE to "Carbohydrate",
+        SUGAR to "Sugars",
+        FIBRE to "Fibre",
+        SODIUM to "Sodium",
+        CALCIUM to "Calcium",
+        QUANTITY to "Quantity",
+        IRON to "Iron",
+        STARCH to "Starch",
+        CARBOHYDRATE_BY_DIFF to "Carbohydrate by difference",
+        OMEGA_3_FAT to "Omega 3",
+        OMEGA_6_FAT to "Omega 6",
+        MONOUNSATURATED_FAT to "Monounsaturated Fat",
+        POLYUNSATURATED_FAT to "Polyunsaturated Fat",
+        SUGAR_ALCOHOL to "Sugar Alcohol",
+        WATER to "Water",
+        POTASSIUM to "Potassium",
+        SALT to "Salt",
+        ALCOHOL to "Alcohol",
+        CAFFEINE to "Caffeine"
     )
 
     // TODO put ALLLLLLLLLLL columns in here

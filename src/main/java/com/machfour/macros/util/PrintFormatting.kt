@@ -4,8 +4,7 @@ import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.names.UnitStrings
-import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.NutrientUnits
 
 
@@ -84,15 +83,15 @@ internal fun formatQuantity(
 }
 
 val defaultNutrientsToPrint = listOf(
-    Nutrients.ENERGY,
-    Nutrients.PROTEIN,
-    Nutrients.FAT,
-    Nutrients.SATURATED_FAT,
-    Nutrients.CARBOHYDRATE,
-    Nutrients.SUGAR,
-    Nutrients.FIBRE,
-    Nutrients.SODIUM,
-    Nutrients.CALCIUM
+    ENERGY,
+    PROTEIN,
+    FAT,
+    SATURATED_FAT,
+    CARBOHYDRATE,
+    SUGAR,
+    FIBRE,
+    SODIUM,
+    CALCIUM
 )
 
 fun formatNutrientData(

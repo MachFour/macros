@@ -3,7 +3,7 @@ package com.machfour.macros.sample
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.*
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable.BRAND
 import com.machfour.macros.orm.schema.FoodTable.CATEGORY
@@ -58,20 +58,20 @@ private fun init2(): Food {
     val f = Food.factory.construct(data, ObjectSource.IMPORT)
 
     val nutritionData = listOf(
-          FoodNutrientValue.makeComputedValue(1000.0, Nutrients.ENERGY, CALORIES)
-        , FoodNutrientValue.makeComputedValue(40.0, Nutrients.PROTEIN, GRAMS)
-        , FoodNutrientValue.makeComputedValue(20.0, Nutrients.CARBOHYDRATE, GRAMS)
-        , FoodNutrientValue.makeComputedValue(90.0, Nutrients.FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(12.0, Nutrients.SATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(50.0, Nutrients.SUGAR, GRAMS)
-        , FoodNutrientValue.makeComputedValue(20.0, Nutrients.POLYUNSATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(10.0, Nutrients.MONOUNSATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(100.0, Nutrients.WATER, GRAMS)
-        , FoodNutrientValue.makeComputedValue(2.0, Nutrients.FIBRE, GRAMS)
-        , FoodNutrientValue.makeComputedValue(1000.0, Nutrients.SODIUM, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(200.0, Nutrients.CALCIUM, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(40.0, Nutrients.IRON, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(100.0, Nutrients.QUANTITY, MILLILITRES)
+          FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES)
+        , FoodNutrientValue.makeComputedValue(40.0, PROTEIN, GRAMS)
+        , FoodNutrientValue.makeComputedValue(20.0, CARBOHYDRATE, GRAMS)
+        , FoodNutrientValue.makeComputedValue(90.0, FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(12.0, SATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(50.0, SUGAR, GRAMS)
+        , FoodNutrientValue.makeComputedValue(20.0, POLYUNSATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(10.0, MONOUNSATURATED_FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(100.0, WATER, GRAMS)
+        , FoodNutrientValue.makeComputedValue(2.0, FIBRE, GRAMS)
+        , FoodNutrientValue.makeComputedValue(1000.0, SODIUM, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(200.0, CALCIUM, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(40.0, IRON, MILLIGRAMS)
+        , FoodNutrientValue.makeComputedValue(100.0, QUANTITY, MILLILITRES)
     )
 
     for (nv in nutritionData) {

@@ -18,7 +18,7 @@ class FoodNutrientData(
     companion object {
         // lazy because otherwise having it here messes up static initialisation
         val dummyQuantity by lazy {
-            FoodNutrientValue.makeComputedValue(0.0, Nutrients.QUANTITY, GRAMS)
+            FoodNutrientValue.makeComputedValue(0.0, QUANTITY, GRAMS)
         }
 
         // Sums each nutrition component
@@ -60,12 +60,12 @@ class FoodNutrientData(
 
             sumData.quantityObj = FoodNutrientValue.makeComputedValue(
                 sumQuantity,
-                Nutrients.QUANTITY,
+                QUANTITY,
                 GRAMS
             )
-            sumData.markCompleteData(Nutrients.QUANTITY, !densityGuessed)
+            sumData.markCompleteData(QUANTITY, !densityGuessed)
 
-            for (n in Nutrients.nutrientsExceptQuantity) {
+            for (n in nutrientsExceptQuantity) {
                 var completeData = true
                 var existsData = false
                 var sumValue = 0.0
@@ -92,9 +92,9 @@ class FoodNutrientData(
 
     // using null coalescing means that hasData(QUANTITY) will still return false
     var quantityObj: FoodNutrientValue
-        get() = this[Nutrients.QUANTITY] ?: dummyQuantity
+        get() = this[QUANTITY] ?: dummyQuantity
         set(value) {
-            this[Nutrients.QUANTITY] = value
+            this[QUANTITY] = value
         }
 
     val qtyUnit: Unit
@@ -112,7 +112,7 @@ class FoodNutrientData(
 
     override fun toString(): String {
         val str = StringBuilder("NutrientData [")
-        for (n in Nutrients.nutrients) {
+        for (n in nutrients) {
             str.append("$n : ${get(n)}, ")
         }
         str.append("]")
@@ -138,7 +138,7 @@ class FoodNutrientData(
 
         val newData = FoodNutrientData(dataCompleteIfNotNull = true)
         // completeData is false by default so we can just skip the iteration for null nutrients
-        for (n in Nutrients.nutrients) {
+        for (n in nutrients) {
             this[n]?.let {
                 newData[n] = it.rescale(conversionRatio)
             }
@@ -185,7 +185,7 @@ class FoodNutrientData(
 
         return copy().also {
             it.quantityObj = quantityObj.convert(newUnit, density ?: fallbackDensity)
-            it.markCompleteData(Nutrients.QUANTITY, densityConversionNeeded && density == null)
+            it.markCompleteData(QUANTITY, densityConversionNeeded && density == null)
         }
     }
 
@@ -195,7 +195,7 @@ class FoodNutrientData(
         density: Double? = null
     ) : FoodNutrientData {
         val convertedData = if (includingQuantity) {
-            withQuantityUnit(defaultUnits[Nutrients.QUANTITY], density, false)
+            withQuantityUnit(defaultUnits[QUANTITY], density, false)
         } else {
             copy()
         }
@@ -216,7 +216,7 @@ class FoodNutrientData(
 
         val factory = FoodNutrientValue.factory
 
-        for (n in Nutrients.nutrients) {
+        for (n in nutrients) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
             // nData object was produced by summation and there was at least one food with missing data.
@@ -225,8 +225,9 @@ class FoodNutrientData(
             val thisValue = this[n]
             val otherValue = other[n]
 
-            val resultValue = (thisValue?: otherValue)?.let { factory.cloneWithoutMetadata(it) }
-            val resultIsDataComplete = if (thisValue != null) this.hasCompleteData(n) else other.hasCompleteData(n)
+            val resultValue = (thisValue ?: otherValue)?.let { factory.cloneWithoutMetadata(it) }
+            val resultIsDataComplete =
+                if (thisValue != null) this.hasCompleteData(n) else other.hasCompleteData(n)
 
             result[n] = resultValue
             result.markCompleteData(n, resultIsDataComplete)

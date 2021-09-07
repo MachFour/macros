@@ -14,7 +14,8 @@ import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.numNutrients
+import com.machfour.macros.nutrients.nutrients
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
@@ -146,7 +147,7 @@ class FoodEditor constructor(
     init {
 
         val numFoodColumns = FOOD_TABLE_COLUMNS.size
-        val numNdColumns = Nutrients.numNutrients
+        val numNdColumns = numNutrients
         val totalColumns = numFoodColumns + numNdColumns
 
         this.foodColumnsForDisplay = ArrayList(numFoodColumns)
@@ -156,7 +157,8 @@ class FoodEditor constructor(
 
         this.currentAction = Action.SAVE
         this.statusLine1 = "Welcome to the food editor."
-        this.statusLine2 = "Use the arrow keys to navigate, and enter to confirm an edit or select an action"
+        this.statusLine2 =
+            "Use the arrow keys to navigate, and enter to confirm an edit or select an action"
         this.exceptionMessage = ""
         this.editingValue = StringBuilder()
 
@@ -325,7 +327,7 @@ class FoodEditor constructor(
                 foodColumnsForDisplay.add(col)
             }
         }
-        for (nutrient in Nutrients.nutrients) {
+        for (nutrient in nutrients) {
             // TODO display minimal set of nutrient columns first
             nutrientsForDisplay.add(nutrient)
         }

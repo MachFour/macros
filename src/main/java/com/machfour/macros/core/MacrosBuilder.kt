@@ -267,7 +267,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
              in a map, which is returned at the end, after all columns have been processed.
          */
         // method used by MacrosEntity
-        fun <M : MacrosEntity<M>, J> validate(
+        internal fun <M : MacrosEntity<M>, J> validate(
             data: RowData<M>,
             col: Column<M, J>,
             customValidations: List<Validation<M>> = emptyList()

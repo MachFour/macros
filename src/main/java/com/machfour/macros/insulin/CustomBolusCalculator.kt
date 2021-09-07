@@ -1,8 +1,7 @@
 package com.machfour.macros.insulin
 
 import com.github.keelar.exprk.Expressions
-import com.machfour.macros.nutrients.Nutrients
-import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.*
 
 
 fun interface CustomBolusCalculator {
@@ -12,10 +11,10 @@ fun interface CustomBolusCalculator {
         fun fromString(s: String): CustomBolusCalculator {
             return CustomBolusCalculator { nd ->
                 Expressions().run {
-                    define("p", nd.amountOf(Nutrients.PROTEIN, defaultValue = 0.0))
-                    define("f", nd.amountOf(Nutrients.FAT, defaultValue = 0.0))
-                    define("c", nd.amountOf(Nutrients.CARBOHYDRATE, defaultValue = 0.0))
-                    define("r", nd.amountOf(Nutrients.FIBRE, defaultValue = 0.0))
+                    define("p", nd.amountOf(PROTEIN, defaultValue = 0.0))
+                    define("f", nd.amountOf(FAT, defaultValue = 0.0))
+                    define("c", nd.amountOf(CARBOHYDRATE, defaultValue = 0.0))
+                    define("r", nd.amountOf(FIBRE, defaultValue = 0.0))
                     eval(s).toDouble()
                 }
             }

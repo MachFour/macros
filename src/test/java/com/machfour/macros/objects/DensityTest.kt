@@ -3,8 +3,9 @@ package com.machfour.macros.objects
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
+import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.queries.FoodQueries
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES
@@ -43,6 +44,7 @@ class DensityTest {
             }
         }
     }
+
     @Test
     fun testDensity() {
         val density = chickpeaFlour.density
@@ -50,7 +52,7 @@ class DensityTest {
         requireNotNull(density)
         val millilitresNd = chickpeaNd.withQuantityUnit(MILLILITRES, density).rescale(100 / density)
         val backConverted = millilitresNd.withQuantityUnit(GRAMS, density).rescale100()
-        val carbs = Nutrients.CARBOHYDRATE
+        val carbs = CARBOHYDRATE
         println("Default quantity: " + chickpeaNd.quantityObj)
         println("mls quantity: " + millilitresNd.quantityObj)
         println("backConverted quantity: " + backConverted.quantityObj)
@@ -68,7 +70,7 @@ class DensityTest {
         val combined = FoodNutrientData.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
         Assertions.assertEquals(GRAMS, combined.quantityObj.unit)
         Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)
-        Assertions.assertTrue(combined.hasCompleteData(Nutrients.QUANTITY))
+        Assertions.assertTrue(combined.hasCompleteData(QUANTITY))
     }
 
 }

@@ -1,10 +1,10 @@
 package com.machfour.macros.entities.auxiliary
 
-import com.machfour.macros.sql.Column
 import com.machfour.macros.core.VErrorList
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.QUANTITY
+import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.sql.Column
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 
@@ -24,7 +24,7 @@ object Validations {
             if (nutrientId == null) {
                 // nutrient must be specified
                 it[nutrientCol] = listOf(ValidationError.NON_NULL)
-            } else if (nutrientId == Nutrients.QUANTITY.id) {
+            } else if (nutrientId == QUANTITY.id) {
                 if (value == null) {
                     it[valueCol] = listOf(ValidationError.NON_NULL)
                 } else if (value <= 0) {

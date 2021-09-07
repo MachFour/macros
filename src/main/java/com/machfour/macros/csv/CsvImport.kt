@@ -5,7 +5,9 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.ENERGY
+import com.machfour.macros.nutrients.QUANTITY
+import com.machfour.macros.nutrients.nutrients
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
@@ -55,16 +57,16 @@ internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): 
 private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<FoodNutrientValue>> {
     val data = ArrayList<RowData<FoodNutrientValue>>()
 
-    for (nutrient in Nutrients.nutrients) {
+    for (nutrient in nutrients) {
         val valueString = csvRow[nutrient.csvName]
         // we skip adding the nutrient if it's not present in the CSV
         if (valueString.isNullOrBlank()) {
             continue
         }
 
-        val unitString = when(nutrient) {
-            Nutrients.QUANTITY -> csvRow[QUANTITY_UNIT_NAME]
-            Nutrients.ENERGY -> csvRow[ENERGY_UNIT_NAME]
+        val unitString = when (nutrient) {
+            QUANTITY -> csvRow[QUANTITY_UNIT_NAME]
+            ENERGY -> csvRow[ENERGY_UNIT_NAME]
             else -> null // default unit
         }
         val unit = unitString?.let { unitWithAbbr(it) } ?: LegacyNutrientUnits[nutrient]

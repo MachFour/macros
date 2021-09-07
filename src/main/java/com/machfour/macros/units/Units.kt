@@ -6,9 +6,9 @@ import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.UnitTable
 import com.machfour.macros.sql.RowData
 
-private fun makeInbuiltUnit(id: Int, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
+private fun makeInbuiltUnit(id: Long, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
     return RowData(Unit.table).run {
-        put(UnitTable.ID, id.toLong())
+        put(UnitTable.ID, id)
         put(UnitTable.NAME, name)
         put(UnitTable.ABBREVIATION, abbr)
         put(UnitTable.METRIC_EQUIVALENT, metricEquivalent)
@@ -80,7 +80,7 @@ val FLUID_OUNCES = makeInbuiltUnit(
     unitType = UnitType.VOLUME
 )
 
-val inbuiltUnits = listOf(
+private val inbuiltUnits = listOf(
     GRAMS,
     MILLIGRAMS,
     MILLILITRES,
@@ -90,6 +90,9 @@ val inbuiltUnits = listOf(
     OUNCES,
     FLUID_OUNCES,
 )
+
+// can't register a new unit with ID smaller than this
+private val minValidNextId = inbuiltUnits.size
 
 private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr.toMapKey }.toMutableMap() }
 
@@ -101,13 +104,15 @@ private val String.toMapKey: String
 
 fun registerUnit(unit: Unit) {
     val id = unit.id
+    require(id >= minValidNextId) { "Unit IDs below $minValidNextId are used for inbuilt units"}
+
     val abbrKey = unit.abbr.toMapKey
 
-    require (!idMap.containsKey(id)) {
-        "Cannot register unit ${unit.name} - id $id is already used by ${idMap[id]}"
+    idMap[id]?.let {
+        error("Cannot register unit ${unit.name} - id $id is already used by $it}")
     }
-    require (!abbrMap.containsKey(abbrKey)) {
-        "Cannot register unit ${unit.name} - abbr $abbrKey is already used by ${abbrMap[abbrKey]}"
+    abbrMap[abbrKey]?.let {
+        error("Cannot register unit ${unit.name} - abbr $abbrKey is already used by ${abbrMap[abbrKey]}")
     }
 
     idMap[id] = unit

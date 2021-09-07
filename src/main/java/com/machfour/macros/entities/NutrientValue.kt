@@ -1,7 +1,8 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.QUANTITY
+import com.machfour.macros.nutrients.nutrientWithId
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
@@ -25,7 +26,7 @@ abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
 
     val value: Double = getData(valueCol)!!
     val unit: Unit = unitWithId(getData(unitIdCol)!!)
-    val nutrient: Nutrient = Nutrients.fromId(nutrientId)
+    val nutrient: Nutrient = nutrientWithId(nutrientId)
 
     // Converts this value into the given unit, if possible.
     // Density is only used when converting quantity (usually in the context of a FoodNutrientValue)
@@ -39,7 +40,7 @@ abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
 
         var conversionRatio = unit.metricEquivalent / newUnit.metricEquivalent
 
-        if (nutrient == Nutrients.QUANTITY && unit.type != newUnit.type) {
+        if (nutrient == QUANTITY && unit.type != newUnit.type) {
             requireNotNull(density) { "Density required to convert quantity across mass and volume units" }
             if (!unit.isVolumeMeasurement && newUnit.isVolumeMeasurement) {
                 // solid units to liquid units

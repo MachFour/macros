@@ -30,31 +30,31 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         // lazy because otherwise having it here messes up static initialisation
         val energyProportionNutrients by lazy {
             setOf(
-                Nutrients.PROTEIN,
-                Nutrients.FAT,
-                Nutrients.SATURATED_FAT,
-                Nutrients.MONOUNSATURATED_FAT,
-                Nutrients.POLYUNSATURATED_FAT,
-                Nutrients.CARBOHYDRATE,
-                Nutrients.SUGAR,
-                Nutrients.STARCH,
-                Nutrients.FIBRE,
-                Nutrients.ALCOHOL
+                PROTEIN,
+                FAT,
+                SATURATED_FAT,
+                MONOUNSATURATED_FAT,
+                POLYUNSATURATED_FAT,
+                CARBOHYDRATE,
+                SUGAR,
+                STARCH,
+                FIBRE,
+                ALCOHOL
             )
         }
 
         // lazy because otherwise having it here messes up static initialisation
         val totalEnergyNutrients by lazy {
-            listOf(Nutrients.PROTEIN, Nutrients.FAT, Nutrients.CARBOHYDRATE, Nutrients.FIBRE)
+            listOf(PROTEIN, FAT, CARBOHYDRATE, FIBRE)
         }
     }
 
-    protected val data: ArrayList<M?> = ArrayList(Nutrients.numNutrients)
-    protected val isDataComplete: Array<Boolean> = Array(Nutrients.numNutrients) { false }
+    protected val data: ArrayList<M?> = ArrayList(numNutrients)
+    protected val isDataComplete: Array<Boolean> = Array(numNutrients) { false }
 
     // initialise the data (which can't be done inline easily)
     init {
-        repeat(Nutrients.numNutrients) {
+        repeat(numNutrients) {
             data.add(null)
         }
     }
@@ -72,7 +72,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         get() = data.filterNotNull()
 
     val nutrientValuesExcludingQuantity: List<M>
-        get() = nutrientValues.filter { it.nutrientId != Nutrients.QUANTITY.id }
+        get() = nutrientValues.filter { it.nutrientId != QUANTITY.id }
 
     // map of protein, fat, saturated fat, carbs, sugar, fibre to proportion of total energy
     private val energyProportionsMap: Map<Nutrient, Double> by lazy {
@@ -92,7 +92,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
     override fun toString(): String {
         val str = StringBuilder("GenericNutrientData [")
-        for (n in Nutrients.nutrients) {
+        for (n in nutrients) {
             str.append("$n : ${get(n)}, ")
         }
         str.append("]")
@@ -163,12 +163,12 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     // If fibre is not present, returns just carbs by diff
     // If there is not enough data to do that, return 0.
     private val carbsBestEffort: Double
-        get() = if (hasCompleteData(Nutrients.CARBOHYDRATE)) {
-            amountOf(Nutrients.CARBOHYDRATE)!!
-        } else if (hasCompleteData(Nutrients.CARBOHYDRATE_BY_DIFF) && hasCompleteData(Nutrients.FIBRE)) {
-            amountOf(Nutrients.CARBOHYDRATE_BY_DIFF)!! - amountOf(Nutrients.FIBRE)!!
-        } else if (hasCompleteData(Nutrients.CARBOHYDRATE_BY_DIFF)) {
-            amountOf(Nutrients.CARBOHYDRATE_BY_DIFF)!!
+        get() = if (hasCompleteData(CARBOHYDRATE)) {
+            amountOf(CARBOHYDRATE)!!
+        } else if (hasCompleteData(CARBOHYDRATE_BY_DIFF) && hasCompleteData(FIBRE)) {
+            amountOf(CARBOHYDRATE_BY_DIFF)!! - amountOf(FIBRE)!!
+        } else if (hasCompleteData(CARBOHYDRATE_BY_DIFF)) {
+            amountOf(CARBOHYDRATE_BY_DIFF)!!
         } else {
             0.0
         }
@@ -185,7 +185,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
     fun getEnergyAs(unit: Unit) : Double? {
         require(unit.type === UnitType.ENERGY) { "Unit $unit is not an energy unit "}
-        return this[Nutrients.ENERGY]?.convertValueTo(unit)
+        return this[ENERGY]?.convertValueTo(unit)
     }
 
 
@@ -208,33 +208,33 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
         val g = GRAMS
         // energy from...
-        val satFat = amountOf(Nutrients.SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val monoFat = amountOf(Nutrients.MONOUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val polyFat = amountOf(Nutrients.POLYUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val sugar = amountOf(Nutrients.SUGAR, g, 0.0) * KJ_PER_G_CARBOHYDRATE
-        val starch = amountOf(Nutrients.STARCH, g, 0.0) * KJ_PER_G_CARBOHYDRATE
+        val satFat = amountOf(SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
+        val monoFat = amountOf(MONOUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
+        val polyFat = amountOf(POLYUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
+        val sugar = amountOf(SUGAR, g, 0.0) * KJ_PER_G_CARBOHYDRATE
+        val starch = amountOf(STARCH, g, 0.0) * KJ_PER_G_CARBOHYDRATE
 
-        val protein = amountOf(Nutrients.PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN
-        val fibre = amountOf(Nutrients.FIBRE, g, 0.0) * KJ_PER_G_FIBRE
-        val alcohol = amountOf(Nutrients.ALCOHOL, g, 0.0) * KJ_PER_G_ALCOHOL
+        val protein = amountOf(PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN
+        val fibre = amountOf(FIBRE, g, 0.0) * KJ_PER_G_FIBRE
+        val alcohol = amountOf(ALCOHOL, g, 0.0) * KJ_PER_G_ALCOHOL
 
         // fat must be >= sat + mono + poly
-        val fat = (amountOf(Nutrients.FAT, g, 0.0) * KJ_PER_G_FAT)
+        val fat = (amountOf(FAT, g, 0.0) * KJ_PER_G_FAT)
             .coerceAtLeast(satFat + monoFat + polyFat)
         // correct subtypes: carbs must be >= sugar + starch
-        val carb = (amountOf(Nutrients.CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE)
+        val carb = (amountOf(CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE)
             .coerceAtLeast(sugar + starch)
 
-        componentMap[Nutrients.PROTEIN] = protein
-        componentMap[Nutrients.FAT] = fat
-        componentMap[Nutrients.SATURATED_FAT] = satFat
-        componentMap[Nutrients.MONOUNSATURATED_FAT] = monoFat
-        componentMap[Nutrients.POLYUNSATURATED_FAT] = polyFat
-        componentMap[Nutrients.CARBOHYDRATE] = carb
-        componentMap[Nutrients.SUGAR] = sugar
-        componentMap[Nutrients.STARCH] = starch
-        componentMap[Nutrients.FIBRE] = fibre
-        componentMap[Nutrients.ALCOHOL] = alcohol
+        componentMap[PROTEIN] = protein
+        componentMap[FAT] = fat
+        componentMap[SATURATED_FAT] = satFat
+        componentMap[MONOUNSATURATED_FAT] = monoFat
+        componentMap[POLYUNSATURATED_FAT] = polyFat
+        componentMap[CARBOHYDRATE] = carb
+        componentMap[SUGAR] = sugar
+        componentMap[STARCH] = starch
+        componentMap[FIBRE] = fibre
+        componentMap[ALCOHOL] = alcohol
 
         return componentMap
     }

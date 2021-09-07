@@ -4,8 +4,7 @@ import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.Nutrients
+import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.formatNutrientValue
 import com.machfour.macros.util.formatQuantity
@@ -21,22 +20,19 @@ const val longDataWidth = 7
 
 private const val columnSep = "  "
 private val conciseTableCols = listOf(
-      Nutrients.ENERGY
-    , Nutrients.PROTEIN
-    , Nutrients.FAT
-    , Nutrients.CARBOHYDRATE
+    ENERGY, PROTEIN, FAT, CARBOHYDRATE
 )
 
 private val verboseTableCols = listOf(
-      Nutrients.ENERGY
-    , Nutrients.PROTEIN
-    , Nutrients.FAT
-    , Nutrients.SATURATED_FAT
-    , Nutrients.CARBOHYDRATE
-    , Nutrients.SUGAR
-    , Nutrients.FIBRE
-    , Nutrients.SODIUM
-    , Nutrients.CALCIUM
+    ENERGY,
+    PROTEIN,
+    FAT,
+    SATURATED_FAT,
+    CARBOHYDRATE,
+    SUGAR,
+    FIBRE,
+    SODIUM,
+    CALCIUM
 )
 
 /*
@@ -105,7 +101,7 @@ fun printMeal(meal: Meal, verbose: Boolean) {
         rightAlign.add(true)
     }
     // last column is quantity, so is a bit longer
-    headingRow.add(EnglishColumnNames.getAbbreviatedName(Nutrients.QUANTITY))
+    headingRow.add(EnglishColumnNames.getAbbreviatedName(QUANTITY))
     rowWidths.add(servingWidth)
     rightAlign.add(true)
 

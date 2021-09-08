@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    kotlin("jvm") version("1.5.21")
+    kotlin("jvm") version("1.5.30")
 }
 
 group = "com.machfour"
@@ -12,15 +12,15 @@ repositories {
 
 dependencies {
     // Kotlin JVM standard library
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt")
     implementation("net.sf.supercsv:super-csv:2.4.0")
-    implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.code.gson:gson:2.8.8")
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     // testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
 }
 
 tasks.withType<Copy> {

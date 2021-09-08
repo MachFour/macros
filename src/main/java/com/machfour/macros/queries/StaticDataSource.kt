@@ -44,105 +44,105 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
     // TODO remove all the methods below from the interface and make them protected
 
     override fun getAllFoodCategories(): Map<String, FoodCategory> {
-        return FoodQueries.getAllFoodCategories(database)
+        return getAllFoodCategories(database)
     }
 
     override fun getFoodByIndexName(indexName: String): Food? {
-        return FoodQueries.getFoodByIndexName(database, indexName)
+        return getFoodByIndexName(database, indexName)
     }
 
     override fun getFoodById(id: Long): Food? {
-        return FoodQueries.getFoodById(database, id)
+        return getFoodById(database, id)
     }
 
     override fun getFoodIdsByIndexName(indexNames: Collection<String>): Map<String, Long> {
-        return FoodQueries.getFoodIdsByIndexName(database, indexNames)
+        return getFoodIdsByIndexName(database, indexNames)
     }
 
     override fun getFoodIdByIndexName(indexName: String): Long? {
-        return FoodQueries.getFoodIdByIndexName(database, indexName)
+        return getFoodIdByIndexName(database, indexName)
     }
 
     override fun getAllFoodsMap(): Map<Long, Food> {
-        return FoodQueries.getAllFoodsMap(database)
+        return getAllFoodsMap(database)
     }
 
     override fun getFoodsById(foodIds: Collection<Long>, preserveOrder: Boolean): Map<Long, Food> {
-        return FoodQueries.getFoodsById(database, foodIds, preserveOrder)
+        return getFoodsById(database, foodIds, preserveOrder)
     }
 
     override fun getServingsById(servingIds: Collection<Long>): Map<Long, Serving> {
-        return FoodQueries.getServingsById(database, servingIds)
+        return getServingsById(database, servingIds)
     }
 
     override fun getFoodsByIndexName(indexNames: Collection<String>): Map<String, Food> {
-        return FoodQueries.getFoodsByIndexName(database, indexNames)
+        return getFoodsByIndexName(database, indexNames)
     }
 
     override fun getParentFoodIdsContainingFoodIds(foodIds: List<Long>): List<Long> {
-        return FoodQueries.getParentFoodIdsContainingFoodIds(database, foodIds)
+        return getParentFoodIdsContainingFoodIds(database, foodIds)
     }
 
     override fun getMealsForDay(day: DateStamp): Map<Long, Meal> {
-        return MealQueries.getMealsForDay(database, day)
+        return getMealsForDay(database, day)
     }
 
     override fun getMealForDayWithName(day: DateStamp, name: String): Meal? {
-        return MealQueries.getMealForDayWithName(database, day, name)
+        return getMealForDayWithName(database, day, name)
     }
 
     override fun getMealIdsForDay(day: DateStamp): List<Long> {
-        return MealQueries.getMealIdsForDay(database, day)
+        return getMealIdsForDay(database, day)
     }
 
     override fun getMealById(id: Long): Meal? {
-        return MealQueries.getMealById(database, id)
+        return getMealById(database, id)
     }
 
     override fun getMealsById(mealIds: Collection<Long>): Map<Long, Meal> {
-        return MealQueries.getMealsById(database, mealIds)
+        return getMealsById(database, mealIds)
     }
 
     override fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long> {
-        return MealQueries.getMealIdsForFoodIds(database, foodIds)
+        return getMealIdsForFoodIds(database, foodIds)
     }
 
     override fun getDaysForMealIds(mealIds: Collection<Long>): List<DateStamp> {
-        return MealQueries.getDaysForMealIds(database, mealIds)
+        return getDaysForMealIds(database, mealIds)
     }
 
     override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
-        return WriteQueries.insertObjects(database, objects, withId)
+        return insertObjects(database, objects, withId)
     }
 
     override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
-        return WriteQueries.updateObjects(database, objects)
+        return updateObjects(database, objects)
     }
 
     override fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
-        return WriteQueries.deleteObject(database, o)
+        return deleteObject(database, o)
     }
 
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
-        return WriteQueries.deleteObjects(database, objects)
+        return deleteObjects(database, objects)
     }
 
     override fun <M : MacrosEntity<M>> deleteObjectsById(
         table: Table<M>,
         ids: Collection<Long>
     ): Int {
-        return WriteQueries.deleteObjectsById(database, table, ids)
+        return deleteObjectsById(database, table, ids)
     }
 
     override fun <M : MacrosEntity<M>> saveObject(o: M): Int {
-        return WriteQueries.saveObject(database, o)
+        return saveObject(database, o)
     }
 
     override fun <M : MacrosEntity<M>> saveObjects(
         objects: Collection<M>,
         source: ObjectSource
     ): Int {
-        return WriteQueries.saveObjects(database, objects, source)
+        return saveObjects(database, objects, source)
     }
 
     override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
@@ -159,7 +159,8 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
             database.beginTransaction()
 
             // get the food ID into the FOOD_ID field of the NutrientValues
-            val completedNValues = FkCompletion.completeForeignKeys(database, insertNutrients, foodIdCol)
+            val completedNValues =
+                completeForeignKeys(database, insertNutrients, foodIdCol)
 
             saveObjects(completedNValues, ObjectSource.USER_NEW)
             saveObjects(updateNutrients, ObjectSource.DB_EDIT)
@@ -174,19 +175,19 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
     }
 
     override fun deleteAllIngredients() {
-        return WriteQueries.deleteAllIngredients(database)
+        return deleteAllIngredients(database)
     }
 
     override fun deleteAllFoodPortions() {
-        return WriteQueries.deleteAllFoodPortions(database)
+        return deleteAllFoodPortions(database)
     }
 
     override fun deleteAllCompositeFoods(): Int {
-        return WriteQueries.deleteAllCompositeFoods(database)
+        return deleteAllCompositeFoods(database)
     }
 
     override fun forgetFood(f: Food) {
-        return WriteQueries.forgetFood(database, f)
+        return forgetFood(database, f)
     }
 
     /*
@@ -194,15 +195,15 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
      */
 
     override fun foodSearch(keywords: List<String>, matchAll: Boolean, minRelevance: Int): Set<Long> {
-        return FoodQueries.foodSearch(database, keywords, matchAll, minRelevance)
+        return foodSearch(database, keywords, matchAll, minRelevance)
     }
 
     override fun foodSearch(keyword: String, minRelevance: Int): Set<Long> {
-        return FoodQueries.foodSearch(database, keyword)
+        return foodSearch(database, keyword)
     }
 
     override fun recentFoodIds(howMany: Int): List<Long> {
-        return FoodPortionQueries.recentFoodIds(database, howMany)
+        return recentFoodIds(database, howMany)
     }
 
 }

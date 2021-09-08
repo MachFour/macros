@@ -1,6 +1,8 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.cli.Commands
+import com.machfour.macros.cli.initCommands
+import com.machfour.macros.cli.noArgsCommand
+import com.machfour.macros.cli.parseCommand
 import kotlin.system.exitProcess
 
 object LinuxMain {
@@ -22,7 +24,6 @@ object LinuxMain {
     @JvmStatic
     fun main(args: Array<String>) {
         // To insert a pause (until user presses Enter):
-        //try { System.in.read(); } catch (IOException e) { /* do nothing */ }
         val config = LinuxConfig()
 
         // give the SQLite JDBC driver an extracted version of the native lib, otherwise it auto-extracts each time
@@ -30,10 +31,9 @@ object LinuxMain {
         System.setProperty("org.sqlite.lib.name", LinuxConfig.SQLITE_NATIVE_LIB_NAME)
 
         // set up all the file paths
-        Commands.initCommands(config)
-        val cmd = if (args.isEmpty()) Commands.noArgsCommand() else Commands.parseCommand(args[0])
-
-        val argList = args.toMutableList() // make it mutable
+        initCommands(config)
+        val cmd = if (args.isEmpty()) noArgsCommand() else parseCommand(args[0])
+        val argList = args.toMutableList()
         checkDbLocationOverride(argList, config)
 
         // command args start from index 1

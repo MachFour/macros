@@ -6,9 +6,8 @@ import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
-import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.getAllFoodsMap
 import com.machfour.macros.sql.SqlDatabase
-
 import java.sql.SQLException
 
 
@@ -33,7 +32,7 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     private fun listFoods(ds: SqlDatabase) {
         val allFoods: Collection<Food>
         try {
-            allFoods = FoodQueries.getAllFoodsMap(ds).values
+            allFoods = getAllFoodsMap(ds).values
         } catch (e: SQLException) {
             printErr("SQL exception occurred: ")
             printlnErr(e.errorCode)

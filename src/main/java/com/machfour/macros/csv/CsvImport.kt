@@ -13,10 +13,10 @@ import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.orm.schema.IngredientTable
 import com.machfour.macros.orm.schema.ServingTable
-import com.machfour.macros.queries.CoreQueries
-import com.machfour.macros.queries.FkCompletion.completeForeignKeys
-import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.completeForeignKeys
+import com.machfour.macros.queries.getFoodByIndexName
+import com.machfour.macros.queries.saveObjects
+import com.machfour.macros.queries.selectSingleColumn
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -85,7 +85,8 @@ private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<F
 }
 
 // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-internal fun getCsvMapReader(r: Reader): ICsvMapReader = CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE)
+internal fun getCsvMapReader(r: Reader): ICsvMapReader =
+    CsvMapReader(r, CsvPreference.EXCEL_PREFERENCE)
 
 // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
 private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { it.isNullOrBlank() }
@@ -157,7 +158,10 @@ private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String,
 // (don't have linked food objects of their own)
 //
 @Throws(IOException::class, TypeCastException::class)
-fun buildCompositeFoodObjectTree(recipeCsv: Reader, ingredients: Map<String, List<Ingredient>>): Map<String, CompositeFood> {
+fun buildCompositeFoodObjectTree(
+    recipeCsv: Reader,
+    ingredients: Map<String, List<Ingredient>>
+): Map<String, CompositeFood> {
     // preserve insertion order
     val foodMap: MutableMap<String, CompositeFood> = LinkedHashMap()
     val ndMap: MutableMap<String, List<RowData<FoodNutrientValue>>> = LinkedHashMap()
@@ -248,12 +252,16 @@ fun buildServings(servingCsv: Reader): List<Serving> {
 }
 
 @Throws(SQLException::class)
-private fun findExistingFoodIndexNames(ds: SqlDatabase, indexNames: Collection<String>): Set<String> {
-    val queryResult = CoreQueries.selectSingleColumn(ds, FoodTable.INDEX_NAME) {
+private fun findExistingFoodIndexNames(
+    ds: SqlDatabase,
+    indexNames: Collection<String>
+): Set<String> {
+    val queryResult = selectSingleColumn(ds, FoodTable.INDEX_NAME) {
         where(FoodTable.INDEX_NAME, indexNames, iterate = true)
         distinct()
     }
-    return queryResult.map { requireNotNull(it) { "Null food index name encountered: $it" } }.toSet()
+    return queryResult.map { requireNotNull(it) { "Null food index name encountered: $it" } }
+        .toSet()
 }
 
 // foods maps from index name to food object. Food object must have nutrition data attached
@@ -262,7 +270,8 @@ private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>) {
     // collect all of the index names to be imported, and check if they're already in the DB.
     val existingIndexNames = findExistingFoodIndexNames(ds, foods.keys)
     // remove entries corresponding to existing foods; this actually modifies the original map
-    val foodsToSave : Map<String, Food> = foods.filter { entry -> !existingIndexNames.contains(entry.key) }
+    val foodsToSave: Map<String, Food> =
+        foods.filter { entry -> !existingIndexNames.contains(entry.key) }
     /*
     if (allowOverwrite) {
         Map<String, Food> overwriteFoods = new HashMap<>();
@@ -287,9 +296,9 @@ private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>) {
         println("The following foods will be imported; others had index names already present in the database:")
         foodsToSave.keys.forEach { println(it) }
     }
-    WriteQueries.saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
+    saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
     val completedNv = completeForeignKeys(ds, nvObjects, FoodNutrientValueTable.FOOD_ID)
-    WriteQueries.saveObjects(ds, completedNv, ObjectSource.IMPORT)
+    saveObjects(ds, completedNv, ObjectSource.IMPORT)
 }
 
 @Suppress("UNUSED_EXPRESSION")
@@ -312,7 +321,7 @@ fun importFoodData(
                 ?.let { FoodType.fromString(it) }
                 ?.let { data.put(FoodTable.SEARCH_RELEVANCE, it.defaultSearchRelevance.value) }
 
-            modifyFoodData ?.let { it(data) }
+            modifyFoodData?.let { it(data) }
         },
         modifyNutrientValueData
     )
@@ -327,7 +336,7 @@ fun importServings(ds: SqlDatabase, servingCsv: Reader, allowOverwrite: Boolean)
     allowOverwrite // TODO use
     val csvServings = buildServings(servingCsv)
     val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
-    WriteQueries.saveObjects(ds, completedServings, ObjectSource.IMPORT)
+    saveObjects(ds, completedServings, ObjectSource.IMPORT)
 }
 
 @Throws(IOException::class, SQLException::class, TypeCastException::class)
@@ -342,6 +351,7 @@ fun importRecipes(ds: SqlDatabase, recipeCsv: Reader, ingredientCsv: Reader) {
     // add all the ingredients for non-duplicated recipes to one big list, then save them all
     val allIngredients = ingredientsByRecipe.flatMap { it.value }
 
-    val completedIngredients = completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
-    WriteQueries.saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
+    val completedIngredients =
+        completeForeignKeys(ds, allIngredients, IngredientTable.PARENT_FOOD_ID)
+    saveObjects(ds, completedIngredients, ObjectSource.IMPORT)
 }

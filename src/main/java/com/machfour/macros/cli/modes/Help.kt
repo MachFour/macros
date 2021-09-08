@@ -1,7 +1,8 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.COMMANDS_BY_NAME
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.Commands
+import com.machfour.macros.cli.commands
 import com.machfour.macros.core.MacrosConfig
 
 class Help(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -16,7 +17,7 @@ class Help(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         println("################################")
         println()
         println("Available commands:")
-        Commands.commands.forEach {
+        commands.forEach {
             if (it.isUserCommand) {
                 println(it.name)
             }
@@ -29,7 +30,7 @@ class Help(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     override fun doAction(args: List<String>): Int {
         if (args.size >= 2) {
             // help on a particular action, if that action exists. Otherwise default help is printed
-            Commands.commandsByName[args[1]]?.printHelp() ?: printHelp()
+            COMMANDS_BY_NAME[args[1]]?.printHelp() ?: printHelp()
         } else {
             // no command specified
             printHelp()

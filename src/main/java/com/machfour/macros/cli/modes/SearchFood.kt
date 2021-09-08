@@ -5,7 +5,8 @@ import com.machfour.macros.cli.utils.printErr
 import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.foodSearch
+import com.machfour.macros.queries.getFoodsById
 import java.sql.SQLException
 
 class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -26,9 +27,9 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val searchString = args[1]
         val keywords = searchString.split(Regex("\\s"))
         val resultFoods = try {
-            val resultIds = FoodQueries.foodSearch(ds, keywords)
+            val resultIds = foodSearch(ds, keywords)
             if (resultIds.isNotEmpty()) {
-                FoodQueries.getFoodsById(ds, resultIds)
+                getFoodsById(ds, resultIds)
             } else {
                 emptyMap()
             }

@@ -88,16 +88,16 @@ internal class CacheTest {
     fun saveObjects() {
         try {
             println("Clearing tables")
-            WriteQueries.clearTable(db, FoodPortion.table)
-            WriteQueries.clearTable(db, Meal.table)
-            WriteQueries.clearTable(db, Serving.table)
-            WriteQueries.clearTable(db, FoodNutrientValue.table)
-            WriteQueries.clearTable(db, Food.table)
+            clearTable(db, FoodPortion.table)
+            clearTable(db, Meal.table)
+            clearTable(db, Serving.table)
+            clearTable(db, FoodNutrientValue.table)
+            clearTable(db, Food.table)
 
             println("Saving objects")
-            WriteQueries.saveObject(db, testFood)
-            WriteQueries.saveObject(db, testMeal)
-            WriteQueries.saveObject(db, testFoodPortion)
+            saveObject(db, testFood)
+            saveObject(db, testMeal)
+            saveObject(db, testFoodPortion)
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail("Saving objects threw SQL exception")

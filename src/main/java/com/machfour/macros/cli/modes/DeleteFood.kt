@@ -6,9 +6,8 @@ import com.machfour.macros.cli.utils.printFoodSummary
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
-import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.queries.WriteQueries
-
+import com.machfour.macros.queries.deleteObject
+import com.machfour.macros.queries.getFoodsByIndexName
 import java.sql.SQLException
 
 
@@ -35,7 +34,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val indexNamesToDelete = args.subList(1, args.size)
         val foodsToDelete: List<Food>
         try {
-            val retrievedFoods = FoodQueries.getFoodsByIndexName(ds, indexNamesToDelete)
+            val retrievedFoods = getFoodsByIndexName(ds, indexNamesToDelete)
             foodsToDelete = ArrayList(retrievedFoods.values)
         } catch (e: SQLException) {
             println("SQL Exception while retrieving foods: $e")
@@ -74,7 +73,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 ds.beginTransaction()
                 for (f in foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    WriteQueries.deleteObject(ds, f)
+                    deleteObject(ds, f)
                     println("Deleted " + f.indexName)
                 }
                 ds.endTransaction()

@@ -19,8 +19,9 @@ import com.machfour.macros.nutrients.nutrients
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodNutrientValueTable
 import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.queries.FkCompletion
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.completeForeignKeys
+import com.machfour.macros.queries.saveObject
+import com.machfour.macros.queries.saveObjects
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.units.LegacyNutrientUnits
@@ -581,18 +582,22 @@ class FoodEditor constructor(
                     val nutrientValues = nutrientData.nutrientValues
                     for (nv in nutrientValues) {
                         // link the food to the nd
-                        nv.setFkParentNaturalKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, indexName)
+                        nv.setFkParentNaturalKey(
+                            FoodNutrientValueTable.FOOD_ID,
+                            FoodTable.INDEX_NAME,
+                            indexName
+                        )
                     }
 
                     // gotta do it in one go
                     ds.openConnection()
                     ds.beginTransaction()
-                    WriteQueries.saveObject(ds, f)
+                    saveObject(ds, f)
 
                     // get the food ID into the FOOD_ID field of the NutrientValues
-                    val completedNValues = FkCompletion.completeForeignKeys(ds, nutrientValues, FoodNutrientValueTable.FOOD_ID)
+                    val completedNValues = completeForeignKeys(ds, nutrientValues, FoodNutrientValueTable.FOOD_ID)
 
-                    WriteQueries.saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
+                    saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
                     ds.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
                 } finally {
@@ -606,8 +611,10 @@ class FoodEditor constructor(
             }
 
         } else {
-            setStatus("Could not save due to validation errors. Check the following columns:",
-                    "${foodBuilder.allErrors.keys} / ${nutrientBuilder.allErrors.keys})")
+            setStatus(
+                line1 = "Could not save due to validation errors. Check the following columns:",
+                line2 = "${foodBuilder.allErrors.keys} / ${nutrientBuilder.allErrors.keys})"
+            )
         }
     }
 

@@ -6,7 +6,7 @@ import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.queries.MealQueries
+import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 
 import java.sql.SQLException
@@ -75,7 +75,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         } else {
             try {
-                val mealsForDay = MealQueries.getMealsForDay(ds, mealSpec.day!!)
+                val mealsForDay = getMealsForDay(ds, mealSpec.day!!)
                 if (mealsForDay.isEmpty()) {
                     println("No meals recorded on " + mealSpec.day.prettyPrint())
                 } else {

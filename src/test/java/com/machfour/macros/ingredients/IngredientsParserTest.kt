@@ -2,7 +2,8 @@ package com.machfour.macros.ingredients
 
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.deleteAllCompositeFoods
+import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.util.stringJoin
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -20,8 +21,8 @@ class IngredientsParserTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                WriteQueries.deleteAllIngredients(db)
-                WriteQueries.deleteAllCompositeFoods(db)
+                deleteAllIngredients(db)
+                deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 Assertions.fail(e)
@@ -33,9 +34,9 @@ class IngredientsParserTest {
     fun deserialise() {
         try {
             FileReader("/home/max/devel/macros-test-data/mayo-recipes.json").use { r ->
-                val ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(r)
+                val ingredientSpecs = deserialiseIngredientsJson(r)
                 @Suppress("UNUSED")
-                val newFoods: Collection<CompositeFood> = IngredientsParser.createCompositeFoods(ingredientSpecs, db)
+                val newFoods: Collection<CompositeFood> = createCompositeFoods(ingredientSpecs, db)
                 println("Composite Foods Read:")
                 println(stringJoin(ingredientSpecs, sep = "\n"))
             }
@@ -50,8 +51,8 @@ class IngredientsParserTest {
     fun testCreate() {
         try {
             FileReader("/home/max/devel/macros-test-data/mayo-recipes.json").use { r ->
-                val ingredientSpecs = IngredientsParser.deserialiseIngredientsJson(r)
-                val newFoods: Collection<CompositeFood> = IngredientsParser.createCompositeFoods(ingredientSpecs, db)
+                val ingredientSpecs = deserialiseIngredientsJson(r)
+                val newFoods = createCompositeFoods(ingredientSpecs, db)
                 println("Composite Foods created:")
                 for (f in newFoods) {
                     println(f)
@@ -68,8 +69,8 @@ class IngredientsParserTest {
     fun testSave() {
         try {
             FileReader("/home/max/devel/macros-test-data/mayo-recipes.json").use { r ->
-                val recipes = IngredientsParser.readRecipes(r, db)
-                IngredientsParser.saveRecipes(recipes, db)
+                val recipes = readRecipes(r, db)
+                saveRecipes(recipes, db)
             }
         } catch (e: IOException) {
             Assertions.fail(e)

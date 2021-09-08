@@ -4,7 +4,6 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.queries.MealQueries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
@@ -46,7 +45,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
     private fun printMealList(db: SqlDatabase, d: DateStamp): Int {
         try {
-            val meals = getMealsForDay(db, d)
+            val meals = com.machfour.macros.queries.getMealsForDay(db, d)
             if (meals.isEmpty()) {
                 println("No meals recorded on " + d.prettyPrint())
             } else {

@@ -53,12 +53,16 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     private var originalData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
     private val draftData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
 
-    private val validationErrors = HashMap<Column<M, *>, MVErrorList>(table.columns.size, 1f).also {
-        // init with empty lists
-        for (col in table.columns) {
-            it[col] = ArrayList()
+    private val validationErrors =
+        HashMap<Column<M, *>, MutableList<ValidationError>>(
+            table.columns.size,
+            1f
+        ).also {
+            // init with empty lists
+            for (col in table.columns) {
+                it[col] = ArrayList()
+            }
         }
-    }
 
     // value change listeners
     //private val listeners: MutableMap<Column<M, *>, ValueChangeListener<*>> = HashMap()
@@ -158,7 +162,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         return data?.toString() ?: ""
     }
 
-    private fun <J> getErrorsInternal(field: Column<M, J>): MVErrorList {
+    private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
         return validationErrors.getValue(field)
     }
 
@@ -291,7 +295,8 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             data: RowData<M>,
             customValidation: Validation<M>? = null
         ): Map<Column<M, *>, List<ValidationError>> {
-            val allErrors: MutableMap<Column<M, *>, List<ValidationError>> = HashMap(data.columns.size, 1.0f)
+            val allErrors: MutableMap<Column<M, *>, List<ValidationError>> =
+                HashMap(data.columns.size, 1.0f)
             for (col in data.columns) {
                 val colErrors = validate(data, col)
                 if (colErrors.isNotEmpty()) {

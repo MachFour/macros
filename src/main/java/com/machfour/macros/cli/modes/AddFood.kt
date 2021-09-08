@@ -8,7 +8,7 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.getFoodIdsByIndexName
 import com.machfour.macros.sql.SqlDatabase
 import java.io.IOException
 import java.sql.SQLException
@@ -24,7 +24,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
          */
         @Throws(SQLException::class)
         private fun checkIndexName(ds: SqlDatabase, indexName: String): Boolean {
-            return FoodQueries.getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
+            return getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
         }
     }
 

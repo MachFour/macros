@@ -11,59 +11,62 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.queries.FoodQueries.getFoodByIndexName
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.getFoodByIndexName
+import com.machfour.macros.queries.saveObject
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.FoodPortionSpec
 import java.sql.SQLException
+
+fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
+    if (specs.isEmpty()) {
+        println("No food portions specified, nothing to do")
+        return 0
+    }
+    val spec = specs[0]
+    val f: Food? = try {
+        getFoodByIndexName(db, spec.foodIndexName)
+    } catch (e: SQLException) {
+        printlnErr("Could not retrieve food. Reason: " + e.message)
+        return 1
+    }
+    if (f == null) {
+        printlnErr("Unrecognised food with index name '${spec.foodIndexName}'")
+        return 1
+    }
+    processFpSpec(spec, toAddTo, f)
+    if (spec.error.isNotEmpty()) {
+        printlnErr(spec.error)
+        return 1
+    }
+    val createdObject = checkNotNull(spec.createdObject) {
+        "No object created but no error message either"
+    }
+    toAddTo.addFoodPortion(createdObject)
+    try {
+        saveFoodPortions(db, toAddTo)
+    } catch (e: SQLException) {
+        printlnErr("Error saving food portion. Reason: " + e.message)
+        return 1
+    }
+    println()
+    printMeal(toAddTo, false)
+    return 0
+}
+
+@Throws(SQLException::class)
+private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
+    for (fp in meal.getFoodPortions()) {
+        if (fp.source != ObjectSource.DATABASE) {
+            saveObject(ds, fp)
+        }
+    }
+}
 
 class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "portion"
         private const val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
 
-        @Throws(SQLException::class)
-        private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
-            for (fp in meal.getFoodPortions()) {
-                if (fp.source != ObjectSource.DATABASE) {
-                    WriteQueries.saveObject(ds, fp)
-                }
-            }
-        }
-
-        fun process(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
-            if (specs.isEmpty()) {
-                println("No food portions specified, nothing to do")
-                return 0
-            }
-            val spec = specs[0]
-            val f: Food? = try {
-                getFoodByIndexName(db, spec.foodIndexName)
-            } catch (e: SQLException) {
-                printlnErr("Could not retrieve food. Reason: " + e.message)
-                return 1
-            }
-            if (f == null) {
-                printlnErr("Unrecognised food with index name '${spec.foodIndexName}'")
-                return 1
-            }
-            processFpSpec(spec, toAddTo, f)
-            if (spec.error.isNotEmpty()) {
-                printlnErr(spec.error)
-                return 1
-            }
-            assert(spec.createdObject != null) { "No object created but no error message either" }
-            toAddTo.addFoodPortion(spec.createdObject!!)
-            try {
-                saveFoodPortions(db, toAddTo)
-            } catch (e: SQLException) {
-                printlnErr("Error saving food portion. Reason: " + e.message)
-                return 1
-            }
-            println()
-            printMeal(toAddTo, false)
-            return 0
-        }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -113,12 +116,17 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         }
 
         // now read everything after the '-s' as food portion specs
-        val specs: MutableList<FoodPortionSpec> = ArrayList(args.size - 1 - separator)
-        for (index in separator + 1 until args.size) {
-            specs.add(makefoodPortionSpecFromLine(args[index]))
+        val specs = ArrayList<FoodPortionSpec>(args.size - 1 - separator).apply {
+            for (index in separator + 1 until args.size) {
+                add(makefoodPortionSpecFromLine(args[index]))
+            }
         }
-        assert (mealSpec.processedObject != null) { "mealspec did not correctly process object but no error was given "}
-        return process(mealSpec.processedObject!!, specs, ds)
+
+        val processedObject = checkNotNull(mealSpec.processedObject) {
+            "mealspec did not correctly process object but no error was given "
+        }
+
+        return processPortions(processedObject, specs, ds)
     }
 
 }

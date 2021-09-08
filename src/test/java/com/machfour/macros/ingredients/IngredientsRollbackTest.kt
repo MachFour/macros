@@ -1,16 +1,16 @@
 package com.machfour.macros.ingredients
 
+import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.FoodQueries
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.deleteAllCompositeFoods
+import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.queries.getFoodByIndexName
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
-
-import org.junit.jupiter.api.Assertions.*
 
 class IngredientsRollbackTest {
     companion object {
@@ -21,8 +21,8 @@ class IngredientsRollbackTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
-                WriteQueries.deleteAllIngredients(db)
-                WriteQueries.deleteAllCompositeFoods(db)
+                deleteAllIngredients(db)
+                deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)
@@ -35,29 +35,30 @@ class IngredientsRollbackTest {
     // even though it is inserted first
     @Test
     fun testRollback() {
-        var indexName: String? = null
-        try {
+        val indexName: String = try {
+            val f: Food
             FileReader("/home/max/devel/macros-test-data/valid-food-invalid-ingredients.json").use { r ->
-                val foods = IngredientsParser.readRecipes(r, db)
+                val foods = readRecipes(r, db)
 
                 assertEquals(1, foods.size)
                 assertNotNull(foods[0])
-                indexName = foods[0].indexName
-                IngredientsParser.saveRecipes(foods, db)
+                f = foods[0]
+                saveRecipes(foods, db)
                 fail<Any>("saveRecipes() did not throw an SQLException")
             }
+            f.indexName
         } catch (e1: IOException) {
-            fail<Any>(e1)
+            fail(e1)
         } catch (e2: SQLException) {
             // we expect a foreign key constraint failure, do nothing
+            fail(e2)
         }
 
-        assertNotNull(indexName)
         try {
-            val f = FoodQueries.getFoodByIndexName(db, indexName!!)
+            val f = getFoodByIndexName(db, indexName)
             assertNull(f, "Composite food was saved in the database, but should not have been")
         } catch (e2: SQLException) {
-            fail<Any>(e2)
+            fail(e2)
         }
 
     }

@@ -1,5 +1,6 @@
 package com.machfour.macros.util
 
+import java.io.IOException
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -56,5 +57,13 @@ fun Double.toRoundedString(decimalPlaces: Int = 3, eps: Double = 1e-4): String {
 // copied from deprecated kotlin code
 fun String.capitalize(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+}
+
+fun pauseUntilEnter() {
+    try {
+        System.`in`.read()
+    } catch (e: IOException) {
+        // do nothing
+    }
 }
 

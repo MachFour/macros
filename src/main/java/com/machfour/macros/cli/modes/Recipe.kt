@@ -6,7 +6,8 @@ import com.machfour.macros.cli.utils.printIngredients
 import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.CompositeFood
-import com.machfour.macros.ingredients.IngredientsParser
+import com.machfour.macros.ingredients.readRecipes
+import com.machfour.macros.ingredients.saveRecipes
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
@@ -33,7 +34,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         try {
             FileReader(args[1]).use { jsonReader ->
                 println("Importing recipes...")
-                recipes.addAll(IngredientsParser.readRecipes(jsonReader, ds))
+                recipes.addAll(readRecipes(jsonReader, ds))
             }
         } catch (e1: IOException) {
             println("IO exception occurred while reading recipes file: " + e1.message)
@@ -82,7 +83,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         println()
         if (response == 'y' || response == 'Y') {
             try {
-                IngredientsParser.saveRecipes(recipes, ds)
+                saveRecipes(recipes, ds)
                 println("Recipes saved!")
             } catch (e: SQLException) {
                 println("SQL exception occurred while saving recipe objects: " + e.message)

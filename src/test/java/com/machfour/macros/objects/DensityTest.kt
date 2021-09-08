@@ -6,7 +6,7 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.QUANTITY
-import com.machfour.macros.queries.FoodQueries
+import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES
 import org.junit.jupiter.api.Assertions
@@ -29,8 +29,8 @@ class DensityTest {
             db = getInstance(DB_LOCATION)
             val failMsg = "Could not find chickpea flour and water in DB. Has it been initialised with data?"
             try {
-                chickpeaFlour = requireNotNull(FoodQueries.getFoodByIndexName(db, "chickpea-flour")) { failMsg }
-                water = requireNotNull(FoodQueries.getFoodByIndexName(db, "water")) { failMsg }
+                chickpeaFlour = requireNotNull(getFoodByIndexName(db, "chickpea-flour")) { failMsg }
+                water = requireNotNull(getFoodByIndexName(db, "water")) { failMsg }
                 chickpeaNd = chickpeaFlour.nutrientData
                 waterNd = water.nutrientData
                 Assertions.assertNotNull(water, failMsg)

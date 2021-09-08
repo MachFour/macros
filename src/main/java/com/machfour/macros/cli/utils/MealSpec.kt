@@ -3,8 +3,9 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.MealTable
-import com.machfour.macros.queries.MealQueries
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.getMealForDayWithName
+import com.machfour.macros.queries.getMealsForDay
+import com.machfour.macros.queries.saveObject
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
@@ -65,7 +66,7 @@ class MealSpec {
     @Throws(SQLException::class)
     private fun getOrCreateMeal(ds: SqlDatabase, day: DateStamp, name: String): Meal {
         // if it already exists return it
-        val matchingMeal = MealQueries.getMealForDayWithName(ds, day, name)
+        val matchingMeal = getMealForDayWithName(ds, day, name)
         if (matchingMeal != null) {
             return matchingMeal
         }
@@ -77,9 +78,9 @@ class MealSpec {
             Meal.factory.construct(this, ObjectSource.USER_NEW)
         }
 
-        WriteQueries.saveObject(ds, newMeal)
+        saveObject(ds, newMeal)
         // get it back again, so that it has an ID and stuff
-        val newlySavedMeal = MealQueries.getMealForDayWithName(ds, day, name)
+        val newlySavedMeal = getMealForDayWithName(ds, day, name)
         check(newlySavedMeal != null) { "Couldn't find newly saved meal in day $day" }
         return newlySavedMeal
     }
@@ -102,7 +103,7 @@ class MealSpec {
         // meal specified that does not exist -> create it
         val mealsForDay: Map<Long, Meal>
         try {
-            mealsForDay = MealQueries.getMealsForDay(ds, day)
+            mealsForDay = getMealsForDay(ds, day)
         } catch (e: SQLException) {
             error = "Error retrieving meals for day ${day}: $e"
             return
@@ -110,7 +111,7 @@ class MealSpec {
         if (!isMealSpecified) {
             if (mealsForDay.isNotEmpty()) {
                 // use most recently modified meal today
-                processedObject = mealsForDay.values.maxByOrNull { it.modifyTime } !!
+                processedObject = mealsForDay.values.maxByOrNull { it.modifyTime }!!
             } else {
                 error = "No meals recorded on " + day.prettyPrint()
             }

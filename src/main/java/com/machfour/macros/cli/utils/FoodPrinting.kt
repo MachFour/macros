@@ -3,7 +3,7 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
-import com.machfour.macros.util.DateTimeUtils
+import com.machfour.macros.util.LOCALIZED_DATETIME_MEDIUM
 import com.machfour.macros.util.displayLength
 import com.machfour.macros.util.formatUnicodeString
 import com.machfour.macros.util.stringJoin
@@ -26,7 +26,7 @@ fun printFoodList(foods: Collection<Food>) {
 }
 
 fun printFoodSummary(f: Food) {
-    val dateFormat = DateTimeUtils.LOCALIZED_DATETIME_MEDIUM
+    val dateFormat = LOCALIZED_DATETIME_MEDIUM
     println("Name:          ${f.longName}")
     println("Notes:         ${f.notes ?: ""}")
     println("Category:      ${f.foodCategory}")

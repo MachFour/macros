@@ -7,7 +7,7 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.sql.RowData
 import java.io.IOException
 import java.sql.SQLException
@@ -33,19 +33,20 @@ class FoodTestForProfiling {
         }
 
         private fun doFood() {
-            foodDc = RowData(FoodTable)
-            foodDc.put(FoodTable.ID, MacrosEntity.NO_ID)
-            foodDc.put(FoodTable.CREATE_TIME, 0L)
-            foodDc.put(FoodTable.MODIFY_TIME, 0L)
-            foodDc.put(FoodTable.INDEX_NAME, "food1")
-            foodDc.put(FoodTable.BRAND, "Max's")
-            foodDc.put(FoodTable.VARIETY, "really good")
-            foodDc.put(FoodTable.NAME, "food")
-            foodDc.put(FoodTable.NOTES, "notes")
-            foodDc.put(FoodTable.CATEGORY, "Dairy")
-            foodDc.put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
-            foodDc.put(FoodTable.USDA_INDEX, null)
-            foodDc.put(FoodTable.NUTTAB_INDEX, null)
+            foodDc = RowData(FoodTable).apply {
+                put(FoodTable.ID, MacrosEntity.NO_ID)
+                put(FoodTable.CREATE_TIME, 0L)
+                put(FoodTable.MODIFY_TIME, 0L)
+                put(FoodTable.INDEX_NAME, "food1")
+                put(FoodTable.BRAND, "Max's")
+                put(FoodTable.VARIETY, "really good")
+                put(FoodTable.NAME, "food")
+                put(FoodTable.NOTES, "notes")
+                put(FoodTable.CATEGORY, "Dairy")
+                put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
+                put(FoodTable.USDA_INDEX, null)
+                put(FoodTable.NUTTAB_INDEX, null)
+            }
             testFood = Food.factory.construct(foodDc, ObjectSource.IMPORT)
         }
 
@@ -58,26 +59,19 @@ class FoodTestForProfiling {
         }
     }
 
-    fun clearFoodTable() {
-        try {
-            WriteQueries.clearTable(db, FoodTable)
-        } catch (e: SQLException) {
-            e.printStackTrace()
-        }
-
-    }
-
     private fun saveALotOfFood() {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
-            val modifiedData = foodDc.copy()
-            modifiedData.put(FoodTable.ID, i.toLong())
-            modifiedData.put(FoodTable.INDEX_NAME, "food$i")
-            val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.IMPORT)
-            lotsOfFoods.add(modifiedIndexName)
+            val modifiedData = foodDc.copy().apply {
+                put(FoodTable.ID, i.toLong())
+                put(FoodTable.INDEX_NAME, "food$i")
+            }
+            Food.factory.construct(modifiedData, ObjectSource.IMPORT).also {
+                lotsOfFoods.add(it)
+            }
         }
         try {
-            WriteQueries.insertObjects(db, lotsOfFoods, true)
+            insertObjects(db, lotsOfFoods, true)
         } catch (e: SQLException) {
             e.printStackTrace()
         }

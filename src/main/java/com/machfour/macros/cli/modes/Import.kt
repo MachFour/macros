@@ -9,7 +9,9 @@ import com.machfour.macros.csv.CsvException
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Serving
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.clearTable
+import com.machfour.macros.queries.deleteAllCompositeFoods
+import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
 import java.io.IOException
@@ -81,15 +83,15 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     println("Clearing existing foods, servings, nutrition data and ingredients...")
                     // have to clear in reverse order
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
-                    WriteQueries.deleteAllIngredients(db)
-                    WriteQueries.clearTable(db, Serving.table)
-                    WriteQueries.clearTable(db, FoodNutrientValue.table)
-                    WriteQueries.clearTable(db, Food.table)
+                    deleteAllIngredients(db)
+                    clearTable(db, Serving.table)
+                    clearTable(db, FoodNutrientValue.table)
+                    clearTable(db, Food.table)
                 } else if (!noRecipes) {
                     println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
-                    WriteQueries.deleteAllIngredients(db)
-                    WriteQueries.deleteAllCompositeFoods(db)
+                    deleteAllIngredients(db)
+                    deleteAllCompositeFoods(db)
                 } else {
                     println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }

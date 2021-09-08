@@ -7,7 +7,7 @@ import com.machfour.macros.linux.LinuxDatabase
 import java.io.IOException
 import java.sql.SQLException
 
-class Init(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
+class Init(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "init"
         private const val USAGE = "Usage: $programName $NAME"

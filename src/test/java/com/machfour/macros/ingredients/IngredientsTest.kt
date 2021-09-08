@@ -3,7 +3,9 @@ package com.machfour.macros.ingredients
 import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.WriteQueries
+import com.machfour.macros.queries.clearTable
+import com.machfour.macros.queries.deleteAllCompositeFoods
+import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.sql.RowData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,8 +37,8 @@ class IngredientsTest {
         fun initDb() {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {
-                WriteQueries.deleteAllIngredients(db)
-                WriteQueries.deleteAllCompositeFoods(db)
+                deleteAllIngredients(db)
+                deleteAllCompositeFoods(db)
             } catch (e: SQLException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)
@@ -56,7 +58,7 @@ class IngredientsTest {
         spec.addIngredients(listOf(waterSpec, chickpeaSpec, cookingSpec, oilSpec))
 
         val recipe = try {
-            val recipes = IngredientsParser.createCompositeFoods(listOf(spec), db)
+            val recipes = createCompositeFoods(listOf(spec), db)
             assertEquals(1, recipes.size)
             recipes.firstOrNull()
         } catch (e: SQLException) {
@@ -80,7 +82,7 @@ class IngredientsTest {
 
     private fun clearFoodTable() {
         try {
-            WriteQueries.clearTable(db, Food.table)
+            clearTable(db, Food.table)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

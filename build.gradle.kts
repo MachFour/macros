@@ -13,7 +13,7 @@ repositories {
 dependencies {
     // Kotlin JVM standard library
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.30")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
     implementation("net.sf.supercsv:super-csv:2.4.0")
     implementation("com.google.code.gson:gson:2.8.8")
 

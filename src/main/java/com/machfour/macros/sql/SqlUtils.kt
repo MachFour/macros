@@ -81,7 +81,7 @@ internal fun <M> makeSqlWhereLikeString(
 ): String {
     return when (likeColumns.size) {
         0 -> ""
-        1 -> " WHERE " + likeColumns.first().sqlName + " LIKE ?"
+        1 -> " WHERE " + likeColumns.single().sqlName + " LIKE ?"
         else -> {
             val bracketedWhereClauses: MutableList<String> = ArrayList(likeColumns.size)
             for (c in likeColumns) {

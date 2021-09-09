@@ -47,6 +47,9 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     val isDefault: Boolean
         get() = getData(ServingTable.IS_DEFAULT)!!
 
+    val notes: String?
+        get() = getData(ServingTable.NOTES)
+
     override fun equals(other: Any?): Boolean {
         return other is Serving && super.equals(other)
     }
@@ -60,7 +63,9 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
         food = f
     }
 
-    override val name: String = getData(ServingTable.NAME)!!
+    override val name: String
+        get() = getData(ServingTable.NAME)!!
+
 
     // Measurement functions
     override val unitMultiplier = quantity

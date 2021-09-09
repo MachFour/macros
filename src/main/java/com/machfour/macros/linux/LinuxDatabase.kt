@@ -91,7 +91,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SQLException::class)
     override fun endTransaction() {
         val cc = cachedConnection
-        checkNotNull(cc) { "Connection not open, call openConnection first() (and beginTransaction())" }
+        checkNotNull(cc) { "Connection not open, call openConnection() first (and beginTransaction())" }
         cc.commit()
         cc.autoCommit = true
     }

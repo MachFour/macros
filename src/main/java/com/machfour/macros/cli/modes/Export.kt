@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.csv.exportTable
+import com.machfour.macros.csv.exportTableToCsv
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.queries.MacrosDataSource
@@ -28,7 +28,7 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     private fun <M : MacrosEntity<M>> doExport(ds: MacrosDataSource, outDir: String, t: Table<M>) {
         println("Exporting ${t.name} table...")
         val outCsvPath = com.machfour.macros.util.joinFilePath(outDir, t.name + ".csv")
-        FileWriter(outCsvPath).use { exportTable(ds, t, it) }
+        FileWriter(outCsvPath).use { exportTableToCsv(ds, t, it) }
     }
 
     override fun doAction(args: List<String>): Int {

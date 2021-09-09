@@ -24,11 +24,17 @@ val ISO_LOCAL_HOUR_MINUTE: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
     .toFormatter()
 
+val LOCALIZED_DATE_MEDIUM: DateTimeFormatter = DateTimeFormatter
+    .ofLocalizedDate(FormatStyle.MEDIUM)
+
+val LOCALIZED_DATE_SHORT: DateTimeFormatter = DateTimeFormatter
+    .ofLocalizedDate(FormatStyle.SHORT)
+
 val LOCALIZED_DATETIME_MEDIUM: DateTimeFormatter = DateTimeFormatter
     .ofLocalizedDateTime(FormatStyle.MEDIUM)
     .withZone(ZoneId.systemDefault())
 
-val LOCALIZED_DATETIME_SHORT : DateTimeFormatter = DateTimeFormatter
+val LOCALIZED_DATETIME_SHORT: DateTimeFormatter = DateTimeFormatter
     .ofLocalizedDateTime(FormatStyle.SHORT)
     .withZone(ZoneId.systemDefault())
 

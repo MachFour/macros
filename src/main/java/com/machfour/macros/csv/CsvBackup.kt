@@ -40,7 +40,7 @@ fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, csvOut: Writer, obj
 }
 
 @Throws(SQLException::class, IOException::class)
-fun <M : MacrosEntity<M>> exportTable(ds: MacrosDataSource, t: Table<M>, outCsv: Writer) {
+fun <M : MacrosEntity<M>> exportTableToCsv(ds: MacrosDataSource, t: Table<M>, outCsv: Writer) {
     val rawObjectMap = getAllRawObjects(ds.database, t)
     val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
     // Collections.sort(allRawFoods, Comparator.comparingLong(MacrosPersistable::getId));

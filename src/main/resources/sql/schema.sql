@@ -12,6 +12,8 @@ PRAGMA recursive_triggers = ON;
 -- Measures mass (weight), volume or energy
 CREATE TABLE Unit (
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     -- indicates which types can be converted between
     , type_id              INTEGER NOT NULL
     , name                 TEXT NOT NULL UNIQUE
@@ -19,8 +21,6 @@ CREATE TABLE Unit (
     -- quantity of 1 of this unit in g, ml, or kJ as appropriate
     , metric_equivalent    REAL NOT NULL
     , inbuilt              INTEGER NOT NULL DEFAULT 0
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
 
     , CONSTRAINT boolean_inbuilt
         CHECK (inbuilt IN (0, 1))
@@ -31,11 +31,11 @@ CREATE TABLE Unit (
 
 CREATE TABLE Nutrient (
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL UNIQUE
     , unit_types           INTEGER NOT NULL
     , inbuilt              INTEGER NOT NULL DEFAULT 0
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
     , CONSTRAINT boolean_inbuilt
         CHECK (inbuilt IN (0, 1))
 );
@@ -81,6 +81,8 @@ CREATE TABLE Food (
     -- Notes are not normally displayed, so food has to be recognisable without them
 
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , index_name           TEXT NOT NULL UNIQUE
     , brand                TEXT DEFAULT NULL
     , variety              TEXT DEFAULT NULL
@@ -103,8 +105,6 @@ CREATE TABLE Food (
     -- -1 is deprioritised / 'hidden'
     , search_relevance     INTEGER NOT NULL DEFAULT 0
     -- timestamps are stored in unix time, and set via triggers
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
 
     -- referencing the name of the food category makes importing foods a LOT easier
     , CONSTRAINT valid_category
@@ -161,8 +161,10 @@ CREATE TABLE AttributeMapping (
 -- so you can put in '1 tin' of tuna, not 95g.
 CREATE TABLE Serving (
       id                   INTEGER PRIMARY KEY ASC
-    -- name should ideally be pluralisable with 's'
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL
+    , notes                TEXT DEFAULT NULL
     , quantity             REAL NOT NULL
     -- unit abbreviation
     , quantity_unit        TEXT NOT NULL
@@ -171,8 +173,6 @@ CREATE TABLE Serving (
     , is_default           INTEGER DEFAULT NULL
     -- which food this serving pertains to
     , food_id              INTEGER NOT NULL
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
 
     , CONSTRAINT unique_qty_per_food
         UNIQUE (food_id, quantity, quantity_unit)
@@ -268,6 +268,8 @@ CREATE TABLE Meal (
 CREATE TABLE FoodPortion (
     -- Columns shared with Ingredient
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , quantity             REAL NOT NULL
     -- XXX what happens if the unit changes (i.e. a food once measured by volume
     -- is now measured as a solid (for nutrition info)?
@@ -280,8 +282,6 @@ CREATE TABLE FoodPortion (
     , serving_id           INTEGER DEFAULT NULL
     -- for arbitrary text
     , notes                TEXT DEFAULT NULL
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
 
     -- FoodPortion specific
 
@@ -328,20 +328,19 @@ CREATE TABLE FoodPortion (
 CREATE TABLE Ingredient (
     -- Columns shared with FoodPortion
       id                   INTEGER PRIMARY KEY ASC
+    , create_time          INTEGER NOT NULL DEFAULT 0
+    , modify_time          INTEGER NOT NULL DEFAULT 0
     , quantity             REAL NOT NULL
     -- XXX what happens if the unit changes (i.e. a food once measured by volume
     -- is now measured as a solid (for nutrition info)?
     , quantity_unit        TEXT NOT NULL
     -- food / ingredient ID
     , food_id              INTEGER NOT NULL
-    -- used for versioning of food nutrients
     -- records whether user entered the quantity as a serving.
     , serving_id           INTEGER DEFAULT NULL
+    -- used for versioning of food nutrients
     , nutrient_max_version INTEGER NOT NULL
-    -- for arbitrary text
     , notes                TEXT DEFAULT NULL
-    , create_time          INTEGER NOT NULL DEFAULT 0
-    , modify_time          INTEGER NOT NULL DEFAULT 0
 
     -- Ingredient specific columns
     , parent_food_id       INTEGER NOT NULL

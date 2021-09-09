@@ -19,6 +19,8 @@ private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
 private val name =
    builder("name", Types.TEXT).notNull().buildFor(columns)
+private val notes =
+   builder("notes", Types.TEXT).buildFor(columns)
 private val quantity =
    builder("quantity", Types.REAL).notNull().buildFor(columns)
 private val quantityUnit =
@@ -30,7 +32,6 @@ private val foodId =
       .buildFkFor(FoodTable, FoodTable.ID, columns)
 
 object ServingTable: TableImpl<Serving>(tableName, Factories.serving, columns) {
-
    val ID: Column<Serving, Long>
       get() = id
    val CREATE_TIME: Column<Serving, Long>
@@ -39,6 +40,8 @@ object ServingTable: TableImpl<Serving>(tableName, Factories.serving, columns) {
       get() = modifyTime
    val NAME: Column<Serving, String>
       get() = com.machfour.macros.orm.schema.name
+   val NOTES: Column<Serving, String>
+      get() = notes
    val QUANTITY: Column<Serving, Double>
       get() = quantity
    val IS_DEFAULT: Column<Serving, Boolean>

@@ -31,7 +31,7 @@ fun findArgumentFromFlag(args: List<String>, flag: String): ArgParsingResult {
         // indexOf returned -1
         detectedIndex == 0 -> ArgParsingResult.ArgNotFound
         detectedIndex >= args.size -> ArgParsingResult.ValNotFound(flagIndex, flag)
-        else -> ArgParsingResult.KeyValFound(detectedIndex, flag, args[detectedIndex])
+        else -> ArgParsingResult.KeyValFound(flagIndex, flag, args[detectedIndex])
     }
 }
 
@@ -67,9 +67,19 @@ fun dayStringParse(dayString: String?): DateStamp? {
 
 // represents result of parsed argument from command line
 sealed class ArgParsingResult {
-    class ArgFound(val index: Int, val flag: String): ArgParsingResult()
-    object ArgNotFound : ArgParsingResult()
-    class KeyValFound(val argIndex: Int, val flag: String, val argument: String): ArgParsingResult()
+    class ArgFound(val index: Int, val flag: String): ArgParsingResult() {
+        override fun toString() = "Arg found: $flag at index $index"
+    }
+    object ArgNotFound : ArgParsingResult() {
+        override fun toString() = "Arg not found"
+    }
+
+    class KeyValFound(val flagIndex: Int, val flag: String, val argument: String): ArgParsingResult() {
+        override fun toString() = "Flag $flag found at index $flagIndex with argument $argument"
+    }
     // for flags with extra arguments; when the flag is found but there is no extra arg
-    class ValNotFound(val flagIndex: Int, val flag: String): ArgParsingResult()
+    class ValNotFound(val flagIndex: Int, val flag: String): ArgParsingResult() {
+        override fun toString() = "Flag $flag found at index $flagIndex, but no value found"
+
+    }
 }

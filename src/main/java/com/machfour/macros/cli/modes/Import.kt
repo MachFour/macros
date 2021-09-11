@@ -73,7 +73,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         println("servingCsvArg: $servingCsvArg")
         println("recipeCsvArg: $recipeCsvArg")
         println("ingredientCsvArg: $ingredientCsvArg")
-
+        println()
 
         val foodCsvFile = foodCsvOverride ?: config.foodCsvPath
         val servingCsvFile = config.servingCsvPath

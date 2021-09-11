@@ -1,5 +1,4 @@
 plugins {
-    id("java")
     kotlin("jvm") version("1.5.30")
 }
 
@@ -8,6 +7,17 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_16.toString()
+    }
 }
 
 dependencies {

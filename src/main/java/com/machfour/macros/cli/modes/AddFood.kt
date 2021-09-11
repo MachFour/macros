@@ -7,8 +7,8 @@ import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.getFoodIdsByIndexName
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
 import java.io.IOException
 import java.sql.SQLException

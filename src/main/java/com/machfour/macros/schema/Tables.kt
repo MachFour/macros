@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.sql.Table
 

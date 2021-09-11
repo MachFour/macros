@@ -2,13 +2,13 @@
 
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
@@ -16,7 +16,7 @@ import java.time.Instant
 
 class Meal internal constructor(data: RowData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
     companion object {
-        fun sumNutrientData(meals: Collection<Meal>): FoodNutrientData {
+        fun sumNutrientData(meals: Iterable<Meal>): FoodNutrientData {
             return FoodNutrientData.sum(meals.map { it.nutrientTotal() })
         }
 

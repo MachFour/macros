@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
@@ -12,7 +12,7 @@ import com.machfour.macros.sql.datatype.Types
 private const val tableName = "Serving"
 
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<Serving, *>>()
+private val columns = ArrayList<Column<Serving, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
@@ -39,7 +39,7 @@ object ServingTable: TableImpl<Serving>(tableName, Factories.serving, columns) {
    val MODIFY_TIME: Column<Serving, Long>
       get() = modifyTime
    val NAME: Column<Serving, String>
-      get() = com.machfour.macros.orm.schema.name
+      get() = com.machfour.macros.schema.name
    val NOTES: Column<Serving, String>
       get() = notes
    val QUANTITY: Column<Serving, Double>

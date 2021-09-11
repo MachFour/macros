@@ -1,11 +1,14 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.FkEntity
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import java.sql.SQLException
+
+private val allowedObjectSources = setOf(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
 
 // fkColumns by definition contains only the foreign key columns
 private fun <M : MacrosEntity<M>> fkIdsPresent(obj: M): Boolean {
@@ -16,62 +19,100 @@ private fun <M : MacrosEntity<M>> fkIdsPresent(obj: M): Boolean {
     }
 }
 
+private fun <M: MacrosEntity<M>, J, N> FkEntity<M>.copyFkNaturalKey(from: FkEntity<M>, fkCol: Column.Fk<M, J, N>) {
+    val parentKey = from.getFkParentKey(fkCol)
+    
+    // Generics ensure that the table types match
+    @Suppress("UNCHECKED_CAST")
+    val parentKeyCol = requireNotNull(parentKey.columns.singleOrNull() as Column<N, J>?) {
+        "FkEntity $this requires exactly one FK parent column (got ${parentKey.columns})"
+    }
+    
+    val keyData = requireNotNull(parentKey[parentKeyCol]) {
+        "Null parent key data for entity $this, FK $fkCol, parent key col $parentKeyCol"
+    }
+    setFkParentKey(fkCol, parentKeyCol, keyData)
+}
+
+private fun <M: MacrosEntity<M>> FkEntity<M>.copyFkNaturalKeyMap(from: FkEntity<M>) {
+    for (fkCol in from.fkParentKeyData.keys) {
+        copyFkNaturalKey(from, fkCol)
+    }
+}
+
+
 // wildcard capture helper for natural key column type
 @Throws(SQLException::class)
 private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
-    ds: SqlDatabase,
+    db: SqlDatabase,
     fkColumn: Column.Fk<M, J, N>,
-    parentNaturalKeyCol: Column<N, I>,
+    parentKeyCol: Column<N, I>,
     data: List<RowData<N>>
 ): Map<I, J> {
-    assert(parentNaturalKeyCol.isUnique)
-    val uniqueColumnValues : Set<I> = data.map {
-        it[parentNaturalKeyCol] ?: error("parent natural key column had null data")
+    require(parentKeyCol.isUnique)
+    val uniqueColumnValues = data.map {
+        requireNotNull(it[parentKeyCol]) { "parent natural key column had null data" }
     }.toSet()
+
     val completedParentKeys = selectColumnMap(
-        ds,
+        db,
         fkColumn.parentTable,
-        parentNaturalKeyCol,
+        parentKeyCol,
         fkColumn.parentColumn,
         uniqueColumnValues
     )
     return completedParentKeys.mapValues {
-        val parentKey = it.value ?: error("Value was null for key column ${it.key}")
-        parentKey
+        requireNotNull(it.value) { "Value was null for key column ${it.key}" }
     }
 }
 
-private val allowedObjectSources = setOf(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
 
 // wildcard capture helper for parent unique column type
 @Throws(SQLException::class)
-private fun <M : MacrosEntity<M>, J, N> completeFkCol(ds: SqlDatabase, objects: List<M>, fkCol: Column.Fk<M, J, N>): List<M> {
-    val completedObjects = ArrayList<M>(objects.size)
-    val naturalKeyData = ArrayList<RowData<N>>(objects.size)
-    for (obj in objects) {
+private fun <M : FkEntity<M>, J, N> completeFkCol(
+    ds: SqlDatabase,
+    objects: List<M>,
+    fkCol: Column.Fk<M, J, N>,
+): List<M> {
+    val parentKeyData = objects.map {
         // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
-        assert(obj.source in allowedObjectSources) { "Object is not from import, new or computed" }
-        assert(obj.fkNaturalKeyMap.isNotEmpty()) { "Object has no FK data maps" }
-        val objectNkData = obj.getFkParentNaturalKey(fkCol)
-        naturalKeyData.add(objectNkData)
+        assert(it.source in allowedObjectSources) { "Object is not from import, new or computed" }
+        assert(it.fkParentKeyData.isNotEmpty()) { "Object has no FK data maps" }
+        it.getFkParentKey(fkCol)
     }
-    val parentNaturalKeyCol: Column<N, *> = fkCol.parentTable.naturalKeyColumn
-        ?: error("Table " + fkCol.parentTable.name + " has no natural key defined")
-    val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentNaturalKeyCol, naturalKeyData)
-    for (obj in objects) {
-        val newData = obj.dataFullCopy()
+
+
+    //val parentKeyCol: Column<N, *> = requireNotNull(fkCol.parentTable.naturalKeyColumn) {
+    //    "Table ${fkCol.parentTable.name} has no natural key defined"
+    //}
+
+    // collect parent key columns of all objects, ensure they are the same
+    val parentKeyCols: Set<Column<N, *>> = objects.flatMap { it.getFkParentKey(fkCol).columns }.toSet()
+
+    val parentKeyCol = parentKeyCols.singleOrNull() ?: error {
+        "All objects must specify the same, single parent key column (got $parentKeyCols)"
+    }
+
+
+    val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentKeyCol, parentKeyData)
+
+    val completedObjects = objects.map {
         // TODO might be able to remove one level of indirection here because the RowData object
         // only contains data for the parentNaturalKeyCol
-        val fkParentNaturalKey: RowData<N> = obj.getFkParentNaturalKey(fkCol)
-        val fkParentNaturalKeyData: Any = fkParentNaturalKey[parentNaturalKeyCol]
-            ?: error("Column data contained no data for natural key column")
-        val fkParentId: J = foreignKeyToIdMapping[fkParentNaturalKeyData]
-            ?: error("Could not find ID for parent object (natural key: $parentNaturalKeyCol = $fkParentNaturalKeyData)")
-        newData.put(fkCol, fkParentId)
-        val newObject = obj.table.construct(newData, obj.source)
-        // copy over old FK data to new object
-        newObject.copyFkNaturalKeyMap(obj)
-        completedObjects.add(newObject)
+        val fkParentKey: RowData<N> = it.getFkParentKey(fkCol)
+        val fkParentKeyData: Any = requireNotNull(fkParentKey[parentKeyCol]) {
+            "Fk data for $it (col = $fkCol) contained no data for parent key $parentKeyCol"
+        }
+        val fkParentId: J = requireNotNull(foreignKeyToIdMapping[fkParentKeyData]) {
+            "Could not find ID for parent object (key: $parentKeyCol = $fkParentKeyData)"
+        }
+
+        val newData = it.dataFullCopy().apply { put(fkCol, fkParentId) }
+
+        // create new object nd copy over old FK data to new object
+        it.table.construct(newData, it.source).also { newObject ->
+            newObject.copyFkNaturalKeyMap(it)
+        }
     }
     return completedObjects
 }
@@ -83,11 +124,8 @@ private fun <M : MacrosEntity<M>, J, N> completeFkCol(ds: SqlDatabase, objects: 
 // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
 @Throws(SQLException::class)
 // private for now, can make it public if we ever need multiple column completion
-private fun <M : MacrosEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
-    if (objects.isEmpty()) {
-        return emptyList()
-    }
-    val factory = objects.first().factory
+private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
+    val factory = objects.firstOrNull()?.factory ?: return emptyList()
 
     // mutable copy of first argument
     var partiallyCompletedObjects: List<M> = ArrayList(objects)
@@ -105,6 +143,6 @@ private fun <M : MacrosEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: 
 
 
 @Throws(SQLException::class)
-fun <M : MacrosEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
+internal fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
     return completeForeignKeys(ds, objects, listOf(fk))
 }

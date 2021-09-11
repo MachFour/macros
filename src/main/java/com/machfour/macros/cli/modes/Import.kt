@@ -6,6 +6,9 @@ import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.csv.CsvException
+import com.machfour.macros.csv.importFoodData
+import com.machfour.macros.csv.importRecipes
+import com.machfour.macros.csv.importServings
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Serving
@@ -98,9 +101,19 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
             if (!noFoodsServings) {
                 println("Importing foods and nutrition data into database...")
-                FileReader(foodCsvFile).use { com.machfour.macros.csv.importFoodData(db, it, false) }
+                val conflictingIndexNames: Set<String>
+                FileReader(foodCsvFile).use {
+                    conflictingIndexNames = importFoodData(db, it, false)
+                }
+
+                if (conflictingIndexNames.isNotEmpty()) {
+                    println("The following foods will be imported; others had index names already present in the database:")
+                    conflictingIndexNames.forEach { println(it) }
+                }
+
+
                 println("Saved foods and nutrition data")
-                FileReader(servingCsvFile).use { com.machfour.macros.csv.importServings(db, it, false) }
+                FileReader(servingCsvFile).use { importServings(db, it, false) }
                 println("Saved servings")
                 println()
             }
@@ -108,7 +121,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 println("Importing recipes and ingredients into database...")
                 FileReader(recipeCsvFile).use { recipeCsv ->
                     FileReader(ingredientsCsvFile).use { ingredientsCsv ->
-                        com.machfour.macros.csv.importRecipes(db, recipeCsv, ingredientsCsv)
+                        importRecipes(db, recipeCsv, ingredientsCsv)
                     }
                 }
                 println("Saved recipes and ingredients")

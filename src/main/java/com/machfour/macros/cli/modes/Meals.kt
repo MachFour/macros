@@ -2,8 +2,11 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
+import com.machfour.macros.cli.utils.dayStringParse
+import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
@@ -26,9 +29,9 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
         // cases: day not specified vs day specified
         val ds = config.database
-        val date = when (val dateArg = com.machfour.macros.cli.utils.findArgument(args, 1)) {
+        val date = when (val dateArg = findArgument(args, 1)) {
             is ArgParsingResult.KeyValFound -> {
-                com.machfour.macros.cli.utils.dayStringParse(dateArg.argument) ?: run {
+                dayStringParse(dateArg.argument) ?: run {
                     printlnErr("Invalid date format: '${dateArg.argument}'.")
                     return 1
                 }
@@ -45,7 +48,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
     private fun printMealList(db: SqlDatabase, d: DateStamp): Int {
         try {
-            val meals = com.machfour.macros.queries.getMealsForDay(db, d)
+            val meals = getMealsForDay(db, d)
             if (meals.isEmpty()) {
                 println("No meals recorded on " + d.prettyPrint())
             } else {

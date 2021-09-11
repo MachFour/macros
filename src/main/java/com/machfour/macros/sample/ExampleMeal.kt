@@ -4,8 +4,8 @@ import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.util.DateStamp
 
 val exampleFoodPortion by lazy { initFoodPortion() }

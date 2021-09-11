@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.auxiliary.Factories
@@ -9,7 +9,7 @@ import com.machfour.macros.sql.datatype.Types
 private const val tableName = "Unit"
 
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<Unit, *>>()
+private val columns = ArrayList<Column<Unit, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
@@ -39,7 +39,7 @@ object UnitTable: TableImpl<Unit>(tableName, Factories.unit, columns) {
     val TYPE_ID: Column<Unit, Int>
         get() = typeId
     val NAME: Column<Unit, String>
-        get() = com.machfour.macros.orm.schema.name
+        get() = com.machfour.macros.schema.name
     val ABBREVIATION: Column<Unit, String>
         get() = abbreviation
     val METRIC_EQUIVALENT: Column<Unit, Double>

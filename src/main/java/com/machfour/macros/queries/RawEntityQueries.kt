@@ -1,6 +1,6 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -24,7 +24,7 @@ internal fun <M, J> getRawObjects(ds: SqlDatabase, keyColumn: Column<M, J>, quer
         val key = objectData[keyColumn]
         checkNotNull(key) { "found null key in $t" }
         assert(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
-        objects[key] = t.factory.construct(objectData, ObjectSource.DATABASE)
+        objects[key] = t.construct(objectData, ObjectSource.DATABASE)
     }
     return objects
 }

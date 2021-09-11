@@ -1,6 +1,7 @@
 package com.machfour.macros.util
 
 import java.time.*
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 
@@ -36,6 +37,8 @@ open class DateStamp private constructor(val date: LocalDate) : Comparable<DateS
      * Returns date in ISO-8601 format
      */
     override fun toString(): String = date.toString()
+
+    fun toString(formatter: DateTimeFormatter): String = formatter.format(date)
 
     override fun compareTo(other: DateStamp): Int = date.compareTo(other.date)
 

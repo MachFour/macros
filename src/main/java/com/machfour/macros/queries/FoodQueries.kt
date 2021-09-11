@@ -3,10 +3,10 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.IngredientTable
-import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.IngredientTable
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll

@@ -1,9 +1,9 @@
 package com.machfour.macros.nutrients
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.names.*
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.NutrientTable
+import com.machfour.macros.schema.NutrientTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.UnitType
 

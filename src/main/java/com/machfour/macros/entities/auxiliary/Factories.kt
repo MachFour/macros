@@ -1,18 +1,17 @@
 package com.machfour.macros.entities.auxiliary
 
+import com.machfour.macros.core.Factory
 import com.machfour.macros.core.FoodType
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues
 
 object Factories {
-
 
     val food: Factory<Food> = Factory { data, objectSource ->
         // index name completion
@@ -23,6 +22,9 @@ object Factories {
             val extraDesc = data[FoodTable.EXTRA_DESC]
             data.put(FoodTable.INDEX_NAME, Food.indexNamePrototype(name, brand, variety, extraDesc))
         }
+
+        data.setImmutable()
+
         when (FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)) {
             FoodType.COMPOSITE -> CompositeFood(data, objectSource)
             else -> Food(data, objectSource)
@@ -30,7 +32,10 @@ object Factories {
     }
 
     private fun <M> defaultFactory(constructor: (RowData<M>, ObjectSource) -> M) : Factory<M> {
-        return Factory { dataMap, objectSource -> constructor(dataMap, objectSource) }
+        return Factory { data, objectSource ->
+            data.setImmutable()
+            constructor(data, objectSource)
+        }
     }
 
     val attributeMapping = defaultFactory(::AttrMapping)

@@ -1,8 +1,6 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.names.DisplayStrings
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
@@ -11,7 +9,9 @@ import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError
 
 
-class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fromInstance: M?) {
+class MacrosBuilder<M : MacrosEntity<M>> private constructor(
+    private val table: Table<M>, fromInstance: M?
+) {
     //fun interface ValueChangeListener<J> {
     //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
     //}
@@ -39,15 +39,12 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
     // columns that are not available for editing; initially empty
     private val unsettableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
 
-    // invariant: settableColumns ⋃ unsettableColumns == table.columns()
-    private val objectFactory: Factory<M> = table.factory
-
     private val customValidations: MutableList<Validation<M>> = ArrayList()
 
     /*
      * If editing, fields are initialised to the field values of editInstance.
      * editInstance is assumed to have been created by the Database, and thus *should*
-     * (barring a change in com.machfour.macros.validation rules) have all its entries valid.
+     * (barring a change in validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
     private var originalData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
@@ -171,7 +168,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
 
     /*
      * Returns an immutable list containing identifiers of each failing
-     * com.machfour.macros.validation.ValidationError test for the given field,
+     * ValidationError test for the given field,
      * or otherwise an empty list.
      */
     fun <J> getErrors(field: Column<M, J>): List<ValidationError> {
@@ -242,7 +239,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
         check(!hasAnyInvalidFields) { "Field values are not all valid (${invalidFields})" }
         val buildData = draftData.copy()
         val source = newObjectSource()
-        return objectFactory.construct(buildData, source)
+        return table.construct(buildData, source)
     }
 
     val invalidFields: List<Column<M, *>>
@@ -295,8 +292,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(table: Table<M>, fr
             data: RowData<M>,
             customValidation: Validation<M>? = null
         ): Map<Column<M, *>, List<ValidationError>> {
-            val allErrors: MutableMap<Column<M, *>, List<ValidationError>> =
-                HashMap(data.columns.size, 1.0f)
+            val allErrors = HashMap<Column<M, *>, List<ValidationError>>(data.columns.size, 1.0f)
             for (col in data.columns) {
                 val colErrors = validate(data, col)
                 if (colErrors.isNotEmpty()) {

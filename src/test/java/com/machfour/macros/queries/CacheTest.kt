@@ -2,13 +2,13 @@ package com.machfour.macros.queries
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp

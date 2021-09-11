@@ -2,7 +2,7 @@ package com.machfour.macros.names
 
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.nutrients.*
-import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.Column
 
 object EnglishColumnNames: ColumnStrings, NutrientStrings {

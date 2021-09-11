@@ -1,10 +1,10 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
-import com.machfour.macros.orm.schema.FoodTable
+import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
@@ -152,15 +152,14 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
 
             // link the new FoodNutrientValues to the food
             for (nv in insertNutrients) {
-                nv.setFkParentNaturalKey(foodIdCol, FoodTable.INDEX_NAME, food.indexName)
+                nv.setFkParentKey(foodIdCol, FoodTable.INDEX_NAME, food)
             }
 
             database.openConnection()
             database.beginTransaction()
 
             // get the food ID into the FOOD_ID field of the NutrientValues
-            val completedNValues =
-                completeForeignKeys(database, insertNutrients, foodIdCol)
+            val completedNValues = completeForeignKeys(database, insertNutrients, foodIdCol)
 
             saveObjects(completedNValues, ObjectSource.USER_NEW)
             saveObjects(updateNutrients, ObjectSource.DB_EDIT)

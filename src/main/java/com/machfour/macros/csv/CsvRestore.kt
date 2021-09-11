@@ -1,7 +1,7 @@
 package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
@@ -28,7 +28,7 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M
         while(true) {
             val nextRow = reader.read(*header) ?: break
             val data = extractCsvData(nextRow, table)
-            objectList += table.factory.construct(data, ObjectSource.RESTORE)
+            objectList += table.construct(data, ObjectSource.RESTORE)
         }
     }
     println("Warning: unknown columns: $unrecognisedColumns")

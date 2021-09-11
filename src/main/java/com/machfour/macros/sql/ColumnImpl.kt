@@ -42,7 +42,7 @@ internal open class ColumnImpl<M, J> private constructor(
         }
     }
 
-    internal class Builder<J>(private val name: String, private val type: SqlType<J>): Column.Builder<J> {
+    internal class Builder<J: Any>(private val name: String, private val type: SqlType<J>): Column.Builder<J> {
         private var editable: Boolean = true
         private var nullable: Boolean = true
         private var inSecondaryKey: Boolean = false
@@ -70,13 +70,13 @@ internal open class ColumnImpl<M, J> private constructor(
             return Fk(name, type, defaultValue, editable, nullable, inSecondaryKey, unique, parent, parentTable)
         }
 
-        private fun <M> addToListAndSetIndex(newlyCreated: ColumnImpl<M, *>, columns: MutableList<Column<M, *>>) {
+        private fun <M> addToListAndSetIndex(newlyCreated: ColumnImpl<M, J>, columns: MutableList<Column<M, out Any>>) {
             newlyCreated.index = columns.size
             columns.add(newlyCreated)
         }
 
         // sets index
-        override fun <M> buildFor(tableColumns: MutableList<Column<M, *>>): ColumnImpl<M, J> {
+        override fun <M> buildFor(tableColumns: MutableList<Column<M, out Any>>): ColumnImpl<M, J> {
             val builtCol: ColumnImpl<M, J> = build()
             addToListAndSetIndex(builtCol, tableColumns)
             return builtCol
@@ -85,7 +85,7 @@ internal open class ColumnImpl<M, J> private constructor(
         override fun <M, N> buildFkFor(
             parentTable: Table<N>,
             parentCol: Column<N, J>,
-            tableColumns: MutableList<Column<M, *>>
+            tableColumns: MutableList<Column<M, out Any>>
         ): Fk<M, J, N> {
             val builtCol = buildFk<M, N>(parentCol, parentTable)
             addToListAndSetIndex(builtCol, tableColumns)

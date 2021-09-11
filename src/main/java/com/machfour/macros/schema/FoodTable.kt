@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.Food
@@ -11,7 +11,7 @@ import com.machfour.macros.sql.datatype.Types
 private const val tableName = "Food"
 
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<Food, *>>()
+private val columns = ArrayList<Column<Food, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
@@ -33,9 +33,9 @@ private val category =
 private val foodType =
     builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.niceName).buildFor(columns)
 private val usdaIndex =
-    builder("usda_index", Types.INTEGER).notEditable().buildFor(columns)
+    builder("usda_index", Types.INTEGER).notEditable().unique().buildFor(columns)
 private val nuttabIndex =
-    builder("nuttab_index", Types.TEXT).notEditable().buildFor(columns)
+    builder("nuttab_index", Types.TEXT).notEditable().unique().buildFor(columns)
 private val dataSource =
     builder("data_source", Types.TEXT).buildFor(columns)
 private val dataNotes =
@@ -61,7 +61,7 @@ object FoodTable: TableImpl<Food>(tableName, Factories.food, columns) {
     val EXTRA_DESC: Column<Food, String>
         get() = extraDesc
     val NAME: Column<Food, String>
-        get() = com.machfour.macros.orm.schema.name
+        get() = com.machfour.macros.schema.name
     val NOTES: Column<Food, String>
         get() = notes
     val FOOD_TYPE: Column<Food, String>

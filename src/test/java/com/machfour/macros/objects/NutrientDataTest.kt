@@ -5,11 +5,11 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.orm.schema.FoodPortionTable.FOOD_ID
-import com.machfour.macros.orm.schema.FoodPortionTable.MEAL_ID
-import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY
-import com.machfour.macros.orm.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.sample.exampleFood2
+import com.machfour.macros.schema.FoodPortionTable.FOOD_ID
+import com.machfour.macros.schema.FoodPortionTable.MEAL_ID
+import com.machfour.macros.schema.FoodPortionTable.QUANTITY
+import com.machfour.macros.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES

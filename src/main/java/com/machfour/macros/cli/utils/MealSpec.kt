@@ -1,11 +1,11 @@
 package com.machfour.macros.cli.utils
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.MealTable
 import com.machfour.macros.queries.getMealForDayWithName
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.queries.saveObject
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
@@ -48,7 +48,7 @@ class MealSpec {
     }
 
     private constructor(name: String?, dayString: String?) {
-        val day = com.machfour.macros.cli.utils.dayStringParse(dayString)
+        val day = dayStringParse(dayString)
         if (day == null) {
             error = String.format("Invalid day format: '%s'. ", dayString)
             error += "Must be a number (e.g. 0 for today, -1 for yesterday), or a date: yyyy-mm-dd"
@@ -160,7 +160,7 @@ class MealSpec {
         //}
 
         fun makeMealSpec(name: String? = null, dayString: String? = null): MealSpec {
-            val day = com.machfour.macros.cli.utils.dayStringParse(dayString)
+            val day = dayStringParse(dayString)
             return MealSpec(name, day)
         }
 

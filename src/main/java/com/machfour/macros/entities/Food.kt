@@ -2,15 +2,11 @@
 
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.FoodType
-import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.core.PortionMeasurement
+import com.machfour.macros.core.*
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.units.GRAMS

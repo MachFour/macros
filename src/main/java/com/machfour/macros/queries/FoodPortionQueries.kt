@@ -1,9 +1,10 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.entities.FoodPortion
-import com.machfour.macros.orm.schema.FoodPortionTable
+import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.generator.ColumnMax.Companion.max
+import com.machfour.macros.sql.generator.OrderByDirection
 import java.sql.SQLException
 
 //fun getServingId(dataSource: MacrosDataSource, fpId: Long) : Long? {
@@ -32,11 +33,16 @@ import java.sql.SQLException
 //}
 
 @Throws(SQLException::class)
-internal fun recentFoodIds(ds: SqlDatabase, howMany: Int) : List<Long> {
-    val (foodId, createTime) = Pair(FoodPortionTable.FOOD_ID, FoodPortionTable.CREATE_TIME)
-    // NOTE this can't actually give the create time - need to select MAX(create_time) for that
-    val query = selectTwoColumns(ds, FoodPortion.table, foodId, createTime) {
-        orderBy(FoodPortionTable.CREATE_TIME.max(), com.machfour.macros.sql.generator.OrderByDirection.DESCENDING)
+internal fun recentFoodIds(db: SqlDatabase, howMany: Int): List<Long> {
+    // NOTE this can't actually give the create time.
+    // Need to SELECT MAX(create_time) for that (not just ORDER BY)
+    val query = selectTwoColumns(
+        db = db,
+        table = FoodPortion.table,
+        select1 = FoodPortionTable.FOOD_ID,
+        select2 = FoodPortionTable.CREATE_TIME
+    ) {
+        orderBy(FoodPortionTable.CREATE_TIME.max(), OrderByDirection.DESCENDING)
         groupBy(FoodPortionTable.FOOD_ID)
         limit(howMany)
         //distinct()

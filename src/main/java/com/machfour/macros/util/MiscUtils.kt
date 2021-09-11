@@ -24,25 +24,6 @@ fun Int.floorMod(y: Int): Int {
     return this - this.floorDiv(y) * y
 }
 
-fun <E, K> List<E>.filterInSetUnlessEmpty(set: Set<K>, key: (E) -> K) : List<E> {
-    return if (set.isEmpty()) this else this.filter { set.contains(key(it)) }
-}
-
-fun <K, V, R> mapValueOrElse(data: Map<K, V>, key: K, elseValue: R, mapping: (V) -> R): R {
-    return when(val value = data[key]) {
-        null -> elseValue
-        else -> mapping(value)
-    }
-}
-
-fun <E> Iterable<Set<E>>.unionAll() : Set<E> {
-    return reduceOrNull { s, t -> s.union(t) } ?: emptySet()
-}
-
-fun <E> Iterable<Set<E>>.intersectAll() : Set<E> {
-    return reduceOrNull { s, t -> s.intersect(t) } ?: emptySet()
-}
-
 fun Double.toRoundedString(decimalPlaces: Int = 3, eps: Double = 1e-4): String {
     val asInt = roundToInt()
     val error = this - asInt

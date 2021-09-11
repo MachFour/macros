@@ -1,11 +1,12 @@
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.PortionMeasurement
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.ServingTable
+import com.machfour.macros.nutrients.QUANTITY
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.units.unitWithAbbr
@@ -27,7 +28,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     val qtyUnit = unitWithAbbr(qtyUnitAbbr)
 
     init {
-        check(com.machfour.macros.nutrients.QUANTITY.compatibleWith(qtyUnit)) { "Invalid unit $qtyUnit for nutrient ${com.machfour.macros.nutrients.QUANTITY}" }
+        check(QUANTITY.compatibleWith(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }
     }
 
     lateinit var food: Food

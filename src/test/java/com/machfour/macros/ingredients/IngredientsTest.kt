@@ -6,7 +6,6 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
-import com.machfour.macros.sql.RowData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
@@ -19,18 +18,6 @@ class IngredientsTest {
     companion object {
         private const val DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
-        private val foodData: RowData<Food>? = null
-
-        // the food that will be made up of the other two foods
-        private val testCompositeFood: Food? = null
-
-        // the foods that make up the composite foods
-        private val testFood1: Food? = null
-        private val testFood2: Food? = null
-
-        // corresponding Ingredient Objects
-        private val testIngredient1: Food? = null
-        private val testIngredient2: Food? = null
 
         @BeforeAll
         @JvmStatic

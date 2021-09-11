@@ -2,7 +2,7 @@ package com.machfour.macros.entities.auxiliary
 
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.nutrients.QUANTITY
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.validation.Validation
 import com.machfour.macros.validation.ValidationError

@@ -2,13 +2,13 @@ package com.machfour.macros.queries
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Ingredient
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.IngredientTable
+import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table

@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Ingredient
@@ -12,7 +12,7 @@ import com.machfour.macros.sql.datatype.Types
 private const val tableName = "Ingredient"
 
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<Ingredient, *>>()
+private val columns = ArrayList<Column<Ingredient, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)

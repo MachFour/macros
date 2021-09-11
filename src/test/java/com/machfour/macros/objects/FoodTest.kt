@@ -2,15 +2,15 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.getFoodById
 import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.queries.saveObject
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -47,19 +47,21 @@ class FoodTest {
         @BeforeAll
         @JvmStatic
         fun doFood() {
-            foodData = RowData(FoodTable)
-            foodData.put(FoodTable.ID, MacrosEntity.NO_ID)
-            foodData.put(FoodTable.CREATE_TIME, 0L)
-            foodData.put(FoodTable.MODIFY_TIME, 0L)
-            foodData.put(FoodTable.INDEX_NAME, "food1")
-            foodData.put(FoodTable.BRAND, "Max's")
-            foodData.put(FoodTable.VARIETY, "really good")
-            foodData.put(FoodTable.NAME, "food")
-            foodData.put(FoodTable.NOTES, "notes")
-            foodData.put(FoodTable.CATEGORY, "dairy")
-            foodData.put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
-            foodData.put(FoodTable.USDA_INDEX, null)
-            foodData.put(FoodTable.NUTTAB_INDEX, null)
+            foodData = RowData(FoodTable).apply {
+                put(FoodTable.ID, MacrosEntity.NO_ID)
+                put(FoodTable.CREATE_TIME, 0L)
+                put(FoodTable.MODIFY_TIME, 0L)
+                put(FoodTable.INDEX_NAME, "food1")
+                put(FoodTable.BRAND, "Max's")
+                put(FoodTable.VARIETY, "really good")
+                put(FoodTable.NAME, "food")
+                put(FoodTable.NOTES, "notes")
+                put(FoodTable.CATEGORY, "dairy")
+                put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
+                put(FoodTable.USDA_INDEX, null)
+                put(FoodTable.NUTTAB_INDEX, null)
+            }
+
             testFood = Food.factory.construct(foodData, ObjectSource.IMPORT)
         }
     }

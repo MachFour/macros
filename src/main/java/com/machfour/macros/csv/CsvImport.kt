@@ -2,21 +2,22 @@ package com.machfour.macros.csv
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.nutrients.ENERGY
 import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.nutrients.nutrients
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
-import com.machfour.macros.orm.schema.FoodTable
-import com.machfour.macros.orm.schema.IngredientTable
-import com.machfour.macros.orm.schema.ServingTable
 import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.queries.saveObjects
 import com.machfour.macros.queries.selectSingleColumn
+import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.IngredientTable
+import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -137,7 +138,7 @@ private fun makeIngredients(ingredientCsv: Reader, ds: SqlDatabase): Map<String,
                 ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
                 val i = Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT)
                 //ingredientData.putExtraData(Schema.IngredientTable.COMPOSITE_FOOD_ID, compositeFoodIndexName);
-                i.setFkParentNaturalKey(
+                i.setFkParentKey(
                     IngredientTable.PARENT_FOOD_ID,
                     FoodTable.INDEX_NAME,
                     compositeIndexName
@@ -244,7 +245,7 @@ fun buildServings(servingCsv: Reader): List<Serving> {
                 ?: throw CsvException("Food index name was null for row: $csvRow")
             val s = Serving.factory.construct(servingData, ObjectSource.IMPORT)
             // TODO move next line to be run immediately before saving
-            s.setFkParentNaturalKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
+            s.setFkParentKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
             servings.add(s)
         }
     }
@@ -252,26 +253,54 @@ fun buildServings(servingCsv: Reader): List<Serving> {
 }
 
 @Throws(SQLException::class)
-private fun findExistingFoodIndexNames(
+private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
     ds: SqlDatabase,
-    indexNames: Collection<String>
-): Set<String> {
-    val queryResult = selectSingleColumn(ds, FoodTable.INDEX_NAME) {
-        where(FoodTable.INDEX_NAME, indexNames, iterate = true)
+    objectMap: Map<K, M>,
+    uniqueCol: Column<M, J>
+): Set<J> {
+    assert(uniqueCol.isUnique)
+
+    val objectValues: List<J> = objectMap.values.mapNotNull { it.getData(uniqueCol) }
+
+    val queryResult: List<J?> = selectSingleColumn(ds, uniqueCol) {
+        where(uniqueCol, objectValues, iterate = true)
         distinct()
     }
-    return queryResult.map { requireNotNull(it) { "Null food index name encountered: $it" } }
-        .toSet()
+
+    return queryResult.filterNotNullTo(HashSet(queryResult.size))
 }
+
+
+@Throws(SQLException::class)
+private fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
+    ds: SqlDatabase,
+    objectMap: Map<K, M>
+): Set<K> {
+    val table = objectMap.entries.firstOrNull()?.value?.table ?: return emptySet()
+
+    val uniqueCols = table.columns.filter { it.isUnique }
+
+    val problemKeys = HashSet<K>()
+
+    for (col in uniqueCols) {
+        val problemValues = findConflictingUniqueColumnValues(ds, objectMap, col)
+        val problemObjectKeys = objectMap.filter { it.value.getData(col) in problemValues }.keys
+        problemKeys.addAll(problemObjectKeys)
+    }
+
+    return problemKeys
+}
+
+
+// Returns list of foods that couldn't be saved due to unique column conflicts
 
 // foods maps from index name to food object. Food object must have nutrition data attached
 @Throws(SQLException::class)
-private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>) {
+private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>): Set<String> {
     // collect all of the index names to be imported, and check if they're already in the DB.
-    val existingIndexNames = findExistingFoodIndexNames(ds, foods.keys)
-    // remove entries corresponding to existing foods; this actually modifies the original map
-    val foodsToSave: Map<String, Food> =
-        foods.filter { entry -> !existingIndexNames.contains(entry.key) }
+    val conflictingIndexNames = findUniqueColumnConflicts(ds, foods)
+
+    val foodsToSave = foods.filterNot { conflictingIndexNames.contains(it.key) }
     /*
     if (allowOverwrite) {
         Map<String, Food> overwriteFoods = new HashMap<>();
@@ -284,21 +313,17 @@ private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>) {
 
     // get out the nutrition data
     val nvObjects = foodsToSave.flatMap { (_, food) ->
-        food.nutrientData.nutrientValues.also {
-            for (nv in it) {
-                // link it to the food so that the DB can create the correct foreign key entries
-                nv.setFkParentNaturalKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
-            }
+        food.nutrientData.nutrientValues.onEach {
+            // link it to the food so that the DB can create the correct foreign key entries
+            it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
         }
     }
 
-    if (existingIndexNames.isNotEmpty()) {
-        println("The following foods will be imported; others had index names already present in the database:")
-        foodsToSave.keys.forEach { println(it) }
-    }
     saveObjects(ds, foodsToSave.values, ObjectSource.IMPORT)
     val completedNv = completeForeignKeys(ds, nvObjects, FoodNutrientValueTable.FOOD_ID)
     saveObjects(ds, completedNv, ObjectSource.IMPORT)
+
+    return conflictingIndexNames
 }
 
 @Suppress("UNUSED_EXPRESSION")
@@ -309,7 +334,7 @@ fun importFoodData(
     allowOverwrite: Boolean,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
-) {
+): Set<String> {
     allowOverwrite // TODO use
 
     val csvFoods = buildFoodObjectTree(
@@ -326,7 +351,7 @@ fun importFoodData(
         modifyNutrientValueData
     )
 
-    saveImportedFoods(db, csvFoods)
+    return saveImportedFoods(db, csvFoods)
 }
 
 @Suppress("UNUSED_EXPRESSION")

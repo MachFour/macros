@@ -9,6 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.sql.Table
+import com.machfour.macros.util.joinFilePath
 import java.io.FileWriter
 import java.io.IOException
 import java.sql.SQLException
@@ -27,7 +28,7 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     @Throws(SQLException::class, IOException::class)
     private fun <M : MacrosEntity<M>> doExport(ds: MacrosDataSource, outDir: String, t: Table<M>) {
         println("Exporting ${t.name} table...")
-        val outCsvPath = com.machfour.macros.util.joinFilePath(outDir, t.name + ".csv")
+        val outCsvPath = joinFilePath(outDir, t.name + ".csv")
         FileWriter(outCsvPath).use { exportTableToCsv(ds, t, it) }
     }
 

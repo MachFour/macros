@@ -1,16 +1,17 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.schema.CREATE_TIME_COLUMN_NAME
-import com.machfour.macros.orm.schema.ID_COLUMN_NAME
-import com.machfour.macros.orm.schema.MODIFY_TIME_COLUMN_NAME
+import com.machfour.macros.core.Factory
+import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.schema.CREATE_TIME_COLUMN_NAME
+import com.machfour.macros.schema.ID_COLUMN_NAME
+import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
 
 abstract class TableImpl<M>(
     final override val name: String,
-    final override val factory: Factory<M>,
-    cols: List<Column<M, *>>
+    private val factory: Factory<M>,
+    cols: List<Column<M, out Any>>
 ) : Table<M> {
-    final override val columns: List<Column<M, *>>
+    final override val columns: List<Column<M, out Any>>
 
     // TODO make these better
     @Suppress("UNCHECKED_CAST")
@@ -23,8 +24,6 @@ abstract class TableImpl<M>(
     final override val fkColumns: List<Column.Fk<M, *, *>>
     final override val columnsByName: Map<String, Column<M, *>>
     final override val secondaryKeyCols: List<Column<M, *>>
-    final override val naturalKeyColumn: Column<M, *>?
-
 
     // first three columns must be ID, create time, modify time
     init {
@@ -34,7 +33,6 @@ abstract class TableImpl<M>(
 
         // make name map and secondary key cols list. Linked hash map keeps insertion order
         val tmpColumnsByName = LinkedHashMap<String, Column<M, *>>(cols.size, 1.0f)
-        var naturalKeyColumn: Column<M, *>? = null
 
         val tmpSecondaryKeyCols = ArrayList<Column<M, *>>(2)
         val tmpFkColumns = ArrayList<Column.Fk<M, *, *>>(2)
@@ -44,11 +42,7 @@ abstract class TableImpl<M>(
             if (c.isInSecondaryKey) {
                 tmpSecondaryKeyCols.add(c)
             }
-            // record secondary key
-            if (c.isUnique && c != idColumn) {
-                require(naturalKeyColumn == null) { "two natural keys defined" }
-                naturalKeyColumn = c
-            }
+            
             if (c is Column.Fk<*, *, *>) {
                 tmpFkColumns.add(c as Column.Fk<M, *, *>)
             }
@@ -57,7 +51,6 @@ abstract class TableImpl<M>(
         this.columnsByName = tmpColumnsByName // unmodifiable
         this.secondaryKeyCols = tmpSecondaryKeyCols // unmodifiable
         this.fkColumns = tmpFkColumns // unmodifiable
-        this.naturalKeyColumn = naturalKeyColumn
 
         initTableCols()
     }
@@ -71,5 +64,9 @@ abstract class TableImpl<M>(
                 else -> assert(false) { "Columns must be of ColumnImpl type" }
             }
         }
+    }
+
+    override fun construct(data: RowData<M>, source: ObjectSource): M {
+        return factory.construct(data, source)
     }
 }

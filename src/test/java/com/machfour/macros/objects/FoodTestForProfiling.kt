@@ -2,12 +2,12 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.insertObjects
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 import java.io.IOException
 import java.sql.SQLException

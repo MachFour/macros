@@ -94,8 +94,8 @@ CREATE TABLE Food (
     -- CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
     , food_type            TEXT NOT NULL DEFAULT 'primary'
     -- miscellaneous metadata
-    , usda_index           INTEGER DEFAULT NULL
-    , nuttab_index         TEXT DEFAULT NULL
+    , usda_index           INTEGER DEFAULT NULL UNIQUE
+    , nuttab_index         TEXT DEFAULT NULL UNIQUE
     -- old NutritionData fields
     , data_source          TEXT DEFAULT NULL
     , data_notes           TEXT DEFAULT NULL

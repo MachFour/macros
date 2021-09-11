@@ -1,10 +1,10 @@
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 

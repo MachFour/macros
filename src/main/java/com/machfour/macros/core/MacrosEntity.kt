@@ -1,7 +1,5 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
@@ -24,11 +22,15 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     }
 
     val id: Long
+
     val hasId: Boolean
         get() = (id != NO_ID)
 
     val createTime: Long
     val modifyTime: Long
+
+    // whether this object was created from a database instance or whether it was created by the
+    // application (e.g. by a 'new object' action initiated by the user)
     val source: ObjectSource
 
     // Used to get data by column objects
@@ -41,12 +43,5 @@ interface MacrosEntity<M : MacrosEntity<M>> {
 
     fun dataCopy(withMetadata: Boolean): RowData<M>
     fun dataFullCopy(): RowData<M> = dataCopy(withMetadata = true)
-
-    // ... Alternative methods that can be used with unique columns
-    fun <N : MacrosEntity<N>, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, parent: N)
-    fun <N, J> setFkParentNaturalKey(fkCol: Column.Fk<M, *, N>, parentNaturalKey: Column<N, J>, data: J)
-    fun <N> getFkParentNaturalKey(fkCol: Column.Fk<M, *, N>): RowData<N>
-    val fkNaturalKeyMap: Map<Column.Fk<M, *, *>, *>
-    fun copyFkNaturalKeyMap(from: MacrosEntity<M>)
 
 }

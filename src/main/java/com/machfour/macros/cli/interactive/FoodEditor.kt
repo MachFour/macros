@@ -8,6 +8,7 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
@@ -16,12 +17,11 @@ import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.numNutrients
 import com.machfour.macros.nutrients.nutrients
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodNutrientValueTable
-import com.machfour.macros.orm.schema.FoodTable
 import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.queries.saveObjects
+import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.units.LegacyNutrientUnits
@@ -576,17 +576,11 @@ class FoodEditor constructor(
         // TODO print out which columns
         if (isAllValid) {
             val f = foodBuilder.build()
-            val indexName = f.indexName
             try {
                 try {
-                    val nutrientValues = nutrientData.nutrientValues
-                    for (nv in nutrientValues) {
-                        // link the food to the nd
-                        nv.setFkParentNaturalKey(
-                            FoodNutrientValueTable.FOOD_ID,
-                            FoodTable.INDEX_NAME,
-                            indexName
-                        )
+                    val nutrientValues = nutrientData.nutrientValues.onEach {
+                        // link the food to the nutrient values
+                        it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, f)
                     }
 
                     // gotta do it in one go

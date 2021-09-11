@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.NutrientGoal
@@ -13,7 +13,7 @@ import java.time.Instant
 private const val tableName = "Meal"
 
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<Meal, *>>()
+private val columns = ArrayList<Column<Meal, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
@@ -40,7 +40,7 @@ object MealTable: TableImpl<Meal>(tableName, Factories.meal, columns) {
     val MODIFY_TIME: Column<Meal, Long>
         get() = modifyTime
     val NAME: Column<Meal, String>
-        get() = com.machfour.macros.orm.schema.name
+        get() = com.machfour.macros.schema.name
     val DAY: Column<Meal, DateStamp>
         get() = day
     val START_TIME: Column<Meal, Long>

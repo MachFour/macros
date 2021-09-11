@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.entities.NutrientGoalDayMapping
@@ -10,7 +10,7 @@ import com.machfour.macros.util.DateStamp
 private const val tableName = "NutrientGoalDayMapping"
 // holds the following columns in the order initialised in the static block
 // iteration order of columns is the order in which columns are defined below
-private val columns = ArrayList<Column<NutrientGoalDayMapping, *>>()
+private val columns = ArrayList<Column<NutrientGoalDayMapping, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)

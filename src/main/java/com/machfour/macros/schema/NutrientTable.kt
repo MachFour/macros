@@ -1,4 +1,4 @@
-package com.machfour.macros.orm.schema
+package com.machfour.macros.schema
 
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.auxiliary.Factories
@@ -8,7 +8,7 @@ import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "Nutrient"
 
-private val columns = ArrayList<Column<Nutrient, *>>()
+private val columns = ArrayList<Column<Nutrient, out Any>>()
 
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
@@ -25,7 +25,7 @@ object NutrientTable: TableImpl<Nutrient>(tableName, Factories.nutrient, columns
    val MODIFY_TIME: Column<Nutrient, Long>
       get() = modifyTime
    val NAME: Column<Nutrient, String>
-      get() = com.machfour.macros.orm.schema.name
+      get() = com.machfour.macros.schema.name
    val UNIT_TYPES: Column<Nutrient, Int>
       get() = unitTypes
    val INBUILT: Column<Nutrient, Boolean>

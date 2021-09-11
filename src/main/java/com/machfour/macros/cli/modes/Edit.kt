@@ -3,13 +3,13 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.*
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.FoodPortionTable
 import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getMealById
 import com.machfour.macros.queries.saveObject
+import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
 import java.sql.SQLException
 

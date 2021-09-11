@@ -3,8 +3,8 @@ package com.machfour.macros.queries
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.orm.schema.FoodPortionTable
-import com.machfour.macros.orm.schema.MealTable
+import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException

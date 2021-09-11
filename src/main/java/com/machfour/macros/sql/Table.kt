@@ -1,11 +1,10 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.orm.Factory
-import com.machfour.macros.orm.ObjectSource
+import com.machfour.macros.core.ObjectSource
 
 interface Table<M> {
     val name: String
-    val columns: List<Column<M, *>>
+    val columns: List<Column<M, out Any>>
 
     // return all FK columns
     val fkColumns: List<Column.Fk<M, *, *>>
@@ -19,9 +18,5 @@ interface Table<M> {
     // if such a list exists for this table. If not, an empty list is returned.
     val secondaryKeyCols: List<Column<M, *>>
 
-    // special case when secondary key has a single column.
-    val naturalKeyColumn: Column<M, *>?
-    val factory: Factory<M>
-
-    fun construct(dataMap: RowData<M>, objectSource: ObjectSource): M = factory.construct(dataMap, objectSource)
+    fun construct(data: RowData<M>, source: ObjectSource): M
 }

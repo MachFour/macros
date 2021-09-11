@@ -1,6 +1,6 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.orm.schema.AllTables
+import com.machfour.macros.schema.AllTables
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.generator.*
 import java.io.File

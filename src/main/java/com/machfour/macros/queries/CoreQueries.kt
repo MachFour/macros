@@ -97,22 +97,6 @@ internal fun <M, I> selectNonNullColumn(
 }
 
 @Throws(SQLException::class)
-private fun <M : MacrosEntity<M>> isInDatabase(db: SqlDatabase, o: M): Boolean {
-    return if (o.id != MacrosEntity.NO_ID) {
-        idExistsInTable(db, o.table, o.id)
-    } else {
-        val secondaryKey = o.table.secondaryKeyCols
-        if (secondaryKey.isEmpty()) {
-            // no way to know except by ID...
-            TODO()
-        }
-        TODO()
-        @Suppress("UNREACHABLE_CODE")
-        false
-    }
-}
-
-@Throws(SQLException::class)
 internal fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {

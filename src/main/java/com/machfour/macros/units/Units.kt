@@ -1,9 +1,9 @@
 package com.machfour.macros.units
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.orm.ObjectSource
-import com.machfour.macros.orm.schema.UnitTable
+import com.machfour.macros.schema.UnitTable
 import com.machfour.macros.sql.RowData
 
 private fun makeInbuiltUnit(id: Long, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {

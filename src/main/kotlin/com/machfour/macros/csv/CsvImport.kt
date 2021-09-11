@@ -17,6 +17,7 @@ import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -233,18 +234,24 @@ fun buildFoodObjectTree(
 }
 
 @Throws(IOException::class, TypeCastException::class)
-fun buildServings(servingCsv: Reader): List<Serving> {
+fun <J> buildServings(
+    servingCsv: Reader,
+    foodKeyCol: Column<Food, J>
+): List<Serving> {
+    require(foodKeyCol.isUnique)
+
     val servings = ArrayList<Serving>()
     getCsvMapReader(servingCsv).use { reader ->
         val header = reader.getHeader(true)
         while (true) {
             val csvRow = reader.read(*header) ?: break
             val servingData = extractCsvData(csvRow, Serving.table)
-            val foodIndexName = csvRow[FoodTable.INDEX_NAME.sqlName]
-                ?: throw CsvException("Food index name was null for row: $csvRow")
+            val rawFoodKey = csvRow[foodKeyCol.sqlName]
+                ?: throw CsvException("Food $foodKeyCol was null for row: $csvRow")
+            val foodKey = requireNotNull(foodKeyCol.type.fromRawString(rawFoodKey))
             val s = Serving.factory.construct(servingData, ObjectSource.IMPORT)
             // TODO move next line to be run immediately before saving
-            s.setFkParentKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, foodIndexName)
+            s.setFkParentKey(ServingTable.FOOD_ID, foodKeyCol, foodKey)
             servings.add(s)
         }
     }
@@ -317,11 +324,16 @@ fun importFoodData(
 @Suppress("UNUSED_EXPRESSION")
 // TODO detect existing servings
 @Throws(IOException::class, SQLException::class, TypeCastException::class)
-fun importServings(ds: SqlDatabase, servingCsv: Reader, allowOverwrite: Boolean) {
+fun <J> importServings(
+    db: SqlDatabase,
+    servingCsv: Reader,
+    foodKeyCol: Column<Food, J>,
+    allowOverwrite: Boolean,
+) {
     allowOverwrite // TODO use
-    val csvServings = buildServings(servingCsv)
-    val completedServings = completeForeignKeys(ds, csvServings, ServingTable.FOOD_ID)
-    saveObjects(ds, completedServings, ObjectSource.IMPORT)
+    val csvServings = buildServings(servingCsv, foodKeyCol)
+    val completedServings = completeForeignKeys(db, csvServings, ServingTable.FOOD_ID)
+    saveObjects(db, completedServings, ObjectSource.IMPORT)
 }
 
 @Throws(IOException::class, SQLException::class, TypeCastException::class)

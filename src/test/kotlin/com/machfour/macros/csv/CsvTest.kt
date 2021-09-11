@@ -11,6 +11,7 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.queries.getAllRawObjects
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.validation.SchemaViolation
 import org.junit.jupiter.api.*
@@ -77,7 +78,7 @@ class CsvTest {
         var csvServings: List<Serving>
         try {
             FileReader(config.servingCsvPath).use {
-                csvServings = buildServings(it)
+                csvServings = buildServings(it, FoodTable.INDEX_NAME)
                 Assertions.assertNotEquals(0, csvServings.size, "CSV read in zero servings!")
                 println(csvServings[0])
             }
@@ -111,7 +112,7 @@ class CsvTest {
         try {
             // save foods first
             FileReader(config.foodCsvPath).use { importFoodData(db, it, true) }
-            FileReader(config.servingCsvPath).use { importServings(db, it, true) }
+            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME, true) }
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")

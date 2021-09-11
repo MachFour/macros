@@ -1,7 +1,10 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.sql.*
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.sql.rethrowAsSqlException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet

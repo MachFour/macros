@@ -15,10 +15,22 @@ import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
 import java.io.IOException
 import java.sql.SQLException
+
+
+private fun getCsvFile(args: List<String>, flag: String, default: String): String? {
+    return when (val arg = findArgumentFromFlag(args, flag)) {
+        is ArgParsingResult.KeyValFound -> arg.argument
+        is ArgParsingResult.ValNotFound -> null
+        else -> default
+    }
+
+}
+
 
 class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
@@ -54,31 +66,30 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val doClear = args.contains("--clear")
         val noRecipes = args.contains("--norecipes")
         val noFoodsServings = args.contains("--nofoods")
-        val foodCsvArg = findArgumentFromFlag(args, "-f")
-        val servingCsvArg = findArgumentFromFlag(args, "-s")
-        val recipeCsvArg = findArgumentFromFlag(args, "-r")
-        val ingredientCsvArg = findArgumentFromFlag(args, "-i")
-        val foodCsvOverride: String?
-        when (foodCsvArg) {
-            is ArgParsingResult.KeyValFound -> foodCsvOverride = foodCsvArg.argument
-            is ArgParsingResult.ValNotFound -> {
-                printlnErr("Error - '-f' flag given but no food.csv specified")
-                return 1
-            }
-            else -> {
-                foodCsvOverride = null
-            }
+
+
+        val foodCsvFile = getCsvFile(args, "-f", config.foodCsvPath) ?: run {
+            printlnErr("Error - '-f' flag given but food.csv not specified")
+            return 1
         }
-        // TODO servings, etc
-        println("servingCsvArg: $servingCsvArg")
-        println("recipeCsvArg: $recipeCsvArg")
-        println("ingredientCsvArg: $ingredientCsvArg")
+
+        val servingCsvFile = getCsvFile(args, "-s", config.servingCsvPath) ?: run {
+            printlnErr("Error - '-s' flag given but serving.csv not specified")
+            return 1
+        }
+
+        val recipeCsvFile = getCsvFile(args, "-r", config.recipeCsvPath) ?: run {
+            printlnErr("Error - '-r' flag given but recipe.csv not specified")
+            return 1
+        }
+
+        val ingredientsCsvFile = getCsvFile(args, "-i", config.ingredientsCsvPath) ?: run {
+            printlnErr("Error - '-i' flag given but ingredient.csv not specified")
+            return 1
+        }
+
         println()
 
-        val foodCsvFile = foodCsvOverride ?: config.foodCsvPath
-        val servingCsvFile = config.servingCsvPath
-        val recipeCsvFile = config.recipeCsvPath
-        val ingredientsCsvFile = config.ingredientsCsvPath
         val db = config.database
         try {
             if (doClear) {
@@ -98,9 +109,10 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 } else {
                     println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }
+                println()
             }
             if (!noFoodsServings) {
-                println("Importing foods and nutrition data into database...")
+                println("Importing foods and nutrition data from $foodCsvFile...")
                 val conflictingFoods: Map<String, Food>
                 FileReader(foodCsvFile).use {
                     conflictingFoods = importFoodData(db, it, false)
@@ -111,14 +123,23 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     conflictingFoods.forEach { println(it.key) }
                 }
 
-
                 println("Saved foods and nutrition data")
-                FileReader(servingCsvFile).use { importServings(db, it, false) }
+                println()
+
+                println("Importing servings from $servingCsvFile")
+                val foodKeyCol = if (servingCsvFile.contains("nuttab")) {
+                    FoodTable.NUTTAB_INDEX
+                } else {
+                    FoodTable.INDEX_NAME
+                }
+                FileReader(servingCsvFile).use {
+                    importServings(db, it, foodKeyCol, false)
+                }
                 println("Saved servings")
                 println()
             }
             if (!noRecipes) {
-                println("Importing recipes and ingredients into database...")
+                println("Importing recipes and ingredients from $recipeCsvFile...")
                 FileReader(recipeCsvFile).use { recipeCsv ->
                     FileReader(ingredientsCsvFile).use { ingredientsCsv ->
                         importRecipes(db, recipeCsv, ingredientsCsv)

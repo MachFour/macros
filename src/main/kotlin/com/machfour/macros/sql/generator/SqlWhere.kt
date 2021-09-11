@@ -3,8 +3,8 @@ package com.machfour.macros.sql.generator
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
-import com.machfour.macros.sql.makeSqlWhereString
 import com.machfour.macros.sql.makeSqlWhereLikeString
+import com.machfour.macros.sql.makeSqlWhereString
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column
 //  make into sealed class with subclasses for each kind of where (multivalue, single value, LIKE, etc.)

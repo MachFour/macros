@@ -135,9 +135,13 @@ internal fun <M, I, J> selectColumnMap(
     valueColumn: Column<M, J>,
     keys: Collection<I>,
     // when number of keys gets too large, split up the query
-    iterateThreshold: Int = ITERATE_THRESHOLD
+    iterateThreshold: Int = ITERATE_THRESHOLD,
+    enforceNotNull: Boolean = true // if false, the key column can be nullable and null keys will be ignored
 ): Map<I, J?> {
-    require(!keyColumn.isNullable && keyColumn.isUnique) { "Key column $keyColumn (table $t) must be unique and not nullable" }
+    require(keyColumn.isUnique) { "Key column $keyColumn (table $t) must be unique" }
+    if (enforceNotNull) {
+        require(!keyColumn.isNullable) { "Key column $keyColumn (table $t) must be not nullable" }
+    }
     val unorderedResults = HashMap<I, J?>(keys.size, 1.0f)
     val query = TwoColumnSelect.build(t, keyColumn, valueColumn) {
         where(keyColumn, keys, iterate = keys.size > iterateThreshold)
@@ -145,10 +149,15 @@ internal fun <M, I, J> selectColumnMap(
     val data = ds.selectTwoColumns(query)
     for (pair in data) {
         val (key, value) = pair
-        requireNotNull(key) { "Found null key in ${t}.$keyColumn!" }
-        assert(!unorderedResults.containsKey(key)) { "Two rows in the DB contained the same data in the key column!" }
+        if (enforceNotNull) {
+            requireNotNull(key) { "Found null key in ${t}.$keyColumn!" }
+        } else if (key == null) {
+            continue
+        }
+        assert(!unorderedResults.containsKey(key)) {
+            "Two rows in $t table contained the same value $key in unique column $keyColumn!"
+        }
         unorderedResults[key] = value
-
     }
     return unorderedResults
 }

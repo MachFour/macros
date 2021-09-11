@@ -145,10 +145,49 @@ internal fun <M, I, J> selectColumnMap(
     val data = ds.selectTwoColumns(query)
     for (pair in data) {
         val (key, value) = pair
-        assert(key != null) { "Found null key in ${t}.$keyColumn!" }
+        requireNotNull(key) { "Found null key in ${t}.$keyColumn!" }
         assert(!unorderedResults.containsKey(key)) { "Two rows in the DB contained the same data in the key column!" }
-        unorderedResults[key!!] = value
+        unorderedResults[key] = value
 
     }
     return unorderedResults
+}
+
+@Throws(SQLException::class)
+internal fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
+    db: SqlDatabase,
+    objectMap: Map<K, M>
+): Map<K, M> {
+    val table = objectMap.entries.firstOrNull()?.value?.table ?: return emptyMap()
+
+    val uniqueCols = table.columns.filter { it.isUnique }
+
+    return HashMap<K, M>().apply {
+        for (col in uniqueCols) {
+            val problemValues = findConflictingUniqueColumnValues(db, objectMap, col)
+            objectMap.filterTo(this) { it.value.getData(col) in problemValues }
+        }
+    }
+}
+
+
+// helper/wildcard capture
+@Throws(SQLException::class)
+private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
+    ds: SqlDatabase,
+    objectMap: Map<K, M>,
+    uniqueCol: Column<M, J>
+): Set<J> {
+    assert(uniqueCol.isUnique)
+
+    val objectValues = objectMap.values.mapNotNull { it.getData(uniqueCol) }
+
+    return if (objectValues.isEmpty()) {
+        emptySet()
+    } else {
+        selectSingleColumn(ds, uniqueCol) {
+            where(uniqueCol, objectValues, iterate = objectValues.size > ITERATE_THRESHOLD)
+            distinct()
+        }.filterNotNullTo(HashSet())
+    }
 }

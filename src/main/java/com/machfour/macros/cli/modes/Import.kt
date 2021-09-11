@@ -101,14 +101,14 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
             if (!noFoodsServings) {
                 println("Importing foods and nutrition data into database...")
-                val conflictingIndexNames: Set<String>
+                val conflictingFoods: Map<String, Food>
                 FileReader(foodCsvFile).use {
-                    conflictingIndexNames = importFoodData(db, it, false)
+                    conflictingFoods = importFoodData(db, it, false)
                 }
 
-                if (conflictingIndexNames.isNotEmpty()) {
+                if (conflictingFoods.isNotEmpty()) {
                     println("The following foods will be imported; others had index names already present in the database:")
-                    conflictingIndexNames.forEach { println(it) }
+                    conflictingFoods.forEach { println(it.key) }
                 }
 
 

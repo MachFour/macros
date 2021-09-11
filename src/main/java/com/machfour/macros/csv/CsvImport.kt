@@ -10,14 +10,13 @@ import com.machfour.macros.nutrients.ENERGY
 import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.nutrients.nutrients
 import com.machfour.macros.queries.completeForeignKeys
+import com.machfour.macros.queries.findUniqueColumnConflicts
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.queries.saveObjects
-import com.machfour.macros.queries.selectSingleColumn
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
@@ -252,55 +251,16 @@ fun buildServings(servingCsv: Reader): List<Serving> {
     return servings
 }
 
-@Throws(SQLException::class)
-private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
-    ds: SqlDatabase,
-    objectMap: Map<K, M>,
-    uniqueCol: Column<M, J>
-): Set<J> {
-    assert(uniqueCol.isUnique)
-
-    val objectValues: List<J> = objectMap.values.mapNotNull { it.getData(uniqueCol) }
-
-    val queryResult: List<J?> = selectSingleColumn(ds, uniqueCol) {
-        where(uniqueCol, objectValues, iterate = true)
-        distinct()
-    }
-
-    return queryResult.filterNotNullTo(HashSet(queryResult.size))
-}
-
-
-@Throws(SQLException::class)
-private fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
-    ds: SqlDatabase,
-    objectMap: Map<K, M>
-): Set<K> {
-    val table = objectMap.entries.firstOrNull()?.value?.table ?: return emptySet()
-
-    val uniqueCols = table.columns.filter { it.isUnique }
-
-    val problemKeys = HashSet<K>()
-
-    for (col in uniqueCols) {
-        val problemValues = findConflictingUniqueColumnValues(ds, objectMap, col)
-        val problemObjectKeys = objectMap.filter { it.value.getData(col) in problemValues }.keys
-        problemKeys.addAll(problemObjectKeys)
-    }
-
-    return problemKeys
-}
-
 
 // Returns list of foods that couldn't be saved due to unique column conflicts
 
 // foods maps from index name to food object. Food object must have nutrition data attached
 @Throws(SQLException::class)
-private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>): Set<String> {
+private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>): Map<String, Food> {
     // collect all of the index names to be imported, and check if they're already in the DB.
-    val conflictingIndexNames = findUniqueColumnConflicts(ds, foods)
+    val conflictingFoods = findUniqueColumnConflicts(ds, foods)
 
-    val foodsToSave = foods.filterNot { conflictingIndexNames.contains(it.key) }
+    val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
     /*
     if (allowOverwrite) {
         Map<String, Food> overwriteFoods = new HashMap<>();
@@ -323,7 +283,7 @@ private fun saveImportedFoods(ds: SqlDatabase, foods: Map<String, Food>): Set<St
     val completedNv = completeForeignKeys(ds, nvObjects, FoodNutrientValueTable.FOOD_ID)
     saveObjects(ds, completedNv, ObjectSource.IMPORT)
 
-    return conflictingIndexNames
+    return conflictingFoods
 }
 
 @Suppress("UNUSED_EXPRESSION")
@@ -334,7 +294,7 @@ fun importFoodData(
     allowOverwrite: Boolean,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
-): Set<String> {
+): Map<String, Food> {
     allowOverwrite // TODO use
 
     val csvFoods = buildFoodObjectTree(

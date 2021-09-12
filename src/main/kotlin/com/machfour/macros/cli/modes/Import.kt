@@ -119,7 +119,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 }
 
                 if (conflictingFoods.isNotEmpty()) {
-                    println("The following foods will be imported; others had index names already present in the database:")
+                    println("The following foods could not be be imported due to naming conflicts:")
                     conflictingFoods.forEach { println(it.key) }
                 }
 
@@ -133,7 +133,8 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     FoodTable.INDEX_NAME
                 }
                 FileReader(servingCsvFile).use {
-                    importServings(db, it, foodKeyCol, false)
+                    val excludeKeys = conflictingFoods.values.mapNotNull { it.getData(foodKeyCol) }.toSet()
+                    importServings(db, it, foodKeyCol, excludeKeys, false)
                 }
                 println("Saved servings")
                 println()

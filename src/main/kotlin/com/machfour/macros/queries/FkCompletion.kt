@@ -59,7 +59,8 @@ private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
         fkColumn.parentTable,
         parentKeyCol,
         fkColumn.parentColumn,
-        uniqueColumnValues
+        uniqueColumnValues,
+        enforceNotNull = false
     )
     return completedParentKeys.mapValues {
         requireNotNull(it.value) { "Value was null for key column ${it.key}" }

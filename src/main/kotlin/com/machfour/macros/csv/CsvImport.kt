@@ -328,11 +328,15 @@ fun <J> importServings(
     db: SqlDatabase,
     servingCsv: Reader,
     foodKeyCol: Column<Food, J>,
+    ignoreKeys: Set<J>,
     allowOverwrite: Boolean,
 ) {
     allowOverwrite // TODO use
     val csvServings = buildServings(servingCsv, foodKeyCol)
-    val completedServings = completeForeignKeys(db, csvServings, ServingTable.FOOD_ID)
+    val nonExcludedServings = csvServings.filterNot {
+        ignoreKeys.contains(it.getFkParentKey(ServingTable.FOOD_ID)[foodKeyCol])
+    }
+    val completedServings = completeForeignKeys(db, nonExcludedServings, ServingTable.FOOD_ID)
     saveObjects(db, completedServings, ObjectSource.IMPORT)
 }
 

@@ -154,7 +154,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
         val resultData = ArrayList<Pair<I?, J?>>()
         executeSelectQuery(query) {
-            resultData.add(Pair(it.getColumn(query.column1), it.getColumn(query.column2)))
+            resultData.add(it.getColumn(query.column1) to it.getColumn(query.column2))
         }
         return resultData
     }

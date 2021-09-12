@@ -32,16 +32,9 @@ abstract class SqlDatabaseImpl : SqlDatabase {
 
     @Throws(SQLException::class)
     override fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
-        val (table, selected) = Pair(query.table, query.selectColumn)
-        require(!selected.isNullable) { "column is nullable" }
+        assert(!query.selectColumn.isNullable) { "Select column is nullable: ${query.selectColumn}" }
 
-        val allValues = selectColumn(query)
-        return ArrayList<I>(allValues.size).apply {
-            for (value in allValues) {
-                checkNotNull(value) { "Found null value for column $selected in table $table"}
-                add(value)
-            }
-        }
+        return selectColumn(query).mapNotNull { it }
     }
 
     @Throws(SQLException::class)

@@ -113,9 +113,16 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
             if (!noFoodsServings) {
                 println("Importing foods and nutrition data from $foodCsvFile...")
+
+                val foodKeyCol = if (foodCsvFile.contains("nuttab")) {
+                    FoodTable.NUTTAB_INDEX
+                } else {
+                    FoodTable.INDEX_NAME
+                }
+
                 val conflictingFoods: Map<String, Food>
-                FileReader(foodCsvFile).use {
-                    conflictingFoods = importFoodData(db, it, false)
+                FileReader(foodCsvFile).use { reader ->
+                    conflictingFoods = importFoodData(db, reader, foodKeyCol, false)
                 }
 
                 if (conflictingFoods.isNotEmpty()) {
@@ -127,23 +134,18 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 println()
 
                 println("Importing servings from $servingCsvFile")
-                val foodKeyCol = if (servingCsvFile.contains("nuttab")) {
-                    FoodTable.NUTTAB_INDEX
-                } else {
-                    FoodTable.INDEX_NAME
-                }
-                FileReader(servingCsvFile).use {
+                FileReader(servingCsvFile).use { reader ->
                     val excludeKeys = conflictingFoods.values.mapNotNull { it.getData(foodKeyCol) }.toSet()
-                    importServings(db, it, foodKeyCol, excludeKeys, false)
+                    importServings(db, reader, foodKeyCol, excludeKeys, false)
                 }
                 println("Saved servings")
                 println()
             }
             if (!noRecipes) {
                 println("Importing recipes and ingredients from $recipeCsvFile...")
-                FileReader(recipeCsvFile).use { recipeCsv ->
-                    FileReader(ingredientsCsvFile).use { ingredientsCsv ->
-                        importRecipes(db, recipeCsv, ingredientsCsv)
+                FileReader(recipeCsvFile).use { recipeReader ->
+                    FileReader(ingredientsCsvFile).use { ingredientsReader ->
+                        importRecipes(db, recipeReader, ingredientsReader)
                     }
                 }
                 println("Saved recipes and ingredients")

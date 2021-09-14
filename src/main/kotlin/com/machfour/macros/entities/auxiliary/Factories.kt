@@ -11,6 +11,9 @@ import com.machfour.macros.sql.RowData
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues
 
+
+// TODO make factories lazy inside each class and make object constructors private
+
 object Factories {
 
     val food: Factory<Food> = Factory { data, objectSource ->

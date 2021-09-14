@@ -30,7 +30,7 @@ private val exampleDayGoalRowData by lazy {
 }
 
 val exampleDayGoalNd by lazy {
-    NutrientGoal(exampleDayGoalRowData, ObjectSource.COMPUTED).apply {
+    NutrientGoal.factory.construct(exampleDayGoalRowData, ObjectSource.COMPUTED).apply {
         addComputedValue(ENERGY, 2000.0, CALORIES)
         addComputedValue(PROTEIN, 400.0, GRAMS)
         addComputedValue(FAT, 65.0, GRAMS)

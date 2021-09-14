@@ -14,7 +14,7 @@ import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import java.time.Instant
 
-class Meal internal constructor(data: RowData<Meal>, objectSource: ObjectSource) : MacrosEntityImpl<Meal>(data, objectSource) {
+class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : MacrosEntityImpl<Meal>(data, source) {
     companion object {
         fun sumNutrientData(meals: Iterable<Meal>): FoodNutrientData {
             return FoodNutrientData.sum(meals.map { it.nutrientTotal() })

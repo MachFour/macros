@@ -17,7 +17,7 @@ import com.machfour.macros.util.DateStamp
 class NutrientGoal internal constructor(
     data: RowData<NutrientGoal>,
     objectSource: ObjectSource
-) : MacrosEntityImpl<NutrientGoal>(data, objectSource) {
+): MacrosEntityImpl<NutrientGoal>(data, objectSource) {
 
     companion object {
         val factory: Factory<NutrientGoal>
@@ -42,7 +42,7 @@ class NutrientGoal internal constructor(
                 put(NutrientGoalTable.ID, MacrosEntity.NO_ID)
                 put(NutrientGoalTable.NAME, name)
             }
-            return NutrientGoal(data, ObjectSource.COMPUTED)
+            return factory.construct(data, ObjectSource.COMPUTED)
         }
 
     }

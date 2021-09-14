@@ -21,6 +21,8 @@ class FoodNutrientData(
             FoodNutrientValue.makeComputedValue(0.0, QUANTITY, GRAMS)
         }
 
+        val noData by lazy { FoodNutrientData() }
+
         // Sums each nutrition component
         // converts to default unit for each nutrient
         // Quantity is converted to mass using density provided, or using a default guess of 1

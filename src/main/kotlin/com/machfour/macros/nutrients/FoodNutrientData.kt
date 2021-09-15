@@ -67,7 +67,7 @@ class FoodNutrientData(
             )
             sumData.markCompleteData(QUANTITY, !densityGuessed)
 
-            for (n in nutrientsExceptQuantity) {
+            for (n in AllNutrientsExceptQuantity) {
                 var completeData = true
                 var existsData = false
                 var sumValue = 0.0
@@ -114,7 +114,7 @@ class FoodNutrientData(
 
     override fun toString(): String {
         val str = StringBuilder("NutrientData [")
-        for (n in nutrients) {
+        for (n in AllNutrients) {
             str.append("$n : ${get(n)}, ")
         }
         str.append("]")
@@ -140,7 +140,7 @@ class FoodNutrientData(
 
         val newData = FoodNutrientData(dataCompleteIfNotNull = true)
         // completeData is false by default so we can just skip the iteration for null nutrients
-        for (n in nutrients) {
+        for (n in AllNutrients) {
             this[n]?.let {
                 newData[n] = it.rescale(conversionRatio)
             }
@@ -218,7 +218,7 @@ class FoodNutrientData(
 
         val factory = FoodNutrientValue.factory
 
-        for (n in nutrients) {
+        for (n in AllNutrients) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
             // nData object was produced by summation and there was at least one food with missing data.

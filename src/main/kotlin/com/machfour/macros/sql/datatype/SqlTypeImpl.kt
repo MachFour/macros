@@ -35,11 +35,6 @@ abstract class SqlTypeImpl<J> : SqlType<J> {
         return toString(data, "NULL")
     }
 
-    // Returns a string representation of the given data, with null data represented by the string 'null'
-    final override fun toString(data: J?): String {
-        return toString(data, "null")
-    }
-
     final override fun toString(data: J?, nullString: String): String {
         return data?.toString() ?: nullString
     }

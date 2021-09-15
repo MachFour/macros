@@ -1,9 +1,9 @@
 package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.queries.MacrosDataSource
 import com.machfour.macros.queries.getAllRawObjects
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import org.supercsv.io.CsvMapWriter
 import org.supercsv.io.ICsvMapWriter
@@ -40,8 +40,8 @@ fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, csvOut: Writer, obj
 }
 
 @Throws(SQLException::class, IOException::class)
-fun <M : MacrosEntity<M>> exportTableToCsv(ds: MacrosDataSource, t: Table<M>, outCsv: Writer) {
-    val rawObjectMap = getAllRawObjects(ds.database, t)
+fun <M : MacrosEntity<M>> exportTableToCsv(db: SqlDatabase, t: Table<M>, outCsv: Writer) {
+    val rawObjectMap = getAllRawObjects(db, t)
     val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
     // Collections.sort(allRawFoods, Comparator.comparingLong(MacrosPersistable::getId));
     writeObjectsToCsv(t, outCsv, allRawObjects)

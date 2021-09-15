@@ -193,7 +193,7 @@ class CachedDataSource(
     @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
         val numDeleted = super.deleteObject(o)
-        afterDbChange(o)
+        afterDbEdit(o)
         return numDeleted
     }
 
@@ -201,52 +201,84 @@ class CachedDataSource(
     fun <M : MacrosEntity<M>> deleteObjects(objects: List<M>): Int {
         val numDeleted = super.deleteObjects(objects)
         for (obj in objects) {
-            afterDbChange(obj)
+            afterDbEdit(obj)
         }
         return numDeleted
     }
 
+    override fun deleteAllIngredients() {
+        allFoodsNeedsRefresh = true
+        return super.deleteAllIngredients()
+    }
+
+    override fun deleteAllFoodPortions() {
+        meals.clear()
+        super.deleteAllFoodPortions()
+    }
+
+    override fun deleteAllCompositeFoods(): Int {
+        allFoodsNeedsRefresh = true
+        return super.deleteAllCompositeFoods()
+    }
+
+    override fun forgetFood(f: Food) {
+        super.forgetFood(f)
+        afterDbEdit(f)
+    }
 
     @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> saveObject(o: M): Int {
-        val wasSaved = super.saveObject(o)
-        afterDbChange(o)
-        return wasSaved
+        return saveObjects(listOf(o), o.source)
     }
 
     @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int {
         val numSaved = super.saveObjects(objects, source)
-        objects.forEach { afterDbChange(it) }
+        // TODO copied from WriteQueries
+        when (source) {
+            ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEach { afterDbInsert(it) } }
+            ObjectSource.DB_EDIT -> { objects.forEach { afterDbEdit(it) } }
+            else -> {}
+        }
         return numSaved
     }
 
-    @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
-        val numUpdated = super.updateObjects(objects)
-        objects.forEach { afterDbChange(it) }
-        return numUpdated
-    }
+    //@Throws(SQLException::class)
+    //override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
+    //    val numUpdated = super.updateObjects(objects)
+    //    objects.forEach { afterDbEdit(it) }
+    //    return numUpdated
+    //}
 
-    @Throws(SQLException::class)
-    override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
-        val numInserted = super.insertObjects(objects, withId)
-        objects.forEach { afterDbChange(it) }
-        return numInserted
-    }
+    //@Throws(SQLException::class)
+    //override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
+    //    val numInserted = super.insertObjects(objects, withId)
+    //    objects.forEach { afterDbInsert(it) }
+    //    return numInserted
+    //}
 
-    private fun <M : MacrosEntity<M>> afterDbChange(obj: M) {
+    private fun <M : MacrosEntity<M>> afterDbInsert(obj: M) {
         when (obj) {
-            is Food -> afterDbChange(obj.id, FoodTable)
-            is Meal -> afterDbChange(obj.id, MealTable)
+            is Food ->  { allFoodsNeedsRefresh = true }
+            is Meal ->  { /* TODO refresh day */ }
 
-            is FoodNutrientValue -> afterDbChange(obj.foodId, FoodTable)
-            is FoodPortion -> afterDbChange(obj.mealId, MealTable)
-            is Serving -> afterDbChange(obj.foodId, FoodTable)
+            is FoodNutrientValue -> afterCacheEdit(obj.foodId, FoodTable)
+            is FoodPortion -> afterCacheEdit(obj.mealId, MealTable)
+            is Serving -> afterCacheEdit(obj.foodId, FoodTable)
+        }
+    }
+    private fun <M : MacrosEntity<M>> afterDbEdit(obj: M) {
+        when (obj) {
+            is Food -> afterCacheEdit(obj.id, FoodTable)
+            is Meal -> afterCacheEdit(obj.id, MealTable)
+
+            is FoodNutrientValue -> afterCacheEdit(obj.foodId, FoodTable)
+            is FoodPortion -> afterCacheEdit(obj.mealId, MealTable)
+            is Serving -> afterCacheEdit(obj.foodId, FoodTable)
         }
     }
 
-    private fun <M : MacrosEntity<M>> afterDbChange(id: Long, cacheType: Table<M>) {
+    private fun <M : MacrosEntity<M>> afterCacheEdit(id: Long, cacheType: Table<M>) {
         when (cacheType) {
             is FoodTable -> foods.remove(id)
             is MealTable -> meals.remove(id)

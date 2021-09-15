@@ -118,7 +118,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             return
         }
         assert(settableColumns.contains(col))
-        val oldValue: J? = get(col)
+        val oldValue: J? = this[col]
         draftData.put(col, value)
 
         if (oldValue != value || wasTypeMismatch || hasErrors(col)) {
@@ -149,14 +149,13 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         }
     }
 
-    fun <J> get(col: Column<M, J>): J? {
+    operator fun <J> get(col: Column<M, J>): J? {
         return draftData[col]
     }
 
     // null data represented as blank strings
     fun <J> getAsString(col: Column<M, J>): String {
-        val data = get(col)
-        return data?.toString() ?: ""
+        return col.type.toRawString(this[col])
     }
 
     private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
@@ -185,16 +184,14 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * into the validationErrors map.
      */
     private fun <J> validateSingle(col: Column<M, J>, wasTypeMismatch: Boolean = false) {
-        assert(validationErrors.containsKey(col)) { "ValidationErrors not initialised properly" }
-        validationErrors.getValue(col).let {
-            it.clear()
+        val errors = requireNotNull(validationErrors[col]) { "ValidationErrors not initialised properly" }
+        with(errors) {
+            clear()
             if (wasTypeMismatch) {
-                it.add(ValidationError.TYPE_MISMATCH)
+                add(ValidationError.TYPE_MISMATCH)
             } else {
-                val errors = validate(draftData, col, customValidations)
-                it.addAll(errors)
+                addAll(validate(draftData, col, customValidations))
             }
-
         }
     }
 
@@ -274,21 +271,22 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             customValidations: List<Validation<M>> = emptyList()
         ): List<ValidationError> {
             val errorList: MutableList<ValidationError> = ArrayList()
-            if (data[col] == null && !col.isNullable /*&& col.defaultData() == null*/) {
+            if (data[col] == null && !col.isNullable) {
                 errorList.add(ValidationError.NON_NULL)
             }
             // TODO add check for unique: needs DB access
-            customValidations
-                .map { it.validate(data) }
-                .filter { it.containsKey(col) }
-                .forEach { errorList.addAll(it.getValue(col)) }
-
+            for (v in customValidations) {
+                if (v.relevantColumns.contains(col)) {
+                    val errors = v.validate(data)
+                    errorList.addAll(errors.getOrDefault(col, emptyList()))
+                }
+            }
             return errorList
         }
 
         // method used by MacrosEntity
         // returns a map of ONLY the columns with errors, mapping to list of validation errors
-        fun <M : MacrosEntity<M>> validate(
+        internal fun <M : MacrosEntity<M>> validate(
             data: RowData<M>,
             customValidation: Validation<M>? = null
         ): Map<Column<M, *>, List<ValidationError>> {

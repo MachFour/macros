@@ -14,9 +14,9 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.DisplayStrings
+import com.machfour.macros.nutrients.AllNutrients
 import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.numNutrients
-import com.machfour.macros.nutrients.nutrients
+import com.machfour.macros.nutrients.NumNutrients
 import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.queries.saveObjects
@@ -148,7 +148,7 @@ class FoodEditor constructor(
     init {
 
         val numFoodColumns = FOOD_TABLE_COLUMNS.size
-        val numNdColumns = numNutrients
+        val numNdColumns = NumNutrients
         val totalColumns = numFoodColumns + numNdColumns
 
         this.foodColumnsForDisplay = ArrayList(numFoodColumns)
@@ -328,7 +328,7 @@ class FoodEditor constructor(
                 foodColumnsForDisplay.add(col)
             }
         }
-        for (nutrient in nutrients) {
+        for (nutrient in AllNutrients) {
             // TODO display minimal set of nutrient columns first
             nutrientsForDisplay.add(nutrient)
         }

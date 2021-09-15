@@ -114,19 +114,19 @@ fun nutrientWithIdOrNull(id: Long): Nutrient? = idMap[id]
 
 fun nutrientWithId(id: Long): Nutrient = requireNotNull(nutrientWithIdOrNull(id)) { "No nutrient found with id $id" }
 
-val nutrients: Set<Nutrient>
+val AllNutrients: Set<Nutrient>
     get() {
         registrationAllowed = false
         return nutrientSet
     }
 
-val nutrientsExceptQuantity: Set<Nutrient>
+val AllNutrientsExceptQuantity: Set<Nutrient>
     get() {
         registrationAllowed = false
         return nutrientSetWithoutQuantity
     }
 
-val numNutrients: Int
+val NumNutrients: Int
     get() {
         registrationAllowed = false
         return idMap.size

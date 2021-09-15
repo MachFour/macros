@@ -10,7 +10,7 @@ import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
-open class StaticDataSource(override val database: SqlDatabase): MacrosDataSource {
+open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource {
 
     // Flow functions
     override fun getFood(id: Long): Food? {
@@ -111,13 +111,13 @@ open class StaticDataSource(override val database: SqlDatabase): MacrosDataSourc
         return getDaysForMealIds(database, mealIds)
     }
 
-    override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
-        return insertObjects(database, objects, withId)
-    }
+    //override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
+    //    return insertObjects(database, objects, withId)
+    //}
 
-    override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
-        return updateObjects(database, objects)
-    }
+    //override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
+    //    return updateObjects(database, objects)
+    //}
 
     override fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
         return deleteObject(database, o)

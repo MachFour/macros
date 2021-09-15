@@ -2,7 +2,8 @@ package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.queries.saveObjects
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.IOException
@@ -37,7 +38,7 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M
 
 // Adds the content of the CSV data to the table. Any conflicts in IDs will cause the operation to fail
 @Throws(SQLException::class, IOException::class, TypeCastException::class)
-fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, t: Table<M>, csvData: Reader) {
+fun <M : MacrosEntity<M>> restoreTable(db: SqlDatabase, t: Table<M>, csvData: Reader) {
     val objects = buildObjectsForRestore(t, csvData)
-    ds.saveObjects(objects, ObjectSource.RESTORE)
+    saveObjects(db, objects, ObjectSource.RESTORE)
 }

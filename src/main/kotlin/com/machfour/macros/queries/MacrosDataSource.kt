@@ -4,7 +4,6 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
-import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
@@ -12,10 +11,6 @@ import java.sql.SQLException
 // Implements a higher level query interface than the database
 // which allows for caching of objects returned from query results.
 interface MacrosDataSource {
-
-    // TODO don't expose this publicly
-    val database: SqlDatabase
-
     /*
      * The following functions are just simple passthoughs to static queries
      */
@@ -147,11 +142,24 @@ interface MacrosDataSource {
      */
     // Do we really need the list methods? The user will probably only edit one object at a time
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
-    @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int
+
 
     @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
+    fun <M : MacrosEntity<M>> saveObject(o: M): Int
+
+    @Throws(SQLException::class)
+    fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
+
+    // The following two methods are made redundant because of saveObjects()
+
+    //@Throws(SQLException::class)
+    //fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int
+
+    //@Throws(SQLException::class)
+    //fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
+
+    // returns number of objects saved correctly (i.e. 0 or 1)
+    // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> deleteObject(o: M): Int
@@ -163,14 +171,6 @@ interface MacrosDataSource {
     // deletes objects with the given ID from
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> deleteObjectsById(table: Table<M>, ids: Collection<Long>): Int
-
-    // returns number of objects saved correctly (i.e. 0 or 1)
-    // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
-    @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> saveObject(o: M): Int
-
-    @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
 
     @Throws(SQLException::class)
     fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>)

@@ -43,11 +43,19 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             extraDesc: String?,
         ): String {
             // use sortable name but replace sequences of spaces (and dashes) with a single dash
-            return prettyFormat(basicName, brand, variety, extraDesc,
-                withBrand = true, withVariety = true, withExtra = true, sortable = true
+            return prettyFormat(
+                basicName = basicName,
+                brand = brand,
+                variety = variety,
+                extraDesc = extraDesc,
+                withBrand = true,
+                withVariety = true,
+                withExtra = true,
+                sortable = true
             )
                 .replace(Regex("[()\\[\\]{}&%!$#@*^+=:;<>?/\\\\]"), replacement = "")
                 .replace(Regex("[\\s-,]+"), replacement = "-")
+                .removeSuffix("-")
         }
 
         /*

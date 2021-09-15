@@ -49,12 +49,12 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         }
     }
 
-    protected val data: ArrayList<M?> = ArrayList(numNutrients)
-    protected val isDataComplete: Array<Boolean> = Array(numNutrients) { false }
+    protected val data: ArrayList<M?> = ArrayList(NumNutrients)
+    protected val isDataComplete: Array<Boolean> = Array(NumNutrients) { false }
 
     // initialise the data (which can't be done inline easily)
     init {
-        repeat(numNutrients) {
+        repeat(NumNutrients) {
             data.add(null)
         }
     }
@@ -92,7 +92,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
     override fun toString(): String {
         val str = StringBuilder("GenericNutrientData [")
-        for (n in nutrients) {
+        for (n in AllNutrients) {
             str.append("$n : ${get(n)}, ")
         }
         str.append("]")

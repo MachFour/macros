@@ -6,9 +6,9 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
+import com.machfour.macros.nutrients.AllNutrients
 import com.machfour.macros.nutrients.ENERGY
 import com.machfour.macros.nutrients.QUANTITY
-import com.machfour.macros.nutrients.nutrients
 import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.findUniqueColumnConflicts
 import com.machfour.macros.queries.getFoodByIndexName
@@ -57,7 +57,7 @@ internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): 
 private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<FoodNutrientValue>> {
     val data = ArrayList<RowData<FoodNutrientValue>>()
 
-    for (nutrient in nutrients) {
+    for (nutrient in AllNutrients) {
         val valueString = csvRow[nutrient.csvName]
         // we skip adding the nutrient if it's not present in the CSV
         if (valueString.isNullOrBlank()) {

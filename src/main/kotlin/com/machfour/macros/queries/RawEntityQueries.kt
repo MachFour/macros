@@ -30,8 +30,8 @@ internal fun <M, J> getRawObjects(ds: SqlDatabase, keyColumn: Column<M, J>, quer
 }
 
 @Throws(SQLException::class)
-internal fun <M> getAllRawObjects(ds: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
-    return getRawObjects(ds, t.idColumn) {
+internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
+    return getRawObjects(db, t.idColumn) {
         if (orderBy != null) {
             orderBy(orderBy)
         }

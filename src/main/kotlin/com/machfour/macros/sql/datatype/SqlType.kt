@@ -26,11 +26,8 @@ interface SqlType<J> {
     // into an SQL database. In particular, null data is converted into the string "NULL"
     fun toSqlString(data: J?): String
 
-    // Returns a string representation of the given data, with null data represented by the string 'null'
-    fun toString(data: J?): String
-
     // Returns a string representation of the given data, with a custom placeholder as null
-    fun toString(data: J?, nullString: String): String
+    fun toString(data: J?, nullString: String = "null"): String
 
     // A dumb Java cast from the given object to the Java class associated with this Type
     fun cast(o: Any?): J?

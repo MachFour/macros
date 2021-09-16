@@ -7,7 +7,7 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.csv.exportTableToCsv
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.joinFilePath
 import java.io.FileWriter
@@ -26,10 +26,10 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     @Throws(SQLException::class, IOException::class)
-    private fun <M : MacrosEntity<M>> doExport(ds: MacrosDataSource, outDir: String, t: Table<M>) {
+    private fun <M : MacrosEntity<M>> SqlDatabase.doExport(outDir: String, t: Table<M>) {
         println("Exporting ${t.name} table...")
         val outCsvPath = joinFilePath(outDir, t.name + ".csv")
-        FileWriter(outCsvPath).use { exportTableToCsv(ds, t, it) }
+        FileWriter(outCsvPath).use { exportTableToCsv(this, t, it) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -38,16 +38,17 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             return 0
         }
         val outputDir = if (args.size >= 2) args[1] else config.defaultCsvOutputDir
-        val ds = config.dataSource
         try {
-            doExport(ds, outputDir, Food.table)
-            doExport(ds, outputDir, FoodNutrientValue.table)
-            doExport(ds, outputDir, Serving.table)
-            doExport(ds, outputDir, FoodPortion.table)
-            doExport(ds, outputDir, Ingredient.table)
-            doExport(ds, outputDir, Meal.table)
-            doExport(ds, outputDir, Unit.table)
-            doExport(ds, outputDir, Nutrient.table)
+            with(config.database) {
+                doExport(outputDir, Food.table)
+                doExport(outputDir, FoodNutrientValue.table)
+                doExport(outputDir, Serving.table)
+                doExport(outputDir, FoodPortion.table)
+                doExport(outputDir, Ingredient.table)
+                doExport(outputDir, Meal.table)
+                doExport(outputDir, Unit.table)
+                doExport(outputDir, Nutrient.table)
+            }
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

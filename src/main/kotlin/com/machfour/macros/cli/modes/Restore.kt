@@ -7,7 +7,7 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.csv.restoreTable
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.queries.MacrosDataSource
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.util.joinFilePath
@@ -28,10 +28,10 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     }
 
     @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    private fun <M : MacrosEntity<M>> restoreTable(ds: MacrosDataSource, exportDir: String, t: Table<M>) {
+    private fun <M : MacrosEntity<M>> SqlDatabase.restoreTable(exportDir: String, t: Table<M>) {
         println("Restoring " + t.name + " table...")
         val csvPath = joinFilePath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> restoreTable(ds, t, csvData) }
+        FileReader(csvPath).use { csvData -> restoreTable(this, t, csvData) }
     }
 
     override fun doAction(args: List<String>): Int {
@@ -41,20 +41,19 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         }
 
         // default output dir
-        var csvDir = config.defaultCsvOutputDir
-        if (args.size >= 2) {
-            csvDir = args[1]
-        }
-        val ds = config.dataSource
+        val csvDir = if (args.size >= 2) args[1] else config.defaultCsvOutputDir
+
         try {
-            restoreTable(ds, csvDir, Unit.table)
-            restoreTable(ds, csvDir, Nutrient.table)
-            restoreTable(ds, csvDir, Food.table)
-            restoreTable(ds, csvDir, FoodNutrientValue.table)
-            restoreTable(ds, csvDir, Serving.table)
-            restoreTable(ds, csvDir, Meal.table)
-            restoreTable(ds, csvDir, FoodPortion.table)
-            restoreTable(ds, csvDir, Ingredient.table)
+            with(config.database) {
+                restoreTable(csvDir, Unit.table)
+                restoreTable(csvDir, Nutrient.table)
+                restoreTable(csvDir, Food.table)
+                restoreTable(csvDir, FoodNutrientValue.table)
+                restoreTable(csvDir, Serving.table)
+                restoreTable(csvDir, Meal.table)
+                restoreTable(csvDir, FoodPortion.table)
+                restoreTable(csvDir, Ingredient.table)
+            }
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {

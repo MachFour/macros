@@ -275,6 +275,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
                 errorList.add(ValidationError.NON_NULL)
             }
             // TODO add check for unique: needs DB access
+            // TODO allow custom validations to mutate the current validation error list
             for (v in customValidations) {
                 if (v.relevantColumns.contains(col)) {
                     val errors = v.validate(data)

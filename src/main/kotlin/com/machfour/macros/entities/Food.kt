@@ -247,6 +247,17 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     val searchRelevance: Int
         get() = getData(FoodTable.SEARCH_RELEVANCE)!!
 
+    // Returns the most recent time out of
+    // - food (table) modify time
+    // - any servings modify time
+    // - nutrient value modify time
+    // Ensure servings and nutrient values are added first!
+    val userModifyTime: Long by lazy {
+        val servingModifyTime = servings.maxOfOrNull { it.modifyTime } ?: 0
+        val nutrientValueModifyTime = nutrientData.nutrientValues.maxOfOrNull { it.modifyTime } ?: 0
+        maxOf(modifyTime, maxOf(servingModifyTime, nutrientValueModifyTime))
+    }
+
     private fun prettyFormat(
         withBrand : Boolean = true,
         withVariety : Boolean = true,

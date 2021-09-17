@@ -8,14 +8,12 @@ import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.sql.SQLException
 
 class CachedDataSource(
     database: SqlDatabase,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    //private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): StaticDataSource(database) {
     var allFoodsNeedsRefresh: Boolean = true
 
@@ -164,9 +162,10 @@ class CachedDataSource(
         if (pauseRefreshes) {
             foodRefreshQueue.addAll(ids)
         } else {
-            val newData: Map<Long, Food> = getFoodsById(ids)
+            val newData = getFoodsById(ids)
             foods.putAll(newData)
             for (missingId in newData.missingIdsFrom(ids)) {
+                // if any requested IDs did not return a food, remove them from the cache
                 foods.remove(missingId)
             }
             //foodsFlow.emit(foods)
@@ -183,6 +182,7 @@ class CachedDataSource(
             val newData: Map<Long, Meal> = getMealsById(ids)
             meals.putAll(newData)
             for (missingId in newData.missingIdsFrom(ids)) {
+                // if any requested IDs did not return a meal, remove them from the cache
                 meals.remove(missingId)
             }
 
@@ -192,9 +192,7 @@ class CachedDataSource(
 
     @Throws(SQLException::class)
     override fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
-        val numDeleted = super.deleteObject(o)
-        afterDbEdit(o)
-        return numDeleted
+        return deleteObjects(listOf(o))
     }
 
     @Throws(SQLException::class)
@@ -243,6 +241,11 @@ class CachedDataSource(
         return numSaved
     }
 
+    override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
+        super.saveNutrientsToFood(food, nutrients)
+        afterDbEdit(food)
+    }
+
     //@Throws(SQLException::class)
     //override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
     //    val numUpdated = super.updateObjects(objects)
@@ -280,8 +283,12 @@ class CachedDataSource(
 
     private fun <M : MacrosEntity<M>> afterCacheEdit(id: Long, cacheType: Table<M>) {
         when (cacheType) {
-            is FoodTable -> foods.remove(id)
-            is MealTable -> meals.remove(id)
+            is FoodTable -> {
+                refreshFoods(listOf(id))
+            }
+            is MealTable -> {
+                refreshMeals(listOf(id))
+            }
         }
     }
 }

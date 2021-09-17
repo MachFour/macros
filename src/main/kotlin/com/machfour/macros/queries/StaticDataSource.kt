@@ -6,7 +6,6 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
@@ -125,13 +124,6 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
 
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
         return deleteObjects(database, objects)
-    }
-
-    override fun <M : MacrosEntity<M>> deleteObjectsById(
-        table: Table<M>,
-        ids: Collection<Long>
-    ): Int {
-        return deleteObjectsById(database, table, ids)
     }
 
     override fun <M : MacrosEntity<M>> saveObject(o: M): Int {

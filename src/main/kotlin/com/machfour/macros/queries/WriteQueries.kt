@@ -41,7 +41,6 @@ internal fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
     return deleteById(db, o.table, o.id)
 }
 
-// TODO make this the general one
 @Throws(SQLException::class)
 fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
     val table = objects.firstOrNull()?.table ?: return 0

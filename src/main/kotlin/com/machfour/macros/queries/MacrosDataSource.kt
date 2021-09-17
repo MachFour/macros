@@ -4,7 +4,6 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
-import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import java.sql.SQLException
 
@@ -167,10 +166,6 @@ interface MacrosDataSource {
     // TODO make this the general one
     @Throws(SQLException::class)
     fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int
-
-    // deletes objects with the given ID from
-    @Throws(SQLException::class)
-    fun <M : MacrosEntity<M>> deleteObjectsById(table: Table<M>, ids: Collection<Long>): Int
 
     @Throws(SQLException::class)
     fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>)

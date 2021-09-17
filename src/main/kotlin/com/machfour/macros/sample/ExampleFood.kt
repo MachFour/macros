@@ -35,7 +35,7 @@ private fun init1(): Food {
     val data = RowData(Food.table)
     data.put(INDEX_NAME, "food1")
     data.put(BRAND, "Max's")
-    data.put(VARIETY, "really good")
+    data.put(VARIETY, "really good with a really long variety name just to see what happens")
     data.put(NAME, "food")
     data.put(NOTES, "notes")
     data.put(CATEGORY, "dairy")

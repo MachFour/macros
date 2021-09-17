@@ -1,10 +1,18 @@
 package com.machfour.macros.util
 
-fun <E, K> Iterable<E>.filterInSetUnlessEmpty(set: Set<K>, key: (E) -> K): List<E> {
+fun <E, K> Iterable<E>.filterInSetUnlessEmpty(set: Set<K>, produceKey: (E) -> K): List<E> {
     return if (set.isEmpty()) {
         if (this is List<E>) this else toList()
     } else {
-        filter { set.contains(key(it)) }
+        filter { set.contains(produceKey(it)) }
+    }
+}
+
+fun <E, K> Iterable<E>.filterAnyInSetUnlessEmpty(set: Set<K>, produceKeys: (E) -> Collection<K>): List<E> {
+    return if (set.isEmpty()) {
+        if (this is List<E>) this else toList()
+    } else {
+        filter { produceKeys(it).any { key -> set.contains(key) } }
     }
 }
 

@@ -4,6 +4,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.SchemaViolation
+import com.machfour.macros.validation.tableValidator
 import java.time.Instant
 
 // ensures that the presence of the ID is consistent with the semantics of the objectSource
@@ -39,7 +40,9 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
 
-        MacrosBuilder.validate(data).let { if (it.isNotEmpty()) { throw SchemaViolation(it) } }
+        tableValidator(data.table)
+            .validateData(data)
+            .let { if (it.isNotEmpty()) { throw SchemaViolation(it) } }
 
         checkObjectSource(source, hasId)
     }

@@ -26,18 +26,21 @@ class NutrientDataTest {
         private val nd3: FoodNutrientData // mg
 
         init {
-            val fpBuilder = MacrosBuilder(FoodPortion.table)
-            fpBuilder.setField(FOOD_ID, f.id)
-            fpBuilder.setField(MEAL_ID, MacrosEntity.NO_ID)
-            fpBuilder.setField(QUANTITY, 100.0)
-            fpBuilder.setField(QUANTITY_UNIT, GRAMS.abbr)
-            val fp1 = fpBuilder.build()
-            fpBuilder.setField(QUANTITY_UNIT, MILLILITRES.abbr)
-            val fp2 = fpBuilder.build()
-            fpBuilder.setField(QUANTITY, 100000.0)
-            fpBuilder.setField(QUANTITY_UNIT, MILLIGRAMS.abbr)
-            val fp3 = fpBuilder.build()
-
+            val fp1: FoodPortion
+            val fp2: FoodPortion
+            val fp3: FoodPortion
+            with (MacrosBuilder(FoodPortion.table)) {
+                setField(FOOD_ID, f.id)
+                setField(MEAL_ID, MacrosEntity.NO_ID)
+                setField(QUANTITY, 100.0)
+                setField(QUANTITY_UNIT, GRAMS.abbr)
+                fp1 = build()
+                setField(QUANTITY_UNIT, MILLILITRES.abbr)
+                fp2 = build()
+                setField(QUANTITY, 100000.0)
+                setField(QUANTITY_UNIT, MILLIGRAMS.abbr)
+                fp3 = build()
+            }
 
             fp1.initFoodAndNd(f)
             fp2.initFoodAndNd(f)
@@ -75,8 +78,9 @@ class NutrientDataTest {
 
     @Test
     fun testSum() {
+        assertEquals(100.0, nd1.amountOf(FAT))
         val sum = FoodNutrientData.sum(listOf(nd1, nd2))
-        assertEquals(192.0, sum.amountOf(FAT) as Double)
+        assertEquals(192.0, sum.amountOf(FAT))
     }
 
 

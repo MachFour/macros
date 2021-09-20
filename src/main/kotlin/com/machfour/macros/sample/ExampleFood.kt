@@ -7,6 +7,7 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.schema.FoodTable.BRAND
 import com.machfour.macros.schema.FoodTable.CATEGORY
+import com.machfour.macros.schema.FoodTable.DENSITY
 import com.machfour.macros.schema.FoodTable.EXTRA_DESC
 import com.machfour.macros.schema.FoodTable.FOOD_TYPE
 import com.machfour.macros.schema.FoodTable.INDEX_NAME
@@ -54,6 +55,7 @@ private fun init2(): Food {
     data.put(BRAND, "Max's")
     data.put(NOTES, "it's still organic though")
     data.put(CATEGORY, "oils")
+    data.put(DENSITY, 0.92)
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     val f = Food.factory.construct(data, ObjectSource.IMPORT)
 
@@ -61,7 +63,7 @@ private fun init2(): Food {
           FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES)
         , FoodNutrientValue.makeComputedValue(40.0, PROTEIN, GRAMS)
         , FoodNutrientValue.makeComputedValue(20.0, CARBOHYDRATE, GRAMS)
-        , FoodNutrientValue.makeComputedValue(90.0, FAT, GRAMS)
+        , FoodNutrientValue.makeComputedValue(92.0, FAT, GRAMS)
         , FoodNutrientValue.makeComputedValue(12.0, SATURATED_FAT, GRAMS)
         , FoodNutrientValue.makeComputedValue(50.0, SUGAR, GRAMS)
         , FoodNutrientValue.makeComputedValue(20.0, POLYUNSATURATED_FAT, GRAMS)

@@ -19,11 +19,16 @@ class RowData<M> private constructor(
     // hold columns of any index, up to the number of columns in the table minus 1.
     private val data: Array<Any?> = arrayOfNulls(table.columns.size)
     private val hasData = BooleanArray(table.columns.size)
+
     // which columns have data stored in this RowData object;
     val columns: Set<Column<M, *>> = LinkedHashSet(cols)
 
     init {
-        setDefaultData()
+        // init default data
+        columns.forEach { c ->
+            // can't use the put() method due to type erasure
+            c.defaultData.let { data[c.index] = it; hasData[c.index] = it != null }
+        }
         if (existing != null) {
             copyData(existing, this, cols)
         }
@@ -33,8 +38,9 @@ class RowData<M> private constructor(
         private set
 
 
-    internal fun setImmutable() {
-        this.isImmutable = true
+    // can't set to false
+    internal fun makeImmutable() {
+        isImmutable = true
     }
 
 
@@ -48,8 +54,8 @@ class RowData<M> private constructor(
 
         // columns are the same so there will be no type issues
         fun <M> copyData(from: RowData<M>, to: RowData<M>, which: Collection<Column<M, *>>) {
-            assert(to.hasColumns(which) && from.hasColumns(which)) { "Specified columns not present in both from and to" }
-            to.assertMutable()
+            require(to.hasColumns(which) && from.hasColumns(which)) { "Specified columns not present in both from and to" }
+            check(!to.isImmutable) { "RowData has been made immutable" }
             for (col in which) {
                 val o = from.data[col.index]
                 to.data[col.index] = o
@@ -110,18 +116,6 @@ class RowData<M> private constructor(
         return str.toString()
     }
 
-    fun setDefaultData(cols: Collection<Column<M, *>> = columns) {
-        assert(hasColumns(cols))
-        assertMutable()
-        for (col in cols) {
-            val o = col.defaultData
-            // can't use the put() method due to type erasure
-            data[col.index] = o
-            hasData[col.index] = o != null
-        }
-
-    }
-
     fun copy(): RowData<M> {
         return RowData(table, table.columns, this)
     }
@@ -136,11 +130,7 @@ class RowData<M> private constructor(
     }
 
     private fun assertHasColumns(cols: Collection<Column<M, *>>) {
-        assert(columns.containsAll(cols))
-    }
-
-    private fun assertMutable() {
-        assert(!isImmutable) { "RowData has been made immutable" }
+        check(columns.containsAll(cols))
     }
 
     // the type of the data is ensured at time of adding it to this RowData object.
@@ -157,7 +147,7 @@ class RowData<M> private constructor(
     // No validation is performed on the value
     fun <J> put(col: Column<M, J>, value: J?) {
         assertHasColumn(col)
-        assertMutable()
+        check(!isImmutable) { "RowData has been made immutable" }
         data[col.index] = value
         hasData[col.index] = value != null
     }

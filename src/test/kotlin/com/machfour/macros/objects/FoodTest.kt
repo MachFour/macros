@@ -29,6 +29,7 @@ class FoodTest {
         private lateinit var testFood: Food
 
         @BeforeAll
+        @JvmStatic
         fun initDb() {
             db = LinuxDatabase.getInstance(DB_LOCATION)
             try {

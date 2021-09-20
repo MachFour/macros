@@ -26,7 +26,7 @@ object Factories {
             data.put(FoodTable.INDEX_NAME, Food.indexNamePrototype(name, brand, variety, extraDesc))
         }
 
-        data.setImmutable()
+        data.makeImmutable()
 
         when (FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)) {
             FoodType.COMPOSITE -> CompositeFood(data, objectSource)
@@ -36,7 +36,7 @@ object Factories {
 
     private fun <M> defaultFactory(constructor: (RowData<M>, ObjectSource) -> M) : Factory<M> {
         return Factory { data, objectSource ->
-            data.setImmutable()
+            data.makeImmutable()
             constructor(data, objectSource)
         }
     }

@@ -5,19 +5,22 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.validation.Validation
+import com.machfour.macros.validation.MacrosValidator
 import com.machfour.macros.validation.ValidationError
+import com.machfour.macros.validation.tableValidator
 
 
 class MacrosBuilder<M : MacrosEntity<M>> private constructor(
-    private val table: Table<M>, fromInstance: M?
+    private val table: Table<M>,
+    private val validator: MacrosValidator<M> = tableValidator(table),
+    fromInstance: M?
 ) {
     //fun interface ValueChangeListener<J> {
     //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
     //}
 
-    constructor(table: Table<M>) : this(table, null)
-    constructor(fromInstance: M) : this(fromInstance.table, fromInstance)
+    constructor(table: Table<M>) : this(table, fromInstance = null)
+    constructor(fromInstance: M) : this(fromInstance.table, fromInstance = fromInstance)
 
     var finishedInit = false
 
@@ -38,8 +41,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     // columns that are not available for editing; initially empty
     private val unsettableColumns: MutableSet<Column<M, *>> = LinkedHashSet()
-
-    private val customValidations: MutableList<Validation<M>> = ArrayList()
 
     /*
      * If editing, fields are initialised to the field values of editInstance.
@@ -70,11 +71,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         // requires draftData to be initialised
         validateAll()
         finishedInit = true
-    }
-
-    fun addValidation(v: Validation<M>) {
-        customValidations += v
-        validateAll()
     }
 
     // prevents setting value via setField or resetting value
@@ -190,16 +186,17 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             if (wasTypeMismatch) {
                 add(ValidationError.TYPE_MISMATCH)
             } else {
-                addAll(validate(draftData, col, customValidations))
+                addAll(validator.validateSingle(draftData, col))
             }
         }
     }
 
-    // TODO this reruns the custom validation once for each column - inefficient
     private fun validateAll() {
-        for (col in validationErrors.keys) {
-            // XXX note this will erase type mismatch errors
-            validateSingle(col)
+        val newErrors = validator.validateData(draftData)
+
+        // XXX note this will erase type mismatch errors
+        for ((col, errors) in newErrors) {
+            validationErrors[col] = errors.toMutableList()
         }
     }
 
@@ -255,55 +252,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     fun canBuild(): Boolean {
         return !hasAnyInvalidFields
-    }
-
-    companion object {
-        /*
-           Checks that:
-           - Non null constraints as defined by the columns are upheld
-           - If any violations are found, the affected column as well as an enum value describing the violation are recorded
-             in a map, which is returned at the end, after all columns have been processed.
-         */
-        // method used by MacrosEntity
-        internal fun <M : MacrosEntity<M>, J> validate(
-            data: RowData<M>,
-            col: Column<M, J>,
-            customValidations: List<Validation<M>> = emptyList()
-        ): List<ValidationError> {
-            val errorList: MutableList<ValidationError> = ArrayList()
-            if (data[col] == null && !col.isNullable) {
-                errorList.add(ValidationError.NON_NULL)
-            }
-            // TODO add check for unique: needs DB access
-            // TODO allow custom validations to mutate the current validation error list
-            for (v in customValidations) {
-                if (v.relevantColumns.contains(col)) {
-                    val errors = v.validate(data)
-                    errorList.addAll(errors.getOrDefault(col, emptyList()))
-                }
-            }
-            return errorList
-        }
-
-        // method used by MacrosEntity
-        // returns a map of ONLY the columns with errors, mapping to list of validation errors
-        internal fun <M : MacrosEntity<M>> validate(
-            data: RowData<M>,
-            customValidation: Validation<M>? = null
-        ): Map<Column<M, *>, List<ValidationError>> {
-            val allErrors = HashMap<Column<M, *>, List<ValidationError>>(data.columns.size, 1.0f)
-            for (col in data.columns) {
-                val colErrors = validate(data, col)
-                if (colErrors.isNotEmpty()) {
-                    allErrors[col] = colErrors
-                }
-            }
-            if (customValidation != null) {
-                allErrors.putAll(customValidation.validate(data))
-            }
-            return allErrors
-        }
-
     }
 
 }

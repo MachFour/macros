@@ -16,7 +16,7 @@ import java.sql.SQLException
 
 class DensityTest {
     companion object {
-        private const val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
+        private const val DB_LOCATION = "/home/max/devel/macros/test/test.sqlite"
         lateinit var db: LinuxDatabase
         lateinit var chickpeaFlour: Food
         lateinit var water: Food

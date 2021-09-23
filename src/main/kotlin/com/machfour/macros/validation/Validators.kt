@@ -25,18 +25,21 @@ private open class DefaultValidator<M>(
         return dataErrors + missingColumns.associateWith { listOf(ValidationError.DATA_NOT_FOUND) }
     }
 
+    protected fun <J> validateNonNull(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
+        val isInvalid = data[col] == null && !col.isNullable
+        return if (isInvalid) listOf(ValidationError.NON_NULL) else emptyList()
+    }
 
     override fun validateData(data: RowData<M>): ErrorMap<M> {
         return data.columns
-            .associateWith { validateSingle(data, it) }
+            .associateWith { validateNonNull(data, it) }
             .filterValues { it.isNotEmpty() }
     }
 
     // Just checks non null constraints
     // TODO add check for unique: needs DB access
     override fun <J> validateSingle(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
-        val isInvalid = data[col] == null && !col.isNullable
-        return if (isInvalid) listOf(ValidationError.NON_NULL) else emptyList()
+        return validateNonNull(data, col)
     }
 }
 

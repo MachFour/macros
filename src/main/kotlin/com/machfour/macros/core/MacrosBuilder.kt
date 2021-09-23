@@ -5,6 +5,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.util.stringJoin
 import com.machfour.macros.validation.MacrosValidator
 import com.machfour.macros.validation.ValidationError
 import com.machfour.macros.validation.tableValidator
@@ -19,8 +20,13 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
     //}
 
-    constructor(table: Table<M>) : this(table, fromInstance = null)
-    constructor(fromInstance: M) : this(fromInstance.table, fromInstance = fromInstance)
+    constructor(
+        table: Table<M>, validator: MacrosValidator<M> = tableValidator(table)
+    ) : this(table, validator, null)
+
+    constructor(
+        fromInstance: M, validator: MacrosValidator<M> = tableValidator(fromInstance.table)
+    ) : this(fromInstance.table, validator, fromInstance)
 
     var finishedInit = false
 
@@ -244,7 +250,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
-        return invalidFieldNames(displayStrings).toString()
+        return stringJoin(invalidFieldNames(displayStrings), sep = ", ")
     }
 
     val hasAnyInvalidFields: Boolean

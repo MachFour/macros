@@ -1,8 +1,8 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.queries.StaticDataSource
 import com.machfour.macros.sql.SqlConfig
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlDatabaseImpl
 import com.machfour.macros.util.joinFilePath
 
@@ -37,7 +37,6 @@ internal class LinuxConfig : MacrosConfig {
     override var dbLocation = dbDefaultLocation
 
     private lateinit var databaseInstance: SqlDatabaseImpl
-    private lateinit var dataSourceInstance: com.machfour.macros.queries.MacrosDataSource
 
     override val databaseImpl: SqlDatabaseImpl
         get() {
@@ -47,16 +46,8 @@ internal class LinuxConfig : MacrosConfig {
             return databaseInstance
         }
 
-    override val database: com.machfour.macros.sql.SqlDatabase
+    override val database: SqlDatabase
         get() = databaseImpl
-
-    override val dataSource: com.machfour.macros.queries.MacrosDataSource
-        get() {
-            if (!::dataSourceInstance.isInitialized) {
-                dataSourceInstance = StaticDataSource(databaseImpl)
-            }
-            return dataSourceInstance
-        }
 
     override val sqlConfig: SqlConfig = LinuxSqlConfig()
 

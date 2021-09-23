@@ -83,13 +83,10 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             }
         }
 
-        val ds = config.dataSource
-
-
         val fileParser = FileParser()
         val meals: List<Meal>
         try {
-            FileReader(filename).use { meals = fileParser.parseFile(ds, it) }
+            FileReader(filename).use { meals = fileParser.parseFile(config.database, it) }
         } catch (e1: IOException) {
             printlnErr("IO exception occurred: " + e1.message)
             return 1

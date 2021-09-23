@@ -1,6 +1,7 @@
 package com.machfour.macros.core
 
 import com.machfour.macros.sql.SqlConfig
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlDatabaseImpl
 
 interface MacrosConfig {
@@ -15,9 +16,8 @@ interface MacrosConfig {
 
     val sqlConfig: SqlConfig
 
-    val database: com.machfour.macros.sql.SqlDatabase
+    val database: SqlDatabase
     // for not-usual operations on the database
     val databaseImpl: SqlDatabaseImpl
-    val dataSource: com.machfour.macros.queries.MacrosDataSource
 
 }

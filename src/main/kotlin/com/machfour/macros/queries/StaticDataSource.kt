@@ -2,104 +2,58 @@ package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodCategory
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.util.DateStamp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
 open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource {
 
-    // Flow functions
-    override fun getFood(id: Long): Food? {
-        return getFoodById(id)
+    override fun getAllFoodCategories(): Flow<Map<String, FoodCategory>> {
+        return flowOf(getAllFoodCategories(database))
     }
 
-    override fun getFood(indexName: String): Food? {
-        return getFoodByIndexName(indexName)
+    override fun getFood(id: Long): Flow<Food?> {
+        return flowOf(getFoodById(database, id))
     }
 
-    override fun getFoods(ids: Collection<Long>): Map<Long, Food> {
-        return getFoodsById(ids)
+    override fun getFoods(ids: Collection<Long>, preserveOrder: Boolean): Flow<Map<Long, Food>> {
+        return flowOf(getFoodsById(database, ids, preserveOrder))
     }
 
-    override fun getAllFoods(): Map<Long, Food> {
-        return getAllFoodsMap()
+    override fun getAllFoods(): Flow<Map<Long, Food>> {
+        return flowOf(getAllFoodsMap(database))
     }
 
-    override fun getMeal(id: Long): Meal? {
-        return getMealById(id)
+    override fun getMeal(id: Long): Flow<Meal?> {
+        return flowOf(getMealById(database, id))
     }
 
-    override fun getMeals(date: DateStamp): Map<Long, Meal> {
-        return getMealsForDay(date)
+    override fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>> {
+        return flowOf(getMealsById(database, ids))
     }
 
-    override fun getMeals(ids: Collection<Long>): Map<Long, Meal> {
-        return getMealsById(ids)
-    }
-
-    // TODO remove all the methods below from the interface and make them protected
-
-    override fun getAllFoodCategories(): Map<String, FoodCategory> {
-        return getAllFoodCategories(database)
-    }
-
-    override fun getFoodByIndexName(indexName: String): Food? {
-        return getFoodByIndexName(database, indexName)
-    }
-
-    override fun getFoodById(id: Long): Food? {
-        return getFoodById(database, id)
-    }
-
-    override fun getFoodIdsByIndexName(indexNames: Collection<String>): Map<String, Long> {
-        return getFoodIdsByIndexName(database, indexNames)
+    override fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>> {
+        return flowOf(getMealsForDay(database, day))
     }
 
     override fun getFoodIdByIndexName(indexName: String): Long? {
         return getFoodIdByIndexName(database, indexName)
     }
 
-    override fun getAllFoodsMap(): Map<Long, Food> {
-        return getAllFoodsMap(database)
-    }
-
-    override fun getFoodsById(foodIds: Collection<Long>, preserveOrder: Boolean): Map<Long, Food> {
-        return getFoodsById(database, foodIds, preserveOrder)
-    }
-
-    override fun getServingsById(servingIds: Collection<Long>): Map<Long, Serving> {
-        return getServingsById(database, servingIds)
-    }
-
-    override fun getFoodsByIndexName(indexNames: Collection<String>): Map<String, Food> {
-        return getFoodsByIndexName(database, indexNames)
-    }
-
     override fun getParentFoodIdsContainingFoodIds(foodIds: List<Long>): List<Long> {
         return getParentFoodIdsContainingFoodIds(database, foodIds)
     }
 
-    override fun getMealsForDay(day: DateStamp): Map<Long, Meal> {
-        return getMealsForDay(database, day)
-    }
-
-    override fun getMealForDayWithName(day: DateStamp, name: String): Meal? {
-        return getMealForDayWithName(database, day, name)
-    }
-
     override fun getMealIdsForDay(day: DateStamp): List<Long> {
         return getMealIdsForDay(database, day)
-    }
-
-    override fun getMealById(id: Long): Meal? {
-        return getMealById(database, id)
-    }
-
-    override fun getMealsById(mealIds: Collection<Long>): Map<Long, Meal> {
-        return getMealsById(database, mealIds)
     }
 
     override fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long> {
@@ -110,24 +64,8 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return getDaysForMealIds(database, mealIds)
     }
 
-    //override fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int {
-    //    return insertObjects(database, objects, withId)
-    //}
-
-    //override fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int {
-    //    return updateObjects(database, objects)
-    //}
-
-    override fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
-        return deleteObject(database, o)
-    }
-
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
         return deleteObjects(database, objects)
-    }
-
-    override fun <M : MacrosEntity<M>> saveObject(o: M): Int {
-        return saveObject(database, o)
     }
 
     override fun <M : MacrosEntity<M>> saveObjects(
@@ -165,15 +103,15 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         }
     }
 
-    override fun deleteAllIngredients() {
+    fun deleteAllIngredients() {
         return deleteAllIngredients(database)
     }
 
-    override fun deleteAllFoodPortions() {
+    fun deleteAllFoodPortions() {
         return deleteAllFoodPortions(database)
     }
 
-    override fun deleteAllCompositeFoods(): Int {
+    fun deleteAllCompositeFoods(): Int {
         return deleteAllCompositeFoods(database)
     }
 

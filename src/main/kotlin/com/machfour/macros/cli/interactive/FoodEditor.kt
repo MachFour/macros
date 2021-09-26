@@ -627,7 +627,7 @@ class FoodEditor constructor(
                 setField(FoodNutrientValueTable.UNIT_ID, LegacyNutrientUnits[nutrient].id)
                 setField(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
                 setFieldFromString(FoodNutrientValueTable.VALUE, input)
-                if (canBuild()) {
+                if (!hasInvalidFields) {
                     nutrientData[nutrient] = build()
                 }
                 errorMessageForColumnIndex[currentField] = getErrorMessage(this, FoodNutrientValueTable.VALUE)

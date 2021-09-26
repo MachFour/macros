@@ -198,6 +198,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     private fun validateAll() {
+        validationErrors.clear()
         val newErrors = validator.validateData(draftData)
 
         // XXX note this will erase type mismatch errors
@@ -236,7 +237,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * created after a successful build.
      */
     fun build(): M {
-        check(!hasAnyInvalidFields) { "Field values are not all valid (${invalidFields})" }
+        check(!hasInvalidFields) { "Field values are not all valid (${invalidFields})" }
         val buildData = draftData.copy()
         val source = newObjectSource()
         return table.construct(buildData, source)
@@ -245,19 +246,15 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     val invalidFields: List<Column<M, *>>
         get() = validationErrors.entries.filter { it.value.isNotEmpty() }.map { it.key }
 
+    val hasInvalidFields: Boolean
+        get() = validationErrors.values.any { it.isNotEmpty() }
+
     fun invalidFieldNames(displayStrings: DisplayStrings): List<String> {
         return invalidFields.map { displayStrings.getFullName(it) }
     }
 
     fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
         return stringJoin(invalidFieldNames(displayStrings), sep = ", ")
-    }
-
-    val hasAnyInvalidFields: Boolean
-        get() = validationErrors.values.any { it.isNotEmpty() }
-
-    fun canBuild(): Boolean {
-        return !hasAnyInvalidFields
     }
 
 }

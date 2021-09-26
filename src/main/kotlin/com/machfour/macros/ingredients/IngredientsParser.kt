@@ -72,7 +72,7 @@ private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredi
     builder.setField(IngredientTable.QUANTITY_UNIT, spec.unit)
     builder.setField(IngredientTable.NOTES, spec.notes)
     builder.setField(IngredientTable.QUANTITY, spec.quantity)
-    if (builder.hasAnyInvalidFields) {
+    if (builder.hasInvalidFields) {
         throw SchemaViolation(builder.allErrors)
         // throw SchemaViolation
     }
@@ -101,7 +101,7 @@ private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<
     builder.setField(FoodTable.CATEGORY, "recipes") //TODO
     // setting this means that Food.factory().construct() will create a CompositeFood
     builder.setField(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
-    if (builder.hasAnyInvalidFields) {
+    if (builder.hasInvalidFields) {
         throw SchemaViolation(builder.allErrors)
         // throw SchemaViolation
     }

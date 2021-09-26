@@ -42,14 +42,14 @@ internal fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
 }
 
 @Throws(SQLException::class)
-fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
+internal fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
     val table = objects.firstOrNull()?.table ?: return 0
     return deleteObjectsById(db, table, objects.map { it.id })
 }
 
 // deletes objects with the given ID from
 @Throws(SQLException::class)
-fun <M : MacrosEntity<M>> deleteObjectsById(
+private fun <M : MacrosEntity<M>> deleteObjectsById(
     db: SqlDatabase,
     table: Table<M>,
     ids: Collection<Long>
@@ -97,7 +97,7 @@ internal fun <M : MacrosEntity<M>> saveObjects(
  * Entity-specific
  */
 @Throws(SQLException::class)
-fun forgetFood(db: SqlDatabase, f: Food) {
+internal fun forgetFood(db: SqlDatabase, f: Food) {
     require(f.source === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
     // delete nutrition data, foodQuantities, servings, then food
 
@@ -109,7 +109,7 @@ fun forgetFood(db: SqlDatabase, f: Food) {
 
 // TODO replace with update template
 @Throws(SQLException::class)
-fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
+internal fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
     db.executeRawStatement(
         "UPDATE ${Food.table.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
                 "${FoodTable.FOOD_TYPE} = '${foodType.niceName}'"
@@ -117,7 +117,7 @@ fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: In
 }
 
 @Throws(SQLException::class)
-fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
+private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
     return db.deleteFromTable(SimpleDelete.build(t) { where(t.idColumn, id) })
 }
 

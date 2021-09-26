@@ -161,7 +161,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
-        return validationErrors.getValue(field)
+        return checkNotNull(validationErrors[field]) { "Validation errors is missing entry for $field"}
     }
 
     fun <J> hasNoErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isEmpty()
@@ -198,7 +198,9 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     private fun validateAll() {
-        validationErrors.clear()
+        // clear previous error values
+        validationErrors.values.forEach { it.clear() }
+
         val newErrors = validator.validateData(draftData)
 
         // XXX note this will erase type mismatch errors

@@ -80,11 +80,11 @@ internal fun <M, I> selectSingleColumn(
 @Throws(SQLException::class)
 internal fun <M, I, J> selectTwoColumns(
     db: SqlDatabase,
-    table: Table<M>,
     select1: Column<M, I>,
     select2: Column<M, J>,
     queryOptions: SelectQuery.Builder<M>.() -> Unit
 ): List<Pair<I?, J?>> {
+    val table = select1.table
     return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
 }
 @Throws(SQLException::class)

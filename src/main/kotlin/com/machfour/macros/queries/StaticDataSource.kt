@@ -2,10 +2,8 @@ package com.machfour.macros.queries
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodCategory
-import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
@@ -62,6 +60,10 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
 
     override fun getDaysForMealIds(mealIds: Collection<Long>): List<DateStamp> {
         return getDaysForMealIds(database, mealIds)
+    }
+
+    override fun getCommonQuantities(foodId: Long): List<Pair<Double, Unit>> {
+        return getCommonQuantities(database, foodId)
     }
 
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {

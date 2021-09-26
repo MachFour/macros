@@ -1,6 +1,6 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.generator.ColumnMax.Companion.max
@@ -38,7 +38,6 @@ internal fun recentFoodIds(db: SqlDatabase, howMany: Int): List<Long> {
     // Need to SELECT MAX(create_time) for that (not just ORDER BY)
     val query = selectTwoColumns(
         db = db,
-        table = FoodPortion.table,
         select1 = FoodPortionTable.FOOD_ID,
         select2 = FoodPortionTable.CREATE_TIME
     ) {
@@ -48,4 +47,20 @@ internal fun recentFoodIds(db: SqlDatabase, howMany: Int): List<Long> {
         //distinct()
     }
     return query.mapNotNull { it.first }
+}
+
+internal fun getCommonQuantities(db: SqlDatabase, foodId: Long): List<Pair<Double, Unit>> {
+    val quantity = FoodPortionTable.QUANTITY
+    val quantityUnit = FoodPortionTable.QUANTITY_UNIT
+    val query = selectTwoColumns(
+        db = db,
+        select1 = FoodPortionTable.QUANTITY,
+        select2 = FoodPortionTable.QUANTITY_UNIT,
+    ) {
+        fromSuffix("COUNT (*) as count")
+        groupBy("$quantity, $quantityUnit")
+        orderBy("count DESC")
+        where(FoodPortionTable.FOOD_ID, foodId)
+    }
+    return query.filterIsInstance<Pair<Double, Unit>>()
 }

@@ -3,10 +3,8 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
-import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodCategory
-import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.Flow
 import java.sql.SQLException
@@ -42,6 +40,9 @@ interface MacrosDataSource {
 
     @Throws(SQLException::class)
     fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long>
+
+    @Throws(SQLException::class)
+    fun getCommonQuantities(foodId: Long): List<Pair<Double, Unit>>
 
     /*
      * Flow functions -- update cache

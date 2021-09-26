@@ -9,6 +9,8 @@ interface SelectQuery<M>: SqlStatement<M> {
     val isOrdered: Boolean
 
     interface Builder<M>: SqlStatement.Builder<M> {
+        fun fromSuffix(suffix: String)
+
         fun orderBy(columnExpr: ColumnExpr<M, *>, order: OrderByDirection? = null, nullPrecedence: OrderByNullPrecedence? = null)
 
         fun orderBy(clauseBody: String)

@@ -9,6 +9,7 @@ internal class SelectQueryImpl<M> private constructor(
     table: Table<M>,
     override val columns: List<Column<M, *>>,
     override val whereExpression: SqlWhereExpr<M, *>,
+    private val fromSuffix: String?,
     private val distinct: Boolean,
     private val ordering: OrderByClause<M>?,
     private val grouping: GroupByClause<M>?,
@@ -30,6 +31,10 @@ internal class SelectQueryImpl<M> private constructor(
         } else {
             query.add(joinColumnNames(columns))
         }
+        if (fromSuffix != null) {
+            query.add(", $fromSuffix")
+        }
+
         query.add("FROM")
         query.add(table.name)
 
@@ -55,11 +60,16 @@ internal class SelectQueryImpl<M> private constructor(
         val columns: List<Column<M, *>>
     ): SqlStatementImpl.Builder<M>(table), SelectQuery.Builder<M> {
         private var distinct: Boolean = false
+        private var fromSuffix: String? = null
         private var ordering: OrderByClause<M>? = null
         private var grouping: GroupByClause<M>? = null
         private var limit: Int? = null
         private var offset: Int? = null
         private var suffix: String = ""
+
+        override fun fromSuffix(suffix: String) {
+            fromSuffix = suffix
+        }
 
         override fun orderBy(
             columnExpr: ColumnExpr<M, *>,
@@ -103,6 +113,7 @@ internal class SelectQueryImpl<M> private constructor(
                 table = table,
                 whereExpression = whereExpression,
                 columns = columns,
+                fromSuffix = fromSuffix,
                 distinct = distinct,
                 ordering = ordering,
                 grouping = grouping,

@@ -10,3 +10,11 @@ enum class SearchRelevance(val value: Int) {
     STARRED(60);
 
 }
+
+
+/*
+ Things to care about:
+ - user-hidden or not
+ - inbuilt or not
+ - amount of information present? (servings?)
+ */

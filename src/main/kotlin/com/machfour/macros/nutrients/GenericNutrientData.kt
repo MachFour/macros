@@ -85,7 +85,9 @@ open class GenericNutrientData<M: NutrientValue<M>>(
 
 
     override fun equals(other: Any?): Boolean {
-        return (other as? GenericNutrientData<*>)?.data?.equals(data) ?: false
+        return other is GenericNutrientData<*>
+                && data == other.data
+                && isDataComplete.contentEquals(other.isDataComplete)
     }
 
     override fun hashCode(): Int = data.hashCode()

@@ -1,4 +1,3 @@
-@file:Suppress("EqualsOrHashCode")
 
 package com.machfour.macros.entities
 
@@ -14,6 +13,8 @@ import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import java.time.Instant
 
+// don't need hashcode override since equals implies super.equals true, so hashcode will match
+@Suppress("EqualsOrHashCode")
 class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : MacrosEntityImpl<Meal>(data, source) {
     companion object {
         fun sumNutrientData(meals: Iterable<Meal>): FoodNutrientData {
@@ -75,7 +76,9 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
         get() = getData(MealTable.NOTES)
 
     override fun equals(other: Any?): Boolean {
-        return other is Meal && super.equals(other)
+        return other is Meal
+                && super.equals(other)
+                && foodPortions == other.foodPortions
     }
 
     fun getFoodPortions(): List<FoodPortion> {

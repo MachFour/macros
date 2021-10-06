@@ -8,16 +8,13 @@ import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import java.sql.SQLException
 
 class FlowDataSource(
     private val database: SqlDatabase,
-    //private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): StaticDataSource(database) {
     var allFoodsNeedsRefresh: Boolean = true
 
@@ -28,16 +25,8 @@ class FlowDataSource(
     private val foods: MutableMap<Long, Food> = LinkedHashMap(100)
     private val meals: MutableMap<Long, Meal> = LinkedHashMap(100)
 
-    private val foodsFlow: MutableSharedFlow<Map<Long, Food>> = MutableSharedFlow(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
-
-    //// same for meals (= foods) and foodportions (= servings)
-    private val mealsFlow: MutableSharedFlow<Map<Long, Meal>> = MutableSharedFlow(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    private val foodsFlow: MutableStateFlow<Map<Long, Food>> = MutableStateFlow(emptyMap())
+    private val mealsFlow: MutableStateFlow<Map<Long, Meal>> = MutableStateFlow(emptyMap())
 
     private fun <T> Map<Long, T>.idMissing(id: Long): Boolean {
         return !containsKey(id) && id != MacrosEntity.NO_ID
@@ -52,7 +41,7 @@ class FlowDataSource(
         if (foods.idMissing(id)) {
             refreshFoods(listOf(id))
         }
-        return foodsFlow.map { it[id] }.distinctUntilChanged()
+        return foodsFlow.map { it[id] }
     }
 
     @Throws(SQLException::class)
@@ -77,17 +66,13 @@ class FlowDataSource(
         if (meals.idMissing(id)) {
             refreshMeals(listOf(id))
         }
-        return mealsFlow.map { it[id] }.distinctUntilChanged()
+        return mealsFlow.map { it[id] }
     }
 
     @Throws(SQLException::class)
     override fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>> {
-        val ids = getMealIdsForDay(day).toSet()
-        val missingIds = meals.missingIdsFrom(ids)
-        
-        refreshMeals(missingIds)
-
-        return mealsFlow.map { meals -> meals.filterKeys { ids.contains(it) } }
+        val ids = getMealIdsForDay(day)
+        return getMeals(ids)
     }
 
     @Throws(SQLException::class)
@@ -107,7 +92,7 @@ class FlowDataSource(
             val newData = getAllFoodsMap(database)
             foods.clear()
             foods.putAll(newData)
-            foodsFlow.tryEmit(newData)
+            foodsFlow.value = newData
             allFoodsNeedsRefresh = false
         }
     }
@@ -117,16 +102,25 @@ class FlowDataSource(
         if (pauseRefreshes) {
             foodRefreshQueue.addAll(ids)
         } else {
+            
             val newData = getFoodsById(database, ids)
             foods.putAll(newData)
             for (missingId in newData.missingIdsFrom(ids)) {
                 // if any requested IDs did not return a food, remove them from the cache
                 foods.remove(missingId)
             }
-            foodsFlow.tryEmit(foods.toMap()) // copy for distinct
-            
-            // TODO refresh meals containing these foods
+            foodsFlow.value = foods.toMap() // copy for distinct
+
+            refreshMealsContainingFoods(ids)
         }
+    }
+
+    @Throws(SQLException::class)
+    private fun refreshMealsContainingFoods(ids: Collection<Long>) {
+        val mealIds = getMealIdsForFoodIds(ids)
+        // only refresh meals that are actually loaded
+        val idsToRefresh = mealIds.intersect(meals.keys)
+        refreshMeals(idsToRefresh)
     }
 
     @Throws(SQLException::class)
@@ -141,7 +135,7 @@ class FlowDataSource(
                 meals.remove(missingId)
             }
 
-            mealsFlow.tryEmit(meals.toMap()) // copy for distinct
+            mealsFlow.value = meals.toMap() // copy for distinct
         }
     }
 
@@ -198,12 +192,13 @@ class FlowDataSource(
     }
 
     private fun <M : MacrosEntity<M>> afterCacheEdit(id: Long, cacheType: Table<M>) {
+        val idList = listOf(id)
         when (cacheType) {
             is FoodTable -> {
-                refreshFoods(listOf(id))
+                refreshFoods(idList)
             }
             is MealTable -> {
-                refreshMeals(listOf(id))
+                refreshMeals(idList)
             }
         }
     }

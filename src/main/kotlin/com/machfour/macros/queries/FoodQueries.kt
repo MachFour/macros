@@ -55,7 +55,7 @@ internal fun foodSearch(
 internal fun foodSearch(
     db: SqlDatabase,
     keyword: String,
-    minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value
+    minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value,
 ): Set<Long> {
     if (keyword.isEmpty()) {
         return emptySet()
@@ -67,8 +67,8 @@ internal fun foodSearch(
         andWhere("${FoodTable.SEARCH_RELEVANCE} >= $minRelevance")
     }
 
-    val results = LinkedHashSet<Long>()
-    with(results) {
+
+    val results = LinkedHashSet<Long>().apply {
         // add exact matches on index name
         addAll(exactStringSearch(db, indexName, keyword, queryOptions).toSet())
         // add exact matches on any other column
@@ -77,11 +77,16 @@ internal fun foodSearch(
         if (keyword.length <= 2) {
             // just match prefix of index name
             addAll(prefixSearch(db, indexName, keyword, queryOptions))
+            addAll(prefixSearch(db, foodSearchCols, keyword, queryOptions))
         } else {
             // match any column prefix
             addAll(prefixSearch(db, foodSearchCols, keyword, queryOptions))
             // match anywhere in index name
             addAll(substringSearch(db, indexName, keyword, queryOptions))
+        }
+        if (keyword.length >= 4) {
+            // This may return a large number of results
+            addAll(substringSearch(db, foodSearchCols, keyword, queryOptions))
         }
     }
     return results

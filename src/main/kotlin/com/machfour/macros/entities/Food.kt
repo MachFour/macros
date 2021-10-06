@@ -1,5 +1,3 @@
-@file:Suppress("EqualsOrHashCode")
-
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
@@ -13,6 +11,8 @@ import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES
 import com.machfour.macros.units.UnitType
 
+// don't need hashcode override since equals implies super.equals true, so hashcode will match
+@Suppress("EqualsOrHashCode")
 open class Food internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) :
         MacrosEntityImpl<Food>(dataMap, objectSource) {
 
@@ -205,10 +205,12 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     val density: Double?
         get() = getData(FoodTable.DENSITY)
 
-
-
+    // don't need to override hashcode since equality implies hashcodes equal but not the converse
     override fun equals(other: Any?): Boolean {
-        return other is Food && super.equals(other)
+        return other is Food
+                && super.equals(other)
+                && servings == other.servings
+                && nutrientData == other.nutrientData
     }
 
     val shortName: String

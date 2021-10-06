@@ -7,6 +7,8 @@ import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.sql.RowData
 
+// don't need hashcode override since equals implies super.equals true, so hashcode will match
+@Suppress("EqualsOrHashCode")
 class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
@@ -33,9 +35,8 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
     }
 
     /*
-     * TODO save the result of this into the database?
-     *
-     *//*
+      TODO save the result of this into the database?
+
       NOTE: combined density is estimated using a weighted sum of the densities of the components.
       This is obviously inaccurate if any item does not have the density recorded,
       HOWEVER ALSO, density of foods will more often than not change during preparation
@@ -71,4 +72,9 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
         ingredientsNutrientDataNeedsUpdate = true
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is CompositeFood
+                && super.equals(other)
+                && ingredients == other.ingredients
+    }
 }

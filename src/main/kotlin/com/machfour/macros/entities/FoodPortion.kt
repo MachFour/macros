@@ -1,5 +1,3 @@
-@file:Suppress("EqualsOrHashCode")
-
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.Factory
@@ -9,7 +7,10 @@ import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
-class FoodPortion internal constructor(data: RowData<FoodPortion>, objectSource: ObjectSource
+// don't need hashcode override since equals implies super.equals true, so hashcode will match
+@Suppress("EqualsOrHashCode")
+class FoodPortion internal constructor(
+    data: RowData<FoodPortion>, objectSource: ObjectSource
 ) : FoodQuantity<FoodPortion>(
     data, objectSource,
     FoodPortionTable.FOOD_ID,
@@ -35,6 +36,7 @@ class FoodPortion internal constructor(data: RowData<FoodPortion>, objectSource:
 
 
     init {
+        // TODO is this check actually needed? MacrosEntity might take care of it already.
         assert (getData(FoodPortionTable.MEAL_ID) != null) { "Meal ID cannot be null for FoodPortion" }
     }
 
@@ -49,18 +51,10 @@ class FoodPortion internal constructor(data: RowData<FoodPortion>, objectSource:
         meal = m
     }
 
-    // only do this when moving Fp from one meal to another
-    fun removeFromMeal() {
-        meal.removeFoodPortion(this)
-
-        // XXX can't do this because of lateinit
-        //this.meal = null
-    }
-
-    // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;
-    // the only thing that it misses out is checking that o is actually an instance of the subclass.
     override fun equals(other: Any?): Boolean {
-        return other is FoodPortion && super.equals(other)
+        return other is FoodPortion
+                && super.equals(other)
+                && food == other.food
     }
 
 }

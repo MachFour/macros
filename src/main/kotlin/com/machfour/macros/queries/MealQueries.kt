@@ -116,6 +116,9 @@ fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
 
 @Throws(SQLException::class)
 private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List<Long> {
+    if (mealIds.isEmpty()) {
+        return emptyList()
+    }
     val ids = selectSingleColumn(db, FoodPortionTable.FOOD_ID) {
         where(FoodPortionTable.MEAL_ID, mealIds)
         distinct()
@@ -126,6 +129,9 @@ private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List
 
 @Throws(SQLException::class)
 fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long> {
+    if (foodIds.isEmpty()) {
+        return emptyList()
+    }
     return selectNonNullColumn(db, FoodPortionTable.MEAL_ID) {
         where(FoodPortionTable.FOOD_ID, foodIds)
         distinct()
@@ -134,6 +140,9 @@ fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long>
 
 @Throws(SQLException::class)
 fun getDaysForMealIds(db: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
+    if (mealIds.isEmpty()) {
+        return emptyList()
+    }
     return selectNonNullColumn(db, MealTable.DAY) {
         where(MealTable.ID, mealIds)
     }

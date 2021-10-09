@@ -173,25 +173,37 @@ class FlowDataSource(
     private fun <M : MacrosEntity<M>> afterDbInsert(obj: M) {
         when (obj) {
             is Food ->  { allFoodsNeedsRefresh = true }
-            is Meal ->  { /* TODO refresh day */ }
+            is Meal ->  { /* seems to work without anything here */ }
 
-            is FoodNutrientValue -> afterCacheEdit(obj.foodId, FoodTable)
-            is FoodPortion -> afterCacheEdit(obj.mealId, MealTable)
-            is Serving -> afterCacheEdit(obj.foodId, FoodTable)
+            is FoodNutrientValue -> markCacheStale(obj.foodId, FoodTable)
+            is FoodPortion -> markCacheStale(obj.mealId, MealTable)
+            is Serving -> markCacheStale(obj.foodId, FoodTable)
         }
     }
+
+    private fun cachedMealForFpId(id: Long): Meal? {
+        return meals.values.find { it.foodPortions.any { fp -> fp.id == id } }
+    }
+
     private fun <M : MacrosEntity<M>> afterDbEdit(obj: M) {
         when (obj) {
-            is Food -> afterCacheEdit(obj.id, FoodTable)
-            is Meal -> afterCacheEdit(obj.id, MealTable)
+            is Food -> markCacheStale(obj.id, FoodTable)
+            is Meal -> markCacheStale(obj.id, MealTable)
 
-            is FoodNutrientValue -> afterCacheEdit(obj.foodId, FoodTable)
-            is FoodPortion -> afterCacheEdit(obj.mealId, MealTable)
-            is Serving -> afterCacheEdit(obj.foodId, FoodTable)
+            is FoodNutrientValue -> markCacheStale(obj.foodId, FoodTable)
+            is FoodPortion -> {
+                // if FP was moved between meals, make sure to refresh the old meal
+                cachedMealForFpId(obj.id)?.let {
+                    oldMeal -> markCacheStale(oldMeal.id, MealTable)
+                }
+
+                markCacheStale(obj.mealId, MealTable)
+            }
+            is Serving -> markCacheStale(obj.foodId, FoodTable)
         }
     }
 
-    private fun <M : MacrosEntity<M>> afterCacheEdit(id: Long, cacheType: Table<M>) {
+    private fun <M : MacrosEntity<M>> markCacheStale(id: Long, cacheType: Table<M>) {
         val idList = listOf(id)
         when (cacheType) {
             is FoodTable -> {

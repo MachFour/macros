@@ -26,7 +26,7 @@ private fun addPortion(toEdit: Meal, db: SqlDatabase) {
 
 private fun showFoodPortions(toEdit: Meal) {
     println("Food portions:")
-    val foodPortions = toEdit.getFoodPortions()
+    val foodPortions = toEdit.foodPortions
     for (i in foodPortions.indices) {
         val fp = foodPortions[i]
         println("$i: ${fp.prettyFormat(true)}")
@@ -51,7 +51,7 @@ private fun deleteFoodPortion(toEdit: Meal, ds: SqlDatabase) {
     println("Delete food portion")
     showFoodPortions(toEdit)
     print("Enter the number of the food portion to delete and press enter: ")
-    val portions = toEdit.getFoodPortions()
+    val portions = toEdit.foodPortions
     val n = cliGetInteger(0, portions.size - 1)
     if (n == null) {
         println("Invalid number")
@@ -72,7 +72,7 @@ private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
     println("Edit food portion")
     showFoodPortions(m)
     print("Enter the number of the food portion to edit and press enter: ")
-    val portions = m.getFoodPortions()
+    val portions = m.foodPortions
     val n = cliGetInteger(0, portions.size - 1)
     if (n == null) {
         println("Invalid number")

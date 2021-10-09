@@ -113,7 +113,7 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     println(rowSeparator)
     // now we get to the actual data
     val dataRows: MutableList<List<String>> = ArrayList()
-    for (fp in meal.getFoodPortions()) {
+    for (fp in meal.foodPortions) {
         val name = fp.food.mediumName
         val nd = fp.nutrientData.withDefaultUnits()
         dataRows.add(nutritionDataToRow(name, nd, fp.quantity, fp.qtyUnit, verbose))
@@ -126,7 +126,8 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     val totalName = "Total for ${meal.name}"
     val totalNd = meal.nutrientTotal()
     // for total data, just use the quantity and unit from the sum
-    val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
+    val totalRow =
+        nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
     printRow(totalRow, rowWidths, rightAlign)
 }
 
@@ -141,7 +142,7 @@ fun printMeals(
     println("============")
     println()
     for (m in meals) {
-        if (m.getFoodPortions().isEmpty()) {
+        if (m.foodPortions.isEmpty()) {
             println("Meal ${m.name} has no recorded data")
         } else {
             printMeal(m, verbose)

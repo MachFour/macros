@@ -55,7 +55,7 @@ fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase
 
 @Throws(SQLException::class)
 private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
-    for (fp in meal.getFoodPortions()) {
+    for (fp in meal.foodPortions) {
         if (fp.source != ObjectSource.DATABASE) {
             saveObject(ds, fp)
         }

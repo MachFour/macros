@@ -28,7 +28,10 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
             get() = MealTable
     }
 
-    private val foodPortions: MutableList<FoodPortion> = ArrayList()
+    val foodPortionsMutable = ArrayList<FoodPortion>()
+
+    val foodPortions: List<FoodPortion>
+        get() = foodPortionsMutable
 
     override val factory: Factory<Meal>
         get() = Companion.factory
@@ -81,21 +84,10 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
                 && foodPortions == other.foodPortions
     }
 
-    fun getFoodPortions(): List<FoodPortion> {
-        return ArrayList(foodPortions)
-    }
-
     fun addFoodPortion(fp: FoodPortion) {
         // can't assert !foodPortions.contains(fp) since user-created food portions can look identical
         require(foreignKeyMatches(fp, FoodPortionTable.MEAL_ID, this))
-        foodPortions.add(fp)
-    }
-
-    internal fun removeFoodPortion(fp: FoodPortion) {
-        val index = foodPortions.indexOf(fp)
-        require(index != -1) {
-            "removeFoodPortion(): FoodPortion (id = ${fp.id}) not found in meal $name (id = $id)" }
-        foodPortions.removeAt(index)
+        foodPortionsMutable.add(fp)
     }
 
     override fun toString(): String = "$name, $day"

@@ -111,13 +111,10 @@ internal class CacheTest {
     @Test
     fun testBasicFood() {
         val dataSource = FlowDataSource(db)
-        val uncachedFood1 = runBlocking { dataSource.getFood(1).first() }
-        val uncachedFood2 = runBlocking { dataSource.getFood(1).first() }
-        assertNotNull(uncachedFood1)
-        assert(uncachedFood1.identityHashCode() != uncachedFood2.identityHashCode())
+        val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
+        val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
+        assertNotNull(cachedFood1)
 
-        val cachedFood1 = dataSource.getFood(1)
-        val cachedFood2 = dataSource.getFood(1)
         assert(cachedFood1.identityHashCode() == cachedFood2.identityHashCode())
     }
 

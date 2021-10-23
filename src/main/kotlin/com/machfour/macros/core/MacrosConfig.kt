@@ -10,14 +10,13 @@ interface MacrosConfig {
     val servingCsvPath: String
     val recipeCsvPath: String
     val ingredientsCsvPath: String
-    val defaultCsvOutputDir: String
     var dbLocation: String
     val programName: String
 
     val sqlConfig: SqlConfig
 
     val database: SqlDatabase
-    // for not-usual operations on the database
+    // for unusual low-level operations on the database
     val databaseImpl: SqlDatabaseImpl
 
 }

@@ -55,6 +55,5 @@ internal class LinuxConfig : MacrosConfig {
     override val servingCsvPath = joinFilePath(DATA_DIR, SERVING_CSV_NAME)
     override val recipeCsvPath = joinFilePath(DATA_DIR, RECIPE_CSV_NAME)
     override val ingredientsCsvPath = joinFilePath(DATA_DIR, INGREDIENTS_CSV_NAME)
-    override val defaultCsvOutputDir = joinFilePath(PROJECT_DIR, "csv-out")
 
 }

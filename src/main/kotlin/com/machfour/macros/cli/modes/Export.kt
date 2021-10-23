@@ -3,33 +3,21 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.csv.exportTableToCsv
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.Table
-import com.machfour.macros.util.joinFilePath
-import java.io.FileWriter
+import com.machfour.macros.csv.createZipBackup
+import com.machfour.macros.util.currentTimeString
+import java.io.FileOutputStream
 import java.io.IOException
 import java.sql.SQLException
+import java.util.zip.ZipException
 
 class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "export"
-        private const val USAGE = "Usage: $programName $NAME [output dir]"
+        private const val USAGE = "Usage: $programName $NAME [output.zip]"
     }
 
     override fun printHelp() {
-        println("Exports complete CSV data (foods and servings) from the database.")
-        println("Please specify the containing directory. It will be created if it doesn't exist.")
-    }
-
-    @Throws(SQLException::class, IOException::class)
-    private fun <M : MacrosEntity<M>> SqlDatabase.doExport(outDir: String, t: Table<M>) {
-        println("Exporting ${t.name} table...")
-        val outCsvPath = joinFilePath(outDir, t.name + ".csv")
-        FileWriter(outCsvPath).use { exportTableToCsv(this, t, it) }
+        println("Exports complete CSV data (foods and servings) from the database to a zip file.")
     }
 
     override fun doAction(args: List<String>): Int {
@@ -37,23 +25,22 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
-        val outputDir = if (args.size >= 2) args[1] else config.defaultCsvOutputDir
+        val outputZipName = if (args.size >= 2) args[1] else "macros-csv-backup-${currentTimeString()}.zip"
+
+        println("Exporting to $outputZipName")
+
         try {
-            with(config.database) {
-                doExport(outputDir, Food.table)
-                doExport(outputDir, FoodNutrientValue.table)
-                doExport(outputDir, Serving.table)
-                doExport(outputDir, FoodPortion.table)
-                doExport(outputDir, Ingredient.table)
-                doExport(outputDir, Meal.table)
-                doExport(outputDir, Unit.table)
-                doExport(outputDir, Nutrient.table)
+            FileOutputStream(outputZipName).use {
+                config.database.createZipBackup(it)
             }
         } catch (e: SQLException) {
             return handleException(e)
         } catch (e: IOException) {
             return handleException(e)
+        } catch (e: ZipException) {
+            return handleException(e)
         }
+
         println()
         println("Export completed successfully")
         return 0

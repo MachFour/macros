@@ -3,35 +3,22 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.csv.restoreTable
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.Table
+import com.machfour.macros.csv.restoreFromZip
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.util.joinFilePath
-import java.io.FileReader
+import java.io.FileInputStream
 import java.io.IOException
 import java.sql.SQLException
 
 class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
         private const val NAME = "restore"
-        private const val USAGE = "Usage: $programName $NAME [backup dir]"
+        private const val USAGE = "Usage: $programName $NAME [--clear] <backup.zip>"
 
     }
 
     override fun printHelp() {
-        println("Restores the database using CSV data saved using the 'export' command.")
-        println("Warning: this will overwrite all data in the database!")
-    }
-
-    @Throws(SQLException::class, IOException::class, TypeCastException::class)
-    private fun <M : MacrosEntity<M>> SqlDatabase.restoreTable(exportDir: String, t: Table<M>) {
-        println("Restoring " + t.name + " table...")
-        val csvPath = joinFilePath(exportDir, t.name + ".csv")
-        FileReader(csvPath).use { csvData -> restoreTable(this, t, csvData) }
+        println("Restores the database using a CSV zip file saved using the 'export' command.")
+        println("Pass --clear to clear existing data first. (If not done, the operation may fail due to ID conflicts)")
     }
 
     override fun doAction(args: List<String>): Int {
@@ -39,20 +26,17 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             printHelp()
             return 0
         }
+        if (args.size < 2) {
+            printHelp()
+            return -1
+        }
 
         // default output dir
-        val csvDir = if (args.size >= 2) args[1] else config.defaultCsvOutputDir
+        val csvZipPath = args[1]
 
         try {
-            with(config.database) {
-                restoreTable(csvDir, Unit.table)
-                restoreTable(csvDir, Nutrient.table)
-                restoreTable(csvDir, Food.table)
-                restoreTable(csvDir, FoodNutrientValue.table)
-                restoreTable(csvDir, Serving.table)
-                restoreTable(csvDir, Meal.table)
-                restoreTable(csvDir, FoodPortion.table)
-                restoreTable(csvDir, Ingredient.table)
+            FileInputStream(csvZipPath).use {
+                config.database.restoreFromZip(it)
             }
         } catch (e: SQLException) {
             return handleException(e)
@@ -62,7 +46,7 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             return handleException(e)
         }
         println()
-        println("Database successfully restored from CSV data in $csvDir")
+        println("Database successfully restored from CSV data in $csvZipPath")
         return 0
     }
 

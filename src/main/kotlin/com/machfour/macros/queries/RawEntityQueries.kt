@@ -11,7 +11,7 @@ import java.sql.SQLException
 // Constructs a map of ID to raw object data (i.e. no object references initialised)
 // IDs that do not exist in the database will not be contained in the output map.
 @Throws(SQLException::class)
-internal fun <M, J> getRawObjects(ds: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
+internal fun <M, J> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
     require(keyColumn.isUnique) { "Key column must be unique" }
 
     val t = keyColumn.table
@@ -19,7 +19,7 @@ internal fun <M, J> getRawObjects(ds: SqlDatabase, keyColumn: Column<M, J>, quer
 
     val objects = if (query.isOrdered) LinkedHashMap<J, M>() else HashMap<J, M>()
 
-    val resultData = ds.selectAllColumns(query)
+    val resultData = db.selectAllColumns(query)
     for (objectData in resultData) {
         val key = objectData[keyColumn]
         checkNotNull(key) { "found null key in $t" }
@@ -40,19 +40,19 @@ internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<
 
 @Throws(SQLException::class)
 internal fun <M> getRawObjectsWithIds(
-    ds: SqlDatabase,
+    db: SqlDatabase,
     t: Table<M>,
     ids: Collection<Long>,
     preserveIdOrder: Boolean = false,
     // if the number of keys exceeds this number, the query will be iterated
     iterateThreshold: Int = ITERATE_THRESHOLD,
 ): Map<Long, M> {
-    return getRawObjectsWithKeys(ds, t.idColumn, ids, preserveIdOrder, iterateThreshold)
+    return getRawObjectsWithKeys(db, t.idColumn, ids, preserveIdOrder, iterateThreshold)
 }
 
 @Throws(SQLException::class)
 internal fun <M, J> getRawObjectsWithKeys(
-    ds: SqlDatabase,
+    db: SqlDatabase,
     keyCol: Column<M, J>,
     keys: Collection<J>,
     preserveKeyOrder: Boolean = false,
@@ -62,7 +62,7 @@ internal fun <M, J> getRawObjectsWithKeys(
     if (keys.isEmpty()) {
         return emptyMap()
     }
-    val unorderedObjects = getRawObjects(ds, keyCol) {
+    val unorderedObjects = getRawObjects(db, keyCol) {
         where(keyCol, keys, iterate = keys.size > iterateThreshold)
     }
 
@@ -77,7 +77,7 @@ internal fun <M, J> getRawObjectsWithKeys(
 
 @Throws(SQLException::class)
 internal fun <M, N> getRawObjectsForParentFk(
-    ds: SqlDatabase,
+    db: SqlDatabase,
     parentObjectMap: Map<Long, N>,
     childTable: Table<M>,
     fkCol: Column.Fk<M, Long, N>
@@ -85,9 +85,9 @@ internal fun <M, N> getRawObjectsForParentFk(
     if (parentObjectMap.isEmpty()) {
         return emptyMap()
     }
-    val ids = selectNonNullColumn(ds, childTable.idColumn) {
+    val ids = selectNonNullColumn(db, childTable.idColumn) {
         where(fkCol, parentObjectMap.keys, iterate = parentObjectMap.size > ITERATE_THRESHOLD)
     }
     // if empty, no objects in the child table refer to any of the parent objects/rows
-    return if (ids.isEmpty()) emptyMap() else getRawObjectsWithIds(ds, childTable, ids)
+    return if (ids.isEmpty()) emptyMap() else getRawObjectsWithIds(db, childTable, ids)
 }

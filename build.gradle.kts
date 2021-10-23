@@ -15,13 +15,13 @@ repositories {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_16.toString()
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
@@ -34,7 +34,7 @@ dependencies {
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     // testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
 }
 
 tasks.withType<Copy> {

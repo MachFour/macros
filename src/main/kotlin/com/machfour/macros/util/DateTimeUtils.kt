@@ -1,6 +1,7 @@
 package com.machfour.macros.util
 
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -22,6 +23,20 @@ val ISO_LOCAL_HOUR_MINUTE: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendValue(ChronoField.HOUR_OF_DAY, 2)
     .appendLiteral(':')
     .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+    .toFormatter()
+
+val FILE_TIMESTAMP: DateTimeFormatter = DateTimeFormatterBuilder()
+    .appendValue(ChronoField.YEAR, 4)
+    .appendLiteral('-')
+    .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+    .appendLiteral('-')
+    .appendValue(ChronoField.DAY_OF_MONTH, 2)
+    .appendLiteral('T')
+    .appendValue(ChronoField.HOUR_OF_DAY, 2)
+    .appendLiteral(':')
+    .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+    .appendLiteral(':')
+    .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
     .toFormatter()
 
 val LOCALIZED_DATE_MEDIUM: DateTimeFormatter = DateTimeFormatter
@@ -50,4 +65,8 @@ fun Instant.asLocalHourMinute(is24HourFormat: Boolean = false): String {
 
 fun Instant.toEpochSecond(truncate: ChronoUnit = ChronoUnit.SECONDS): Long {
     return truncatedTo(truncate).epochSecond
+}
+
+fun currentTimeString(): String {
+    return LocalDateTime.now().format(FILE_TIMESTAMP)
 }

@@ -12,6 +12,8 @@ import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -108,9 +110,9 @@ internal class CacheTest {
 
     @Test
     fun testBasicFood() {
-        val dataSource = CachedDataSource(db)
-        val uncachedFood1 = dataSource.getFoodById(1)
-        val uncachedFood2 = dataSource.getFoodById(1)
+        val dataSource = FlowDataSource(db)
+        val uncachedFood1 = runBlocking { dataSource.getFood(1).first() }
+        val uncachedFood2 = runBlocking { dataSource.getFood(1).first() }
         assertNotNull(uncachedFood1)
         assert(uncachedFood1.identityHashCode() != uncachedFood2.identityHashCode())
 
@@ -121,8 +123,8 @@ internal class CacheTest {
 
     @Test
     fun testBasicSaveEdits() {
-        val dataSource = CachedDataSource(db)
-        val uncachedFood = dataSource.getFoodById(1)
+        val dataSource = FlowDataSource(db)
+        val uncachedFood = runBlocking { dataSource.getFood(1).first() }
         assertNotNull(uncachedFood)
 
         val alteredFood = uncachedFood!!.dataFullCopy().run {
@@ -131,9 +133,9 @@ internal class CacheTest {
             Food.factory.construct(this, ObjectSource.DB_EDIT)
         }
 
-        val cachedFood1 = dataSource.getFood(1)
+        val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
         dataSource.saveObject(alteredFood)
-        val cachedFood2 = dataSource.getFood(1)
+        val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
         assert(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
     }
 

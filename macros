@@ -9,29 +9,14 @@ JAR_FILE="macros-${MACROS_VERSION}.jar"
 JAR_PATH="${JAR_DIR}/${JAR_FILE}"
 
 
-#PROFILE="-agentpath:/opt/yourkit/bin/linux-x86-64/libyjpagent.so=exceptions=disable,delay=10000"
-# AOT things
-#"-XX:+PrintAOT"
-#java -XX:AOTLibrary=${DEVEL_DIR}/macros.so:${DEVEL_DIR}/macros-libs.so -enableassertions -cp "$CLASSPATH" ${MAINCLASS} "$@"
-
-# show class loading timing:
-# -verbose:class 
-
-# log touched methods for use with AOT
-#     -XX:+UnlockDiagnosticVMOptions \
-#     -XX:+LogTouchedMethods \
-#     -XX:+PrintTouchedMethodsAtExit 
-
 unset _JAVA_OPTIONS
-
-#archlinux-java-run --min 14 -- -jar build/libs/macros-1.0-SNAPSHOT.jar
 
 JAVA_ARGS="-enableassertions"
 
-USE_AOT_LIB=1
-if [[ $USE_AOT_LIB ]]; then
-	JAVA_ARGS="$JAVA_ARGS -XX:+UnlockExperimentalVMOptions -XX:AOTLibrary=${DEVEL_DIR}/macros-touched-methods.so"
-fi
+#USE_AOT_LIB=0
+#if [[ $USE_AOT_LIB ]]; then
+#	JAVA_ARGS="$JAVA_ARGS 
+#fi
 
 
 java ${JAVA_ARGS} -jar "$JAR_PATH" "$@"

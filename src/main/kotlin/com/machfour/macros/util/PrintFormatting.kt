@@ -7,7 +7,7 @@ import com.machfour.macros.names.UnitStrings
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.NutrientUnits
 
-
+// chooses unit based on what's in the FoodNutrientData object, or allows override
 fun formatNutrientValue(
     data: FoodNutrientData,
     nutrient: Nutrient,

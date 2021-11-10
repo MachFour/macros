@@ -11,6 +11,7 @@ import com.machfour.macros.schema.NutrientGoalTable
 import com.machfour.macros.schema.NutrientGoalValueTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.units.StandardNutrientUnits
 import com.machfour.macros.util.DateStamp
 
 
@@ -33,7 +34,10 @@ class NutrientGoal internal constructor(
             return when (val goalValue = goal.targets[n]?.value) {
                 null -> null
                 0.0 -> 0.0
-                else -> (this[n]?.value ?: 0.0) / goalValue
+                else -> {
+                    // goal value is in standard units
+                    (this[n]?.convertValueTo(StandardNutrientUnits[n]) ?: 0.0) / goalValue
+                }
             }
         }
 

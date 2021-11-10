@@ -12,6 +12,8 @@ import java.sql.SQLException
 // Implements a higher level query interface than the database
 // which allows for caching of objects returned from query results.
 interface MacrosDataSource {
+    // Marks upstream database as invalid, clearing any caches
+    fun reset()
 
     @Throws(SQLException::class)
     fun foodSearch(

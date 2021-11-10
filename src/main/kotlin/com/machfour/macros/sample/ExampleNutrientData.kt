@@ -22,6 +22,17 @@ val exampleFoodNd by lazy {
     }
 }
 
+val exampleFoodNd2 by lazy {
+    FoodNutrientData().apply {
+        this[ENERGY] = FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES)
+        this[PROTEIN] = FoodNutrientValue.makeComputedValue(60.0, PROTEIN, GRAMS)
+        this[FAT] = FoodNutrientValue.makeComputedValue(20.0, FAT, GRAMS)
+        this[CARBOHYDRATE] = FoodNutrientValue.makeComputedValue(84.0, CARBOHYDRATE, GRAMS)
+        this[FIBRE] = FoodNutrientValue.makeComputedValue(20.0, FIBRE, GRAMS)
+        this[WATER] = FoodNutrientValue.makeComputedValue(400.0, WATER, MILLILITRES)
+    }
+}
+
 private val exampleDayGoalRowData by lazy {
     RowData(NutrientGoal.table).apply {
         put(NutrientGoalTable.NAME, "Example nutrient goal")

@@ -16,6 +16,18 @@ import java.sql.SQLException
 class FlowDataSource(
     private val database: SqlDatabase,
 ): StaticDataSource(database) {
+
+    override fun reset() {
+        foods.clear()
+        meals.clear()
+        foodsFlow.value = emptyMap()
+        mealsFlow.value = emptyMap()
+        allFoodsNeedsRefresh = true
+
+        // TODO should clear refresh queue?
+    }
+
+
     var allFoodsNeedsRefresh: Boolean = true
 
     private val foodRefreshQueue = HashSet<Long>()

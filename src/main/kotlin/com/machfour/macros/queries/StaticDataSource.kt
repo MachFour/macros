@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flowOf
 
 // Each query returns a single value (or set of values) that is not updated when the database changes
 open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource {
+    override fun reset() { }
 
     override fun getAllFoodCategories(): Flow<Map<String, FoodCategory>> {
         return flowOf(getAllFoodCategories(database))

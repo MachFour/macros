@@ -19,7 +19,7 @@ import java.util.zip.ZipOutputStream
 
 // don't edit keyset!
 private fun <M> prepareDataForExport(data: RowData<M>): Map<String, String> {
-    return LinkedHashMap<String, String>().apply {
+    return buildMap {
         data.table.columns.forEach { col ->
             // null data gets mapped to empty string
             this[col.sqlName] = data.getAsRawString(col)

@@ -68,7 +68,7 @@ internal fun foodSearch(
     }
 
 
-    val results = LinkedHashSet<Long>().apply {
+    return buildSet {
         // add exact matches on index name
         addAll(exactStringSearch(db, indexName, keyword, queryOptions).toSet())
         // add exact matches on any other column
@@ -89,8 +89,6 @@ internal fun foodSearch(
             addAll(substringSearch(db, foodSearchCols, keyword, queryOptions))
         }
     }
-    return results
-
 }
 
 @Throws(SQLException::class)

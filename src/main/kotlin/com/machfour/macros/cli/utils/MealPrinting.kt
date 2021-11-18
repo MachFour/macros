@@ -50,7 +50,7 @@ private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, 
     val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
     val nutrientWidth = if (verbose) longDataWidth else shortDataWidth
 
-    return ArrayList<String>(nutrientColumns.size + 2).apply {
+    return buildList {
         // add food name
         this += name
         // add nutrients, formatting to be the appropriate width

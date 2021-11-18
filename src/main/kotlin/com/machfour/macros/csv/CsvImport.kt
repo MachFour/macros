@@ -94,7 +94,7 @@ private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { i
 // Returns map of food index name to parsed food and nutrition RowData objects
 @Throws(IOException::class, TypeCastException::class)
 private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
-    return ArrayList<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>>().apply {
+    return buildList {
         getCsvMapReader(foodCsv).use { reader ->
             val header = reader.getHeader(true)
             while (true) {
@@ -118,7 +118,7 @@ private fun <J> getFoodDataMap(
     foodCsv: Reader,
     foodKeyCol: Column<Food, J>
 ): Map<J, ParsedFoodAndNutrientData> {
-    return HashMap<J, ParsedFoodAndNutrientData>().apply {
+    return buildMap {
         getCsvMapReader(foodCsv).use { reader ->
             val header = reader.getHeader(true)
             while (true) {
@@ -146,38 +146,38 @@ private fun makeIngredients(
     db: SqlDatabase,
     ingredientCsv: Reader
 ): Map<String, List<Ingredient>> {
-    val data = HashMap<String, MutableList<Ingredient>>()
-    try {
-        getCsvMapReader(ingredientCsv).use { reader ->
-            val header = reader.getHeader(true)
-            while (true) {
-                val csvRow = reader.read(*header) ?: break
-                if (allValuesEmpty(csvRow)) {
-                    continue  // it's a blank row
-                }
-                // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                val ingredientData = extractCsvData(csvRow, Ingredient.table)
-                val compositeIndexName = csvRow["recipe_index_name"]
-                    ?: throw CsvException("No value for field: recipe_index_name")
-                val ingredientIndexName = csvRow["ingredient_index_name"]
-                    ?: throw CsvException("No value for field: ingredient_index_name")
-                // TODO error handling
-                val ingredientFood = getFoodByIndexName(db, ingredientIndexName)
-                    ?: throw CsvException("No ingredient exists with index name: $ingredientIndexName")
-                ingredientData.put(IngredientTable.PARENT_FOOD_ID, MacrosEntity.NO_ID)
-                ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
-                Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT).let {
-                    it.setFkParentKey(IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
-                    it.initFoodAndNd(ingredientFood)
-                    // add new ingredient data to existing list in the map, or create one if it doesn't exist.
-                    data.getOrPut(compositeIndexName) { ArrayList() }.add(it)
+    return buildMap<String, ArrayList<Ingredient>> {
+        try {
+            getCsvMapReader(ingredientCsv).use { reader ->
+                val header = reader.getHeader(true)
+                while (true) {
+                    val csvRow = reader.read(*header) ?: break
+                    if (allValuesEmpty(csvRow)) {
+                        continue  // it's a blank row
+                    }
+                    // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
+                    val ingredientData = extractCsvData(csvRow, Ingredient.table)
+                    val compositeIndexName = csvRow["recipe_index_name"]
+                        ?: throw CsvException("No value for field: recipe_index_name")
+                    val ingredientIndexName = csvRow["ingredient_index_name"]
+                        ?: throw CsvException("No value for field: ingredient_index_name")
+                    // TODO error handling
+                    val ingredientFood = getFoodByIndexName(db, ingredientIndexName)
+                        ?: throw CsvException("No ingredient exists with index name: $ingredientIndexName")
+                    ingredientData.put(IngredientTable.PARENT_FOOD_ID, MacrosEntity.NO_ID)
+                    ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
+                    Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT).let {
+                        it.setFkParentKey(IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
+                        it.initFoodAndNd(ingredientFood)
+                        // add new ingredient data to existing list in the map, or create one if it doesn't exist.
+                        getOrPut(compositeIndexName) { ArrayList() }.add(it)
+                    }
                 }
             }
+        } catch (e: SQLException) {
+            throw e // TODO throw new CSVImportException(csvData)
         }
-    } catch (e: SQLException) {
-        throw e // TODO throw new CSVImportException(csvData)
     }
-    return data
 }
 
 // creates Composite food objects with ingredients lists (all with no IDs), but the ingredients

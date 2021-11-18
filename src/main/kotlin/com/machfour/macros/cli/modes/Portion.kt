@@ -116,7 +116,7 @@ class Portion(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         }
 
         // now read everything after the '-s' as food portion specs
-        val specs = ArrayList<FoodPortionSpec>(args.size - 1 - separator).apply {
+        val specs = buildList {
             for (index in separator + 1 until args.size) {
                 add(makefoodPortionSpecFromLine(args[index]))
             }

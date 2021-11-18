@@ -25,7 +25,7 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M
         val unrecognisedColumns = header.filterNot { table.columnsByName.containsKey(it) }
         println("Warning: unknown columns: $unrecognisedColumns")
 
-        ArrayList<M>().apply {
+        buildList {
             while (true) {
                 val nextRow = csvMapReader.read(*header) ?: break
                 val data = extractCsvData(nextRow, table)

@@ -1,6 +1,6 @@
 plugins {
     application
-    kotlin("jvm") version("1.5.30")
+    kotlin("jvm") version("1.6.0")
 }
 
 group = "com.machfour"
@@ -26,10 +26,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 dependencies {
-    implementation(kotlin("stdlib:1.5.30"))
+    implementation(kotlin("stdlib:1.6.0"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
     implementation("net.sf.supercsv:super-csv:2.4.0")
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("com.google.code.gson:gson:2.8.9")
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))

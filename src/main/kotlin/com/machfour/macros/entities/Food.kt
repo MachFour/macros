@@ -246,8 +246,8 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     val categoryName: String
         get() = getData(FoodTable.CATEGORY)!!
 
-    val searchRelevance: Int
-        get() = getData(FoodTable.SEARCH_RELEVANCE)!!
+    val searchRelevance: SearchRelevance
+        get() = SearchRelevance.fromValue(getData(FoodTable.SEARCH_RELEVANCE)!!)
 
     // Returns the most recent time out of
     // - food (table) modify time

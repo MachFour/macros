@@ -22,6 +22,7 @@ private fun checkObjectSource(source: ObjectSource, hasId: Boolean) {
         ObjectSource.INBUILT -> {
             check(hasId) { "Object should have an ID" }
         }
+        ObjectSource.TEST -> {}
     }
 }
 
@@ -144,9 +145,11 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         childCol: Column.Fk<M, J, N>,
         parentObj: MacrosEntity<N>
     ): Boolean {
-        val childData = childObj.getData(childCol)
-        val parentData = parentObj.getData(childCol.parentColumn)
-        return childData == parentData
+        val parentCol = childCol.parentColumn
+        val parentIdCol = parentObj.table.idColumn
+        return childObj.getData(childCol) == parentObj.getData(parentCol) ||
+                // disable ID check for TEST objects
+                (parentCol == parentIdCol && parentObj.source == ObjectSource.TEST)
     }
 
 }

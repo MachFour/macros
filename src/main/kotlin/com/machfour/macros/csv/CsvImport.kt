@@ -92,6 +92,7 @@ internal fun getCsvMapReader(r: Reader): ICsvMapReader =
 private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { it.isNullOrBlank() }
 
 // Returns map of food index name to parsed food and nutrition RowData objects
+@OptIn(ExperimentalStdlibApi::class)
 @Throws(IOException::class, TypeCastException::class)
 private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
     return buildList {
@@ -113,6 +114,7 @@ private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<
 private typealias ParsedFoodAndNutrientData = Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>
 
 // Returns map of food index name to parsed food and nutrition RowData objects
+@OptIn(ExperimentalStdlibApi::class)
 @Throws(IOException::class, TypeCastException::class, CsvException::class)
 private fun <J> getFoodDataMap(
     foodCsv: Reader,
@@ -141,6 +143,7 @@ private fun <J> getFoodDataMap(
 
 // map from composite food index name to list of ingredients
 // XXX adding the db to get ingredient food objects looks ugly
+@OptIn(ExperimentalStdlibApi::class)
 @Throws(IOException::class, SQLException::class, TypeCastException::class)
 private fun makeIngredients(
     db: SqlDatabase,

@@ -139,6 +139,17 @@ fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long>
 }
 
 @Throws(SQLException::class)
+fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<Long>): List<Long> {
+    if (foodPortionIds.isEmpty()) {
+        return emptyList()
+    }
+    return selectNonNullColumn(db, FoodPortionTable.MEAL_ID) {
+        where(FoodPortionTable.ID, foodPortionIds)
+        distinct()
+    }
+}
+
+@Throws(SQLException::class)
 fun getDaysForMealIds(db: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
     if (mealIds.isEmpty()) {
         return emptyList()

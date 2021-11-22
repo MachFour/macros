@@ -46,6 +46,7 @@ private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Bool
     println()
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
     val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
     val nutrientWidth = if (verbose) longDataWidth else shortDataWidth

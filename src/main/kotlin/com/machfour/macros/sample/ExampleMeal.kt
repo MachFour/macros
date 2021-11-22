@@ -2,6 +2,7 @@ package com.machfour.macros.sample
 
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodPortionTable
@@ -33,10 +34,11 @@ private fun initFoodPortion() : FoodPortion {
 
 private fun initMeal(n: Int): Meal {
     val meal = MacrosBuilder(Meal.table).run {
+        setField(MealTable.ID, n.toLong())
         setField(MealTable.DAY, DateStamp(2020, 10, 28))
         setField(MealTable.NAME, "Example meal $n")
         setField(MealTable.NOTES, "Notable notes")
-        build()
+        build(ObjectSource.TEST)
     }
 
     repeat(n) {

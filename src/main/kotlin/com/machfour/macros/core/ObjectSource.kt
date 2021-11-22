@@ -69,7 +69,12 @@ enum class ObjectSource(private val niceName: String) {
      * MOD: no
      * DB: no
      */
-    INBUILT("inbuilt");
+    INBUILT("inbuilt"),
+
+    // just for testing
+    TEST("test"),
+
+    ;
 
     override fun toString(): String {
         return niceName

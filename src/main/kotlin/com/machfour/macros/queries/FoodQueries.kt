@@ -30,7 +30,7 @@ internal fun foodSearch(
     db: SqlDatabase,
     keywords: List<String>,
     matchAll: Boolean = true,
-    minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value
+    minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
 ): Set<Long> {
     // map will be empty if keywords is empty
     return keywords.map { foodSearch(db, it, minRelevance) }.let {
@@ -51,11 +51,12 @@ internal fun foodSearch(
 //  - most exhaustive search: substring search of all columns
 //  - be adaptive - if there only few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
+@OptIn(ExperimentalStdlibApi::class)
 @Throws(SQLException::class)
 internal fun foodSearch(
     db: SqlDatabase,
     keyword: String,
-    minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value,
+    minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
 ): Set<Long> {
     if (keyword.isEmpty()) {
         return emptySet()
@@ -64,7 +65,7 @@ internal fun foodSearch(
     val indexName = listOf(FoodTable.INDEX_NAME)
 
     val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
-        andWhere("${FoodTable.SEARCH_RELEVANCE} >= $minRelevance")
+        andWhere("${FoodTable.SEARCH_RELEVANCE} >= ${minRelevance.value}")
     }
 
 

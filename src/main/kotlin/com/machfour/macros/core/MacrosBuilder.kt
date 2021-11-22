@@ -238,10 +238,10 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * Builder object's data may continue to be changed and other objects
      * created after a successful build.
      */
-    fun build(): M {
+    fun build(overrideSource: ObjectSource? = null): M {
         check(!hasInvalidFields) { "Field values are not all valid (${invalidFields})" }
         val buildData = draftData.copy()
-        val source = newObjectSource()
+        val source = overrideSource ?: newObjectSource()
         return table.construct(buildData, source)
     }
 

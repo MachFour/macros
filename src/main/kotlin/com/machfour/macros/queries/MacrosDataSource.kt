@@ -19,11 +19,11 @@ interface MacrosDataSource {
     fun foodSearch(
         keywords: List<String>,
         matchAll: Boolean = true,
-        minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value
+        minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
     ): Set<Long>
 
     @Throws(SQLException::class)
-    fun foodSearch(keyword: String, minRelevance: Int = SearchRelevance.EXCLUDE_HIDDEN.value): Set<Long>
+    fun foodSearch(keyword: String, minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN): Set<Long>
 
     @Throws(SQLException::class)
     fun recentFoodIds(howMany: Int): List<Long>
@@ -73,6 +73,8 @@ interface MacrosDataSource {
 
     @Throws(SQLException::class)
     fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>>
+
+    fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<Long>): List<Long>
 
     /*
      * The functions below mutate the database and require cache updates

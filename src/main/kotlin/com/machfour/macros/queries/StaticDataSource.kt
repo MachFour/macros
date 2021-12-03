@@ -140,8 +140,8 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return foodSearch(database, keyword)
     }
 
-    override fun recentFoodIds(howMany: Int): List<Long> {
-        return recentFoodIds(database, howMany)
+    override fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long> {
+        return recentFoodIds(database, howMany, distinct)
     }
 
 }

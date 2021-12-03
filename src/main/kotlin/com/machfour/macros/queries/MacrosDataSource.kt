@@ -26,7 +26,7 @@ interface MacrosDataSource {
     fun foodSearch(keyword: String, minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN): Set<Long>
 
     @Throws(SQLException::class)
-    fun recentFoodIds(howMany: Int): List<Long>
+    fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long>
 
     /*
      * Single-shot functions, just passthrough to static queries

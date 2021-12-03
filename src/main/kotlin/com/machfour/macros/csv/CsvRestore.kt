@@ -14,7 +14,6 @@ import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 
 // Method for reading CSV files that directly correspond to a table
-@OptIn(ExperimentalStdlibApi::class)
 @Throws(IOException::class, TypeCastException::class)
 private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M> {
     val csvMapReader = getCsvMapReader(csvData)

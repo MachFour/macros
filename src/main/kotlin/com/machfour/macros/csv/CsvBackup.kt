@@ -18,7 +18,6 @@ import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
 
 // don't edit keyset!
-@OptIn(ExperimentalStdlibApi::class)
 private fun <M> prepareDataForExport(data: RowData<M>): Map<String, String> {
     return buildMap {
         data.table.columns.forEach { col ->

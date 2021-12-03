@@ -33,7 +33,7 @@ import java.sql.SQLException
 //}
 
 @Throws(SQLException::class)
-internal fun recentFoodIds(db: SqlDatabase, howMany: Int): List<Long> {
+internal fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> {
     // NOTE this can't actually give the create time.
     // Need to SELECT MAX(create_time) for that (not just ORDER BY)
     val query = selectTwoColumns(
@@ -41,10 +41,14 @@ internal fun recentFoodIds(db: SqlDatabase, howMany: Int): List<Long> {
         select1 = FoodPortionTable.FOOD_ID,
         select2 = FoodPortionTable.CREATE_TIME
     ) {
-        orderBy(FoodPortionTable.CREATE_TIME.max(), OrderByDirection.DESCENDING)
-        groupBy(FoodPortionTable.FOOD_ID)
+        if (distinct) {
+            orderBy(FoodPortionTable.CREATE_TIME.max(), OrderByDirection.DESCENDING)
+            groupBy(FoodPortionTable.FOOD_ID)
+            //distinct()
+        } else {
+            orderBy(FoodPortionTable.CREATE_TIME, OrderByDirection.DESCENDING)
+        }
         limit(howMany)
-        //distinct()
     }
     return query.mapNotNull { it.first }
 }

@@ -51,7 +51,6 @@ internal fun foodSearch(
 //  - most exhaustive search: substring search of all columns
 //  - be adaptive - if there only few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
-@OptIn(ExperimentalStdlibApi::class)
 @Throws(SQLException::class)
 internal fun foodSearch(
     db: SqlDatabase,

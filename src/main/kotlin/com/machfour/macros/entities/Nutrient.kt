@@ -15,7 +15,7 @@ class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSourc
     companion object {
         // Factory has to be initialised first before table is referenced.
         // This is a problem only if the factory is cached as an instance variable
-        val factory : Factory<Nutrient>
+        val factory: Factory<Nutrient>
             get() = Factories.nutrient
 
         val table: Table<Nutrient>
@@ -28,13 +28,13 @@ class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSourc
     override val table: Table<Nutrient>
         get() = Companion.table
 
-    val csvName: String = getData(NutrientTable.NAME)!!
-    val isInbuilt: Boolean = getData(NutrientTable.INBUILT)!!
+    val csvName: String = this.data[NutrientTable.NAME]!!
+    val isInbuilt: Boolean = this.data[NutrientTable.INBUILT]!!
 
-    private val unitFlags: Int = getData(NutrientTable.UNIT_TYPES)!!
+    private val unitFlags: Int = this.data[NutrientTable.UNIT_TYPES]!!
     private val unitTypes: Set<UnitType> = UnitType.fromFlags(unitFlags)
 
-    fun compatibleWith(unit: Unit) : Boolean {
+    fun compatibleWith(unit: Unit): Boolean {
         return unit.type.matchedByFlags(unitFlags)
     }
 

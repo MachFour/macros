@@ -32,7 +32,8 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         // Hooray for preferring static constructors over new!!!
         val factory: Factory<Food>
             get() = Factories.food
-        
+
+        @Deprecated("Use FoodTable instead", ReplaceWith("FoodTable"))
         val table: Table<Food>
             get() = FoodTable
 
@@ -70,10 +71,10 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             brand: String?,
             variety: String?,
             extraDesc: String?,
-            withBrand : Boolean = true,
-            withVariety : Boolean = true,
-            withExtra : Boolean = false,
-            sortable : Boolean = false,
+            withBrand: Boolean = true,
+            withVariety: Boolean = true,
+            withExtra: Boolean = false,
+            sortable: Boolean = false,
             includeEmptyFields: Boolean = true,
         ): String {
             val isPresent: (String?) -> Boolean = {
@@ -139,7 +140,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     }
 
     override val table: Table<Food>
-        get() = Companion.table
+        get() = FoodTable
 
     override val factory: Factory<Food>
         get() = Companion.factory
@@ -191,19 +192,19 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         }
 
     val usdaIndex: Int?
-        get() = getData(FoodTable.USDA_INDEX)
+        get() = data[FoodTable.USDA_INDEX]
 
     val nuttabIndex: String?
-        get() = getData(FoodTable.NUTTAB_INDEX)
+        get() = data[FoodTable.NUTTAB_INDEX]
 
     val dataSource: String?
-        get() = getData(FoodTable.DATA_SOURCE)
+        get() = data[FoodTable.DATA_SOURCE]
 
     val dataNotes: String?
-        get() = getData(FoodTable.DATA_NOTES)
+        get() = data[FoodTable.DATA_NOTES]
 
     val density: Double?
-        get() = getData(FoodTable.DENSITY)
+        get() = data[FoodTable.DENSITY]
 
     // don't need to override hashcode since equality implies hashcodes equal but not the converse
     override fun equals(other: Any?): Boolean {
@@ -226,28 +227,28 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         get() = prettyFormat(withExtra = true, sortable = true)
 
     val basicName: String
-        get() = getData(FoodTable.NAME)!!
+        get() = data[FoodTable.NAME]!!
 
     val variety: String?
-        get() = getData(FoodTable.VARIETY)
+        get() = data[FoodTable.VARIETY]
 
     val brand: String?
-        get() = getData(FoodTable.BRAND)
+        get() = data[FoodTable.BRAND]
 
     val extraDesc: String?
-        get() = getData(FoodTable.EXTRA_DESC)
+        get() = data[FoodTable.EXTRA_DESC]
 
     val notes: String?
-        get() = getData(FoodTable.NOTES)
+        get() = data[FoodTable.NOTES]
 
     val indexName: String
-        get() = getData(FoodTable.INDEX_NAME)!!
+        get() = data[FoodTable.INDEX_NAME]!!
 
     val categoryName: String
-        get() = getData(FoodTable.CATEGORY)!!
+        get() = data[FoodTable.CATEGORY]!!
 
     val searchRelevance: SearchRelevance
-        get() = SearchRelevance.fromValue(getData(FoodTable.SEARCH_RELEVANCE)!!)
+        get() = SearchRelevance.fromValue(data[FoodTable.SEARCH_RELEVANCE]!!)
 
     // Returns the most recent time out of
     // - food (table) modify time
@@ -261,10 +262,10 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     }
 
     private fun prettyFormat(
-        withBrand : Boolean = true,
-        withVariety : Boolean = true,
-        withExtra : Boolean = false,
-        sortable : Boolean = false
+        withBrand: Boolean = true,
+        withVariety: Boolean = true,
+        withExtra: Boolean = false,
+        sortable: Boolean = false
     ): String {
         return prettyFormat(
             basicName = basicName,
@@ -276,7 +277,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             withExtra = withExtra,
             sortable = sortable,
 
-        )
+            )
     }
 
 }

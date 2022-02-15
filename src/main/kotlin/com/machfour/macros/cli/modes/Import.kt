@@ -11,11 +11,11 @@ import com.machfour.macros.csv.importRecipes
 import com.machfour.macros.csv.importServings
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
 import java.io.IOException
@@ -98,9 +98,9 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     // have to clear in reverse order
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
                     deleteAllIngredients(db)
-                    clearTable(db, Serving.table)
+                    clearTable(db, ServingTable)
                     clearTable(db, FoodNutrientValue.table)
-                    clearTable(db, Food.table)
+                    clearTable(db, FoodTable)
                 } else if (!noRecipes) {
                     println("Clearing existing recipes and ingredients...")
                     // nutrition data deleted by cascade
@@ -135,7 +135,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
                 println("Importing servings from $servingCsvFile")
                 FileReader(servingCsvFile).use { reader ->
-                    val excludeKeys = conflictingFoods.values.mapNotNull { it.getData(foodKeyCol) }.toSet()
+                    val excludeKeys = conflictingFoods.values.mapNotNull { it.data[foodKeyCol] }.toSet()
                     importServings(db, reader, foodKeyCol, excludeKeys, false)
                 }
                 println("Saved servings")

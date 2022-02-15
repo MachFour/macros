@@ -115,20 +115,20 @@ internal fun getFoodById(db: SqlDatabase, id: Long): Food? {
 // items in indexNames that do not correspond to a food, will not appear in the output map
 @Throws(SQLException::class)
 fun getFoodIdsByIndexName(ds: SqlDatabase, indexNames: Collection<String>): Map<String, Long> {
-    return getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, indexNames)
+    return getIdsFromKeys(ds, FoodTable, FoodTable.INDEX_NAME, indexNames)
 }
 
 @Throws(SQLException::class)
 fun getFoodIdByIndexName(ds: SqlDatabase, indexName: String): Long? {
-    val idMap = getIdsFromKeys(ds, Food.table, FoodTable.INDEX_NAME, listOf(indexName))
+    val idMap = getIdsFromKeys(ds, FoodTable, FoodTable.INDEX_NAME, listOf(indexName))
     assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
     return idMap.values.firstOrNull()
 }
 
 // The proper way to get all foods
 fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
-    val allFoods = getAllRawObjects(db, Food.table)
-    val allServings = getAllRawObjects(db, Serving.table)
+    val allFoods = getAllRawObjects(db, FoodTable)
+    val allServings = getAllRawObjects(db, ServingTable)
     val allNutrientData = getAllRawObjects(db, FoodNutrientValue.table)
     val allFoodCategories = getAllFoodCategories(db)
     val allIngredients = getAllRawObjects(db, Ingredient.table)
@@ -145,7 +145,7 @@ fun getFoodsById(
 ): Map<Long, Food> {
     // this map is unordered due to order of database results being unpredictable,
     // we can sort it later if necessary
-    return getRawObjectsWithIds(db, Food.table, foodIds, preserveOrder).also {
+    return getRawObjectsWithIds(db, FoodTable, foodIds, preserveOrder).also {
         processRawFoodMap(db, it)
     }
 }
@@ -161,8 +161,18 @@ fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<St
 }
 
 @Throws(SQLException::class)
+fun getFoodsByType(db: SqlDatabase, foodType: FoodType): Map<Long, Food> {
+    // map by ID
+    val foods = getRawObjects(db, FoodTable.ID) {
+        where(FoodTable.FOOD_TYPE, foodType.toString())
+    }
+    processRawFoodMap(db, foods)
+    return foods
+}
+
+@Throws(SQLException::class)
 fun getServingsById(db: SqlDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
-    return getRawObjectsWithIds(db, Serving.table, servingIds)
+    return getRawObjectsWithIds(db, ServingTable, servingIds)
 }
 
 @Throws(SQLException::class)
@@ -174,7 +184,7 @@ fun getParentFoodIdsContainingFoodIds(db: SqlDatabase, foodIds: List<Long>): Lis
 }
 
 @Throws(SQLException::class)
-private fun processRawIngredients(ds: SqlDatabase, ingredientMap: Map<Long, Ingredient>) {
+private fun processRawIngredients(db: SqlDatabase, ingredientMap: Map<Long, Ingredient>) {
     val foodIds = ArrayList<Long>(ingredientMap.size)
     val servingIds = ArrayList<Long>(ingredientMap.size)
     for (i in ingredientMap.values) {
@@ -183,8 +193,8 @@ private fun processRawIngredients(ds: SqlDatabase, ingredientMap: Map<Long, Ingr
     }
     // XXX make sure this doesn't loop infinitely if two composite foods contain each other as ingredients
     // (or potentially via a longer chain -- A contains B, B contains C, C contains A)
-    val ingredientFoods = getFoodsById(ds, foodIds)
-    val ingredientServings = getServingsById(ds, servingIds)
+    val ingredientFoods = getFoodsById(db, foodIds)
+    val ingredientServings = getServingsById(db, servingIds)
     for (i in ingredientMap.values) {
         // applyFoodsToRawIngredients(ingredients, servings
         val f = ingredientFoods.getValue(i.foodId)
@@ -216,7 +226,7 @@ private fun processRawFoodMap(ds: SqlDatabase, foodMap: Map<Long, Food>) {
     if (foodMap.isNotEmpty()) {
         //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
         //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
-        val servings = getRawObjectsForParentFk(ds, foodMap, Serving.table, ServingTable.FOOD_ID)
+        val servings = getRawObjectsForParentFk(ds, foodMap, ServingTable, ServingTable.FOOD_ID)
         val nutrientValues = getRawObjectsForParentFk(ds, foodMap, FoodNutrientValue.table, FoodNutrientValueTable.FOOD_ID)
         val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, IngredientTable.PARENT_FOOD_ID)
         val categories = getAllFoodCategories(ds)
@@ -253,7 +263,7 @@ private fun applyIngredientsToRawFoods(foodMap: Map<Long, Food>, ingredientMap: 
 
 private fun applyFoodCategoriesToRawFoods(foodMap: Map<Long, Food>, categories: Map<String, FoodCategory>) {
     for (f in foodMap.values) {
-        val categoryName = f.getData(FoodTable.CATEGORY)!!
+        val categoryName = f.data[FoodTable.CATEGORY]!!
         val c = categories.getValue(categoryName)
         f.setFoodCategory(c)
     }

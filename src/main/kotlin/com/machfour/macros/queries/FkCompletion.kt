@@ -15,7 +15,7 @@ private fun <M : MacrosEntity<M>> fkIdsPresent(obj: M): Boolean {
     // if the FK refers to an ID column and it's not nullable, make sure there's a value
     return obj.table.fkColumns.none {
         (it.parentColumn == it.parentTable.idColumn && !it.isNullable) &&
-                (!obj.hasData(it) || obj.getData(it) == MacrosEntity.NO_ID)
+                (!obj.data.hasValue(it) || obj.getData(it) == MacrosEntity.NO_ID)
     }
 }
 

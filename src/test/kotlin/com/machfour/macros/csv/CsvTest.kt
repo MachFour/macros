@@ -12,6 +12,7 @@ import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.queries.getAllRawObjects
 import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.validation.SchemaViolation
 import org.junit.jupiter.api.*
@@ -51,9 +52,9 @@ class CsvTest {
     @BeforeEach
     fun clearDb() {
         deleteAllIngredients(db)
-        clearTable(db, Serving.table)
+        clearTable(db, ServingTable)
         clearTable(db, FoodNutrientValue.table)
-        clearTable(db, Food.table)
+        clearTable(db, FoodTable)
     }
 
     @Test
@@ -131,8 +132,8 @@ class CsvTest {
     @Test
     fun testCsvWriteFoods() {
         try {
-            val foods = getAllRawObjects(db, Food.table)
-            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(Food.table, it, foods.values) }
+            val foods = getAllRawObjects(db, FoodTable)
+            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(FoodTable, it, foods.values) }
         } catch (e: IOException) {
             e.printStackTrace()
             Assertions.fail("IOException was thrown")
@@ -145,8 +146,8 @@ class CsvTest {
     @Test
     fun testCsvWriteServings() {
         try {
-            val servings = getAllRawObjects(db, Serving.table)
-            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(Serving.table, it, servings.values) }
+            val servings = getAllRawObjects(db, ServingTable)
+            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(ServingTable, it, servings.values) }
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")

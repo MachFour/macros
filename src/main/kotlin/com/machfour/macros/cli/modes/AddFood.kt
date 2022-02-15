@@ -6,7 +6,6 @@ import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.getFoodIdsByIndexName
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
@@ -53,7 +52,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             return 1
         }
 
-        val foodBuilder = MacrosBuilder(Food.table).apply {
+        val foodBuilder = MacrosBuilder(FoodTable).apply {
             setField(FoodTable.INDEX_NAME, indexName)
             markFixed(FoodTable.INDEX_NAME)
         }

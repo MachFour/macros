@@ -34,19 +34,19 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
         private set
 
     val foodId: Long
-        get() = getData(foodIdCol)!!
+        get() = data[foodIdCol]!!
 
     val servingId: Long?
-        get() = getData(servingIdCol)
+        get() = data[servingIdCol]
 
     val quantity: Double
-        get() = getData(quantityCol)!!
+        get() = data[quantityCol]!!
 
     val maxNutrientVersion: Int
-        get() = getData(maxNutrientVersionCol)!!
+        get() = data[maxNutrientVersionCol]!!
 
     val notes: String?
-        get() = getData(notesCol)
+        get() = data[notesCol]
 
     fun prettyFormat(withNotes: Boolean): String {
         val quantityStr = "%.1f".format(quantity)

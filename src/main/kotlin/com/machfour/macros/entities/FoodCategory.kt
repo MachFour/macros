@@ -23,7 +23,7 @@ class FoodCategory(data: RowData<FoodCategory>, objectSource: ObjectSource) : Ma
         get() = Companion.table
 
     val name: String
-        get() = getData(FoodCategoryTable.NAME)!!
+        get() = data[FoodCategoryTable.NAME]!!
 
     override fun toString(): String {
         return name

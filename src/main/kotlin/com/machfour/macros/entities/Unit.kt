@@ -17,7 +17,7 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
     : MacrosEntityImpl<Unit>(data, source), PortionMeasurement {
     companion object {
         // factory before table
-        val factory : Factory<Unit>
+        val factory: Factory<Unit>
             get() = Factories.unit
 
         val table: Table<Unit>
@@ -32,12 +32,12 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
 
     // values are cached here instead of using get() because there aren't many units but they're used a lot
 
-    override val name: String = getData(UnitTable.NAME)!!
+    override val name: String = this.data[UnitTable.NAME]!!
 
-    val abbr: String = getData(UnitTable.ABBREVIATION)!!
-    val type: UnitType = UnitType.fromId(getData(UnitTable.TYPE_ID)!!)
-    val metricEquivalent = getData(UnitTable.METRIC_EQUIVALENT)!!
-    val isInbuilt = getData(UnitTable.INBUILT)!!
+    val abbr: String = this.data[UnitTable.ABBREVIATION]!!
+    val type: UnitType = UnitType.fromId(this.data[UnitTable.TYPE_ID]!!)
+    val metricEquivalent = this.data[UnitTable.METRIC_EQUIVALENT]!!
+    val isInbuilt = this.data[UnitTable.INBUILT]!!
 
     // Measurement interface - for interop with Servings
     override val unitMultiplier = 1.0
@@ -46,7 +46,6 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
 
     private val string = "$name (${abbr})" // [${type.name.firstOrNull() ?: "?"}]"
     override fun toString(): String = string
-
 
 
 }

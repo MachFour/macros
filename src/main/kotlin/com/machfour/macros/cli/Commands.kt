@@ -22,6 +22,7 @@ private val COMMAND_CONSTRUCTORS = listOf<(MacrosConfig) -> Command>(
     { config -> AllFoods(config) },
     { config -> Import(config) },
     { config -> Export(config) },
+    { config -> Backup(config) },
     { config -> Restore(config) },
     { config -> Init(config) },
     // these ones don't need configs

@@ -18,7 +18,7 @@ class RowData<M> private constructor(
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
     // hold columns of any index, up to the number of columns in the table minus 1.
     private val data: Array<Any?> = arrayOfNulls(table.columns.size)
-    private val hasData = BooleanArray(table.columns.size)
+    private val hasValue = BooleanArray(table.columns.size)
 
     // which columns have data stored in this RowData object;
     val columns: Set<Column<M, *>> = LinkedHashSet(cols)
@@ -27,7 +27,7 @@ class RowData<M> private constructor(
         // init default data
         columns.forEach { c ->
             // can't use the put() method due to type erasure
-            c.defaultData.let { data[c.index] = it; hasData[c.index] = it != null }
+            c.defaultData.let { data[c.index] = it; hasValue[c.index] = it != null }
         }
         if (existing != null) {
             copyData(existing, this, cols)
@@ -59,7 +59,7 @@ class RowData<M> private constructor(
             for (col in which) {
                 val o = from.data[col.index]
                 to.data[col.index] = o
-                to.hasData[col.index] = o != null
+                to.hasValue[col.index] = o != null
             }
         }
     }
@@ -136,11 +136,9 @@ class RowData<M> private constructor(
     // the type of the data is ensured at time of adding it to this RowData object.
     operator fun <J> get(col: Column<M, J>): J? {
         assertHasColumn(col)
-        return getWithoutAssert(col)
-    }
-
-    private fun <J> getWithoutAssert(col: Column<M, J>): J? {
-        return col.type.cast(data[col.index])
+        val value = col.type.cast(data[col.index])
+        assert(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
+        return value
     }
 
     // will throw exception if the column is not present
@@ -149,12 +147,12 @@ class RowData<M> private constructor(
         assertHasColumn(col)
         check(!isImmutable) { "RowData has been made immutable" }
         data[col.index] = value
-        hasData[col.index] = value != null
+        hasValue[col.index] = value != null
     }
 
-    fun hasData(col: Column<M, *>): Boolean {
+    fun hasValue(col: Column<M, *>): Boolean {
         assertHasColumn(col)
-        return hasData[col.index]
+        return hasValue[col.index]
     }
 
 }

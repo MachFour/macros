@@ -45,7 +45,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
     }
 
     val name: String
-        get() = getData(MealTable.NAME)!!
+        get() = data[MealTable.NAME]!!
 
     /*
      * 'Day' is the day for which the nutrition data should be counted.
@@ -53,7 +53,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
      * for all meals having that Day field
      */
     val day: DateStamp
-        get() = getData(MealTable.DAY)!!
+        get() = data[MealTable.DAY]!!
 
     /*
      * Start time is the time that the meal was actually consumed. Note that
@@ -63,11 +63,11 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
      */
     // returns time in Unix time, aka seconds since Jan 1 1970
     val startTime: Long
-        get() = getData(MealTable.START_TIME)!!
+        get() = data[MealTable.START_TIME]!!
 
     // in seconds, how long the meal lasted.
     val durationSeconds: Int
-        get() = getData(MealTable.DURATION)!!
+        get() = data[MealTable.DURATION]!!
 
     val durationMinutes: Int
         get() = durationSeconds / 60
@@ -76,7 +76,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
         get() = Instant.ofEpochSecond(startTime)
 
     val notes: String?
-        get() = getData(MealTable.NOTES)
+        get() = data[MealTable.NOTES]
 
     override fun equals(other: Any?): Boolean {
         return other is Meal

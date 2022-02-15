@@ -18,17 +18,17 @@ import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
 
 // don't edit keyset!
-private fun <M> prepareDataForExport(data: RowData<M>): Map<String, String> {
+private fun <M> prepareDataForBackup(data: RowData<M>): Map<String, String> {
     return buildMap {
         data.table.columns.forEach { col ->
             // null data gets mapped to empty string
-            this[col.sqlName] = data.getAsRawString(col)
+            put(col.sqlName, data.getAsRawString(col))
         }
     }
 }
 
 // EXCEL_PREFERENCE sets newline character to '\n', quote character to '"' and delimiter to ','
-private fun getMapWriter(w: Writer): ICsvMapWriter = CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE)
+internal fun getMapWriter(w: Writer): ICsvMapWriter = CsvMapWriter(w, CsvPreference.EXCEL_PREFERENCE)
 
 @Throws(IOException::class)
 fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, csvOut: Writer, objects: Collection<M>) {
@@ -39,7 +39,7 @@ fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, csvOut: Writer, obj
     csvMapWriter.writeHeader(*header)
     // iterate over objects, each one becomes 1 line of CSV
     objects.forEach {
-        val dataStrings = prepareDataForExport(it.data)
+        val dataStrings = prepareDataForBackup(it.data)
         csvMapWriter.write(dataStrings, *header)
     }
     csvMapWriter.flush()
@@ -57,7 +57,7 @@ internal val csvZipBackupTables: List<Table<out MacrosEntity<*>>> = listOf(
     IngredientTable,
 )
 
-internal const val zipEntryComment = "MacrosDB"
+internal const val zipEntryComment = "MacrosDBBackup"
 
 // returns app specific data directory
 internal val <M> Table<M>.backupName: String

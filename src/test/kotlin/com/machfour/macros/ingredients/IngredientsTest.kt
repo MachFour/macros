@@ -1,11 +1,11 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.printNutrientData
-import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.schema.FoodTable
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
@@ -69,7 +69,7 @@ class IngredientsTest {
 
     private fun clearFoodTable() {
         try {
-            clearTable(db, Food.table)
+            clearTable(db, FoodTable)
         } catch (e: SQLException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")

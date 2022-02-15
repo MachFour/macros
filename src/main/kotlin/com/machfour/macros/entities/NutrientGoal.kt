@@ -58,7 +58,7 @@ class NutrientGoal internal constructor(
         get() = Companion.table
 
     val name: String
-        get() = getData(NutrientGoalTable.NAME)!!
+        get() = data[NutrientGoalTable.NAME]!!
 
     lateinit var day: DateStamp
         private set

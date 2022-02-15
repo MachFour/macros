@@ -44,7 +44,7 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
         private set
 
     val parentFoodId: Long
-        get() = getData(IngredientTable.PARENT_FOOD_ID)!!
+        get() = data[IngredientTable.PARENT_FOOD_ID]!!
 
 
     // we already use polymorphism to check the data is equal for subclasses of MacrosEntity;

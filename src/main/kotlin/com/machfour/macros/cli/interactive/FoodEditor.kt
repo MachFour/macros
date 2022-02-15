@@ -41,7 +41,7 @@ class FoodEditor constructor(
 
     companion object {
         private val NUM_ACTIONS = Action.values().size
-        private val FOOD_TABLE_COLUMNS = Food.table.columns
+        private val FOOD_TABLE_COLUMNS = FoodTable.columns
 
         // Layout parameters
         private const val actionPaddingWidth = 18

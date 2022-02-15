@@ -45,7 +45,7 @@ internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): 
                 else -> putFromString(col, valueString.javaTrim())
             }
             // check if anything actually got through
-            if (hasData(col)) {
+            if (hasValue(col)) {
                 extractedSomething = true
             }
         }
@@ -77,7 +77,7 @@ private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<F
             put(FoodNutrientValueTable.UNIT_ID, unit.id)
             put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
         }
-        assert(nutrientValueData.hasData(FoodNutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
+        assert(nutrientValueData.hasValue(FoodNutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
 
         data.add(nutrientValueData)
     }
@@ -242,7 +242,7 @@ fun <J> buildServings(
         val header = reader.getHeader(true)
         while (true) {
             val csvRow = reader.read(*header) ?: break
-            val servingData = extractCsvData(csvRow, Serving.table)
+            val servingData = extractCsvData(csvRow, ServingTable)
             val rawFoodKey = csvRow[foodKeyCol.sqlName]
                 ?: throw CsvException("Food $foodKeyCol was null for row: $csvRow")
             val foodKey = requireNotNull(foodKeyCol.type.fromRawString(rawFoodKey))

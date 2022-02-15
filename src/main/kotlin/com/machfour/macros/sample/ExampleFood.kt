@@ -5,6 +5,7 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.nutrients.*
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.FoodTable.BRAND
 import com.machfour.macros.schema.FoodTable.CATEGORY
 import com.machfour.macros.schema.FoodTable.DENSITY
@@ -33,7 +34,7 @@ val exampleFood2: Food by lazy {
 }
 
 private fun init1(): Food {
-    val data = RowData(Food.table)
+    val data = RowData(FoodTable)
     data.put(INDEX_NAME, "food1")
     data.put(BRAND, "Max's")
     data.put(VARIETY, "really good with a really long variety name just to see what happens")
@@ -47,7 +48,7 @@ private fun init1(): Food {
 }
 
 private fun init2(): Food {
-    val data = RowData(Food.table)
+    val data = RowData(FoodTable)
     data.put(INDEX_NAME, "generic-oil")
     data.put(VARIETY, "Super oily")
     data.put(EXTRA_DESC, "in a bottle")

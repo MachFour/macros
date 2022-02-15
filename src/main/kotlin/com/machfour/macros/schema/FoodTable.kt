@@ -16,7 +16,6 @@ private val columns = ArrayList<Column<Food, out Any>>()
 private val id = idColumnBuildFor(columns)
 private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
-private val notes = notesColumnBuildAndAdd(columns)
 
 private val indexName =
     builder("index_name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(columns)
@@ -30,6 +29,8 @@ private val extraDesc =
     builder("extra_desc", Types.TEXT).buildFor(columns)
 private val category =
     builder("category", Types.TEXT).buildFkFor(FoodCategoryTable, FoodCategoryTable.NAME, columns)
+private val notes =
+    notesColumnBuildAndAdd(columns)
 private val foodType =
     builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.niceName).buildFor(columns)
 private val usdaIndex =

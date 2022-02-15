@@ -53,7 +53,7 @@ class FoodNutrientValue internal constructor(
 
 
     val foodId: Long
-        get() = getData(FoodNutrientValueTable.FOOD_ID)!!
+        get() = data[FoodNutrientValueTable.FOOD_ID]!!
 
     var food: Food? = null
         private set

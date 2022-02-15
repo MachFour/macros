@@ -30,6 +30,6 @@ class NutrientGoalDayMapping internal constructor(
         get() = Companion.table
 
     val day: DateStamp
-        get() = getData(NutrientGoalDayMappingTable.DAY)!!
+        get() = data[NutrientGoalDayMappingTable.DAY]!!
 
 }

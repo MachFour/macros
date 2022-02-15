@@ -26,10 +26,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 dependencies {
-    implementation(kotlin("stdlib:1.6.0"))
+    implementation(kotlin("stdlib:1.6.10"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
     implementation("net.sf.supercsv:super-csv:2.4.0")
     implementation("com.google.code.gson:gson:2.8.9")
+    // Not used yet - just have it here so that I will see when there's an update available.
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))

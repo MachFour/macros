@@ -111,7 +111,7 @@ internal fun forgetFood(db: SqlDatabase, f: Food) {
 @Throws(SQLException::class)
 internal fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
     db.executeRawStatement(
-        "UPDATE ${Food.table.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
+        "UPDATE ${FoodTable.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
                 "${FoodTable.FOOD_TYPE} = '${foodType.niceName}'"
     )
 }
@@ -154,7 +154,7 @@ internal fun <M, J> deleteByNullStatus(
 
 @Throws(SQLException::class)
 internal fun deleteAllCompositeFoods(db: SqlDatabase): Int {
-    return deleteWhere(db, Food.table, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
+    return deleteWhere(db, FoodTable, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
 }
 
 @Throws(SQLException::class)

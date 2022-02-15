@@ -52,13 +52,13 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     }
 
     final override val id: Long
-        get() = getData(table.idColumn)!!
+        get() = data[table.idColumn]!!
 
     final override val createTime: Long
-        get() = getData(table.createTimeColumn)!!
+        get() = data[table.createTimeColumn]!!
 
     final override val modifyTime: Long
-        get() = getData(table.modifyTimeColumn)!!
+        get() = data[table.modifyTimeColumn]!!
 
     val createInstant: Instant
         get() = Instant.ofEpochSecond(data[data.table.createTimeColumn]!!)
@@ -83,13 +83,11 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     }
 
     final override fun <J> getData(col: Column<M, J>): J? {
-        val value = data[col]
-        assert(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
-        return value
+        return data[col]
     }
 
     override fun hasData(col: Column<M, *>): Boolean {
-        return data.hasData(col)
+        return data.hasValue(col)
     }
 
     override fun dataCopy(withMetadata: Boolean): RowData<M> {

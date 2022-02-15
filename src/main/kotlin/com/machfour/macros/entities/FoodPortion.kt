@@ -37,14 +37,14 @@ class FoodPortion internal constructor(
 
     init {
         // TODO is this check actually needed? MacrosEntity might take care of it already.
-        assert (getData(FoodPortionTable.MEAL_ID) != null) { "Meal ID cannot be null for FoodPortion" }
+        assert(this.data[FoodPortionTable.MEAL_ID] != null) { "Meal ID cannot be null for FoodPortion" }
     }
 
     lateinit var meal: Meal
         private set
 
     val mealId: Long
-        get() = getData(FoodPortionTable.MEAL_ID)!!
+        get() = data[FoodPortionTable.MEAL_ID]!!
 
     fun initMeal(m: Meal) {
         assert(foreignKeyMatches(this, FoodPortionTable.MEAL_ID, m))

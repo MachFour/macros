@@ -3,12 +3,16 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Meal
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.MealTable
+import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp
@@ -35,7 +39,7 @@ internal class CacheTest {
         @BeforeAll
         @JvmStatic
         fun initDbAndObjects() {
-            with (RowData(Food.table)) {
+            with (RowData(FoodTable)) {
                 put(FoodTable.ID, MacrosEntity.NO_ID)
                 put(FoodTable.CREATE_TIME, 0L)
                 put(FoodTable.MODIFY_TIME, 0L)
@@ -92,9 +96,9 @@ internal class CacheTest {
             println("Clearing tables")
             clearTable(db, FoodPortion.table)
             clearTable(db, Meal.table)
-            clearTable(db, Serving.table)
+            clearTable(db, ServingTable)
             clearTable(db, FoodNutrientValue.table)
-            clearTable(db, Food.table)
+            clearTable(db, FoodTable)
 
             println("Saving objects")
             saveObject(db, testFood)

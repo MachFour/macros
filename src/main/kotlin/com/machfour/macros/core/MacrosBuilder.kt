@@ -157,7 +157,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     // null data represented as blank strings
     fun <J> getAsString(col: Column<M, J>): String {
-        return col.type.toRawString(this[col])
+        return col.type.toString(this[col])
     }
 
     private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {

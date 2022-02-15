@@ -93,7 +93,7 @@ private fun extractIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>)
 // creates a composite food and ingredients objects from the given spec
 // NOTE that no IDs are ever created for the objects
 private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<String, Long>): CompositeFood {
-    val builder = MacrosBuilder(Food.table)
+    val builder = MacrosBuilder(FoodTable)
     builder.setField(FoodTable.INDEX_NAME, spec.indexName)
     builder.setField(FoodTable.NAME, spec.name)
     builder.setField(FoodTable.VARIETY, spec.variety)

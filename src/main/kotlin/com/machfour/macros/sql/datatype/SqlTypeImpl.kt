@@ -25,8 +25,8 @@ abstract class SqlTypeImpl<J> : SqlType<J> {
 
     // Returns a string representation suitable for saving into a textual format (e.g. CSV)
     // In particular, null data becomes empty strings
-    final override fun toRawString(data: J?): String {
-        return toString(data, "")
+    override fun toRawString(data: J?): String {
+        return toRaw(data)?.toString() ?: ""
     }
 
     // Returns a string representation suitable for use in issuing an SQL command to store the given data

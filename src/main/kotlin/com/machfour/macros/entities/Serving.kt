@@ -18,12 +18,10 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
         // factory has to come before table if it's an instance variable
         val factory: Factory<Serving>
             get() = Factories.serving
-        val table: Table<Serving>
-            get() = ServingTable
     }
 
     val qtyUnitAbbr: String
-        get() = getData(ServingTable.QUANTITY_UNIT)!!
+        get() = data[ServingTable.QUANTITY_UNIT]!!
 
     val qtyUnit = unitWithAbbr(qtyUnitAbbr)
 
@@ -37,19 +35,19 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     override val factory: Factory<Serving>
         get() = Companion.factory
     override val table: Table<Serving>
-        get() = Companion.table
+        get() = ServingTable
 
     val foodId: Long
-        get() = getData(ServingTable.FOOD_ID)!!
+        get() = data[ServingTable.FOOD_ID]!!
 
     val quantity: Double
-        get() = getData(ServingTable.QUANTITY)!!
+        get() = data[ServingTable.QUANTITY]!!
 
     val isDefault: Boolean
-        get() = getData(ServingTable.IS_DEFAULT)!!
+        get() = data[ServingTable.IS_DEFAULT]!!
 
     val notes: String?
-        get() = getData(ServingTable.NOTES)
+        get() = data[ServingTable.NOTES]
 
     override fun equals(other: Any?): Boolean {
         return other is Serving && super.equals(other)
@@ -65,7 +63,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     }
 
     override val name: String
-        get() = getData(ServingTable.NAME)!!
+        get() = data[ServingTable.NAME]!!
 
 
     // Measurement functions

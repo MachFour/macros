@@ -22,10 +22,10 @@ abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
 
 
     val nutrientId: Long
-        get() = getData(nutrientIdCol)!!
+        get() = data[nutrientIdCol]!!
 
-    val value: Double = getData(valueCol)!!
-    val unit: Unit = unitWithId(getData(unitIdCol)!!)
+    val value: Double = this.data[valueCol]!!
+    val unit: Unit = unitWithId(this.data[unitIdCol]!!)
     val nutrient: Nutrient = nutrientWithId(nutrientId)
 
     // Converts this value into the given unit, if possible.

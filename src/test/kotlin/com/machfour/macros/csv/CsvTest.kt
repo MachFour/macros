@@ -2,7 +2,6 @@ package com.machfour.macros.csv
 
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
@@ -11,6 +10,7 @@ import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.queries.getAllRawObjects
+import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.datatype.TypeCastException
@@ -53,7 +53,7 @@ class CsvTest {
     fun clearDb() {
         deleteAllIngredients(db)
         clearTable(db, ServingTable)
-        clearTable(db, FoodNutrientValue.table)
+        clearTable(db, FoodNutrientValueTable)
         clearTable(db, FoodTable)
     }
 

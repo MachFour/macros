@@ -4,8 +4,6 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodPortion
-import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
@@ -102,8 +100,8 @@ internal fun forgetFood(db: SqlDatabase, f: Food) {
     // delete nutrition data, foodQuantities, servings, then food
 
     // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
-    deleteWhere(db, FoodPortion.table, FoodPortionTable.FOOD_ID, listOf(f.id))
-    deleteWhere(db, Ingredient.table, IngredientTable.FOOD_ID, listOf(f.id))
+    deleteWhere(db, FoodPortionTable, FoodPortionTable.FOOD_ID, listOf(f.id))
+    deleteWhere(db, IngredientTable, IngredientTable.FOOD_ID, listOf(f.id))
     deleteObject(db, f)
 }
 
@@ -159,12 +157,12 @@ internal fun deleteAllCompositeFoods(db: SqlDatabase): Int {
 
 @Throws(SQLException::class)
 internal fun deleteAllIngredients(db: SqlDatabase) {
-    clearTable(db, Ingredient.table)
+    clearTable(db, IngredientTable)
 }
 
 @Throws(SQLException::class)
 internal fun deleteAllFoodPortions(db: SqlDatabase) {
-    clearTable(db, FoodPortion.table)
+    clearTable(db, FoodPortionTable)
 }
 
 

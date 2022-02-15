@@ -22,11 +22,8 @@ class NutrientGoalValue internal constructor(
     companion object {
         // Factory has to be initialised first before table is referenced.
         // This is a problem only if the factory is cached as an instance variable
-        val factory : Factory<NutrientGoalValue>
+        val factory: Factory<NutrientGoalValue>
             get() = Factories.nutrientGoalValue
-
-        val table: Table<NutrientGoalValue>
-            get() = NutrientGoalValueTable
 
     }
 
@@ -34,7 +31,7 @@ class NutrientGoalValue internal constructor(
         get() = Companion.factory
 
     override val table: Table<NutrientGoalValue>
-        get() = Companion.table
+        get() = NutrientGoalValueTable
 
 
 }

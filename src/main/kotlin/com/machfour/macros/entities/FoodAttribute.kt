@@ -11,16 +11,13 @@ class FoodAttribute private constructor(data: RowData<FoodAttribute>, objectSour
     : MacrosEntityImpl<FoodAttribute>(data, objectSource) {
 
     companion object {
-        val table: Table<FoodAttribute>
-            get() = FoodAttributeTable
         val factory: Factory<FoodAttribute> = Factory { dataMap, objectSource -> FoodAttribute(dataMap, objectSource) }
     }
 
     override val factory: Factory<FoodAttribute>
         get() = Companion.factory
     override val table: Table<FoodAttribute>
-        get() = Companion.table
-
+        get() = FoodAttributeTable
 
 
 }

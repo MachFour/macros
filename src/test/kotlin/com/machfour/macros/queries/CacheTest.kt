@@ -4,15 +4,11 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.schema.FoodPortionTable
-import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.schema.MealTable
-import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.schema.*
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp
@@ -54,7 +50,7 @@ internal class CacheTest {
                 put(FoodTable.NUTTAB_INDEX, null)
                 testFood = Food.factory.construct(this, ObjectSource.IMPORT)
             }
-            with (RowData(Meal.table)) {
+            with (RowData(MealTable)) {
                 put(MealTable.ID, MacrosEntity.NO_ID)
                 put(MealTable.CREATE_TIME, 0L)
                 put(MealTable.MODIFY_TIME, 0L)
@@ -63,7 +59,7 @@ internal class CacheTest {
                 put(MealTable.DAY, DateStamp(2020, 10, 10))
                 testMeal = Meal.factory.construct(this, ObjectSource.IMPORT)
             }
-            with (RowData(FoodPortion.table)) {
+            with (RowData(FoodPortionTable)) {
                 put(FoodPortionTable.ID, MacrosEntity.NO_ID)
                 put(FoodPortionTable.CREATE_TIME, 0L)
                 put(FoodPortionTable.MODIFY_TIME, 0L)
@@ -94,10 +90,10 @@ internal class CacheTest {
     fun saveObjects() {
         try {
             println("Clearing tables")
-            clearTable(db, FoodPortion.table)
-            clearTable(db, Meal.table)
+            clearTable(db, FoodPortionTable)
+            clearTable(db, MealTable)
             clearTable(db, ServingTable)
-            clearTable(db, FoodNutrientValue.table)
+            clearTable(db, FoodNutrientValueTable)
             clearTable(db, FoodTable)
 
             println("Saving objects")

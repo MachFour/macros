@@ -27,12 +27,9 @@ class FoodNutrientValue internal constructor(
         val factory: Factory<FoodNutrientValue>
             get() = Factories.foodNutrientValue
 
-        val table: Table<FoodNutrientValue>
-            get() = FoodNutrientValueTable
-
         // makes an object without ID or food
         fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit): FoodNutrientValue {
-            val data = RowData(table).apply {
+            val data = RowData(FoodNutrientValueTable).apply {
                 //put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
                 //put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
                 put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)
@@ -49,7 +46,7 @@ class FoodNutrientValue internal constructor(
         get() = Companion.factory
 
     override val table: Table<FoodNutrientValue>
-        get() = Companion.table
+        get() = FoodNutrientValueTable
 
 
     val foodId: Long

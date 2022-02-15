@@ -71,7 +71,7 @@ private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<F
         }
         val unit = unitString?.let { unitWithAbbr(it) } ?: LegacyNutrientUnits[nutrient]
 
-        val nutrientValueData = RowData(FoodNutrientValue.table).apply {
+        val nutrientValueData = RowData(FoodNutrientValueTable).apply {
             // TODO parse constraints
             putFromString(FoodNutrientValueTable.VALUE, valueString)
             put(FoodNutrientValueTable.UNIT_ID, unit.id)
@@ -156,7 +156,7 @@ private fun makeIngredients(
                         continue  // it's a blank row
                     }
                     // XXX CSV contains food index names, while the DB wants food IDs - how to convert?????
-                    val ingredientData = extractCsvData(csvRow, Ingredient.table)
+                    val ingredientData = extractCsvData(csvRow, IngredientTable)
                     val compositeIndexName = csvRow["recipe_index_name"]
                         ?: throw CsvException("No value for field: recipe_index_name")
                     val ingredientIndexName = csvRow["ingredient_index_name"]

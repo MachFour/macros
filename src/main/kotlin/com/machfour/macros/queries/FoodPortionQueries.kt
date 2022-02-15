@@ -8,13 +8,13 @@ import com.machfour.macros.sql.generator.OrderByDirection
 import java.sql.SQLException
 
 //fun getServingId(dataSource: MacrosDataSource, fpId: Long) : Long? {
-//    return CoreQueries.selectSingleColumn(dataSource, FoodPortion.table, FoodPortionTable.SERVING_ID) {
+//    return CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.SERVING_ID) {
 //        where(FoodPortionTable.ID, listOf(fpId))
 //    }.getOrNull(0)
 //}
 
 //fun getQuantityUnit(dataSource: MacrosDataSource, fpId: Long) : Unit? {
-//    val abbr = CoreQueries.selectSingleColumn(dataSource, FoodPortion.table, FoodPortionTable.QUANTITY_UNIT) {
+//    val abbr = CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.QUANTITY_UNIT) {
 //            where(FoodPortionTable.ID, listOf(fpId))
 //        }.getOrNull(0)
 //    return abbr?.let {
@@ -23,7 +23,7 @@ import java.sql.SQLException
 //}
 
 //fun getFoodForFoodPortionId(ds: MacrosDataSource, fpId: Long): Food? {
-//    val foodIds = CoreQueries.selectSingleColumn(ds, FoodPortion.table, FoodPortionTable.FOOD_ID) {
+//    val foodIds = CoreQueries.selectSingleColumn(ds, FoodPortionTable, FoodPortionTable.FOOD_ID) {
 //        where(FoodPortionTable.ID, listOf(fpId))
 //    }
 //    assert(foodIds.size <= 1) { "Returned multiple food ids for one foodportion id" }

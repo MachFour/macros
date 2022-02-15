@@ -24,8 +24,6 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
         // factory before table
         val factory: Factory<Meal>
             get() = Factories.meal
-        val table: Table<Meal>
-            get() = MealTable
     }
 
     val foodPortionsMutable = ArrayList<FoodPortion>()
@@ -37,7 +35,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
         get() = Companion.factory
 
     override val table: Table<Meal>
-        get() = Companion.table
+        get() = MealTable
 
     fun nutrientTotal(): FoodNutrientData {
         val allNutrientData = foodPortions.map { it.nutrientData }

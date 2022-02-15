@@ -113,7 +113,7 @@ class FileParser {
                 Pair(fps.quantity, fps.unit ?: f.nutrientData.qtyUnit)
             }
 
-            val fp = RowData(FoodPortion.table).run {
+            val fp = RowData(FoodPortionTable).run {
                 put(FoodPortionTable.FOOD_ID, f.id)
                 put(FoodPortionTable.SERVING_ID, serving?.id)
                 put(FoodPortionTable.MEAL_ID, m.id)
@@ -231,7 +231,7 @@ class FileParser {
         }
 
         private fun makeMeal(description: String, day: DateStamp): Meal {
-            val mealData = RowData(Meal.table)
+            val mealData = RowData(MealTable)
             mealData.put(MealTable.NAME, description)
             mealData.put(MealTable.DAY, day)
             return Meal.factory.construct(mealData, ObjectSource.USER_NEW)

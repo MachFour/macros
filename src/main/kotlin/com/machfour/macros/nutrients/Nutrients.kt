@@ -9,7 +9,7 @@ import com.machfour.macros.units.UnitType
 
 private fun makeInbuiltNutrient(id: Long, name: String, vararg types: UnitType) : Nutrient {
     val typeFlags = UnitType.asFlags(types)
-    val data = RowData(Nutrient.table).apply {
+    val data = RowData(NutrientTable).apply {
         put(NutrientTable.ID, id)
         put(NutrientTable.NAME, name)
         put(NutrientTable.UNIT_TYPES, typeFlags)

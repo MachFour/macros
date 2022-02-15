@@ -6,6 +6,7 @@ import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.sample.exampleFood2
+import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodPortionTable.FOOD_ID
 import com.machfour.macros.schema.FoodPortionTable.MEAL_ID
 import com.machfour.macros.schema.FoodPortionTable.QUANTITY
@@ -29,7 +30,7 @@ class NutrientDataTest {
             val fp1: FoodPortion
             val fp2: FoodPortion
             val fp3: FoodPortion
-            with (MacrosBuilder(FoodPortion.table)) {
+            with (MacrosBuilder(FoodPortionTable)) {
                 setField(FOOD_ID, f.id)
                 setField(MEAL_ID, MacrosEntity.NO_ID)
                 setField(QUANTITY, 100.0)

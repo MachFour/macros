@@ -18,15 +18,13 @@ class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSourc
         val factory: Factory<Nutrient>
             get() = Factories.nutrient
 
-        val table: Table<Nutrient>
-            get() = NutrientTable
     }
 
     override val factory: Factory<Nutrient>
         get() = Companion.factory
 
     override val table: Table<Nutrient>
-        get() = Companion.table
+        get() = NutrientTable
 
     val csvName: String = this.data[NutrientTable.NAME]!!
     val isInbuilt: Boolean = this.data[NutrientTable.INBUILT]!!

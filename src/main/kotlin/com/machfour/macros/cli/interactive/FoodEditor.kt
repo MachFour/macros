@@ -35,7 +35,7 @@ class FoodEditor constructor(
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
     private val ds: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
-    private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValue.table),
+    private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValueTable),
     private val displayStrings: DisplayStrings = DefaultDisplayStrings,
     private val screen: Screen = defaultScreen()) {
 

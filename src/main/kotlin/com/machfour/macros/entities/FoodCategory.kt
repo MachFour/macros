@@ -12,15 +12,13 @@ class FoodCategory(data: RowData<FoodCategory>, objectSource: ObjectSource) : Ma
     companion object {
         val factory: Factory<FoodCategory>
             get() = Factories.foodCategory
-        val table: Table<FoodCategory>
-            get() = FoodCategoryTable
     }
 
     override val factory: Factory<FoodCategory>
         get() = Companion.factory
 
     override val table: Table<FoodCategory>
-        get() = Companion.table
+        get() = FoodCategoryTable
 
     val name: String
         get() = data[FoodCategoryTable.NAME]!!

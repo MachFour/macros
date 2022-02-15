@@ -3,10 +3,7 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
-import com.machfour.macros.schema.FoodNutrientValueTable
-import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.schema.IngredientTable
-import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll
@@ -93,7 +90,7 @@ internal fun foodSearch(
 
 @Throws(SQLException::class)
 internal fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
-    val categoriesById = getAllRawObjects(db, FoodCategory.table)
+    val categoriesById = getAllRawObjects(db, FoodCategoryTable)
     // change the map to have keys as category names
     return categoriesById.mapKeys { it.value.name }
 }
@@ -129,9 +126,9 @@ fun getFoodIdByIndexName(ds: SqlDatabase, indexName: String): Long? {
 fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
     val allFoods = getAllRawObjects(db, FoodTable)
     val allServings = getAllRawObjects(db, ServingTable)
-    val allNutrientData = getAllRawObjects(db, FoodNutrientValue.table)
+    val allNutrientData = getAllRawObjects(db, FoodNutrientValueTable)
     val allFoodCategories = getAllFoodCategories(db)
-    val allIngredients = getAllRawObjects(db, Ingredient.table)
+    val allIngredients = getAllRawObjects(db, IngredientTable)
     processRawIngredients(db, allIngredients)
     processRawFoodMap(allFoods, allServings, allNutrientData, allIngredients, allFoodCategories)
     return allFoods
@@ -227,8 +224,9 @@ private fun processRawFoodMap(ds: SqlDatabase, foodMap: Map<Long, Food>) {
         //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
         //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
         val servings = getRawObjectsForParentFk(ds, foodMap, ServingTable, ServingTable.FOOD_ID)
-        val nutrientValues = getRawObjectsForParentFk(ds, foodMap, FoodNutrientValue.table, FoodNutrientValueTable.FOOD_ID)
-        val ingredients = getRawObjectsForParentFk(ds, foodMap, Ingredient.table, IngredientTable.PARENT_FOOD_ID)
+        val nutrientValues =
+            getRawObjectsForParentFk(ds, foodMap, FoodNutrientValueTable, FoodNutrientValueTable.FOOD_ID)
+        val ingredients = getRawObjectsForParentFk(ds, foodMap, IngredientTable, IngredientTable.PARENT_FOOD_ID)
         val categories = getAllFoodCategories(ds)
         processRawIngredients(ds, ingredients)
         processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)

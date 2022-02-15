@@ -7,7 +7,7 @@ import com.machfour.macros.schema.UnitTable
 import com.machfour.macros.sql.RowData
 
 private fun makeInbuiltUnit(id: Long, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
-    return RowData(Unit.table).run {
+    return RowData(UnitTable).run {
         put(UnitTable.ID, id)
         put(UnitTable.NAME, name)
         put(UnitTable.ABBREVIATION, abbr)

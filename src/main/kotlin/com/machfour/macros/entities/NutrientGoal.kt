@@ -74,7 +74,7 @@ class NutrientGoal internal constructor(
 
     // make value without ID or nutrition goal object
     fun addComputedValue(nutrient: Nutrient, value: Double, unit: Unit) {
-        val valueData = RowData(NutrientGoalValue.table).apply {
+        val valueData = RowData(NutrientGoalValueTable).apply {
             put(NutrientGoalValueTable.ID, MacrosEntity.NO_ID)
             put(NutrientGoalValueTable.GOAL_ID, id)
             put(NutrientGoalValueTable.NUTRIENT_ID, nutrient.id)

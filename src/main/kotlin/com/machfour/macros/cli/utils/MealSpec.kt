@@ -72,7 +72,7 @@ class MealSpec {
         }
 
         // else create a new meal, save and return it
-        val newMeal = RowData(Meal.table).run {
+        val newMeal = RowData(MealTable).run {
             put(MealTable.DAY, day)
             put(MealTable.NAME, name)
             Meal.factory.construct(this, ObjectSource.USER_NEW)

@@ -19,7 +19,7 @@ val exampleMeal5: Meal by lazy { initMeal(5) }
 
 private fun initFoodPortion() : FoodPortion {
     val food = exampleFood2
-    val fp = MacrosBuilder(FoodPortion.table).run {
+    val fp = MacrosBuilder(FoodPortionTable).run {
         setField(FoodPortionTable.MEAL_ID, MacrosEntity.NO_ID)
         setField(FoodPortionTable.FOOD_ID, food.id) // who knows what food this is haha
         setField(FoodPortionTable.QUANTITY, 50.0)
@@ -33,7 +33,7 @@ private fun initFoodPortion() : FoodPortion {
 }
 
 private fun initMeal(n: Int): Meal {
-    val meal = MacrosBuilder(Meal.table).run {
+    val meal = MacrosBuilder(MealTable).run {
         setField(MealTable.ID, n.toLong())
         setField(MealTable.DAY, DateStamp(2020, 10, 28))
         setField(MealTable.NAME, "Example meal $n")

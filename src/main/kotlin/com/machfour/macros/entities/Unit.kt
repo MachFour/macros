@@ -20,15 +20,13 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
         val factory: Factory<Unit>
             get() = Factories.unit
 
-        val table: Table<Unit>
-            get() = UnitTable
     }
 
     override val factory: Factory<Unit>
         get() = Companion.factory
 
     override val table: Table<Unit>
-        get() = Companion.table
+        get() = UnitTable
 
     // values are cached here instead of using get() because there aren't many units but they're used a lot
 

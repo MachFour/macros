@@ -49,7 +49,7 @@ internal fun getMealById(db: SqlDatabase, id: Long): Meal? {
 //            build()
 //        }
 //        WriteQueries.saveObject(ds, editedFp)
-//        val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortion.table, listOf(fp.id))
+//        val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortionTable, listOf(fp.id))
 
 //        assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
 //        processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
@@ -65,7 +65,7 @@ private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<Long, Fo
         distinct()
     }
     return if (fpIds.isNotEmpty()) {
-        getRawObjectsWithIds(db, FoodPortion.table, fpIds)
+        getRawObjectsWithIds(db, FoodPortionTable, fpIds)
     } else {
         emptyMap()
     }
@@ -102,7 +102,7 @@ fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
     }
     // Makes meal objects, filtering by the list of IDs. If mealIds is empty,
     // all meals will be returned.
-    val meals = getRawObjectsWithIds(db, Meal.table, mealIds)
+    val meals = getRawObjectsWithIds(db, MealTable, mealIds)
     val foodIds = getFoodIdsForMeals(db, mealIds)
     if (foodIds.isNotEmpty()) {
         val foodMap = getFoodsById(db, foodIds)

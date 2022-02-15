@@ -15,14 +15,12 @@ class AttrMapping internal constructor(data: RowData<AttrMapping>, objectSource:
         val factory: Factory<AttrMapping>
             get() = Factories.attributeMapping
 
-        val table: Table<AttrMapping>
-            get() = AttrMappingTable
     }
 
     override val factory: Factory<AttrMapping>
         get() = Companion.factory
 
     override val table: Table<AttrMapping>
-        get() = Companion.table
+        get() = AttrMappingTable
 
 }

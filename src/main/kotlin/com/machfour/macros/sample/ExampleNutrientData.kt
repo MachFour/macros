@@ -34,7 +34,7 @@ val exampleFoodNd2 by lazy {
 }
 
 private val exampleDayGoalRowData by lazy {
-    RowData(NutrientGoal.table).apply {
+    RowData(NutrientGoalTable).apply {
         put(NutrientGoalTable.NAME, "Example nutrient goal")
         put(NutrientGoalTable.ID, MacrosEntity.NO_ID)
     }

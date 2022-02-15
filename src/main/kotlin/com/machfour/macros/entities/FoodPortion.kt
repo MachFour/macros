@@ -25,12 +25,10 @@ class FoodPortion internal constructor(
         val factory: Factory<FoodPortion>
             get() = Factories.foodPortion
 
-        val table: Table<FoodPortion>
-            get() = FoodPortionTable
     }
 
     override val table: Table<FoodPortion>
-        get() = Companion.table
+        get() = FoodPortionTable
     override val factory: Factory<FoodPortion>
         get() = Companion.factory
 

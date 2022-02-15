@@ -65,7 +65,7 @@ private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredi
         throw RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName))
     }
     val ingredientId = ingredientMap[spec.indexName]
-    val builder = MacrosBuilder(Ingredient.table)
+    val builder = MacrosBuilder(IngredientTable)
     builder.setField(IngredientTable.PARENT_FOOD_ID, composite.id)
     builder.setField(IngredientTable.FOOD_ID, ingredientId)
     builder.setField(IngredientTable.SERVING_ID, null) // TODO
@@ -173,7 +173,7 @@ private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
         insertObjects(ds, newIngredients, false)
 
         // TODO nutrition data object to go along with it, if quantity is known
-        //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientData.table);
+        //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientDataTable);
         //nData.setField(Schema.NutrientDataTable.DATA_SOURCE, "recipe");
         //nData.setField(Schema.NutrientDataTable.FOOD_ID, id);
         //nData.setField(Schema.NutrientDataTable.QUANTITY ,";

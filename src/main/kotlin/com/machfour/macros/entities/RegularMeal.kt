@@ -9,8 +9,6 @@ import com.machfour.macros.sql.Table
 
 class RegularMeal(data: RowData<RegularMeal>, objectSource: ObjectSource) : MacrosEntityImpl<RegularMeal>(data, objectSource) {
     companion object {
-        val table: Table<RegularMeal>
-            get() = RegularMealTable
         val factory: Factory<RegularMeal> = Factory { dataMap, objectSource -> RegularMeal(dataMap, objectSource) }
     }
 
@@ -18,6 +16,6 @@ class RegularMeal(data: RowData<RegularMeal>, objectSource: ObjectSource) : Macr
         get() = Companion.factory
 
     override val table: Table<RegularMeal>
-        get() = Companion.table
+        get() = RegularMealTable
 
 }

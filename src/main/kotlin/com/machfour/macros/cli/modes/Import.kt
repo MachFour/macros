@@ -10,10 +10,10 @@ import com.machfour.macros.csv.importFoodData
 import com.machfour.macros.csv.importRecipes
 import com.machfour.macros.csv.importServings
 import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.datatype.TypeCastException
@@ -99,7 +99,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     // TODO Ingredients, servings, NutrientValues cleared by cascade?
                     deleteAllIngredients(db)
                     clearTable(db, ServingTable)
-                    clearTable(db, FoodNutrientValue.table)
+                    clearTable(db, FoodNutrientValueTable)
                     clearTable(db, FoodTable)
                 } else if (!noRecipes) {
                     println("Clearing existing recipes and ingredients...")

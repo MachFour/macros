@@ -30,12 +30,12 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
 
     // values are cached here instead of using get() because there aren't many units but they're used a lot
 
-    override val name: String = this.data[UnitTable.NAME]!!
+    override val name: String = data[UnitTable.NAME]!!
 
-    val abbr: String = this.data[UnitTable.ABBREVIATION]!!
+    val abbr: String = data[UnitTable.ABBREVIATION]!!
     val type: UnitType = UnitType.fromId(this.data[UnitTable.TYPE_ID]!!)
-    val metricEquivalent = this.data[UnitTable.METRIC_EQUIVALENT]!!
-    val isInbuilt = this.data[UnitTable.INBUILT]!!
+    val metricEquivalent = data[UnitTable.METRIC_EQUIVALENT]!!
+    val isInbuilt = data[UnitTable.INBUILT]!!
 
     // Measurement interface - for interop with Servings
     override val unitMultiplier = 1.0

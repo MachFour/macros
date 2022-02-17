@@ -33,10 +33,6 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         val factory: Factory<Food>
             get() = Factories.food
 
-        @Deprecated("Use FoodTable instead", ReplaceWith("FoodTable"))
-        val table: Table<Food>
-            get() = FoodTable
-
         fun indexNamePrototype(
             basicName: String,
             brand: String?,

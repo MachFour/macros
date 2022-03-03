@@ -91,33 +91,11 @@ internal fun getCsvMapReader(r: Reader): ICsvMapReader =
 // returns true if all fields in the CSV are blank AFTER IGNORING WHITESPACE
 private fun allValuesEmpty(csvRow: Map<String, String?>) = csvRow.values.all { it.isNullOrBlank() }
 
-// Returns map of food index name to parsed food and nutrition RowData objects
-@Throws(IOException::class, TypeCastException::class)
-private fun getFoodData(foodCsv: Reader): List<Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>> {
-    return buildList {
-        getCsvMapReader(foodCsv).use { reader ->
-            val header = reader.getHeader(true)
-            while (true) {
-                val csvRow = reader.read(*header) ?: break
-                if (!allValuesEmpty(csvRow)) {
-                    val foodData = extractCsvData(csvRow, FoodTable)
-                    val nutrientData = extractCsvNutrientData(csvRow)
-                    add(foodData to nutrientData)
-                }
-                // else it's a blank row
-            }
-        }
-    }
-}
-
 private typealias ParsedFoodAndNutrientData = Pair<RowData<Food>, List<RowData<FoodNutrientValue>>>
 
 // Returns map of food index name to parsed food and nutrition RowData objects
 @Throws(IOException::class, TypeCastException::class, CsvException::class)
-private fun <J> getFoodDataMap(
-    foodCsv: Reader,
-    foodKeyCol: Column<Food, J>
-): Map<J, ParsedFoodAndNutrientData> {
+private fun <J> getFoodDataMap(foodCsv: Reader, foodKeyCol: Column<Food, J>): Map<J, ParsedFoodAndNutrientData> {
     return buildMap {
         getCsvMapReader(foodCsv).use { reader ->
             val header = reader.getHeader(true)
@@ -265,7 +243,7 @@ private fun <J> saveImportedFoods(
     foods: Map<J, Food>,
     foodKeyCol: Column<Food, J>,
 ): Map<J, Food> {
-    // collect all of the index names to be imported, and check if they're already in the DB.
+    // collect all the index names to be imported, and check if they're already in the DB.
     val conflictingFoods = findUniqueColumnConflicts(db, foods)
 
     val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
@@ -294,29 +272,27 @@ private fun <J> saveImportedFoods(
     return conflictingFoods
 }
 
-@Suppress("UNUSED_EXPRESSION")
 @Throws(IOException::class, SQLException::class, TypeCastException::class)
 fun <J> importFoodData(
     db: SqlDatabase,
     foodCsv: Reader,
     foodKeyCol: Column<Food, J>,
-    allowOverwrite: Boolean,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
 ): Map<J, Food> {
-    allowOverwrite // TODO use
 
     val csvFoods = buildFoodObjectTree(
         foodCsv,
         foodKeyCol = foodKeyCol,
         modifyFoodData = { data ->
-            //assert(foodData.hasData(FoodTable.NAME)) { "Food is missing its name" }
-            // set search relevance
-            data[FoodTable.FOOD_TYPE]
-                ?.let { FoodType.fromString(it) }
-                ?.let { data.put(FoodTable.SEARCH_RELEVANCE, it.defaultSearchRelevance.value) }
-
             modifyFoodData?.let { it(data) }
+
+            // set search relevance from food type, if not already set
+            val foodType = FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)
+            val defaultSearchRelevance = foodType?.defaultSearchRelevance?.value
+            if (!data.hasValue(FoodTable.SEARCH_RELEVANCE) && defaultSearchRelevance != null) {
+                data.put(FoodTable.SEARCH_RELEVANCE, defaultSearchRelevance)
+            }
         },
         modifyNutrientValueData
     )
@@ -324,17 +300,14 @@ fun <J> importFoodData(
     return saveImportedFoods(db, csvFoods, foodKeyCol)
 }
 
-@Suppress("UNUSED_EXPRESSION")
 // TODO detect existing servings
 @Throws(IOException::class, SQLException::class, TypeCastException::class)
 fun <J> importServings(
     db: SqlDatabase,
     servingCsv: Reader,
     foodKeyCol: Column<Food, J>,
-    ignoreKeys: Set<J>,
-    allowOverwrite: Boolean,
+    ignoreKeys: Set<J> = emptySet(),
 ) {
-    allowOverwrite // TODO use
     val csvServings = buildServings(servingCsv, foodKeyCol)
     val nonExcludedServings = csvServings.filterNot {
         ignoreKeys.contains(it.getFkParentKey(ServingTable.FOOD_ID)[foodKeyCol])

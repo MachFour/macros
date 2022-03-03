@@ -3,6 +3,8 @@ package com.machfour.macros.sql.generator
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 
+const val DEFAULT_ITERATE_THRESHOLD = 200
+
 sealed interface SqlStatement<M> {
     val table: Table<M>
     val mode: SqlQueryMode
@@ -25,7 +27,9 @@ sealed interface SqlStatement<M> {
     interface Builder<M> {
         fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J)
 
-        fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterate: Boolean = false)
+        // iterate threshold exists because if number of the parameters in a query gets too large,
+        // Android SQlite will not execute the query
+        fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int = DEFAULT_ITERATE_THRESHOLD)
 
         fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean)
 

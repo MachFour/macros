@@ -111,18 +111,30 @@ internal fun getFoodById(db: SqlDatabase, id: Long): Food? {
 // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
 // items in indexNames that do not correspond to a food, will not appear in the output map
 @Throws(SQLException::class)
-fun getFoodIdsByIndexName(ds: SqlDatabase, indexNames: Collection<String>): Map<String, Long> {
-    return getIdsFromKeys(ds, FoodTable, FoodTable.INDEX_NAME, indexNames)
+fun getFoodIdsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Long> {
+    return getIdsFromKeys(db, FoodTable, FoodTable.INDEX_NAME, indexNames)
 }
 
 @Throws(SQLException::class)
-fun getFoodIdByIndexName(ds: SqlDatabase, indexName: String): Long? {
-    val idMap = getIdsFromKeys(ds, FoodTable, FoodTable.INDEX_NAME, listOf(indexName))
+fun getFoodIdByIndexName(db: SqlDatabase, indexName: String): Long? {
+    val idMap = getIdsFromKeys(db, FoodTable, FoodTable.INDEX_NAME, listOf(indexName))
     assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
     return idMap.values.firstOrNull()
 }
 
+
+// Checks whether the given names exist in the database already. Returns a map of the input index name
+// to true if the index name already exists in the database, or false if it does not.
+@Throws(SQLException::class)
+fun checkIndexNames(db: SqlDatabase, indexNames: Collection<String>): Map<String, Boolean> {
+    val existingIndexNames = selectNonNullColumn(db, FoodTable.INDEX_NAME) {
+        where(FoodTable.INDEX_NAME, indexNames)
+    }.toSet()
+    return indexNames.associateWith { existingIndexNames.contains(it) }
+}
+
 // The proper way to get all foods
+@Throws(SQLException::class)
 fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
     val allFoods = getAllRawObjects(db, FoodTable)
     val allServings = getAllRawObjects(db, ServingTable)
@@ -151,7 +163,7 @@ fun getFoodsById(
 fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Food> {
     // map by ID
     val foods = getRawObjects(db, FoodTable.ID) {
-        where(FoodTable.INDEX_NAME, indexNames, iterate = indexNames.size > ITERATE_THRESHOLD)
+        where(FoodTable.INDEX_NAME, indexNames)
     }
     processRawFoodMap(db, foods)
     return foods.mapKeys { it.value.indexName }

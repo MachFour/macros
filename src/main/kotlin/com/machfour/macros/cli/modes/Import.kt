@@ -122,7 +122,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
 
                 val conflictingFoods: Map<String, Food>
                 FileReader(foodCsvFile).use { reader ->
-                    conflictingFoods = importFoodData(db, reader, foodKeyCol, false)
+                    conflictingFoods = importFoodData(db, reader, foodKeyCol)
                 }
 
                 if (conflictingFoods.isNotEmpty()) {
@@ -136,7 +136,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 println("Importing servings from $servingCsvFile")
                 FileReader(servingCsvFile).use { reader ->
                     val excludeKeys = conflictingFoods.values.mapNotNull { it.data[foodKeyCol] }.toSet()
-                    importServings(db, reader, foodKeyCol, excludeKeys, false)
+                    importServings(db, reader, foodKeyCol, excludeKeys)
                 }
                 println("Saved servings")
                 println()

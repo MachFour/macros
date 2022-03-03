@@ -9,9 +9,6 @@ import com.machfour.macros.sql.generator.SingleColumnSelect
 import com.machfour.macros.sql.generator.TwoColumnSelect
 import java.sql.SQLException
 
-// if number of parameters in a query gets too large, Android SQlite will not execute the query
-internal const val ITERATE_THRESHOLD = 200
-
 @Throws(SQLException::class)
 internal fun <M> prefixSearch(
     db: SqlDatabase,
@@ -134,8 +131,6 @@ internal fun <M, I, J> selectColumnMap(
     keyColumn: Column<M, I>,
     valueColumn: Column<M, J>,
     keys: Collection<I>,
-    // when number of keys gets too large, split up the query
-    iterateThreshold: Int = ITERATE_THRESHOLD,
     enforceNotNull: Boolean = true // if false, the key column can be nullable and null keys will be ignored
 ): Map<I, J?> {
     require(keyColumn.isUnique) { "Key column $keyColumn (table $t) must be unique" }
@@ -144,7 +139,7 @@ internal fun <M, I, J> selectColumnMap(
     }
     val unorderedResults = HashMap<I, J?>(keys.size, 1.0f)
     val query = TwoColumnSelect.build(t, keyColumn, valueColumn) {
-        where(keyColumn, keys, iterate = keys.size > iterateThreshold)
+        where(keyColumn, keys)
     }
     val data = ds.selectTwoColumns(query)
     for (pair in data) {
@@ -171,7 +166,7 @@ internal fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
 
     val uniqueCols = table.columns.filter { it.isUnique }
 
-    return HashMap<K, M>().apply {
+    return buildMap {
         for (col in uniqueCols) {
             val problemValues = findConflictingUniqueColumnValues(db, objectMap, col)
             objectMap.filterTo(this) { it.value.getData(col) in problemValues }
@@ -195,7 +190,7 @@ private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
         emptySet()
     } else {
         selectSingleColumn(ds, uniqueCol) {
-            where(uniqueCol, objectValues, iterate = objectValues.size > ITERATE_THRESHOLD)
+            where(uniqueCol, objectValues)
             distinct()
         }.filterNotNullTo(HashSet())
     }

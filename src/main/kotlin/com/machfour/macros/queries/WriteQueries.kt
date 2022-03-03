@@ -130,7 +130,7 @@ fun <M, J> deleteWhere(
     whereValues: Collection<J>
 ): Int {
     return db.deleteFromTable(SimpleDelete.build(t) {
-        where(whereColumn, whereValues, iterate = whereValues.size > ITERATE_THRESHOLD)
+        where(whereColumn, whereValues)
     })
 }
 

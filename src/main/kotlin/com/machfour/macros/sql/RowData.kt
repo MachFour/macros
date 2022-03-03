@@ -8,12 +8,13 @@ class RowData<M> private constructor(
     // Internally, since all of the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     val table: Table<M>,
-    cols: Collection<Column<M, *>>,
-    existing: RowData<M>?
+    val columns: Set<Column<M, *>>,
+    private val enforceNonNull: Boolean,
+    existing: RowData<M>?,
 ) {
 
-    constructor(t: Table<M>, cols: Collection<Column<M, *>>) : this(t, cols, null)
-    constructor(t: Table<M>) : this(t, t.columns, null)
+    constructor(t: Table<M>, cols: Collection<Column<M, *>> = t.columns, enforceNonNull: Boolean = false)
+            : this(t, cols.toSet(), enforceNonNull, null)
 
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
     // hold columns of any index, up to the number of columns in the table minus 1.
@@ -21,7 +22,6 @@ class RowData<M> private constructor(
     private val hasValue = BooleanArray(table.columns.size)
 
     // which columns have data stored in this RowData object;
-    val columns: Set<Column<M, *>> = LinkedHashSet(cols)
 
     init {
         // init default data
@@ -30,7 +30,7 @@ class RowData<M> private constructor(
             c.defaultData.let { data[c.index] = it; hasValue[c.index] = it != null }
         }
         if (existing != null) {
-            copyData(existing, this, cols)
+            copyData(existing, this, columns)
         }
     }
 
@@ -69,7 +69,6 @@ class RowData<M> private constructor(
         return col.type.toRawString(get(col))
     }
 
-    // null represented by "NULL"
     fun <J> getAsSqlString(col: Column<M, J>): String {
         return col.type.toSqlString(get(col))
     }
@@ -117,19 +116,19 @@ class RowData<M> private constructor(
     }
 
     fun copy(): RowData<M> {
-        return RowData(table, table.columns, this)
+        return RowData(table, columns, enforceNonNull, this)
     }
 
     fun copy(whichCols: Collection<Column<M, *>>): RowData<M> {
-        assertHasColumns(whichCols)
-        return RowData(table, whichCols, this)
+        checkHasColumns(whichCols)
+        return RowData(table, whichCols.toSet(), enforceNonNull,this)
     }
 
     private fun assertHasColumn(col: Column<M, *>) {
-        assertHasColumns(listOf(col))
+        checkHasColumns(listOf(col))
     }
 
-    private fun assertHasColumns(cols: Collection<Column<M, *>>) {
+    private fun checkHasColumns(cols: Collection<Column<M, *>>) {
         check(columns.containsAll(cols))
     }
 
@@ -137,7 +136,9 @@ class RowData<M> private constructor(
     operator fun <J> get(col: Column<M, J>): J? {
         assertHasColumn(col)
         val value = col.type.cast(data[col.index])
-        assert(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
+        if (enforceNonNull) {
+            check(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
+        }
         return value
     }
 

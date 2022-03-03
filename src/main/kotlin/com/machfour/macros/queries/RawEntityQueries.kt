@@ -45,7 +45,7 @@ internal fun <M> getRawObjectsWithIds(
     ids: Collection<Long>,
     preserveIdOrder: Boolean = false,
     // if the number of keys exceeds this number, the query will be iterated
-    iterateThreshold: Int = ITERATE_THRESHOLD,
+    iterateThreshold: Int? = null,
 ): Map<Long, M> {
     return getRawObjectsWithKeys(db, t.idColumn, ids, preserveIdOrder, iterateThreshold)
 }
@@ -57,13 +57,17 @@ internal fun <M, J> getRawObjectsWithKeys(
     keys: Collection<J>,
     preserveKeyOrder: Boolean = false,
     // if the number of keys exceeds this number, the query will be iterated
-    iterateThreshold: Int = ITERATE_THRESHOLD,
+    iterateThreshold: Int? = null,
 ): Map<J, M> {
     if (keys.isEmpty()) {
         return emptyMap()
     }
     val unorderedObjects = getRawObjects(db, keyCol) {
-        where(keyCol, keys, iterate = keys.size > iterateThreshold)
+        if (iterateThreshold != null) {
+            where(keyCol, keys, iterateThreshold)
+        } else {
+            where(keyCol, keys)
+        }
     }
 
     return if (preserveKeyOrder) {
@@ -86,7 +90,7 @@ internal fun <M, N> getRawObjectsForParentFk(
         return emptyMap()
     }
     val ids = selectNonNullColumn(db, childTable.idColumn) {
-        where(fkCol, parentObjectMap.keys, iterate = parentObjectMap.size > ITERATE_THRESHOLD)
+        where(fkCol, parentObjectMap.keys)
     }
     // if empty, no objects in the child table refer to any of the parent objects/rows
     return if (ids.isEmpty()) emptyMap() else getRawObjectsWithIds(db, childTable, ids)

@@ -29,8 +29,8 @@ abstract class SqlStatementImpl<M>(
             whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValue)
         }
 
-        override fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterate: Boolean) {
-            whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValues, iterate)
+        override fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int) {
+            whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValues, whereValues.size > iterateThreshold)
         }
 
         override fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean) {

@@ -95,7 +95,7 @@ class CsvTest {
     @Test
     fun testCsvSaveFoods() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME,true) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -112,8 +112,8 @@ class CsvTest {
     fun testCsvSaveServings() {
         try {
             // save foods first
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME, true) }
-            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME, emptySet(), true) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
+            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME) }
         } catch (e: SQLException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -161,7 +161,7 @@ class CsvTest {
     @Test
     fun testCsvSaveRecipes() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME, true) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
             FileReader(config.recipeCsvPath).use { recipeCsv ->
                 FileReader(config.ingredientsCsvPath).use { ingredientCsv ->
                     importRecipes(db, recipeCsv, ingredientCsv)

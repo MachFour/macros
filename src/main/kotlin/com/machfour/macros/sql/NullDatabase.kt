@@ -3,7 +3,11 @@ package com.machfour.macros.sql
 import com.machfour.macros.sql.generator.*
 
 // Implementation of MacrosDataSource for testing which does nothing and returns empty data
-class NullDatabase: SqlDatabase {
+class NullDatabase private constructor(): SqlDatabase {
+    companion object {
+        val Instance = NullDatabase()
+    }
+
     override fun openConnection() {}
 
     override fun closeConnection() {}

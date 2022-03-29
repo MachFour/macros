@@ -11,19 +11,19 @@ import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.units.StandardNutrientUnits
 import java.io.IOException
 import java.io.Reader
 import java.io.Writer
-import java.sql.SQLException
 
 
-@Throws(IOException::class, SQLException::class)
+@Throws(IOException::class, SqlException::class)
 private fun getFoodsForExport(db: SqlDatabase) = getFoodsByType(db, FoodType.PRIMARY)
 
-@Throws(IOException::class, SQLException::class)
+@Throws(IOException::class, SqlException::class)
 private fun getRecipesForExport(db: SqlDatabase) = getFoodsByType(db, FoodType.COMPOSITE)
 
 private val foodColumnsToExclude = setOf(
@@ -72,7 +72,7 @@ private fun <J> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food,
 }
 
 
-@Throws(IOException::class, SQLException::class)
+@Throws(IOException::class, SqlException::class)
 fun <J> exportFoodData(
     db: SqlDatabase,
     foodCsv: Writer,
@@ -95,7 +95,7 @@ fun <J> exportFoodData(
     }
 }
 
-@Throws(IOException::class, SQLException::class, TypeCastException::class)
+@Throws(IOException::class, SqlException::class, TypeCastException::class)
 fun <J> exportServings(
     db: SqlDatabase,
     servingCsv: Writer,
@@ -120,7 +120,7 @@ fun <J> exportServings(
     }
 }
 
-@Throws(IOException::class, SQLException::class)
+@Throws(IOException::class, SqlException::class)
 fun exportRecipes(
     db: SqlDatabase,
     recipeCsv: Reader,

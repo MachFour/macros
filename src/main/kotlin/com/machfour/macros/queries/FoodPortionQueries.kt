@@ -3,9 +3,9 @@ package com.machfour.macros.queries
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.ColumnMax.Companion.max
 import com.machfour.macros.sql.generator.OrderByDirection
-import java.sql.SQLException
 
 //fun getServingId(dataSource: MacrosDataSource, fpId: Long) : Long? {
 //    return CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.SERVING_ID) {
@@ -32,7 +32,7 @@ import java.sql.SQLException
 //    }
 //}
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> {
     // NOTE this can't actually give the create time.
     // Need to SELECT MAX(create_time) for that (not just ORDER BY)

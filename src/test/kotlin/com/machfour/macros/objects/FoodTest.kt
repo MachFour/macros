@@ -12,14 +12,13 @@ import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.sqlite.SQLiteException
-import java.io.IOException
-import java.sql.SQLException
 
 class FoodTest {
     companion object {
@@ -35,11 +34,8 @@ class FoodTest {
             try {
                 LinuxDatabase.deleteIfExists(DB_LOCATION)
                 db.initDb(LinuxSqlConfig())
-            } catch (e1: IOException) {
-                e1.printStackTrace()
-                fail<Any>("Database initialisation threw IO exception")
-            } catch (e2: SQLException) {
-                e2.printStackTrace()
+            } catch (e: SqlException) {
+                e.printStackTrace()
                 fail<Any>("Database initialisation threw SQL exception")
             }
 
@@ -75,7 +71,7 @@ class FoodTest {
         try {
             // first save with known ID
             assertEquals(1, saveObject(db, f))
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -83,7 +79,7 @@ class FoodTest {
         try {
             val f2 = getFoodById(db, 50L) ?: fail("Food not found in DB")
             assertTrue(f.equalsWithoutMetadata(f2), "Foods did not match in equals sense (ignoring metadata)")
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB get threw exception")
         }
@@ -95,7 +91,7 @@ class FoodTest {
     fun saveFoodNotFromDb() {
         try {
             assertEquals(1, saveObject(db, testFood))
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -117,7 +113,7 @@ class FoodTest {
         } catch (e: SQLiteException) {
             fail<Any>("DB save threw SQLite exception with result code: " + e.resultCode)
             e.printStackTrace()
-        } catch (e2: SQLException) {
+        } catch (e2: SqlException) {
             e2.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -132,7 +128,7 @@ class FoodTest {
         try {
             // first save with known ID
             assertEquals(1, saveObject(db, f))
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -143,7 +139,7 @@ class FoodTest {
         val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
             assertEquals(1, saveObject(db, f1))
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -157,7 +153,7 @@ class FoodTest {
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             assertEquals(1, saveObject(db, f))
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")
         }
@@ -172,7 +168,7 @@ class FoodTest {
     private fun clearFoodTable() {
         try {
             clearTable(db, FoodTable)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")
         }

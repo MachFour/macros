@@ -11,6 +11,7 @@ import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.unitWithAbbrOrNull
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
@@ -19,7 +20,6 @@ import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.Reader
-import java.sql.SQLException
 
 class FileParser {
     private val errorLines = LinkedHashMap<String, String>()
@@ -239,7 +239,7 @@ class FileParser {
     }
 
     // make sure to close the reader afterwards
-    @Throws(IOException::class, SQLException::class)
+    @Throws(IOException::class, SqlException::class)
     fun parseFile(db: SqlDatabase, fileReader: Reader): List<Meal> {
         val fileLines = readAllLines(fileReader)
         // also gets list of index names to retrieve

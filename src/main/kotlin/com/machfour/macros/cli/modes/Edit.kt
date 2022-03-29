@@ -11,7 +11,7 @@ import com.machfour.macros.queries.getMealById
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 
 private fun addPortion(toEdit: Meal, db: SqlDatabase) {
@@ -40,7 +40,7 @@ private fun deleteMeal(toDelete: Meal, db: SqlDatabase) {
     if ((cliGetChar() == 'y') or (cliGetChar() == 'Y')) {
         try {
             deleteObject(db, toDelete)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             println("Error deleting meal: " + e.message)
         }
 
@@ -59,7 +59,7 @@ private fun deleteFoodPortion(toEdit: Meal, ds: SqlDatabase) {
     }
     try {
         deleteObject(ds, portions[n])
-    } catch (e3: SQLException) {
+    } catch (e3: SqlException) {
         println("Error deleting the food portion: " + e3.message)
         return
     }
@@ -89,7 +89,7 @@ private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
         val newData = portions[n].dataCopy(withMetadata = false)
         newData.put(FoodPortionTable.QUANTITY, newQty)
         saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
-    } catch (e3: SQLException) {
+    } catch (e3: SqlException) {
         println("Error modifying the food portion: " + e3.message)
         return
     }
@@ -162,7 +162,7 @@ class Edit(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val toEdit: Meal?
         try {
             toEdit = getMealById(ds, mealId)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             printlnErr(e)
             return 1
         }

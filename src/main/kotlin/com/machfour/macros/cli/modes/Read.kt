@@ -6,9 +6,9 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.insulin.parseInsulinArgument
 import com.machfour.macros.insulin.printInsulin
+import com.machfour.macros.sql.SqlException
 import java.io.FileReader
 import java.io.IOException
-import java.sql.SQLException
 
 
 class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -90,7 +90,7 @@ class Read(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         } catch (e1: IOException) {
             printlnErr("IO exception occurred: " + e1.message)
             return 1
-        } catch (e2: SQLException) {
+        } catch (e2: SqlException) {
             printlnErr("SQL exception occurred: " + e2.message)
             return 1
         }

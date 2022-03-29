@@ -6,13 +6,13 @@ import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.sql.SqlException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.sql.SQLException
 
 class IngredientsTest {
     companion object {
@@ -26,7 +26,7 @@ class IngredientsTest {
             try {
                 deleteAllIngredients(db)
                 deleteAllCompositeFoods(db)
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)
             }
@@ -48,7 +48,7 @@ class IngredientsTest {
             val recipes = createCompositeFoods(listOf(spec), db)
             assertEquals(1, recipes.size)
             recipes.firstOrNull()
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             fail<Any>("SQL exception processing composite food spec: $e")
             null
         }
@@ -70,7 +70,7 @@ class IngredientsTest {
     private fun clearFoodTable() {
         try {
             clearTable(db, FoodTable)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("Deleting all foods threw SQL exception")
         }

@@ -35,6 +35,9 @@ dependencies {
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("junit:junit:4.13.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
 }

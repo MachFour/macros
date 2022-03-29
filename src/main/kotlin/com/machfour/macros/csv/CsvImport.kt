@@ -17,10 +17,7 @@ import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
-import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.unitWithAbbr
@@ -31,7 +28,6 @@ import org.supercsv.io.ICsvMapReader
 import org.supercsv.prefs.CsvPreference
 import java.io.IOException
 import java.io.Reader
-import java.sql.SQLException
 
 // don't edit csvRow keyset!
 @Throws(TypeCastException::class)
@@ -119,7 +115,7 @@ private fun <J> getFoodDataMap(foodCsv: Reader, foodKeyCol: Column<Food, J>): Ma
 
 // map from composite food index name to list of ingredients
 // XXX adding the db to get ingredient food objects looks ugly
-@Throws(IOException::class, SQLException::class, TypeCastException::class)
+@Throws(IOException::class, SqlException::class, TypeCastException::class)
 private fun makeIngredients(
     db: SqlDatabase,
     ingredientCsv: Reader
@@ -152,8 +148,8 @@ private fun makeIngredients(
                     }
                 }
             }
-        } catch (e: SQLException) {
-            throw e // TODO throw new CSVImportException(csvData)
+        } catch (e: SqlException) {
+            throw CsvException(e.message?: "")
         }
     }
 }
@@ -237,7 +233,7 @@ fun <J> buildServings(
 // Returns list of foods that couldn't be saved due to unique column conflicts
 
 // foods maps from index name to food object. Food object must have nutrition data attached
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <J> saveImportedFoods(
     db: SqlDatabase,
     foods: Map<J, Food>,
@@ -272,7 +268,7 @@ private fun <J> saveImportedFoods(
     return conflictingFoods
 }
 
-@Throws(IOException::class, SQLException::class, TypeCastException::class)
+@Throws(IOException::class, SqlException::class, TypeCastException::class)
 fun <J> importFoodData(
     db: SqlDatabase,
     foodCsv: Reader,
@@ -301,7 +297,7 @@ fun <J> importFoodData(
 }
 
 // TODO detect existing servings
-@Throws(IOException::class, SQLException::class, TypeCastException::class)
+@Throws(IOException::class, SqlException::class, TypeCastException::class)
 fun <J> importServings(
     db: SqlDatabase,
     servingCsv: Reader,
@@ -316,7 +312,7 @@ fun <J> importServings(
     saveObjects(db, completedServings, ObjectSource.IMPORT)
 }
 
-@Throws(IOException::class, SQLException::class, TypeCastException::class)
+@Throws(IOException::class, SqlException::class, TypeCastException::class)
 fun importRecipes(
     db: SqlDatabase,
     recipeCsv: Reader,

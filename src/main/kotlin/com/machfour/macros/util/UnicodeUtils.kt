@@ -3,7 +3,7 @@ package com.machfour.macros.util
 import java.lang.Character.UnicodeBlock
 
 // https://stackoverflow.com/a/41982074/
-private val cjkBlocks: Collection<UnicodeBlock> = setOf(
+private val cjkBlocks = setOf(
     UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
     , UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
     , UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B
@@ -73,7 +73,7 @@ fun String.countDoubleWidthChars() = indices.count { codePointAt(it).isDoublespa
 // taking into account double-space characters from Chinese, Japanese and Korean.
 // Assumes characters have width 1 by default, so just add 1 for each double spaced character
 
-fun String.displayLength() = if (length == 0) 0 else length + countDoubleWidthChars()
+fun String.displayLength() = if (isEmpty()) 0 else length + countDoubleWidthChars()
 
 
 // Fullwidth characters take up two monospace character widths in a terminal. This function reduces

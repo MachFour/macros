@@ -14,8 +14,8 @@ import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.FoodPortionSpec
-import java.sql.SQLException
 
 fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
     if (specs.isEmpty()) {
@@ -25,7 +25,7 @@ fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase
     val spec = specs[0]
     val f: Food? = try {
         getFoodByIndexName(db, spec.foodIndexName)
-    } catch (e: SQLException) {
+    } catch (e: SqlException) {
         printlnErr("Could not retrieve food. Reason: " + e.message)
         return 1
     }
@@ -44,7 +44,7 @@ fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase
     toAddTo.addFoodPortion(createdObject)
     try {
         saveFoodPortions(db, toAddTo)
-    } catch (e: SQLException) {
+    } catch (e: SqlException) {
         printlnErr("Error saving food portion. Reason: " + e.message)
         return 1
     }
@@ -53,7 +53,7 @@ fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase
     return 0
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
     for (fp in meal.foodPortions) {
         if (fp.source != ObjectSource.DATABASE) {

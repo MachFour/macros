@@ -9,8 +9,8 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.getFoodIdsByIndexName
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import java.io.IOException
-import java.sql.SQLException
 
 
 class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -21,7 +21,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         /*
          * Ensures the given index name is not already in the database; returns true if it is not present.
          */
-        @Throws(SQLException::class)
+        @Throws(SqlException::class)
         private fun checkIndexName(ds: SqlDatabase, indexName: String): Boolean {
             return getFoodIdsByIndexName(ds, listOf(indexName)).isEmpty()
         }
@@ -47,7 +47,7 @@ class AddFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 println("Index name $indexName already exists in the database, cannot continue.")
                 return 1
             }
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             println(e.message)
             return 1
         }

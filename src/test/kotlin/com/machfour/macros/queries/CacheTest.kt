@@ -10,6 +10,7 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.schema.*
 import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.first
@@ -19,8 +20,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.IOException
-import java.sql.SQLException
 
 internal class CacheTest {
 
@@ -75,11 +74,8 @@ internal class CacheTest {
             try {
                 LinuxDatabase.deleteIfExists(DB_LOCATION)
                 db.initDb(LinuxSqlConfig())
-            } catch (e1: IOException) {
-                e1.printStackTrace()
-                Assertions.fail("Database initialisation threw IO exception")
-            } catch (e2: SQLException) {
-                e2.printStackTrace()
+            } catch (e: SqlException) {
+                e.printStackTrace()
                 Assertions.fail("Database initialisation threw SQL exception")
             }
         }
@@ -100,7 +96,7 @@ internal class CacheTest {
             saveObject(db, testFood)
             saveObject(db, testMeal)
             saveObject(db, testFoodPortion)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Saving objects threw SQL exception")
         }

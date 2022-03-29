@@ -8,9 +8,9 @@ import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.DateStamp
 import com.machfour.macros.util.DateStamp.Companion.currentDate
-import java.sql.SQLException
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -62,8 +62,8 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     println("%-16s %16s".format(m.name, dateFormat.format(mealDate)))
                 }
             }
-        } catch (e: SQLException) {
-            println("SQL Exception: " + e.message)
+        } catch (e: SqlException) {
+            printlnErr("SQL Exception: ${e.message}")
             return 1
         }
         return 0

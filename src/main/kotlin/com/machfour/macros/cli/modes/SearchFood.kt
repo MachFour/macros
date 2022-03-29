@@ -1,13 +1,12 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.printErr
 import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.foodSearch
 import com.machfour.macros.queries.getFoodsById
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
     companion object {
@@ -33,9 +32,8 @@ class SearchFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
             } else {
                 emptyMap()
             }
-        } catch (e: SQLException) {
-            printErr("SQL exception occurred: ")
-            printlnErr(e.message)
+        } catch (e: SqlException) {
+            printlnErr("SQL exception occurred: ${e.message}")
             return 1
         }
         if (resultFoods.isEmpty()) {

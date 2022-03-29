@@ -5,10 +5,10 @@ import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll
 import com.machfour.macros.util.unionAll
-import java.sql.SQLException
 
 // excluding index name
 private val foodSearchCols = listOf(
@@ -22,7 +22,7 @@ private val foodSearchCols = listOf(
 //  - be adaptive - if there only few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
 // returns results matching either all or any of the keywords
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun foodSearch(
     db: SqlDatabase,
     keywords: List<String>,
@@ -48,7 +48,7 @@ internal fun foodSearch(
 //  - most exhaustive search: substring search of all columns
 //  - be adaptive - if there only few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun foodSearch(
     db: SqlDatabase,
     keyword: String,
@@ -88,7 +88,7 @@ internal fun foodSearch(
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
     val categoriesById = getAllRawObjects(db, FoodCategoryTable)
     // change the map to have keys as category names
@@ -96,13 +96,13 @@ internal fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
 }
 
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getFoodByIndexName(db: SqlDatabase, indexName: String): Food? {
     val resultFood = getFoodsByIndexName(db, listOf(indexName))
     return resultFood[indexName]
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getFoodById(db: SqlDatabase, id: Long): Food? {
     val resultFood = getFoodsById(db, listOf(id))
     return resultFood[id]
@@ -110,12 +110,12 @@ internal fun getFoodById(db: SqlDatabase, id: Long): Food? {
 
 // creates a map of entries from SELECT index_name, id FROM Food WHERE index_name IN (indexNames)
 // items in indexNames that do not correspond to a food, will not appear in the output map
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getFoodIdsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Long> {
     return getIdsFromKeys(db, FoodTable, FoodTable.INDEX_NAME, indexNames)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getFoodIdByIndexName(db: SqlDatabase, indexName: String): Long? {
     val idMap = getIdsFromKeys(db, FoodTable, FoodTable.INDEX_NAME, listOf(indexName))
     assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
@@ -125,7 +125,7 @@ fun getFoodIdByIndexName(db: SqlDatabase, indexName: String): Long? {
 
 // Checks whether the given names exist in the database already. Returns a map of the input index name
 // to true if the index name already exists in the database, or false if it does not.
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun checkIndexNames(db: SqlDatabase, indexNames: Collection<String>): Map<String, Boolean> {
     val existingIndexNames = selectNonNullColumn(db, FoodTable.INDEX_NAME) {
         where(FoodTable.INDEX_NAME, indexNames)
@@ -134,7 +134,7 @@ fun checkIndexNames(db: SqlDatabase, indexNames: Collection<String>): Map<String
 }
 
 // The proper way to get all foods
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
     val allFoods = getAllRawObjects(db, FoodTable)
     val allServings = getAllRawObjects(db, ServingTable)
@@ -146,7 +146,7 @@ fun getAllFoodsMap(db: SqlDatabase): Map<Long, Food> {
     return allFoods
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getFoodsById(
     db: SqlDatabase,
     foodIds: Collection<Long>,
@@ -159,7 +159,7 @@ fun getFoodsById(
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<String, Food> {
     // map by ID
     val foods = getRawObjects(db, FoodTable.ID) {
@@ -169,7 +169,7 @@ fun getFoodsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<St
     return foods.mapKeys { it.value.indexName }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getFoodsByType(db: SqlDatabase, foodType: FoodType): Map<Long, Food> {
     // map by ID
     val foods = getRawObjects(db, FoodTable.ID) {
@@ -179,12 +179,12 @@ fun getFoodsByType(db: SqlDatabase, foodType: FoodType): Map<Long, Food> {
     return foods
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getServingsById(db: SqlDatabase, servingIds: Collection<Long>): Map<Long, Serving> {
     return getRawObjectsWithIds(db, ServingTable, servingIds)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getParentFoodIdsContainingFoodIds(db: SqlDatabase, foodIds: List<Long>): List<Long> {
     return selectNonNullColumn(db, IngredientTable.PARENT_FOOD_ID) {
         where(IngredientTable.FOOD_ID, foodIds)
@@ -192,7 +192,7 @@ fun getParentFoodIdsContainingFoodIds(db: SqlDatabase, foodIds: List<Long>): Lis
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun processRawIngredients(db: SqlDatabase, ingredientMap: Map<Long, Ingredient>) {
     val foodIds = ArrayList<Long>(ingredientMap.size)
     val servingIds = ArrayList<Long>(ingredientMap.size)
@@ -230,7 +230,7 @@ private fun processRawFoodMap(
 }
 
 // foodMap is a map of food IDs to the raw (i.e. unlinked) object created from the database
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun processRawFoodMap(ds: SqlDatabase, foodMap: Map<Long, Food>) {
     if (foodMap.isNotEmpty()) {
         //Map<Long, Serving> servings = getRawServingsForFoods(idMap);

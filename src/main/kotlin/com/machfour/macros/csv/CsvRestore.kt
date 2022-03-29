@@ -4,12 +4,12 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.queries.saveObjects
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.IOException
 import java.io.InputStream
 import java.io.Reader
-import java.sql.SQLException
 import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 
@@ -39,13 +39,13 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: Reader): List<M
 }
 
 // Adds the content of the CSV data to the table. Any conflicts in IDs will cause the operation to fail
-@Throws(SQLException::class, IOException::class, TypeCastException::class)
+@Throws(SqlException::class, IOException::class, TypeCastException::class)
 fun <M : MacrosEntity<M>> SqlDatabase.restoreTable(t: Table<M>, csvData: Reader) {
     val objects = buildObjectsForRestore(t, csvData)
     saveObjects(this, objects, ObjectSource.RESTORE)
 }
 
-@Throws(SQLException::class, IOException::class, TypeCastException::class, ZipException::class)
+@Throws(SqlException::class, IOException::class, TypeCastException::class, ZipException::class)
 fun SqlDatabase.restoreFromZip(zipInput: InputStream) {
     ZipInputStream(zipInput).use { zip ->
         val reader = zip.reader()

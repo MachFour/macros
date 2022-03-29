@@ -9,9 +9,9 @@ import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.SimpleDelete
-import java.sql.SQLException
 
 // These queries modify stuff so to preserve the cache layer, their use is restricted to in-module
 
@@ -24,29 +24,29 @@ import java.sql.SQLException
  */
 // Do we really need the list methods? The user will probably only edit one object at a time
 // except for deleting a bunch of foodPortions from one meal, or servings from a food
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> insertObjects(db: SqlDatabase, objects: Collection<M>, withId: Boolean): Int {
     return db.insertRows(objects.map { it.data }, withId)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> updateObjects(db: SqlDatabase, objects: Collection<M>): Int {
     return db.updateRows(objects.map { it.data })
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
     return deleteById(db, o.table, o.id)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
     val table = objects.firstOrNull()?.table ?: return 0
     return deleteObjectsById(db, table, objects.map { it.id })
 }
 
 // deletes objects with the given ID from
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <M : MacrosEntity<M>> deleteObjectsById(
     db: SqlDatabase,
     table: Table<M>,
@@ -57,13 +57,13 @@ private fun <M : MacrosEntity<M>> deleteObjectsById(
 
 // returns number of objects saved correctly (i.e. 0 or 1)
 // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> saveObject(db: SqlDatabase, o: M): Int {
     return saveObjects(db, listOf(o), o.source)
 }
 
 // TODO pull these functions up to DataSource level
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> saveObjects(
     db: SqlDatabase,
     objects: Collection<M>,
@@ -94,7 +94,7 @@ internal fun <M : MacrosEntity<M>> saveObjects(
 /*
  * Entity-specific
  */
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun forgetFood(db: SqlDatabase, f: Food) {
     require(f.source === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
     // delete nutrition data, foodQuantities, servings, then food
@@ -106,7 +106,7 @@ internal fun forgetFood(db: SqlDatabase, f: Food) {
 }
 
 // TODO replace with update template
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
     db.executeRawStatement(
         "UPDATE ${FoodTable.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
@@ -114,7 +114,7 @@ internal fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, 
     )
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
     return db.deleteFromTable(SimpleDelete.build(t) { where(t.idColumn, id) })
 }
@@ -122,7 +122,7 @@ private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
 
 // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
 // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun <M, J> deleteWhere(
     db: SqlDatabase,
     t: Table<M>,
@@ -135,7 +135,7 @@ fun <M, J> deleteWhere(
 }
 
 // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, J> deleteByNullStatus(
     db: SqlDatabase,
     t: Table<M>,
@@ -150,23 +150,23 @@ internal fun <M, J> deleteByNullStatus(
     })
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun deleteAllCompositeFoods(db: SqlDatabase): Int {
     return deleteWhere(db, FoodTable, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun deleteAllIngredients(db: SqlDatabase) {
     clearTable(db, IngredientTable)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun deleteAllFoodPortions(db: SqlDatabase) {
     clearTable(db, FoodPortionTable)
 }
 
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> clearTable(db: SqlDatabase, t: Table<M>): Int {
     return db.deleteFromTable(SimpleDelete.build(t) {})
 }

@@ -6,12 +6,12 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import java.sql.SQLException
 
 class FlowDataSource(
     private val database: SqlDatabase,
@@ -48,7 +48,7 @@ class FlowDataSource(
         return ids.filter { idMissing(it) }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getFood(id: Long): Flow<Food?> {
         if (foods.idMissing(id)) {
             refreshFoods(listOf(id))
@@ -56,7 +56,7 @@ class FlowDataSource(
         return foodsFlow.map { it[id] }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getFoods(ids: Collection<Long>, preserveOrder: Boolean): Flow<Map<Long, Food>> {
         val missingIds = foods.missingIdsFrom(ids)
         refreshFoods(missingIds)
@@ -65,7 +65,7 @@ class FlowDataSource(
         return foodsFlow.map { foods -> foods.filterKeys { idSet.contains(it) } }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getAllFoods(): Flow<Map<Long, Food>> {
         if (allFoodsNeedsRefresh) {
             refreshAllFoods()
@@ -73,7 +73,7 @@ class FlowDataSource(
         return foodsFlow
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getMeal(id: Long): Flow<Meal?> {
         if (meals.idMissing(id)) {
             refreshMeals(listOf(id))
@@ -81,13 +81,13 @@ class FlowDataSource(
         return mealsFlow.map { it[id] }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>> {
         val ids = getMealIdsForDay(day)
         return getMeals(ids)
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>> {
         val missingIds = meals.missingIdsFrom(ids)
         refreshMeals(missingIds)
@@ -96,7 +96,7 @@ class FlowDataSource(
         return mealsFlow.map { meals -> meals.filterKeys { idSet.contains(it) } }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     private fun refreshAllFoods() {
         if (pauseRefreshes) {
             allFoodsNeedsRefresh = true
@@ -109,7 +109,7 @@ class FlowDataSource(
         }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     private fun refreshFoods(ids: Collection<Long>) {
         if (pauseRefreshes) {
             foodRefreshQueue.addAll(ids)
@@ -127,7 +127,7 @@ class FlowDataSource(
         }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     private fun refreshMealsContainingFoods(ids: Collection<Long>) {
         val mealIds = getMealIdsForFoodIds(ids)
         // only refresh meals that are actually loaded
@@ -135,7 +135,7 @@ class FlowDataSource(
         refreshMeals(idsToRefresh)
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     private fun refreshMeals(ids: Collection<Long>) {
         if (pauseRefreshes) {
             mealRefreshQueue.addAll(ids)
@@ -151,7 +151,7 @@ class FlowDataSource(
         }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
         val numDeleted = deleteObjects(database, objects)
         for (obj in objects) {
@@ -165,7 +165,7 @@ class FlowDataSource(
         afterDbEdit(f)
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int {
         val numSaved = saveObjects(database, objects, source)
         // TODO copied from WriteQueries

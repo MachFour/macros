@@ -37,12 +37,3 @@ fun Double.toRoundedString(decimalPlaces: Int = 3, eps: Double = 1e-4): String {
 fun String.capitalize(): String {
     return replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
-
-fun pauseUntilEnter() {
-    try {
-        System.`in`.read()
-    } catch (e: Exception) {
-        // do nothing
-    }
-}
-

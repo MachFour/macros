@@ -8,9 +8,7 @@ import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
-
-import java.sql.SQLException
-
+import com.machfour.macros.sql.SqlException
 
 /*
  * Prints out totals for all DB recorded meals in a day
@@ -81,7 +79,7 @@ class Total(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 } else {
                     printMeals(mealsForDay.values, verbose, per100, true)
                 }
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println()
                 printlnErr("Error retrieving meals: " + e.message)
                 return 1

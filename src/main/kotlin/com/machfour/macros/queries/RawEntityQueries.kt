@@ -3,14 +3,14 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.AllColumnSelect
 import com.machfour.macros.sql.generator.SelectQuery
-import java.sql.SQLException
 
 // Constructs a map of ID to raw object data (i.e. no object references initialised)
 // IDs that do not exist in the database will not be contained in the output map.
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, J> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
     require(keyColumn.isUnique) { "Key column must be unique" }
 
@@ -29,7 +29,7 @@ internal fun <M, J> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, quer
     return objects
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
     return getRawObjects(db, t.idColumn) {
         if (orderBy != null) {
@@ -38,7 +38,7 @@ internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> getRawObjectsWithIds(
     db: SqlDatabase,
     t: Table<M>,
@@ -50,7 +50,7 @@ internal fun <M> getRawObjectsWithIds(
     return getRawObjectsWithKeys(db, t.idColumn, ids, preserveIdOrder, iterateThreshold)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, J> getRawObjectsWithKeys(
     db: SqlDatabase,
     keyCol: Column<M, J>,
@@ -79,7 +79,7 @@ internal fun <M, J> getRawObjectsWithKeys(
 }
 
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
     parentObjectMap: Map<Long, N>,

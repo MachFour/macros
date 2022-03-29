@@ -8,7 +8,7 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getFoodsByIndexName
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 
 class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -36,7 +36,7 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         try {
             val retrievedFoods = getFoodsByIndexName(ds, indexNamesToDelete)
             foodsToDelete = ArrayList(retrievedFoods.values)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             println("SQL Exception while retrieving foods: $e")
             return 1
         }
@@ -77,14 +77,14 @@ class DeleteFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                     println("Deleted " + f.indexName)
                 }
                 ds.endTransaction()
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 printlnErr("SQL Exception occurred while deleting foods: $e")
                 printlnErr("No foods deleted")
                 return 1
             } finally {
                 try {
                     ds.closeConnection()
-                } catch (e: SQLException) {
+                } catch (e: SqlException) {
                     printlnErr("Warning: SQL exception occurred when closing the DB")
                 }
 

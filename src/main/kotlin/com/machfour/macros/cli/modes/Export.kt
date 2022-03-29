@@ -6,11 +6,11 @@ import com.machfour.macros.csv.exportFoodData
 import com.machfour.macros.csv.exportServings
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.util.currentTimeString
 import java.io.FileWriter
 import java.io.IOException
-import java.sql.SQLException
 
 class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
@@ -49,7 +49,7 @@ class Export(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
                 exportServings(config.database, it, foodKeyCol, emptySet())
             }
 
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             return handleException(e)
         } catch (e: IOException) {
             return handleException(e)

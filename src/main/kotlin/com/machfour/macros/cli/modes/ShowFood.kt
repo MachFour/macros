@@ -2,10 +2,11 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printFood
+import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.getFoodByIndexName
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 
 class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -30,9 +31,8 @@ class ShowFood(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val foodToList: Food?
         try {
             foodToList = getFoodByIndexName(ds, indexName)
-        } catch (e: SQLException) {
-            print("SQL exception occurred: ")
-            println(e.errorCode)
+        } catch (e: SqlException) {
+            printlnErr("SQL exception occurred: ${e.message}")
             return 1
         }
 

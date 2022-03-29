@@ -4,8 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.linux.LinuxDatabase
-import java.io.IOException
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 class Init(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
@@ -26,14 +25,12 @@ class Init(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         try {
             LinuxDatabase.deleteIfExists(config.dbLocation)
             println("Deleted database at ${config.dbLocation}")
-        } catch (e: IOException) {
+        } catch (e: SqlException) {
             return handleDeleteException(e)
         }
         try {
             db.initDb(config.sqlConfig)
-        } catch (e: SQLException) {
-            return handleInitException(e)
-        } catch (e: IOException) {
+        } catch (e: SqlException) {
             return handleInitException(e)
         }
 

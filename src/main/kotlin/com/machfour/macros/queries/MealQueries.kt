@@ -6,23 +6,23 @@ import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.DateStamp
-import java.sql.SQLException
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<Long, Meal> {
     val mealIds = getMealIdsForDay(db, day)
     return getMealsById(db, mealIds)
 }
 
 // assumes unique meal name per day
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getMealForDayWithName(db: SqlDatabase, day: DateStamp, name: String): Meal? {
     val mealIds = getMealIdsForDay(db, day)
     return getMealsById(db, mealIds).filter { it.value.name == name }.values.firstOrNull()
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
     val ids = selectSingleColumn(db, MealTable.ID) {
         where(MealTable.DAY, listOf(day))
@@ -30,7 +30,7 @@ internal fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
     return ids.map { requireNotNull(it) { "Null meal ID encountered : $it" } }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun getMealById(db: SqlDatabase, id: Long): Meal? {
     val resultMeals = getMealsById(db, listOf(id))
     return resultMeals.getOrDefault(id, null)
@@ -58,7 +58,7 @@ internal fun getMealById(db: SqlDatabase, id: Long): Meal? {
 //    }
 //}
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<Long, FoodPortion> {
     val fpIds = selectNonNullColumn(db, FoodPortionTable.ID) {
         where(FoodPortionTable.MEAL_ID, listOf(meal.id))
@@ -71,7 +71,7 @@ private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<Long, Fo
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, foodMap: Map<Long, Food>) {
     // sort by create time - but if adding to existing meals, they are added to the end
     val fpList = fpMap.values.toList().sortedBy { it.createTime }
@@ -95,7 +95,7 @@ private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, fo
  * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
  * It's probably worth caching the results of these!
  */
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
     if (mealIds.isEmpty()) {
         return emptyMap()
@@ -114,7 +114,7 @@ fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
     return meals
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List<Long> {
     if (mealIds.isEmpty()) {
         return emptyList()
@@ -127,7 +127,7 @@ private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List
     return ids.map { requireNotNull(it) { "Error: ID from database was null" }  }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long> {
     if (foodIds.isEmpty()) {
         return emptyList()
@@ -138,7 +138,7 @@ fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long>
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<Long>): List<Long> {
     if (foodPortionIds.isEmpty()) {
         return emptyList()
@@ -149,7 +149,7 @@ fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<Long
     }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun getDaysForMealIds(db: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
     if (mealIds.isEmpty()) {
         return emptyList()

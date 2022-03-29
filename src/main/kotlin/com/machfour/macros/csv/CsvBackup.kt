@@ -5,6 +5,7 @@ import com.machfour.macros.queries.getAllRawObjects
 import com.machfour.macros.schema.*
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import org.supercsv.io.CsvMapWriter
 import org.supercsv.io.ICsvMapWriter
@@ -12,7 +13,6 @@ import org.supercsv.prefs.CsvPreference
 import java.io.IOException
 import java.io.OutputStream
 import java.io.Writer
-import java.sql.SQLException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
@@ -63,7 +63,7 @@ internal const val zipEntryComment = "MacrosDBBackup"
 internal val <M> Table<M>.backupName: String
     get() = "$name.csv"
 
-@Throws(SQLException::class, IOException::class)
+@Throws(SqlException::class, IOException::class)
 fun <M : MacrosEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>, outCsv: Writer) {
     val rawObjectMap = getAllRawObjects(this, t)
     val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
@@ -71,7 +71,7 @@ fun <M : MacrosEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>, outCsv: Writ
 }
 
 
-@Throws(IOException::class, SQLException::class, ZipException::class)
+@Throws(IOException::class, SqlException::class, ZipException::class)
 fun SqlDatabase.createZipBackup(zipFileOut: OutputStream) {
     ZipOutputStream(zipFileOut).use { zip ->
         val writer = zip.writer()

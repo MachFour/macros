@@ -24,11 +24,11 @@ import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.displayLength
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
-import java.sql.SQLException
 
 // TODO servings?
 class FoodEditor constructor(
@@ -599,7 +599,7 @@ class FoodEditor constructor(
                     // in the above try block, the one here will hide the previous.
                     ds.closeConnection()
                 }
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 setStatus("Could not save!", "SQL Exception occurred (see bottom)")
                 setExceptionMessage(e.localizedMessage)
             }

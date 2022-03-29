@@ -3,13 +3,13 @@ package com.machfour.macros.queries
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.sql.generator.SingleColumnSelect
 import com.machfour.macros.sql.generator.TwoColumnSelect
-import java.sql.SQLException
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> prefixSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
@@ -19,7 +19,7 @@ internal fun <M> prefixSearch(
     return stringSearch(db, cols, keyword, globBefore = false, globAfter = true, extraOptions = extraOptions)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> substringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
@@ -29,7 +29,7 @@ internal fun <M> substringSearch(
     return stringSearch(db, cols, keyword, globBefore = true, globAfter = true, extraOptions = extraOptions)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> exactStringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
@@ -40,7 +40,7 @@ internal fun <M> exactStringSearch(
 }
 
 // Returns empty list if either keyword is blank or cols is empty
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M> stringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
@@ -65,7 +65,7 @@ internal fun <M> stringSearch(
 
 
 // for convenience
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, I> selectSingleColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
@@ -74,7 +74,7 @@ internal fun <M, I> selectSingleColumn(
     return db.selectColumn(SingleColumnSelect.build(selectColumn, queryOptions))
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, I, J> selectTwoColumns(
     db: SqlDatabase,
     select1: Column<M, I>,
@@ -84,7 +84,7 @@ internal fun <M, I, J> selectTwoColumns(
     val table = select1.table
     return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
 }
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, I> selectNonNullColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
@@ -93,7 +93,7 @@ internal fun <M, I> selectNonNullColumn(
     return db.selectNonNullColumn(SingleColumnSelect.build(selectColumn, queryOptions))
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {
@@ -102,7 +102,7 @@ internal fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table
     return idMatch.size == 1
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
     val idCol = table.idColumn
     val existingIds = selectNonNullColumn(db, idCol) {
@@ -112,7 +112,7 @@ internal fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table
     return queryIds.associateWith { existingIds.contains(it) }
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, J> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
     return if (keys.isNotEmpty()) {
         // The resulting map is unordered
@@ -124,7 +124,7 @@ internal fun <M, J> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<
 
 
 // The resulting map is unordered
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M, I, J> selectColumnMap(
     ds: SqlDatabase,
     t: Table<M>,
@@ -157,7 +157,7 @@ internal fun <M, I, J> selectColumnMap(
     return unorderedResults
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
     objectMap: Map<K, M>
@@ -176,7 +176,7 @@ internal fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
 
 
 // helper/wildcard capture
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
     ds: SqlDatabase,
     objectMap: Map<K, M>,

@@ -8,8 +8,8 @@ import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.DateStamp
-import java.sql.SQLException
 
 /*
  * Stores information for a meal being input (specified) via text fields,
@@ -63,7 +63,7 @@ class MealSpec {
         dayArg: ArgParsingResult.KeyValFound
     ) : this(nameArg.argument, dayArg.argument)
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     private fun getOrCreateMeal(ds: SqlDatabase, day: DateStamp, name: String): Meal {
         // if it already exists return it
         val matchingMeal = getMealForDayWithName(ds, day, name)
@@ -104,7 +104,7 @@ class MealSpec {
         val mealsForDay: Map<Long, Meal>
         try {
             mealsForDay = getMealsForDay(ds, day)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             error = "Error retrieving meals for day ${day}: $e"
             return
         }
@@ -128,7 +128,7 @@ class MealSpec {
                     try {
                         processedObject = getOrCreateMeal(ds, day, name)
                         isCreated = true
-                    } catch (e: SQLException) {
+                    } catch (e: SqlException) {
                         error = "Error retrieving meal: " + e.message
                         return
                     }

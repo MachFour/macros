@@ -4,10 +4,10 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.csv.restoreFromZip
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileInputStream
 import java.io.IOException
-import java.sql.SQLException
 
 class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
     companion object {
@@ -38,7 +38,7 @@ class Restore(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             FileInputStream(csvZipPath).use {
                 config.database.restoreFromZip(it)
             }
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             return handleException(e)
         } catch (e: IOException) {
             return handleException(e)

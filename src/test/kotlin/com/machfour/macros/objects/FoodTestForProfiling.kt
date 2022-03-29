@@ -9,8 +9,7 @@ import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
-import java.io.IOException
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 class FoodTestForProfiling {
     companion object {
@@ -24,9 +23,7 @@ class FoodTestForProfiling {
             try {
                 LinuxDatabase.deleteIfExists(DB_LOCATION)
                 db.initDb(LinuxSqlConfig())
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 e.printStackTrace()
             }
 
@@ -72,7 +69,7 @@ class FoodTestForProfiling {
         }
         try {
             insertObjects(db, lotsOfFoods, true)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             e.printStackTrace()
         }
 

@@ -7,12 +7,12 @@ import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.queries.getFoodByIndexName
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.sql.SQLException
 
 class DensityTest {
     companion object {
@@ -38,7 +38,7 @@ class DensityTest {
                 Assertions.assertNotNull(waterNd)
                 Assertions.assertNotNull(chickpeaFlour.density)
                 Assertions.assertNotNull(water.density)
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println(failMsg)
                 Assertions.fail(e)
             }

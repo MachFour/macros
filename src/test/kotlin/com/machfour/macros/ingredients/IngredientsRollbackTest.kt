@@ -5,12 +5,12 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.queries.getFoodByIndexName
+import com.machfour.macros.sql.SqlException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.FileReader
 import java.io.IOException
-import java.sql.SQLException
 
 class IngredientsRollbackTest {
     companion object {
@@ -23,7 +23,7 @@ class IngredientsRollbackTest {
             try {
                 deleteAllIngredients(db)
                 deleteAllCompositeFoods(db)
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 fail<Any>(e)
             }
@@ -49,7 +49,7 @@ class IngredientsRollbackTest {
             f.indexName
         } catch (e1: IOException) {
             fail(e1)
-        } catch (e2: SQLException) {
+        } catch (e2: SqlException) {
             // we expect a foreign key constraint failure, do nothing
             fail(e2)
         }
@@ -57,7 +57,7 @@ class IngredientsRollbackTest {
         try {
             val f = getFoodByIndexName(db, indexName)
             assertNull(f, "Composite food was saved in the database, but should not have been")
-        } catch (e2: SQLException) {
+        } catch (e2: SqlException) {
             fail(e2)
         }
 

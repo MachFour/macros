@@ -4,13 +4,13 @@ import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.stringJoin
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.FileReader
 import java.io.IOException
-import java.sql.SQLException
 
 class IngredientsParserTest {
     companion object {
@@ -23,7 +23,7 @@ class IngredientsParserTest {
             try {
                 deleteAllIngredients(db)
                 deleteAllCompositeFoods(db)
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
                 Assertions.fail(e)
             }
@@ -42,7 +42,7 @@ class IngredientsParserTest {
             }
         } catch (e: IOException) {
             Assertions.fail(e)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             Assertions.fail(e)
         }
     }
@@ -60,7 +60,7 @@ class IngredientsParserTest {
             }
         } catch (e: IOException) {
             Assertions.fail(e)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             Assertions.fail(e)
         }
     }
@@ -74,7 +74,7 @@ class IngredientsParserTest {
             }
         } catch (e: IOException) {
             Assertions.fail(e)
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             Assertions.fail(e)
         }
     }

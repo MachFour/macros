@@ -6,7 +6,7 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 private val allowedObjectSources = setOf(ObjectSource.IMPORT, ObjectSource.USER_NEW, ObjectSource.COMPUTED)
 
@@ -42,7 +42,7 @@ private fun <M: MacrosEntity<M>> FkEntity<M>.copyFkNaturalKeyMap(from: FkEntity<
 
 
 // wildcard capture helper for natural key column type
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
     db: SqlDatabase,
     fkColumn: Column.Fk<M, J, N>,
@@ -69,7 +69,7 @@ private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
 
 
 // wildcard capture helper for parent unique column type
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun <M : FkEntity<M>, J, N> completeFkCol(
     ds: SqlDatabase,
     objects: List<M>,
@@ -123,7 +123,7 @@ private fun <M : FkEntity<M>, J, N> completeFkCol(
 // These methods replace a manual database retrieval of objects whose ID is needed. However, there still
 // needs to be a well-ordering of dependencies between the fields of each type of object, so that the first type
 // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 // private for now, can make it public if we ever need multiple column completion
 private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
     val factory = objects.firstOrNull()?.factory ?: return emptyList()
@@ -143,7 +143,7 @@ private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Coll
 }
 
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 internal fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
     return completeForeignKeys(ds, objects, listOf(fk))
 }

@@ -6,10 +6,6 @@ import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
 import com.machfour.macros.sql.generator.Conjuction
 import com.machfour.macros.util.stringJoin
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.Reader
-import java.sql.SQLException
 
 // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
 // needs to be entered as DATE('date_string'), so that logic is implemented here
@@ -124,9 +120,8 @@ fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
 // So the split token is the semicolon followed by two blank lines, i.e. statements
 // in the SQL file must be terminated by a semicolon immediately followed by \n\n
 // XXX Possible bug if the newline character is different on different platforms.
-@Throws(IOException::class)
-fun createSplitSqlStatements(r: Reader): List<String> {
-    return createSqlStatements(r, "\n")
+fun createSplitSqlStatements(readLine: () -> String, linesAvailable: () -> Boolean): List<String> {
+    return createSqlStatements(readLine, linesAvailable, "\n")
         .split(";\n\n")
         // a double newline after the last statement will cause an empty final element
         // in the split list, which turns into a null statement ';' after the map.
@@ -138,23 +133,20 @@ fun createSplitSqlStatements(r: Reader): List<String> {
         .map { it.replace("\n".toRegex(), " ") + ";" }
 }
 
-@Throws(IOException::class)
-fun createSqlStatements(r: Reader, lineSep: String = " "): String {
+fun createSqlStatements(readLine: () -> String, linesAvailable: () -> Boolean, lineSep: String = " "): String {
     val trimmedDecommentedLines = ArrayList<String>()
-    BufferedReader(r).use { reader ->
         // steps: remove all comment lines, trim, join, split on semicolon
-        while (reader.ready()) {
-            var line = reader.readLine()
-            val commentIndex = line.indexOf("--")
-            if (commentIndex == 0) {
-                continue // skip comment lines completely
-            } else if (commentIndex != -1) {
-                line = line.substring(0, commentIndex)
-            }
-            line = line.replace("\\s+".toRegex(), " ")
-            if (line != " ") {
-                trimmedDecommentedLines.add(line)
-            }
+    while (linesAvailable()) {
+        var line = readLine()
+        val commentIndex = line.indexOf("--")
+        if (commentIndex == 0) {
+            continue // skip comment lines completely
+        } else if (commentIndex != -1) {
+            line = line.substring(0, commentIndex)
+        }
+        line = line.replace("\\s+".toRegex(), " ")
+        if (line != " ") {
+            trimmedDecommentedLines.add(line)
         }
     }
     return stringJoin(trimmedDecommentedLines, sep = lineSep)
@@ -190,9 +182,4 @@ fun <M> createInitTimestampTriggers(t: Table<M>): List<String> {
             |END;
         """.trimMargin("|")
     return listOf(initTimeStampTrigger, updateTimestampTrigger)
-}
-
-@Throws(SQLException::class)
-fun <M, J> rethrowAsSqlException(rawValue: Any?, c: Column<M, J>) {
-    throw SQLException("Could not convert value '$rawValue' for column ${c.table}.${c.sqlName} (type ${c.type})")
 }

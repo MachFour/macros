@@ -12,10 +12,10 @@ import com.machfour.macros.queries.*
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.validation.SchemaViolation
 import java.io.IOException
 import java.io.Reader
-import java.sql.SQLException
 
 /*
  * Ingredient file format:
@@ -118,7 +118,7 @@ private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<
 // Creates objects corresponding to the parsed composite food specs.
 // THE INGREDIENTS CANNOT BE SAVED INTO THE DATABASE AS IS, because they do not have the proper foreign keys set up
 // to save the object tree correctly, use the method saveCompositeFoods(compositeFoods, ds)
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun createCompositeFoods(
     parseResult: Collection<CompositeFoodSpec>,
     ds: SqlDatabase
@@ -153,7 +153,7 @@ private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: Long): List
 }
 
 // saves a composite food and all its ingredients into the database
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
     try {
         ds.openConnection()
@@ -163,7 +163,7 @@ private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
         // First save the food and then retrieve it from the database, to get the ID
         saveObject(ds, cf)
         val saved = getFoodByIndexName(ds, cf.indexName)
-            ?: throw SQLException("Could not retrieved saved composite food")
+            ?: throw SqlException("Could not retrieved saved composite food")
         val id = saved.id
 
         // Now we can edit the ingredients to have the ID
@@ -184,13 +184,13 @@ private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
 }
 
 // returns list of index names of foods that were created
-@Throws(SQLException::class, IOException::class)
+@Throws(SqlException::class, IOException::class)
 fun readRecipes(json: Reader, ds: SqlDatabase): List<CompositeFood> {
     val ingredientSpecs = deserialiseIngredientsJson(json)
     return createCompositeFoods(ingredientSpecs, ds)
 }
 
-@Throws(SQLException::class)
+@Throws(SqlException::class)
 fun saveRecipes(compositeFoods: Collection<CompositeFood>, ds: SqlDatabase) {
     // TODO save all the composite foods and recreate them in one go
     // Then, save the ingredients at the same time.

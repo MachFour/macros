@@ -5,9 +5,9 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.Flow
-import java.sql.SQLException
 
 // Implements a higher level query interface than the database
 // which allows for caching of objects returned from query results.
@@ -15,63 +15,63 @@ interface MacrosDataSource {
     // Marks upstream database as invalid, clearing any caches
     fun reset()
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun foodSearch(
         keywords: List<String>,
         matchAll: Boolean = true,
         minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
     ): Set<Long>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun foodSearch(keyword: String, minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN): Set<Long>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long>
 
     /*
      * Single-shot functions, just passthrough to static queries
      */
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getFoodIdByIndexName(indexName: String): Long?
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getMealIdsForDay(day: DateStamp): List<Long>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getDaysForMealIds(mealIds: Collection<Long>): List<DateStamp>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getCommonQuantities(foodId: Long): List<Pair<Double, Unit>>
 
     /*
      * Flow functions -- update cache
      */
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getAllFoodCategories(): Flow<Map<String, FoodCategory>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getFood(id: Long): Flow<Food?>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getFoods(ids: Collection<Long>, preserveOrder: Boolean = false): Flow<Map<Long, Food>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getAllFoods(): Flow<Map<Long, Food>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getParentFoodIdsContainingFoodIds(foodIds: List<Long>): List<Long>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getMeal(id: Long): Flow<Meal?>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>>
 
     fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<Long>): List<Long>
@@ -91,12 +91,12 @@ interface MacrosDataSource {
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun <M: MacrosEntity<M>> saveObject(o: M): Int {
         return saveObjects(listOf(o), o.source)
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
 
     // The following two methods are made redundant because of saveObjects()
@@ -110,19 +110,19 @@ interface MacrosDataSource {
     // returns number of objects saved correctly (i.e. 0 or 1)
     // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
         return deleteObjects(listOf(o))
     }
 
     // TODO make this the general one
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>)
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun forgetFood(f: Food)
 
 }

@@ -16,10 +16,10 @@ import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
 import java.io.IOException
-import java.sql.SQLException
 
 
 private fun getCsvFile(args: List<String>, flag: String, default: String): String? {
@@ -151,7 +151,7 @@ class Import(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 println("Saved recipes and ingredients")
                 println()
             }
-        } catch (e1: SQLException) {
+        } catch (e1: SqlException) {
             println()
             printlnErr("SQL Exception occurred: ${e1.message}")
             return 1

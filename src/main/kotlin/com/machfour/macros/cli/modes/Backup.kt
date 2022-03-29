@@ -4,10 +4,10 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.csv.createZipBackup
+import com.machfour.macros.sql.SqlException
 import com.machfour.macros.util.currentTimeString
 import java.io.FileOutputStream
 import java.io.IOException
-import java.sql.SQLException
 import java.util.zip.ZipException
 
 class Backup(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
@@ -34,7 +34,7 @@ class Backup(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             FileOutputStream(outputZipName).use {
                 config.database.createZipBackup(it)
             }
-        } catch (e: SQLException) {
+        } catch (e: SqlException) {
             return handleException(e)
         } catch (e: IOException) {
             return handleException(e)

@@ -1,62 +1,60 @@
 package com.machfour.macros.sql
 
 import com.machfour.macros.sql.generator.*
-import java.io.IOException
-import java.sql.SQLException
 
 abstract class SqlDatabaseImpl : SqlDatabase {
     // caller-managed connection, useful to reduce number of calls to DB
     // caller needs to call closeConnection() after. Use with begin and end transaction
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun openConnection()
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun closeConnection()
 
     // By default, database functions will autocommit.
     // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun beginTransaction()
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun endTransaction()
 
-    @Throws(SQLException::class, IOException::class)
+    @Throws(SqlException::class)
     abstract fun initDb(config: SqlConfig)
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract fun execRawSQLString(sql: String)
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
         assert(!query.selectColumn.isNullable) { "Select column is nullable: ${query.selectColumn}" }
 
         return selectColumn(query).mapNotNull { it }
     }
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M> selectAllColumns(query: AllColumnSelect<M>): List<RowData<M>>
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M> updateRows(data: Collection<RowData<M>>): Int
 
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     abstract override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
         TODO("Not yet implemented")
     }

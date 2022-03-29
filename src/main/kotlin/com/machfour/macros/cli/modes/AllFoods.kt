@@ -1,14 +1,13 @@
 package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.printErr
 import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.getAllFoodsMap
 import com.machfour.macros.sql.SqlDatabase
-import java.sql.SQLException
+import com.machfour.macros.sql.SqlException
 
 
 class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
@@ -33,9 +32,8 @@ class AllFoods(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
         val allFoods: Collection<Food>
         try {
             allFoods = getAllFoodsMap(ds).values
-        } catch (e: SQLException) {
-            printErr("SQL exception occurred: ")
-            printlnErr(e.errorCode)
+        } catch (e: SqlException) {
+            printlnErr("SQL exception occurred: ${e.message}")
             return
         }
 

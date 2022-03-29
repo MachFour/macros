@@ -8,9 +8,9 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.ingredients.readRecipes
 import com.machfour.macros.ingredients.saveRecipes
+import com.machfour.macros.sql.SqlException
 import java.io.FileReader
 import java.io.IOException
-import java.sql.SQLException
 
 
 class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
@@ -39,7 +39,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
         } catch (e1: IOException) {
             println("IO exception occurred while reading recipes file: " + e1.message)
             return 1
-        } catch (e2: SQLException) {
+        } catch (e2: SqlException) {
             println("SQL exception occurred while creating recipe objects: " + e2.message)
             return 1
         }
@@ -85,7 +85,7 @@ class Recipe(config: MacrosConfig): CommandImpl(NAME, USAGE, config) {
             try {
                 saveRecipes(recipes, ds)
                 println("Recipes saved!")
-            } catch (e: SQLException) {
+            } catch (e: SqlException) {
                 println("SQL exception occurred while saving recipe objects: " + e.message)
                 println("Recipes not saved")
                 return 1

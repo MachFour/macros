@@ -41,7 +41,7 @@ internal fun getMealById(db: SqlDatabase, id: Long): Meal? {
 // it will be garbage collected.
 // newMeal will have the newly constructed object (with the correct ID) added.
 // if the food portion already belongs to newMeal, nothing is done
-//@Throws(SQLException::class)
+//@Throws(SqlException::class)
 //fun moveFoodPortion(ds: MacrosDataSource, fp: FoodPortion, newMeal: Meal) {
 //    if (fp.meal != newMeal) {
 //        val editedFp = MacrosBuilder(fp).run {

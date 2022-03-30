@@ -44,7 +44,7 @@ class IngredientsRollbackTest {
                 assertNotNull(foods[0])
                 f = foods[0]
                 saveRecipes(foods, db)
-                fail<Any>("saveRecipes() did not throw an SQLException")
+                fail<Any>("saveRecipes() did not throw an SqlException")
             }
             f.indexName
         } catch (e1: IOException) {

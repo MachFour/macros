@@ -1,5 +1,7 @@
 package com.machfour.macros.linux
 
+import com.machfour.macros.jvm.readSqlStatements
+import com.machfour.macros.jvm.wrapAsNativeException
 import com.machfour.macros.schema.AllTables
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException

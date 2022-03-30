@@ -101,10 +101,10 @@ interface MacrosDataSource {
 
     // The following two methods are made redundant because of saveObjects()
 
-    //@Throws(SQLException::class)
+    //@Throws(SqlException::class)
     //fun <M : MacrosEntity<M>> insertObjects(objects: Collection<M>, withId: Boolean): Int
 
-    //@Throws(SQLException::class)
+    //@Throws(SqlException::class)
     //fun <M : MacrosEntity<M>> updateObjects(objects: Collection<M>): Int
 
     // returns number of objects saved correctly (i.e. 0 or 1)

@@ -65,26 +65,26 @@ class RowData<M> private constructor(
     }
 
     // null represented by empty string
-    fun <J> getAsRawString(col: Column<M, J>): String {
+    fun <J: Any> getAsRawString(col: Column<M, J>): String {
         return col.type.toRawString(get(col))
     }
 
-    fun <J> getAsSqlString(col: Column<M, J>): String {
+    fun <J: Any> getAsSqlString(col: Column<M, J>): String {
         return col.type.toSqlString(get(col))
     }
 
     // null represented by empty string
     @Throws(TypeCastException::class)
-    fun <J> putFromString(col: Column<M, J>, data: String) {
+    fun <J: Any> putFromString(col: Column<M, J>, data: String) {
         put(col, col.type.fromRawString(data))
     }
 
-    fun <J> getAsRaw(col: Column<M, J>): Any? {
+    fun <J: Any> getAsRaw(col: Column<M, J>): Any? {
         return col.type.toRaw(get(col))
     }
 
     @Throws(TypeCastException::class)
-    fun <J> putFromRaw(col: Column<M, J>, data: Any?) {
+    fun <J: Any> putFromRaw(col: Column<M, J>, data: Any?) {
         put(col, col.type.fromRaw(data))
     }
 
@@ -133,7 +133,7 @@ class RowData<M> private constructor(
     }
 
     // the type of the data is ensured at time of adding it to this RowData object.
-    operator fun <J> get(col: Column<M, J>): J? {
+    operator fun <J: Any> get(col: Column<M, J>): J? {
         assertHasColumn(col)
         val value = col.type.cast(data[col.index])
         if (enforceNonNull) {
@@ -144,7 +144,7 @@ class RowData<M> private constructor(
 
     // will throw exception if the column is not present
     // No validation is performed on the value
-    fun <J> put(col: Column<M, J>, value: J?) {
+    fun <J: Any> put(col: Column<M, J>, value: J?) {
         assertHasColumn(col)
         check(!isImmutable) { "RowData has been made immutable" }
         data[col.index] = value

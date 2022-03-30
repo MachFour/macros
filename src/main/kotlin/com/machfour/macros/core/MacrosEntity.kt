@@ -34,7 +34,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     val source: ObjectSource
 
     // Used to get data by column objects
-    fun <J> getData(col: Column<M, J>): J?
+    fun <J: Any> getData(col: Column<M, J>): J?
     fun hasData(col: Column<M, *>): Boolean
 
     val data: RowData<M>

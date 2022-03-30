@@ -95,7 +95,7 @@ fun <M> sqlInsertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): Stri
     return "INSERT INTO ${t.name} ($columnSql) VALUES ($placeholders)"
 }
 
-fun <M, J> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
+fun <M, J: Any> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
     val columnPlaceholders = makeSqlUpdatePlaceholders(orderedColumns)
     val whereString = makeSqlWhereString(keyCol, 1)
     // TODO dynamic placeholders

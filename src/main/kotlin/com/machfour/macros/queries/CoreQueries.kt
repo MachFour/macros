@@ -66,7 +66,7 @@ internal fun <M> stringSearch(
 
 // for convenience
 @Throws(SqlException::class)
-internal fun <M, I> selectSingleColumn(
+internal fun <M, I: Any> selectSingleColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
     queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -75,7 +75,7 @@ internal fun <M, I> selectSingleColumn(
 }
 
 @Throws(SqlException::class)
-internal fun <M, I, J> selectTwoColumns(
+internal fun <M, I: Any, J: Any> selectTwoColumns(
     db: SqlDatabase,
     select1: Column<M, I>,
     select2: Column<M, J>,
@@ -85,7 +85,7 @@ internal fun <M, I, J> selectTwoColumns(
     return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
 }
 @Throws(SqlException::class)
-internal fun <M, I> selectNonNullColumn(
+internal fun <M, I: Any> selectNonNullColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
     queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -113,7 +113,7 @@ internal fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table
 }
 
 @Throws(SqlException::class)
-internal fun <M, J> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+internal fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
     return if (keys.isNotEmpty()) {
         // The resulting map is unordered
         selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }
@@ -125,7 +125,7 @@ internal fun <M, J> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<
 
 // The resulting map is unordered
 @Throws(SqlException::class)
-internal fun <M, I, J> selectColumnMap(
+internal fun <M, I: Any, J: Any> selectColumnMap(
     ds: SqlDatabase,
     t: Table<M>,
     keyColumn: Column<M, I>,

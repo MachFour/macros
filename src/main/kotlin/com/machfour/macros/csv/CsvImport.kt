@@ -91,7 +91,7 @@ private typealias ParsedFoodAndNutrientData = Pair<RowData<Food>, List<RowData<F
 
 // Returns map of food index name to parsed food and nutrition RowData objects
 @Throws(IOException::class, TypeCastException::class, CsvException::class)
-private fun <J> getFoodDataMap(foodCsv: Reader, foodKeyCol: Column<Food, J>): Map<J, ParsedFoodAndNutrientData> {
+private fun <J: Any> getFoodDataMap(foodCsv: Reader, foodKeyCol: Column<Food, J>): Map<J, ParsedFoodAndNutrientData> {
     return buildMap {
         getCsvMapReader(foodCsv).use { reader ->
             val header = reader.getHeader(true)
@@ -157,7 +157,7 @@ private fun makeIngredients(
 // creates Composite food objects with ingredients lists (all with no IDs), but the ingredients
 // are raw in the Object sense (don't have linked food objects of their own)
 @Throws(IOException::class, TypeCastException::class)
-private fun <J> buildCompositeFoodObjectTree(
+private fun <J: Any> buildCompositeFoodObjectTree(
     recipeCsv: Reader,
     foodKeyCol: Column<Food, J>,
     ingredientsMap: Map<J, List<Ingredient>>,
@@ -178,7 +178,7 @@ private fun <J> buildCompositeFoodObjectTree(
 }
 
 @Throws(IOException::class, TypeCastException::class)
-internal fun <J> buildFoodObjectTree(
+internal fun <J: Any> buildFoodObjectTree(
     foodCsv: Reader,
     foodKeyCol: Column<Food, J>,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
@@ -205,7 +205,7 @@ internal fun <J> buildFoodObjectTree(
 }
 
 @Throws(IOException::class, TypeCastException::class)
-fun <J> buildServings(
+fun <J: Any> buildServings(
     servingCsv: Reader,
     foodKeyCol: Column<Food, J>
 ): List<Serving> {
@@ -234,7 +234,7 @@ fun <J> buildServings(
 
 // foods maps from index name to food object. Food object must have nutrition data attached
 @Throws(SqlException::class)
-private fun <J> saveImportedFoods(
+private fun <J: Any> saveImportedFoods(
     db: SqlDatabase,
     foods: Map<J, Food>,
     foodKeyCol: Column<Food, J>,
@@ -269,7 +269,7 @@ private fun <J> saveImportedFoods(
 }
 
 @Throws(IOException::class, SqlException::class, TypeCastException::class)
-fun <J> importFoodData(
+fun <J: Any> importFoodData(
     db: SqlDatabase,
     foodCsv: Reader,
     foodKeyCol: Column<Food, J>,
@@ -298,7 +298,7 @@ fun <J> importFoodData(
 
 // TODO detect existing servings
 @Throws(IOException::class, SqlException::class, TypeCastException::class)
-fun <J> importServings(
+fun <J: Any> importServings(
     db: SqlDatabase,
     servingCsv: Reader,
     foodKeyCol: Column<Food, J>,

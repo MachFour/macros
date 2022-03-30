@@ -25,7 +25,7 @@ private open class DefaultValidator<M>(
         return dataErrors + missingColumns.associateWith { listOf(ValidationError.DATA_NOT_FOUND) }
     }
 
-    protected fun <J> validateNonNull(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
+    protected fun <J: Any> validateNonNull(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
         val isInvalid = data[col] == null && !col.isNullable
         return if (isInvalid) listOf(ValidationError.NON_NULL) else emptyList()
     }
@@ -38,7 +38,7 @@ private open class DefaultValidator<M>(
 
     // Just checks non null constraints
     // TODO add check for unique: needs DB access
-    override fun <J> validateSingle(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
+    override fun <J: Any> validateSingle(data: RowData<M>, col: Column<M, J>): List<ValidationError> {
         return validateNonNull(data, col)
     }
 }
@@ -79,7 +79,7 @@ val NutrientValueInputValidator: MacrosValidator<FoodNutrientValue> =
         return errors
     }
 
-    override fun <J> validateSingle(
+    override fun <J: Any> validateSingle(
         data: RowData<FoodNutrientValue>,
         col: Column<FoodNutrientValue, J>
     ): List<ValidationError> {

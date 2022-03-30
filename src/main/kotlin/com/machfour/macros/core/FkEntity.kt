@@ -7,8 +7,8 @@ import com.machfour.macros.sql.RowData
 internal interface FkEntity<M: MacrosEntity<M>>: MacrosEntity<M> {
 
     // prefer the first version if possible
-    fun <N : MacrosEntity<N>, J> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, parent: N)
-    fun <N, J> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, data: J)
+    fun <N : MacrosEntity<N>, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, parent: N)
+    fun <N, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, data: J)
 
     fun <N> getFkParentKey(fkCol: Column.Fk<M, *, N>): RowData<N>
     //fun copyFkNaturalKeyMap(from: FkEntity<M>)

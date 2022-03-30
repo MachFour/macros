@@ -1,8 +1,11 @@
 package com.machfour.macros.sql.datatype
 
-abstract class SqlTypeImpl<J> : SqlType<J> {
+import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
+
+abstract class SqlTypeImpl<J: Any> : SqlType<J> {
     // gets the java class associated with this type
-    abstract fun javaClass(): Class<J>
+    abstract fun kotlinClass(): KClass<J>
 
     // this one does the real conversion work
     @Throws(TypeCastException::class)
@@ -40,7 +43,7 @@ abstract class SqlTypeImpl<J> : SqlType<J> {
     }
 
     final override fun cast(o: Any?): J? {
-        return javaClass().cast(o)
+        return kotlinClass().safeCast(o)
     }
 
     // this is not anything to do with the data!

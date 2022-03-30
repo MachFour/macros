@@ -20,13 +20,13 @@ interface SqlDatabase {
     fun endTransaction()
 
     @Throws(SqlException::class)
-    fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
+    fun <M, I: Any> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
     @Throws(SqlException::class)
-    fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I>
+    fun <M, I: Any> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I>
 
     @Throws(SqlException::class)
-    fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
+    fun <M, I: Any, J: Any> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SqlException::class)
     fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>>
@@ -41,7 +41,7 @@ interface SqlDatabase {
     fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SqlException::class)
-    fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int
+    fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int
 
     @Throws(SqlException::class)
     fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int

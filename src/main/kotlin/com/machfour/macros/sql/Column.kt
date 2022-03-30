@@ -6,11 +6,11 @@ import com.machfour.macros.sql.generator.ColumnExpr
 /**
  * Created by max on 4/11/17.
  */
-interface Column<M, J> : ColumnExpr<M, J> {
+interface Column<M, J: Any> : ColumnExpr<M, J> {
     /*
      * Describes one column referencing another. N is the parent table type
      */
-    interface Fk<M, J, N> : Column<M, J> {
+    interface Fk<M, J: Any, N> : Column<M, J> {
         val parentColumn: Column<N, J>
         val parentTable: Table<N>
     }
@@ -41,7 +41,7 @@ interface Column<M, J> : ColumnExpr<M, J> {
     // is SQL UNIQUE column
     val isUnique: Boolean
 
-    interface Builder<J> {
+    interface Builder<J: Any> {
         fun notEditable(): Builder<J>
 
         fun notNull(): Builder<J>

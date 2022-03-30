@@ -4,7 +4,7 @@ import com.machfour.macros.sql.datatype.SqlType
 
 import kotlin.properties.Delegates
 
-internal open class ColumnImpl<M, J> private constructor(
+internal open class ColumnImpl<M, J: Any> private constructor(
     override val sqlName: String,
     override val type: SqlType<J>,
     private val defaultValue: () -> J?,
@@ -26,7 +26,7 @@ internal open class ColumnImpl<M, J> private constructor(
         return sqlName
     }
 
-    internal class Fk<M, J, N> internal constructor(
+    internal class Fk<M, J: Any, N> internal constructor(
         name: String, type: SqlType<J>,
         defaultValue: () -> J?,
         editable: Boolean,

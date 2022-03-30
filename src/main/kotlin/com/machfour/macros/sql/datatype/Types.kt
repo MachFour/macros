@@ -1,6 +1,7 @@
 package com.machfour.macros.sql.datatype
 
 import com.machfour.macros.util.DateStamp
+import kotlin.reflect.KClass
 
 // basic types corresponding roughly to database types
 // TODO check that s.equals(fromString(s).toString()) for valid strings s, for each type
@@ -85,7 +86,7 @@ class Types {
             }
         }
 
-        override fun javaClass(): Class<Boolean> = Boolean::class.javaObjectType
+        override fun kotlinClass(): KClass<Boolean> = Boolean::class
 
         // SQLite doesn't have a boolean type, so we return int
         override fun toRaw(data: Boolean?): Any? {
@@ -131,7 +132,7 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromRawNotNull(data: Any): Long = objectToLong(data)
 
-        override fun javaClass(): Class<Long> = Long::class.javaObjectType
+        override fun kotlinClass(): KClass<Long> = Long::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
@@ -145,7 +146,7 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromNonEmptyString(data: String): Int = stringToInt(data)
 
-        override fun javaClass(): Class<Int> = Int::class.javaObjectType
+        override fun kotlinClass(): KClass<Int> = Int::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
@@ -158,7 +159,7 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromNonEmptyString(data: String): Long = stringToLong(data)
 
-        override fun javaClass(): Class<Long> = Long::class.javaObjectType
+        override fun kotlinClass(): KClass<Long> = Long::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
@@ -183,7 +184,7 @@ class Types {
             }
         }
 
-        override fun javaClass(): Class<Double> = Double::class.javaObjectType
+        override fun kotlinClass(): KClass<Double> = Double::class
 
         override fun sqliteType(): SqliteType = SqliteType.REAL
     }
@@ -192,7 +193,7 @@ class Types {
         override fun toString(): String = "text"
         override fun fromNonEmptyString(data: String): String = data
         override fun fromRawNotNull(data: Any): String = data.toString()
-        override fun javaClass(): Class<String> = String::class.java
+        override fun kotlinClass(): KClass<String> = String::class
         override fun sqliteType(): SqliteType = SqliteType.TEXT
     }
 
@@ -205,7 +206,7 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromNonEmptyString(data: String): Long = stringToLong(data)
 
-        override fun javaClass(): Class<Long> = Long::class.javaObjectType
+        override fun kotlinClass(): KClass<Long> = Long::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }
@@ -218,7 +219,7 @@ class Types {
 
         override fun fromNonEmptyString(data: String): DateStamp = DateStamp.fromIso8601String(data)
         override fun toRaw(data: DateStamp?): Any? = data?.toString()
-        override fun javaClass(): Class<DateStamp> = DateStamp::class.java
+        override fun kotlinClass(): KClass<DateStamp> = DateStamp::class
         override fun sqliteType(): SqliteType = SqliteType.TEXT
     }
 }

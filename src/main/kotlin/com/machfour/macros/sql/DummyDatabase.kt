@@ -11,15 +11,15 @@ class DummyDatabase: SqlDatabase {
 
     override fun endTransaction() {}
 
-    override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
+    override fun <M, I: Any> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
         return emptyList()
     }
 
-    override fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
+    override fun <M, I: Any> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
         return emptyList()
     }
 
-    override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
+    override fun <M, I: Any, J: Any> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
         return emptyList()
     }
 
@@ -49,7 +49,7 @@ class DummyDatabase: SqlDatabase {
         return 0
     }
 
-    override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+    override fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
         return 0
     }
 

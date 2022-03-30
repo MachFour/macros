@@ -11,7 +11,7 @@ import com.machfour.macros.sql.datatype.SqlType
  *    J represents the Kotlin type of the expression, which depending on the expression,
  *      may or may not match the underlying column type
  */
-interface ColumnExpr<M, J> {
+interface ColumnExpr<M, J: Any> {
     val sql: String
     val table: Table<M>
     val type: SqlType<J>

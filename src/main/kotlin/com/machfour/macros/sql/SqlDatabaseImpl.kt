@@ -26,17 +26,17 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract fun execRawSQLString(sql: String)
 
     @Throws(SqlException::class)
-    abstract override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
+    abstract override fun <M, I: Any> selectColumn(query: SingleColumnSelect<M, I>): List<I?>
 
     @Throws(SqlException::class)
-    override fun <M, I> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
+    override fun <M, I: Any> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
         assert(!query.selectColumn.isNullable) { "Select column is nullable: ${query.selectColumn}" }
 
         return selectColumn(query).mapNotNull { it }
     }
 
     @Throws(SqlException::class)
-    abstract override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
+    abstract override fun <M, I: Any, J: Any> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>>
 
     @Throws(SqlException::class)
     abstract override fun <M> selectMultipleColumns(query: MultiColumnSelect<M>): List<RowData<M>>
@@ -55,7 +55,7 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SqlException::class)
-    override fun <M, J> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+    override fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
         TODO("Not yet implemented")
     }
 }

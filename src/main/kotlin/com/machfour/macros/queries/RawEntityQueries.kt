@@ -11,7 +11,7 @@ import com.machfour.macros.sql.generator.SelectQuery
 // Constructs a map of ID to raw object data (i.e. no object references initialised)
 // IDs that do not exist in the database will not be contained in the output map.
 @Throws(SqlException::class)
-internal fun <M, J> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
+internal fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
     require(keyColumn.isUnique) { "Key column must be unique" }
 
     val t = keyColumn.table
@@ -51,7 +51,7 @@ internal fun <M> getRawObjectsWithIds(
 }
 
 @Throws(SqlException::class)
-internal fun <M, J> getRawObjectsWithKeys(
+internal fun <M, J: Any> getRawObjectsWithKeys(
     db: SqlDatabase,
     keyCol: Column<M, J>,
     keys: Collection<J>,

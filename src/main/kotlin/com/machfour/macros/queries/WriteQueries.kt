@@ -123,7 +123,7 @@ private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
 // does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
 // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
 @Throws(SqlException::class)
-fun <M, J> deleteWhere(
+fun <M, J: Any> deleteWhere(
     db: SqlDatabase,
     t: Table<M>,
     whereColumn: Column<M, J>,
@@ -136,7 +136,7 @@ fun <M, J> deleteWhere(
 
 // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
 @Throws(SqlException::class)
-internal fun <M, J> deleteByNullStatus(
+internal fun <M, J: Any> deleteByNullStatus(
     db: SqlDatabase,
     t: Table<M>,
     whereColumn: Column<M, J>,

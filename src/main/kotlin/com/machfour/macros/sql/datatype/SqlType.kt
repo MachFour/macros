@@ -1,6 +1,6 @@
 package com.machfour.macros.sql.datatype
 
-interface SqlType<J> {
+interface SqlType<J: Any> {
     // These methods perform type-specific conversion is necessary
     // if raw is null then null will be returned
     @Throws(TypeCastException::class)

@@ -8,7 +8,7 @@ import com.machfour.macros.sql.makeSqlWhereString
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column
 //  make into sealed class with subclasses for each kind of where (multivalue, single value, LIKE, etc.)
-class SqlWhereExpr<M, J> private constructor(
+class SqlWhereExpr<M, J: Any> private constructor(
     private val whereClause: String = "",
     private val whereColumnExpr: ColumnExpr<M, J>? = null,
     private val whereColumnType: SqlType<J>? = null,
@@ -22,7 +22,7 @@ class SqlWhereExpr<M, J> private constructor(
             return SqlWhereExpr()
         }
 
-        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J): SqlWhereExpr<M, J> {
+        fun <M, J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
@@ -33,7 +33,7 @@ class SqlWhereExpr<M, J> private constructor(
 
         // can specify iterated = true so that a separate query will be carried out for each where value
         // useful when the number of where values is large
-        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
+        fun <M, J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterated: Boolean): SqlWhereExpr<M, J> {
             require(whereValues.isNotEmpty()) { "whereValues cannot be empty" }
             val nValues = if (iterated) 1 else whereValues.size
             return SqlWhereExpr(
@@ -45,7 +45,7 @@ class SqlWhereExpr<M, J> private constructor(
             )
         }
 
-        fun <M, J> where(whereColumnExpr: ColumnExpr<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
+        fun <M, J: Any> where(whereColumnExpr: ColumnExpr<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,

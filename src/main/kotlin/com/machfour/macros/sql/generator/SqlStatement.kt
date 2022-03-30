@@ -25,11 +25,11 @@ sealed interface SqlStatement<M> {
 
 
     interface Builder<M> {
-        fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J)
+        fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J)
 
         // iterate threshold exists because if number of the parameters in a query gets too large,
         // Android SQlite will not execute the query
-        fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int = DEFAULT_ITERATE_THRESHOLD)
+        fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int = DEFAULT_ITERATE_THRESHOLD)
 
         fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean)
 

@@ -2,13 +2,13 @@ package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
 
-class SingleColumnSelect<M, J> private constructor(
+class SingleColumnSelect<M, J: Any> private constructor(
     val selectColumn: Column<M, J>,
     private val query: SelectQuery<M>
 ): SelectQuery<M> by query {
 
     companion object {
-        fun <M, J> build(
+        fun <M, J: Any> build(
             selectColumn: Column<M, J>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : SingleColumnSelect<M, J> {

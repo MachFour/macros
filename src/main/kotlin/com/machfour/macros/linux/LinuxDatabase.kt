@@ -71,7 +71,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             }
         }
 
-        private fun <J> ResultSet.getColumn(column: Column<*, J>) : J? {
+        private fun <J: Any> ResultSet.getColumn(column: Column<*, J>) : J? {
             val resultValue = getObject(column.sqlName)
             return try {
                 column.type.fromRaw(resultValue)
@@ -248,7 +248,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SqlException::class)
-    override fun <M, I> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
+    override fun <M, I: Any> selectColumn(query: SingleColumnSelect<M, I>): List<I?> {
         val selectColumn = query.selectColumn
         val resultList = ArrayList<I?>()
         executeSelectQuery(query) {
@@ -259,7 +259,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SqlException::class)
-    override fun <M, I, J> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
+    override fun <M, I: Any, J: Any> selectTwoColumns(query: TwoColumnSelect<M, I, J>): List<Pair<I?, J?>> {
         val resultData = ArrayList<Pair<I?, J?>>()
         executeSelectQuery(query) {
             resultData.add(it.getColumn(query.column1) to it.getColumn(query.column2))

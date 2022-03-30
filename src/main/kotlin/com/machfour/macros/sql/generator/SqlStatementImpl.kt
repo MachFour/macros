@@ -25,11 +25,11 @@ abstract class SqlStatementImpl<M>(
     abstract class Builder<M>(protected val table: Table<M>): SqlStatement.Builder<M> {
         protected var whereExpression: SqlWhereExpr<M, *> = SqlWhereExpr.whereAny()
 
-        override fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J) {
+        override fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J) {
             whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValue)
         }
 
-        override fun <J> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int) {
+        override fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int) {
             whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValues, whereValues.size > iterateThreshold)
         }
 

@@ -180,7 +180,7 @@ class FoodEditor constructor(
         currentAction = Action.values()[nextActionOrdinal]
     }
 
-    private fun <M : MacrosEntity<M>, J> getErrorMessage(b: MacrosBuilder<M>, col: Column<M, J>): String? {
+    private fun <M : MacrosEntity<M>, J: Any> getErrorMessage(b: MacrosBuilder<M>, col: Column<M, J>): String? {
         val errors = b.getErrors(col)
         return if (errors.isNotEmpty()) {
             // just display first error

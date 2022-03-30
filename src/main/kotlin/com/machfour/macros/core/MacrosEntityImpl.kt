@@ -82,7 +82,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return RowData.columnsAreEqual(this.data, o.data, columnsToCheck)
     }
 
-    final override fun <J> getData(col: Column<M, J>): J? {
+    final override fun <J: Any> getData(col: Column<M, J>): J? {
         return data[col]
     }
 
@@ -115,14 +115,14 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
 
     // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
     // shares the same parameter as the wildcard being captured.
-    override fun <N : MacrosEntity<N>, J> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, parent: N) {
+    override fun <N : MacrosEntity<N>, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, parent: N) {
         val parentNaturalKeyData : J = parent.getData(parentKeyCol)
                 ?: throw RuntimeException("Parent natural key data was null")
         setFkParentKey(fkCol, parentKeyCol, parentNaturalKeyData)
     }
 
     // ... or when only the relevant column data is available, but then it's only limited to single-column secondary keys
-    override fun <N, J> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, data: J) {
+    override fun <N, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, data: J) {
         require(parentKeyCol.isUnique)
         val parentSecondaryKey = RowData(fkCol.parentTable, listOf(parentKeyCol))
             .apply { put(parentKeyCol, data) }
@@ -138,7 +138,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     }
     
     // this also works for import (without IDs) because both columns are NO_ID
-    protected fun <M : MacrosEntity<M>, J, N : MacrosEntity<N>> foreignKeyMatches(
+    protected fun <M : MacrosEntity<M>, J: Any, N : MacrosEntity<N>> foreignKeyMatches(
         childObj: MacrosEntity<M>,
         childCol: Column.Fk<M, J, N>,
         parentObj: MacrosEntity<N>

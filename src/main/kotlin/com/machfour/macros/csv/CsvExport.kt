@@ -61,7 +61,7 @@ private fun prepareNutrientDataForExport(nd: FoodNutrientData): Map<String, Stri
     }
 }
 
-private fun <J> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food, J>): Map<String, String> {
+private fun <J: Any> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food, J>): Map<String, String> {
     return buildMap {
         put(foodKeyCol.sqlName, s.food.data.getAsRawString(foodKeyCol))
         ServingTable.columns
@@ -73,7 +73,7 @@ private fun <J> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food,
 
 
 @Throws(IOException::class, SqlException::class)
-fun <J> exportFoodData(
+fun <J: Any> exportFoodData(
     db: SqlDatabase,
     foodCsv: Writer,
     foodKeyCol: Column<Food, J>,
@@ -96,7 +96,7 @@ fun <J> exportFoodData(
 }
 
 @Throws(IOException::class, SqlException::class, TypeCastException::class)
-fun <J> exportServings(
+fun <J: Any> exportServings(
     db: SqlDatabase,
     servingCsv: Writer,
     foodKeyCol: Column<Food, J>,

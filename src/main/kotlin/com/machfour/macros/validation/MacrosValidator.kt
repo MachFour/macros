@@ -24,7 +24,7 @@ interface MacrosValidator<M> {
 
     // Returns validation errors just for a single column.
     // There are no errors if and only if the returned list is empty.
-    fun <J> validateSingle(data: RowData<M>, col: Column<M, J>): List<ValidationError>
+    fun <J: Any> validateSingle(data: RowData<M>, col: Column<M, J>): List<ValidationError>
 
 
 }

@@ -19,7 +19,7 @@ private fun <M : MacrosEntity<M>> fkIdsPresent(obj: M): Boolean {
     }
 }
 
-private fun <M: MacrosEntity<M>, J, N> FkEntity<M>.copyFkNaturalKey(from: FkEntity<M>, fkCol: Column.Fk<M, J, N>) {
+private fun <M: MacrosEntity<M>, J: Any, N> FkEntity<M>.copyFkNaturalKey(from: FkEntity<M>, fkCol: Column.Fk<M, J, N>) {
     val parentKey = from.getFkParentKey(fkCol)
     
     // Generics ensure that the table types match
@@ -43,7 +43,7 @@ private fun <M: MacrosEntity<M>> FkEntity<M>.copyFkNaturalKeyMap(from: FkEntity<
 
 // wildcard capture helper for natural key column type
 @Throws(SqlException::class)
-private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
+private fun <M : MacrosEntity<M>, J: Any, N, I: Any> completeFkIdColHelper(
     db: SqlDatabase,
     fkColumn: Column.Fk<M, J, N>,
     parentKeyCol: Column<N, I>,
@@ -70,7 +70,7 @@ private fun <M : MacrosEntity<M>, J, N, I> completeFkIdColHelper(
 
 // wildcard capture helper for parent unique column type
 @Throws(SqlException::class)
-private fun <M : FkEntity<M>, J, N> completeFkCol(
+private fun <M : FkEntity<M>, J: Any, N> completeFkCol(
     ds: SqlDatabase,
     objects: List<M>,
     fkCol: Column.Fk<M, J, N>,

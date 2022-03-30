@@ -114,7 +114,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     // when setting null values, wasTypeMismatch differentiates between null as a value and null
     // as an error value during a setFromString
-    private fun <J> setFieldInternal(col: Column<M, J>, value: J?, wasTypeMismatch: Boolean) {
+    private fun <J: Any> setFieldInternal(col: Column<M, J>, value: J?, wasTypeMismatch: Boolean) {
         if (unsettableColumns.contains(col)) {
             // TODO throw exception?
             return
@@ -131,13 +131,13 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     // Sets a field to the given value, unless it has been marked unsettable
     // In the latter case, this function will do nothing
-    fun <J> setField(col: Column<M, J>, value: J?) {
+    fun <J: Any> setField(col: Column<M, J>, value: J?) {
         // can't be a type mismatch because the value is already of the correct type
         setFieldInternal(col, value, wasTypeMismatch = false)
     }
 
     // empty strings treated as null
-    fun <J> setFieldFromString(col: Column<M, J>, value: String) {
+    fun <J: Any> setFieldFromString(col: Column<M, J>, value: String) {
         if (unsettableColumns.contains(col)) {
             // TODO throw exception?
             return
@@ -151,28 +151,28 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         }
     }
 
-    operator fun <J> get(col: Column<M, J>): J? {
+    operator fun <J: Any> get(col: Column<M, J>): J? {
         return draftData[col]
     }
 
     // null data represented as blank strings
-    fun <J> getAsString(col: Column<M, J>): String {
+    fun <J: Any> getAsString(col: Column<M, J>): String {
         return col.type.toString(this[col], "")
     }
 
-    private fun <J> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
+    private fun <J: Any> getErrorsInternal(field: Column<M, J>): MutableList<ValidationError> {
         return checkNotNull(validationErrors[field]) { "Validation errors is missing entry for $field"}
     }
 
-    fun <J> hasNoErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isEmpty()
-    fun <J> hasErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isNotEmpty()
+    fun <J: Any> hasNoErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isEmpty()
+    fun <J: Any> hasErrors(field: Column<M, J>): Boolean = getErrorsInternal(field).isNotEmpty()
 
     /*
      * Returns an immutable list containing identifiers of each failing
      * ValidationError test for the given field,
      * or otherwise an empty list.
      */
-    fun <J> getErrors(field: Column<M, J>): List<ValidationError> {
+    fun <J: Any> getErrors(field: Column<M, J>): List<ValidationError> {
         return getErrorsInternal(field)
     }
 
@@ -185,7 +185,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     /* Saves a list of columns whose non-null constraints have been violated, or an empty list otherwise,
      * into the validationErrors map.
      */
-    private fun <J> validateSingle(col: Column<M, J>, wasTypeMismatch: Boolean = false) {
+    private fun <J: Any> validateSingle(col: Column<M, J>, wasTypeMismatch: Boolean = false) {
         val errors = requireNotNull(validationErrors[col]) { "ValidationErrors not initialised properly" }
         with(errors) {
             clear()

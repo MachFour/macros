@@ -91,9 +91,9 @@ class Types {
         // SQLite doesn't have a boolean type, so we return int
         override fun toRaw(data: Boolean?): Any? {
             return when (data) {
-                null -> null
                 true -> 1L
-                else -> 0L
+                false -> 0L
+                null -> null
             }
         }
 
@@ -116,7 +116,6 @@ class Types {
         // return 1 (as long) if data is true, or null otherwise
         override fun toRaw(data: Boolean?): Any? {
             return when (data) {
-                null -> null
                 true -> 1L
                 else -> null
             }

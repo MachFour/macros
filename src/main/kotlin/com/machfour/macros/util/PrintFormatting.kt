@@ -1,6 +1,7 @@
 package com.machfour.macros.util
 
 import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.NutrientValue
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.names.UnitStrings
@@ -8,8 +9,8 @@ import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.NutrientUnits
 
 // chooses unit based on what's in the FoodNutrientData object, or allows override
-fun formatNutrientValue(
-    data: FoodNutrientData,
+fun <M: NutrientValue<M>> formatNutrientValue(
+    data: GenericNutrientData<M>,
     nutrient: Nutrient,
     nutrientUnits: NutrientUnits,
     preferDataUnit: Boolean = false,
@@ -25,8 +26,8 @@ fun formatNutrientValue(
     return formatNutrientValue(data, nutrient, unit, withDp, defaultValue, width)
 }
 
-fun formatNutrientValue(
-    data: FoodNutrientData,
+fun <M: NutrientValue<M>> formatNutrientValue(
+    data: GenericNutrientData<M>,
     nutrient: Nutrient,
     unit: Unit,
     withDp: Boolean = false,

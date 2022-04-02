@@ -31,12 +31,13 @@ class NutrientGoal internal constructor(
         // and goal is nonzero.
         // If goal value is missing, returns null. If data value is missing or goal value is zero, returns zero.
         fun FoodNutrientData.getProportionOfGoal(goal: NutrientGoal, n: Nutrient): Double? {
-            return when (val goalValue = goal.targets[n]?.value) {
-                null -> null
-                0.0 -> 0.0
+            val goalValue = goal.targets[n]
+            return when {
+                goalValue == null -> null
+                goalValue.value == 0.0 -> 0.0
                 else -> {
-                    // goal value is in standard units
-                    (this[n]?.convertValueTo(StandardNutrientUnits[n]) ?: 0.0) / goalValue
+                    val unit = StandardNutrientUnits[n]
+                    (this[n]?.convertValueTo(unit) ?: 0.0) / goalValue.convertValueTo(unit)
                 }
             }
         }

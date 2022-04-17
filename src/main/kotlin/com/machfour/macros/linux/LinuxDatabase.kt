@@ -202,12 +202,12 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SqlException::class)
     override fun initDb(config: SqlConfig) {
         // TODO insert data from Units and Nutrients classes instead of initial data
-        val getSqlFromFile: (File) -> String = { FileReader(it).use { r -> readSqlStatements(r) } }
+        val getSqlFromPath: (String) -> String = { FileReader(File(it)).use { r -> readSqlStatements(r) } }
         val c = connection
         try {
             c.createStatement().use { s ->
                 println("Create schema...")
-                s.executeUpdate(getSqlFromFile(config.initSqlFile))
+                s.executeUpdate(getSqlFromPath(config.initSqlFilePath))
 
                 println("Add timestamp triggers...")
                 AllTables
@@ -216,13 +216,13 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
                 println("Add other triggers...")
                 // val createTriggersSql = ...
-                config.trigSqlFiles
-                    .map { getSqlFromFile(it) }
+                config.trigSqlFilePaths
+                    .map { getSqlFromPath(it) }
                     .forEach { s.executeUpdate(it) }
 
                 println("Add data...")
                 // val initialDataSql = ...
-                s.executeUpdate(getSqlFromFile(config.dataSqlFile))
+                s.executeUpdate(getSqlFromPath(config.dataSqlFilePath))
             }
         } catch (e: java.sql.SQLException) {
             throw e.wrapAsNativeException()

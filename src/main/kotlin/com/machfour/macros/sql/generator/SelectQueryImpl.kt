@@ -3,7 +3,6 @@ package com.machfour.macros.sql.generator
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.joinColumnNames
-import com.machfour.macros.util.stringJoin
 
 internal class SelectQueryImpl<M> private constructor(
     table: Table<M>,
@@ -51,7 +50,7 @@ internal class SelectQueryImpl<M> private constructor(
         }
         query.add(suffix)
 
-        return stringJoin(query, sep = " ")
+        return query.joinToString(separator = " ")
             //.also { println("Generated SQL: $it") }
     }
 

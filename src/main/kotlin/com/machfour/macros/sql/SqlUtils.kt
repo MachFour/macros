@@ -19,7 +19,7 @@ private fun getSqlPlaceholder(columnType: SqlType<*>): String {
 }
 
 private fun <M> makePlaceholders(columns: List<Column<M, *>>, placeholderFormat: (c: Column<M, *>) -> String): String {
-    return stringJoin(columns, sep = ", ") { placeholderFormat(it) }
+    return columns.joinToString(separator = ", ") { placeholderFormat(it) }
 }
 
 // creates SQL placeholders for the given (ordered) list of columns
@@ -83,7 +83,7 @@ internal fun <M> makeSqlWhereLikeString(
             for (c in likeColumns) {
                 bracketedWhereClauses.add("(" + c.sqlName + " LIKE ?)")
             }
-            " WHERE " + stringJoin(bracketedWhereClauses, sep = " ${conjunction.sql} ")
+            " WHERE " + bracketedWhereClauses.joinToString(separator = " ${conjunction.sql} ")
         }
     }
 }
@@ -149,7 +149,7 @@ fun createSqlStatements(readLine: () -> String, linesAvailable: () -> Boolean, l
             trimmedDecommentedLines.add(line)
         }
     }
-    return stringJoin(trimmedDecommentedLines, sep = lineSep)
+    return trimmedDecommentedLines.joinToString(separator = lineSep)
 }
 
 // Returns triggers that update the create and modify times of the given table.
@@ -175,7 +175,7 @@ fun <M> createInitTimestampTriggers(t: Table<M>): List<String> {
 
     val updateTimestampTrigger = """
             |CREATE TRIGGER update_${table.lowercase()}_timestamp
-            |AFTER UPDATE OF ${stringJoin(columnNames, sep = ", ")} ON $table
+            |AFTER UPDATE OF ${columnNames.joinToString(separator = ", ")} ON $table
             |BEGIN UPDATE $table
             |SET $modifyTime = $currentUnixTime
             |WHERE $id = NEW.${id};

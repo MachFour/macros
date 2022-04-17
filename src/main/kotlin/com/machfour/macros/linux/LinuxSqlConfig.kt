@@ -2,7 +2,6 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.util.joinFilePath
-import java.io.File
 
 class LinuxSqlConfig: SqlConfig {
     companion object {
@@ -21,8 +20,7 @@ class LinuxSqlConfig: SqlConfig {
     override val trigSqlNames = Companion.trigSqlNames
     override val dataSqlName = Companion.dataSqlName
 
-    override val initSqlFile = File(joinFilePath(SQL_DIR, initSqlName))
-    override val trigSqlFiles = trigSqlNames.map { File(joinFilePath(SQL_DIR, it)) }
-    override val dataSqlFile = File(joinFilePath(SQL_DIR, dataSqlName))
-
+    override val initSqlFilePath = joinFilePath(SQL_DIR, initSqlName)
+    override val trigSqlFilePaths = trigSqlNames.map { joinFilePath(SQL_DIR, it) }
+    override val dataSqlFilePath = joinFilePath(SQL_DIR, dataSqlName)
 }

@@ -1,12 +1,12 @@
 package com.machfour.macros.queries
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.Flow
 
 // Implements a higher level query interface than the database

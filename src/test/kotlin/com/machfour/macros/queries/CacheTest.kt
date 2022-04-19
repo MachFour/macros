@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.datestamp.makeDateStamp
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
@@ -12,7 +13,6 @@ import com.machfour.macros.schema.*
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.GRAMS
-import com.machfour.macros.util.DateStamp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -55,7 +55,7 @@ internal class CacheTest {
                 put(MealTable.MODIFY_TIME, 0L)
                 put(MealTable.NAME, "meal")
                 put(MealTable.NOTES, "meal notes")
-                put(MealTable.DAY, DateStamp(2020, 10, 10))
+                put(MealTable.DAY, makeDateStamp(2020, 10, 10))
                 testMeal = Meal.factory.construct(this, ObjectSource.IMPORT)
             }
             with (RowData(FoodPortionTable)) {

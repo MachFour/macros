@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -7,7 +8,6 @@ import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.DateStamp
 
 @Throws(SqlException::class)
 internal fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<Long, Meal> {

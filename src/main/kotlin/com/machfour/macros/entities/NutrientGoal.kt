@@ -1,5 +1,6 @@
 package com.machfour.macros.entities
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.MacrosEntityImpl
@@ -12,7 +13,6 @@ import com.machfour.macros.schema.NutrientGoalValueTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.units.StandardNutrientUnits
-import com.machfour.macros.util.DateStamp
 
 
 class NutrientGoal internal constructor(

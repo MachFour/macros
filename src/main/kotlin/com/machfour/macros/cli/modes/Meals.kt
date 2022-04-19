@@ -1,16 +1,17 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.currentDateStamp
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.dayStringParse
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -40,7 +41,7 @@ class Meals(config: MacrosConfig) : CommandImpl(NAME, USAGE, config) {
                 printlnErr("-d option requires a day specified")
                 return 1
             }
-            else -> currentDate()
+            else -> currentDateStamp()
         }
         return printMealList(ds, date)
         //Meal toEdit = mealSpec.processedObject();

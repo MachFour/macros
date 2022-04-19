@@ -4,7 +4,7 @@ import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlDatabaseImpl
-import com.machfour.macros.util.joinFilePath
+import com.machfour.macros.jvm.joinFilePath
 
 internal class LinuxConfig : MacrosConfig {
     companion object {

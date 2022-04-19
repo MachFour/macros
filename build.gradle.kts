@@ -1,6 +1,6 @@
 plugins {
     application
-    kotlin("jvm") version("1.6.10")
+    kotlin("jvm") version("1.6.20")
 }
 
 group = "com.machfour"
@@ -26,19 +26,20 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 dependencies {
-    implementation(kotlin("stdlib:1.6.10"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
+    implementation(kotlin("stdlib:1.6.20"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
     implementation("net.sf.supercsv:super-csv:2.4.0")
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.9.0")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
-    implementation("junit:junit:4.13.1")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    api(fileTree(mapOf("dir" to "libs", "include" to listOf("datestamp.jar"))))
+
     // testing
+    implementation("junit:junit:4.13.2")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
 }
 

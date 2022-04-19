@@ -3,6 +3,8 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
+import com.machfour.macros.jvm.createInstant
+import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.util.LOCALIZED_DATETIME_MEDIUM
 import com.machfour.macros.util.displayLength
 import com.machfour.macros.util.formatUnicodeString

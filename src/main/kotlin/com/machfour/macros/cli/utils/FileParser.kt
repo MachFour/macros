@@ -1,5 +1,7 @@
 package com.machfour.macros.cli.utils
 
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.currentDateStamp
 import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
@@ -13,8 +15,6 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.unitWithAbbrOrNull
-import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
 import com.machfour.macros.util.FoodPortionSpec
 import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
@@ -249,7 +249,7 @@ class FileParser {
         val foodIndexNames = getAllIndexNames(mealSpecs.values)
         val meals = ArrayList<Meal>()
         val foods = getFoodsByIndexName(db, foodIndexNames)
-        val currentDay = currentDate()
+        val currentDay = currentDateStamp()
         for ((key, value) in mealSpecs) {
             val m = makeMeal(key.name!!, currentDay)
             for (fps in value) {

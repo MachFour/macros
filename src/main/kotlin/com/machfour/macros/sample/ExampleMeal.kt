@@ -1,5 +1,6 @@
 package com.machfour.macros.sample
 
+import com.machfour.datestamp.makeDateStamp
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
@@ -7,7 +8,6 @@ import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.util.DateStamp
 
 val exampleFoodPortion by lazy { initFoodPortion() }
 
@@ -35,7 +35,7 @@ private fun initFoodPortion() : FoodPortion {
 private fun initMeal(n: Int): Meal {
     val meal = MacrosBuilder(MealTable).run {
         setField(MealTable.ID, n.toLong())
-        setField(MealTable.DAY, DateStamp(2020, 10, 28))
+        setField(MealTable.DAY, makeDateStamp(2020, 10, 28))
         setField(MealTable.NAME, "Example meal $n")
         setField(MealTable.NOTES, "Notable notes")
         build(ObjectSource.TEST)

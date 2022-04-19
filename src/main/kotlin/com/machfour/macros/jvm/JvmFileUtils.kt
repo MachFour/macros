@@ -1,4 +1,4 @@
-package com.machfour.macros.util
+package com.machfour.macros.jvm
 
 import java.io.File
 

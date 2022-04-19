@@ -60,11 +60,6 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     final override val modifyTime: Long
         get() = data[table.modifyTimeColumn]!!
 
-    val createInstant: Instant
-        get() = Instant.ofEpochSecond(data[data.table.createTimeColumn]!!)
-    val modifyInstant: Instant
-        get() = Instant.ofEpochSecond(data[data.table.modifyTimeColumn]!!)
-
     final override val hasId: Boolean
         get() = super<FkEntity>.hasId
 

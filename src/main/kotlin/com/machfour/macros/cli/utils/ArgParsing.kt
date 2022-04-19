@@ -1,7 +1,9 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.currentDateStamp
+import com.machfour.datestamp.iso8601StringDateStamp
+import com.machfour.datestamp.pastDateStamp
 
 // Utility functions for argument parsing
 
@@ -50,17 +52,18 @@ fun findArgument(args: List<String>, argIdx: Int): ArgParsingResult {
 fun dayStringParse(dayString: String?): DateStamp? {
     // default values
     if (dayString == null) {
-        return currentDate()
+        return currentDateStamp()
     }
     try {
         // enter day as '-1' for yesterday, '0' for today, '1' for tomorrow, etc.
         val daysAgo = dayString.toInt()
-        return DateStamp.forDaysAgo(-daysAgo.toLong())
+        return pastDateStamp(-daysAgo.toLong())
     } catch (ignore: NumberFormatException) {
     }
     try {
-        return DateStamp.fromIso8601String(dayString)
-    } catch (ignore: IllegalArgumentException) { }
+        return iso8601StringDateStamp(dayString)
+    } catch (ignore: IllegalArgumentException) {
+    }
     // invalid
     return null
 }

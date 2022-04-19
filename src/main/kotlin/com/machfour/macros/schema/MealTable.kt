@@ -1,14 +1,14 @@
 package com.machfour.macros.schema
 
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.currentDateStamp
+import com.machfour.datestamp.currentEpochSeconds
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
-import com.machfour.macros.util.DateStamp
-import com.machfour.macros.util.DateStamp.Companion.currentDate
-import java.time.Instant
 
 private const val tableName = "Meal"
 
@@ -23,9 +23,9 @@ private val notes = notesColumnBuildAndAdd(columns)
 private val name =
     builder("name", Types.TEXT).notNull().buildFor(columns)
 private val day =
-    builder("day", Types.DATESTAMP).notNull().default { currentDate() }.buildFor(columns)
+    builder("day", Types.DATESTAMP).notNull().default { currentDateStamp() }.buildFor(columns)
 private val startTime =
-    builder("start_time", Types.TIMESTAMP).notNull().default{ Instant.now().epochSecond }.buildFor(columns)
+    builder("start_time", Types.TIMESTAMP).notNull().default { currentEpochSeconds() }.buildFor(columns)
 private val duration =
     builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildFor(columns)
 private val goalId =

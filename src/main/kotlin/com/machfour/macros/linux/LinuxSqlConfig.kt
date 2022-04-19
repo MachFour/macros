@@ -1,7 +1,7 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.sql.SqlConfig
-import com.machfour.macros.util.joinFilePath
+import com.machfour.macros.jvm.joinFilePath
 
 class LinuxSqlConfig: SqlConfig {
     companion object {

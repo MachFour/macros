@@ -1,6 +1,7 @@
 package com.machfour.macros.sql.datatype
 
-import com.machfour.macros.util.DateStamp
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.iso8601StringDateStamp
 import kotlin.reflect.KClass
 
 // basic types corresponding roughly to database types
@@ -216,7 +217,7 @@ class Types {
         @Throws(TypeCastException::class)
         override fun fromRawNotNull(data: Any): DateStamp = fromNonEmptyString(data.toString())
 
-        override fun fromNonEmptyString(data: String): DateStamp = DateStamp.fromIso8601String(data)
+        override fun fromNonEmptyString(data: String): DateStamp = iso8601StringDateStamp(data)
         override fun toRaw(data: DateStamp?): Any? = data?.toString()
         override fun kotlinClass(): KClass<DateStamp> = DateStamp::class
         override fun sqliteType(): SqliteType = SqliteType.TEXT

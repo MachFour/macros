@@ -8,7 +8,7 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.util.DateStamp
+import com.machfour.datestamp.DateStamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

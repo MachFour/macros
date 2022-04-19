@@ -1,6 +1,7 @@
 
 package com.machfour.macros.entities
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.Factory
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
@@ -10,8 +11,6 @@ import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
-import com.machfour.macros.util.DateStamp
-import java.time.Instant
 
 // don't need hashcode override since equals implies super.equals true, so hashcode will match
 @Suppress("EqualsOrHashCode")
@@ -69,9 +68,6 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
 
     val durationMinutes: Int
         get() = durationSeconds / 60
-
-    val startTimeInstant: Instant
-        get() = Instant.ofEpochSecond(startTime)
 
     val notes: String?
         get() = data[MealTable.NOTES]

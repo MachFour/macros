@@ -1,5 +1,6 @@
 package com.machfour.macros.cli.utils
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.getMealForDayWithName
@@ -9,7 +10,6 @@ import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.DateStamp
 
 /*
  * Stores information for a meal being input (specified) via text fields,

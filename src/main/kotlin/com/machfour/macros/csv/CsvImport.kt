@@ -178,7 +178,7 @@ private fun <J: Any> buildCompositeFoodObjectTree(
 }
 
 @Throws(IOException::class, TypeCastException::class)
-internal fun <J: Any> buildFoodObjectTree(
+fun <J: Any> buildFoodObjectTree(
     foodCsv: Reader,
     foodKeyCol: Column<Food, J>,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,

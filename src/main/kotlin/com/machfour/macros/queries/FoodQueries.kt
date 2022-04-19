@@ -23,7 +23,7 @@ private val foodSearchCols = listOf(
 //  e.g. not just prefix searches as strings get longer
 // returns results matching either all or any of the keywords
 @Throws(SqlException::class)
-internal fun foodSearch(
+fun foodSearch(
     db: SqlDatabase,
     keywords: List<String>,
     matchAll: Boolean = true,
@@ -49,7 +49,7 @@ internal fun foodSearch(
 //  - be adaptive - if there only few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
 @Throws(SqlException::class)
-internal fun foodSearch(
+fun foodSearch(
     db: SqlDatabase,
     keyword: String,
     minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
@@ -89,7 +89,7 @@ internal fun foodSearch(
 }
 
 @Throws(SqlException::class)
-internal fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
+fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
     val categoriesById = getAllRawObjects(db, FoodCategoryTable)
     // change the map to have keys as category names
     return categoriesById.mapKeys { it.value.name }
@@ -97,13 +97,13 @@ internal fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
 
 
 @Throws(SqlException::class)
-internal fun getFoodByIndexName(db: SqlDatabase, indexName: String): Food? {
+fun getFoodByIndexName(db: SqlDatabase, indexName: String): Food? {
     val resultFood = getFoodsByIndexName(db, listOf(indexName))
     return resultFood[indexName]
 }
 
 @Throws(SqlException::class)
-internal fun getFoodById(db: SqlDatabase, id: Long): Food? {
+fun getFoodById(db: SqlDatabase, id: Long): Food? {
     val resultFood = getFoodsById(db, listOf(id))
     return resultFood[id]
 }

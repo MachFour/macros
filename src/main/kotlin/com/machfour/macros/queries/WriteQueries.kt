@@ -25,22 +25,22 @@ import com.machfour.macros.sql.generator.SimpleDelete
 // Do we really need the list methods? The user will probably only edit one object at a time
 // except for deleting a bunch of foodPortions from one meal, or servings from a food
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> insertObjects(db: SqlDatabase, objects: Collection<M>, withId: Boolean): Int {
+fun <M : MacrosEntity<M>> insertObjects(db: SqlDatabase, objects: Collection<M>, withId: Boolean): Int {
     return db.insertRows(objects.map { it.data }, withId)
 }
 
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> updateObjects(db: SqlDatabase, objects: Collection<M>): Int {
+fun <M : MacrosEntity<M>> updateObjects(db: SqlDatabase, objects: Collection<M>): Int {
     return db.updateRows(objects.map { it.data })
 }
 
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
+fun <M : MacrosEntity<M>> deleteObject(db: SqlDatabase, o: M): Int {
     return deleteById(db, o.table, o.id)
 }
 
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
+fun <M : MacrosEntity<M>> deleteObjects(db: SqlDatabase, objects: Collection<M>): Int {
     val table = objects.firstOrNull()?.table ?: return 0
     return deleteObjectsById(db, table, objects.map { it.id })
 }
@@ -58,13 +58,13 @@ private fun <M : MacrosEntity<M>> deleteObjectsById(
 // returns number of objects saved correctly (i.e. 0 or 1)
 // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> saveObject(db: SqlDatabase, o: M): Int {
+fun <M : MacrosEntity<M>> saveObject(db: SqlDatabase, o: M): Int {
     return saveObjects(db, listOf(o), o.source)
 }
 
 // TODO pull these functions up to DataSource level
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> saveObjects(
+fun <M : MacrosEntity<M>> saveObjects(
     db: SqlDatabase,
     objects: Collection<M>,
     objectSource: ObjectSource
@@ -95,7 +95,7 @@ internal fun <M : MacrosEntity<M>> saveObjects(
  * Entity-specific
  */
 @Throws(SqlException::class)
-internal fun forgetFood(db: SqlDatabase, f: Food) {
+fun forgetFood(db: SqlDatabase, f: Food) {
     require(f.source === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
     // delete nutrition data, foodQuantities, servings, then food
 
@@ -107,7 +107,7 @@ internal fun forgetFood(db: SqlDatabase, f: Food) {
 
 // TODO replace with update template
 @Throws(SqlException::class)
-internal fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
+fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
     db.executeRawStatement(
         "UPDATE ${FoodTable.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
                 "${FoodTable.FOOD_TYPE} = '${foodType.niceName}'"
@@ -136,7 +136,7 @@ fun <M, J: Any> deleteWhere(
 
 // does DELETE FROM (t) WHERE (whereColumn) IS (NOT) NULL
 @Throws(SqlException::class)
-internal fun <M, J: Any> deleteByNullStatus(
+fun <M, J: Any> deleteByNullStatus(
     db: SqlDatabase,
     t: Table<M>,
     whereColumn: Column<M, J>,
@@ -151,22 +151,22 @@ internal fun <M, J: Any> deleteByNullStatus(
 }
 
 @Throws(SqlException::class)
-internal fun deleteAllCompositeFoods(db: SqlDatabase): Int {
+fun deleteAllCompositeFoods(db: SqlDatabase): Int {
     return deleteWhere(db, FoodTable, FoodTable.FOOD_TYPE, listOf(FoodType.COMPOSITE.niceName))
 }
 
 @Throws(SqlException::class)
-internal fun deleteAllIngredients(db: SqlDatabase) {
+fun deleteAllIngredients(db: SqlDatabase) {
     clearTable(db, IngredientTable)
 }
 
 @Throws(SqlException::class)
-internal fun deleteAllFoodPortions(db: SqlDatabase) {
+fun deleteAllFoodPortions(db: SqlDatabase) {
     clearTable(db, FoodPortionTable)
 }
 
 
 @Throws(SqlException::class)
-internal fun <M> clearTable(db: SqlDatabase, t: Table<M>): Int {
+fun <M> clearTable(db: SqlDatabase, t: Table<M>): Int {
     return db.deleteFromTable(SimpleDelete.build(t) {})
 }

@@ -10,7 +10,7 @@ import com.machfour.macros.sql.generator.SingleColumnSelect
 import com.machfour.macros.sql.generator.TwoColumnSelect
 
 @Throws(SqlException::class)
-internal fun <M> prefixSearch(
+fun <M> prefixSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
     keyword: String,
@@ -20,7 +20,7 @@ internal fun <M> prefixSearch(
 }
 
 @Throws(SqlException::class)
-internal fun <M> substringSearch(
+fun <M> substringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
     keyword: String,
@@ -30,7 +30,7 @@ internal fun <M> substringSearch(
 }
 
 @Throws(SqlException::class)
-internal fun <M> exactStringSearch(
+fun <M> exactStringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
     keyword: String,
@@ -41,7 +41,7 @@ internal fun <M> exactStringSearch(
 
 // Returns empty list if either keyword is blank or cols is empty
 @Throws(SqlException::class)
-internal fun <M> stringSearch(
+fun <M> stringSearch(
     db: SqlDatabase,
     cols: List<Column<M, String>>,
     keyword: String,
@@ -66,7 +66,7 @@ internal fun <M> stringSearch(
 
 // for convenience
 @Throws(SqlException::class)
-internal fun <M, I: Any> selectSingleColumn(
+fun <M, I: Any> selectSingleColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
     queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -75,7 +75,7 @@ internal fun <M, I: Any> selectSingleColumn(
 }
 
 @Throws(SqlException::class)
-internal fun <M, I: Any, J: Any> selectTwoColumns(
+fun <M, I: Any, J: Any> selectTwoColumns(
     db: SqlDatabase,
     select1: Column<M, I>,
     select2: Column<M, J>,
@@ -85,7 +85,7 @@ internal fun <M, I: Any, J: Any> selectTwoColumns(
     return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
 }
 @Throws(SqlException::class)
-internal fun <M, I: Any> selectNonNullColumn(
+fun <M, I: Any> selectNonNullColumn(
     db: SqlDatabase,
     selectColumn: Column<M, I>,
     queryOptions: SelectQuery.Builder<M>.() -> Unit
@@ -94,7 +94,7 @@ internal fun <M, I: Any> selectNonNullColumn(
 }
 
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
+fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {
         where(idCol, id)
@@ -103,7 +103,7 @@ internal fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table
 }
 
 @Throws(SqlException::class)
-internal fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
     val idCol = table.idColumn
     val existingIds = selectNonNullColumn(db, idCol) {
         where(idCol, queryIds)
@@ -113,7 +113,7 @@ internal fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table
 }
 
 @Throws(SqlException::class)
-internal fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
     return if (keys.isNotEmpty()) {
         // The resulting map is unordered
         selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }
@@ -125,7 +125,7 @@ internal fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Co
 
 // The resulting map is unordered
 @Throws(SqlException::class)
-internal fun <M, I: Any, J: Any> selectColumnMap(
+fun <M, I: Any, J: Any> selectColumnMap(
     ds: SqlDatabase,
     t: Table<M>,
     keyColumn: Column<M, I>,
@@ -158,7 +158,7 @@ internal fun <M, I: Any, J: Any> selectColumnMap(
 }
 
 @Throws(SqlException::class)
-internal fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
+fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
     objectMap: Map<K, M>
 ): Map<K, M> {

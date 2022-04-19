@@ -40,7 +40,7 @@ fun <M: NutrientValue<M>> formatNutrientValue(
     return "%$widthFmt$floatFmt".format(qty)
 }
 
-internal fun formatQuantity(
+fun formatQuantity(
     qty: Double,
     unit: Unit? = null,
     unitStrings: UnitStrings? = null,

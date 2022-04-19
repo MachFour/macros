@@ -144,6 +144,6 @@ private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Coll
 
 
 @Throws(SqlException::class)
-internal fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
+fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, fk: Column.Fk<M, *, *>): List<M> {
     return completeForeignKeys(ds, objects, listOf(fk))
 }

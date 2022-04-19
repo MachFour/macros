@@ -1,13 +1,13 @@
-/build/
-/libs/
-/libs-src/
-/out/
+build/
+libs/
+libs-src/
+out/
 /test/
 .gradle/
 .idea/workspace.xml
 
 
-/gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.jar
 
 .attach_pid*
 *.db

@@ -11,7 +11,7 @@ import com.machfour.macros.sql.generator.SelectQuery
 // Constructs a map of ID to raw object data (i.e. no object references initialised)
 // IDs that do not exist in the database will not be contained in the output map.
 @Throws(SqlException::class)
-internal fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
+fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
     require(keyColumn.isUnique) { "Key column must be unique" }
 
     val t = keyColumn.table
@@ -30,7 +30,7 @@ internal fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>,
 }
 
 @Throws(SqlException::class)
-internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
+fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
     return getRawObjects(db, t.idColumn) {
         if (orderBy != null) {
             orderBy(orderBy)
@@ -39,7 +39,7 @@ internal fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<
 }
 
 @Throws(SqlException::class)
-internal fun <M> getRawObjectsWithIds(
+fun <M> getRawObjectsWithIds(
     db: SqlDatabase,
     t: Table<M>,
     ids: Collection<Long>,
@@ -51,7 +51,7 @@ internal fun <M> getRawObjectsWithIds(
 }
 
 @Throws(SqlException::class)
-internal fun <M, J: Any> getRawObjectsWithKeys(
+fun <M, J: Any> getRawObjectsWithKeys(
     db: SqlDatabase,
     keyCol: Column<M, J>,
     keys: Collection<J>,
@@ -80,7 +80,7 @@ internal fun <M, J: Any> getRawObjectsWithKeys(
 
 
 @Throws(SqlException::class)
-internal fun <M, N> getRawObjectsForParentFk(
+fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
     parentObjectMap: Map<Long, N>,
     childTable: Table<M>,

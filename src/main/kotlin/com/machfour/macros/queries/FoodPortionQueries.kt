@@ -33,7 +33,7 @@ import com.machfour.macros.sql.generator.OrderByDirection
 //}
 
 @Throws(SqlException::class)
-internal fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> {
+fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> {
     // NOTE this can't actually give the create time.
     // Need to SELECT MAX(create_time) for that (not just ORDER BY)
     val query = selectTwoColumns(
@@ -53,7 +53,7 @@ internal fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): Li
     return query.mapNotNull { it.first }
 }
 
-internal fun getCommonQuantities(db: SqlDatabase, foodId: Long): List<Pair<Double, Unit>> {
+fun getCommonQuantities(db: SqlDatabase, foodId: Long): List<Pair<Double, Unit>> {
     val quantity = FoodPortionTable.QUANTITY
     val quantityUnit = FoodPortionTable.QUANTITY_UNIT
     val query = selectTwoColumns(

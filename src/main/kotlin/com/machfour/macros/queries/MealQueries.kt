@@ -10,20 +10,20 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 
 @Throws(SqlException::class)
-internal fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<Long, Meal> {
+fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<Long, Meal> {
     val mealIds = getMealIdsForDay(db, day)
     return getMealsById(db, mealIds)
 }
 
 // assumes unique meal name per day
 @Throws(SqlException::class)
-internal fun getMealForDayWithName(db: SqlDatabase, day: DateStamp, name: String): Meal? {
+fun getMealForDayWithName(db: SqlDatabase, day: DateStamp, name: String): Meal? {
     val mealIds = getMealIdsForDay(db, day)
     return getMealsById(db, mealIds).filter { it.value.name == name }.values.firstOrNull()
 }
 
 @Throws(SqlException::class)
-internal fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
+fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
     val ids = selectSingleColumn(db, MealTable.ID) {
         where(MealTable.DAY, listOf(day))
     }
@@ -31,7 +31,7 @@ internal fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
 }
 
 @Throws(SqlException::class)
-internal fun getMealById(db: SqlDatabase, id: Long): Meal? {
+fun getMealById(db: SqlDatabase, id: Long): Meal? {
     val resultMeals = getMealsById(db, listOf(id))
     return resultMeals.getOrDefault(id, null)
 }

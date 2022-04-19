@@ -1,14 +1,9 @@
 plugins {
-    application
     kotlin("jvm") version("1.6.20")
 }
 
 group = "com.machfour"
 version = "1.0-SNAPSHOT"
-
-application {
-    mainClass.set("com.machfour.macros.linux.LinuxMain")
-}
 
 repositories {
     mavenCentral()
@@ -33,30 +28,15 @@ dependencies {
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
-    // for lanterna, sqlite-jdbc, ExprK
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    api(fileTree(mapOf("dir" to "libs", "include" to listOf("datestamp.jar"))))
+    implementation(files("libs/ExprK.jar"))
+    api(files("libs/datestamp.jar"))
 
     // testing
-    implementation("junit:junit:4.13.2")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 tasks.withType<Copy> {
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
 
-tasks.withType<Jar> {
-    // This code recursively collects and copies all of a project's files and adds them to the JAR itself.
-    // One can extend this task, to skip certain files or particular types at will
-    from(configurations.runtimeClasspath.map {
-            config -> config.map { if (it.isDirectory) it else zipTree(it) }
-    })
-
-    manifest {
-        attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
-    }
-
-    duplicatesStrategy = DuplicatesStrategy.WARN
-}

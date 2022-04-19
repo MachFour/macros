@@ -9,7 +9,7 @@ import java.io.Reader
 
 fun java.sql.SQLException.wrapAsNativeException(): SqlException {
     val message = buildString {
-        message?.let { append("it\n") }
+        message?.let { append("$it\n") }
         sqlState?.let { append("SQLState ($it) ") }
         append("vendor code (${errorCode})")
     }

@@ -42,14 +42,11 @@ import java.io.Reader
 @Throws(IOException::class)
 fun deserialiseIngredientsJson(json: Reader?): Collection<CompositeFoodSpec> {
     // this creates an anonymous subclass of typetoken?
-    val collectionType = object : TypeToken<Collection<CompositeFoodSpec>>(){}.type
     val builder = GsonBuilder()
-    // if PointAdapter didn't check for nulls in its read/write methods, you should instead use
-    // builder.registerTypeAdapter(Point.class, new PointAdapter().nullSafe());
-    builder.registerTypeAdapter(CompositeFoodSpec::class.java, CompositeFoodAdapter().nullSafe())
-    val parser = builder.create()
+        .disableJdkUnsafe() // god this was annoying thing to debug
+        .registerTypeHierarchyAdapter(CompositeFoodSpec::class.java, CompositeFoodAdapter().nullSafe())
     return try {
-        parser.fromJson(json, collectionType)
+        builder.create().fromJson(json, object : TypeToken<Collection<CompositeFoodSpec>>() {}.type)
     } catch (e: JsonIOException) {
         throw IOException(e)
     }
@@ -126,9 +123,10 @@ fun createCompositeFoods(
     val indexNames = extractIngredientIndexNames(parseResult)
     // for invalid index names, the map won't have an entry
     val indexNameMap = getFoodIdsByIndexName(ds, indexNames)
-    val results: MutableList<CompositeFood> = ArrayList(parseResult.size)
-    for (spec in parseResult) {
-        results.add(processCompositeFoodSpec(spec, indexNameMap))
+    val results = buildList {
+        for (spec in parseResult) {
+            add(processCompositeFoodSpec(spec, indexNameMap))
+        }
     }
     val ingredientFoods = getFoodsById(ds, indexNameMap.values)
 

@@ -339,7 +339,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                     }
                 }
             }
-        } catch (e: SqlException) {
+        } catch (e: java.sql.SQLException) {
             val msg = "${e.message} thrown by insertObjectData() on table ${table.name} and object data: $currentRow"
             throw SqlException(msg, e.cause)
         } finally {

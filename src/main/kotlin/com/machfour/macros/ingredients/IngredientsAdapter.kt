@@ -3,6 +3,8 @@ package com.machfour.macros.ingredients
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.IngredientTable
 import java.io.IOException
 
 internal class IngredientsAdapter : TypeAdapter<IngredientSpec>() {
@@ -10,17 +12,17 @@ internal class IngredientsAdapter : TypeAdapter<IngredientSpec>() {
     override fun write(writer: JsonWriter, spec: IngredientSpec) {
         writer.apply {
             beginObject()
-            name("index_name")
+            name(FoodTable.INDEX_NAME.sqlName)
             value(spec.indexName)
-            name("quantity")
+            name(IngredientTable.QUANTITY.sqlName)
             value(spec.quantity)
-            name("quantity_unit")
+            name(IngredientTable.QUANTITY_UNIT.sqlName)
             value(spec.unit)
             if (spec.notes != null) {
-                name("notes")
+                name(IngredientTable.NOTES.sqlName)
                 value(spec.notes)
             } else if (serializeNulls) {
-                name("notes")
+                name(IngredientTable.NOTES.sqlName)
                 nullValue()
             }
             endObject()
@@ -36,10 +38,10 @@ internal class IngredientsAdapter : TypeAdapter<IngredientSpec>() {
         reader.beginObject()
         while (reader.hasNext()) {
             when (reader.nextName()) {
-                "index_name" -> indexName = reader.nextString()
-                "quantity" -> quantity = reader.nextDouble()
-                "quantity_unit" -> quantityUnit = reader.nextString()
-                "notes" -> notes = reader.nextString()
+                FoodTable.INDEX_NAME.sqlName -> indexName = reader.nextString()
+                IngredientTable.QUANTITY.sqlName -> quantity = reader.nextDouble()
+                IngredientTable.QUANTITY_UNIT.sqlName -> quantityUnit = reader.nextString()
+                IngredientTable.NOTES.sqlName -> notes = reader.nextString()
                 else -> reader.skipValue()
             }
         }

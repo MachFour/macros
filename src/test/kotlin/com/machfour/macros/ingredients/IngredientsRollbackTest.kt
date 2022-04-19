@@ -14,10 +14,11 @@ import java.io.IOException
 
 class IngredientsRollbackTest {
     companion object {
-        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test-ingredients.sqlite"
+        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
 
         @BeforeAll
+        @JvmStatic
         fun initDb() {
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
@@ -25,6 +26,7 @@ class IngredientsRollbackTest {
                 deleteAllCompositeFoods(db)
             } catch (e: SqlException) {
                 println("Could not delete existing composite foods and/or clear ingredients table!")
+                println(e.message)
                 fail<Any>(e)
             }
 
@@ -35,7 +37,8 @@ class IngredientsRollbackTest {
     // even though it is inserted first
     @Test
     fun testRollback() {
-        val indexName: String = try {
+        var indexName = ""
+        try {
             val f: Food
             FileReader("/home/max/devel/macros-test-data/valid-food-invalid-ingredients.json").use { r ->
                 val foods = readRecipes(r, db)
@@ -43,15 +46,15 @@ class IngredientsRollbackTest {
                 assertEquals(1, foods.size)
                 assertNotNull(foods[0])
                 f = foods[0]
+                indexName = f.indexName
+
                 saveRecipes(foods, db)
                 fail<Any>("saveRecipes() did not throw an SqlException")
             }
-            f.indexName
         } catch (e1: IOException) {
             fail(e1)
         } catch (e2: SqlException) {
             // we expect a foreign key constraint failure, do nothing
-            fail(e2)
         }
 
         try {

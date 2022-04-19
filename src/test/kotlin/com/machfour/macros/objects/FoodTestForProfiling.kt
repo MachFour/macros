@@ -10,6 +10,9 @@ import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 class FoodTestForProfiling {
     companion object {
@@ -39,7 +42,7 @@ class FoodTestForProfiling {
                 put(FoodTable.VARIETY, "really good")
                 put(FoodTable.NAME, "food")
                 put(FoodTable.NOTES, "notes")
-                put(FoodTable.CATEGORY, "Dairy")
+                put(FoodTable.CATEGORY, "dairy")
                 put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
                 put(FoodTable.USDA_INDEX, null)
                 put(FoodTable.NUTTAB_INDEX, null)
@@ -48,29 +51,29 @@ class FoodTestForProfiling {
         }
 
         @JvmStatic
-        fun main(args: Array<String>) {
+        @BeforeAll
+        fun init() {
             initDb()
             doFood()
-            val f = FoodTestForProfiling()
-            f.saveALotOfFood()
         }
     }
 
-    private fun saveALotOfFood() {
+    @Test
+    fun saveALotOfFood() {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
             val modifiedData = foodDc.copy().apply {
                 put(FoodTable.ID, i.toLong())
                 put(FoodTable.INDEX_NAME, "food$i")
             }
-            Food.factory.construct(modifiedData, ObjectSource.IMPORT).also {
+            Food.factory.construct(modifiedData, ObjectSource.RESTORE).also {
                 lotsOfFoods.add(it)
             }
         }
         try {
             insertObjects(db, lotsOfFoods, true)
         } catch (e: SqlException) {
-            e.printStackTrace()
+            fail(e)
         }
 
     }

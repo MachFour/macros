@@ -3,6 +3,7 @@ package com.machfour.macros.ingredients
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import com.machfour.macros.schema.FoodTable
 import java.io.IOException
 
 internal class CompositeFoodAdapter : TypeAdapter<CompositeFoodSpec>() {
@@ -22,10 +23,10 @@ internal class CompositeFoodAdapter : TypeAdapter<CompositeFoodSpec>() {
         reader.beginObject()
         while (reader.hasNext()) {
             when (reader.nextName()) {
-                "index_name" -> indexName = reader.nextString()
-                "name" -> name = reader.nextString()
-                "variety" -> variety = reader.nextString()
-                "notes" -> notes = reader.nextString()
+                FoodTable.INDEX_NAME.sqlName -> indexName = reader.nextString()
+                FoodTable.NAME.sqlName -> name = reader.nextString()
+                FoodTable.VARIETY.sqlName -> variety = reader.nextString()
+                FoodTable.NOTES.sqlName -> notes = reader.nextString()
                 "ingredients" -> {
                     reader.beginArray()
                     while (reader.hasNext()) {

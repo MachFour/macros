@@ -14,11 +14,12 @@ import java.io.IOException
 
 class IngredientsParserTest {
     companion object {
-        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test-ingredients.sqlite"
+        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
         private lateinit var db: LinuxDatabase
-
         @BeforeAll
+        @JvmStatic
         fun initDb() {
+            // TODO initialise database properly before each test
             db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
             try {
                 deleteAllIngredients(db)

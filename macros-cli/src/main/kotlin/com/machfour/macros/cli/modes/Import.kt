@@ -1,10 +1,10 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.csv.CsvException
 import com.machfour.macros.csv.importFoodData
 import com.machfour.macros.csv.importRecipes

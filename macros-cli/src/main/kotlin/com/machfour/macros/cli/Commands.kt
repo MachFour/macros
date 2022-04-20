@@ -1,7 +1,6 @@
 package com.machfour.macros.cli
 
 import com.machfour.macros.cli.modes.*
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.util.javaTrim
 
 // File that holds static instances of all the other commands

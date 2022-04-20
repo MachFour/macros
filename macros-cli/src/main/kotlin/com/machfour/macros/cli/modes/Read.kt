@@ -1,11 +1,11 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.insulin.parseInsulinArgument
 import com.machfour.macros.insulin.printInsulin

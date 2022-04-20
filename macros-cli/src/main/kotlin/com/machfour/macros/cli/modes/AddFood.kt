@@ -1,10 +1,10 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.interactive.FoodEditor
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgument
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.queries.getFoodIdsByIndexName
 import com.machfour.macros.schema.FoodTable

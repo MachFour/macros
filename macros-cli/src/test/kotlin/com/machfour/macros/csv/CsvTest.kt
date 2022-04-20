@@ -1,6 +1,6 @@
 package com.machfour.macros.csv
 
-import com.machfour.macros.core.CliConfig
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.linux.LinuxConfig

@@ -1,8 +1,8 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.*
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal

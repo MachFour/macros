@@ -1,4 +1,4 @@
-package com.machfour.macros.core
+package com.machfour.macros.cli
 
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.SqlDatabase

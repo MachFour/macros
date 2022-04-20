@@ -1,9 +1,9 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.makeMealSpec
-import com.machfour.macros.core.CliConfig
 
 
 class NewMeal(config: CliConfig) : CommandImpl(config) {

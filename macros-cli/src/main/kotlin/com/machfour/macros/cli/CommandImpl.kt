@@ -1,7 +1,5 @@
 package com.machfour.macros.cli
 
-import com.machfour.macros.core.CliConfig
-
 
 abstract class CommandImpl protected constructor(val config: CliConfig): Command {
     abstract override val name: String

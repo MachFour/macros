@@ -1,6 +1,6 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.core.CliConfig
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.jvm.joinFilePath
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.SqlDatabase

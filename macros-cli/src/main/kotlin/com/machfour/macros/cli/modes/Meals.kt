@@ -2,12 +2,12 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.currentDateStamp
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.dayStringParse
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase

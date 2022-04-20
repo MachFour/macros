@@ -1,11 +1,11 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.parsing.MealSpec
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase

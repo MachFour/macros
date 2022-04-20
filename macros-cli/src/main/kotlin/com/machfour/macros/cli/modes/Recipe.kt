@@ -1,10 +1,10 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.cliGetChar
 import com.machfour.macros.cli.utils.printIngredients
 import com.machfour.macros.cli.utils.printNutrientData
-import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.ingredients.readRecipes
 import com.machfour.macros.ingredients.saveRecipes

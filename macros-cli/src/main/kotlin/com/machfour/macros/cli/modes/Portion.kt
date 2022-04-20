@@ -1,9 +1,10 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
@@ -16,57 +17,49 @@ import com.machfour.macros.queries.saveObject
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 
-fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
-    if (specs.isEmpty()) {
+fun List<FoodPortionSpec>.processAndAddTo(meal: Meal, db: SqlDatabase): Int {
+    if (isEmpty()) {
         println("No food portions specified, nothing to do")
         return 0
     }
-    val spec = specs[0]
-    val f: Food? = try {
-        getFoodByIndexName(db, spec.foodIndexName)
-    } catch (e: SqlException) {
-        printlnErr("Could not retrieve food. Reason: " + e.message)
-        return 1
+    for (spec in this) {
+        val f: Food? = try {
+            getFoodByIndexName(db, spec.foodIndexName)
+        } catch (e: SqlException) {
+            printlnErr("Could not retrieve food. Reason: " + e.message)
+            return 1
+        }
+        if (f == null) {
+            printlnErr("Unrecognised food with index name '${spec.foodIndexName}'")
+            return 1
+        }
+        processFpSpec(spec, meal, f)
+        if (spec.error.isNotEmpty()) {
+            printlnErr(spec.error)
+            return 1
+        }
+        val createdObject = checkNotNull(spec.createdObject) {
+            "No object created but no error message either"
+        }
+        meal.addFoodPortion(createdObject)
     }
-    if (f == null) {
-        printlnErr("Unrecognised food with index name '${spec.foodIndexName}'")
-        return 1
-    }
-    processFpSpec(spec, toAddTo, f)
-    if (spec.error.isNotEmpty()) {
-        printlnErr(spec.error)
-        return 1
-    }
-    val createdObject = checkNotNull(spec.createdObject) {
-        "No object created but no error message either"
-    }
-    toAddTo.addFoodPortion(createdObject)
     try {
-        saveFoodPortions(db, toAddTo)
+        meal.foodPortions
+            .filter { it.source != ObjectSource.DATABASE }
+            .forEach { saveObject(db, it) }
     } catch (e: SqlException) {
         printlnErr("Error saving food portion. Reason: " + e.message)
         return 1
     }
     println()
-    printMeal(toAddTo, false)
+    printMeal(meal, false)
     return 0
 }
 
-@Throws(SqlException::class)
-private fun saveFoodPortions(ds: SqlDatabase, meal: Meal) {
-    for (fp in meal.foodPortions) {
-        if (fp.source != ObjectSource.DATABASE) {
-            saveObject(ds, fp)
-        }
-    }
-}
 
-class Portion(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "portion"
-        private const val USAGE = "Usage: $programName $NAME [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
-
-    }
+class Portion(config: CliConfig): CommandImpl(config) {
+    override val name = "portion"
+    override val usage = "Usage: ${config.programName} $name [ <meal name> [<day>] -s ] <portion spec> [<portion spec> ... ]"
 
     override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {
@@ -111,11 +104,11 @@ class Portion(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, U
             }
         }
 
-        val processedObject = checkNotNull(mealSpec.processedObject) {
+        val processedMeal = checkNotNull(mealSpec.processedObject) {
             "mealspec did not correctly process object but no error was given "
         }
 
-        return processPortions(processedObject, specs, ds)
+        return specs.processAndAddTo(processedMeal, ds)
     }
 
 }

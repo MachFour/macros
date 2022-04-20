@@ -2,15 +2,13 @@ package com.machfour.macros.cli.modes
 
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.sql.SqlException
 
-class Init(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "init"
-        private const val USAGE = "Usage: $programName $NAME"
-    }
+class Init(config: CliConfig): CommandImpl(config) {
+    override val name = "init"
+    override val usage = "Usage: ${config.programName} $name"
 
     override fun printHelp() {
         println("Recreates and initialises the database. All previous data is deleted!")

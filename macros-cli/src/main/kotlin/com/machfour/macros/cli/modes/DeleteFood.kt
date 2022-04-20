@@ -1,20 +1,19 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.cliGetChar
 import com.machfour.macros.cli.utils.printFoodSummary
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getFoodsByIndexName
 import com.machfour.macros.sql.SqlException
 
 
-class DeleteFood(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "deletefood"
-        private const val USAGE = "Usage: $programName $NAME <index name 1> [<index name 2>] [...]"
-    }
+class DeleteFood(config: CliConfig) : CommandImpl(config) {
+    override val name = "deletefood"
+    override val usage = "Usage: ${config.programName} $name <index name 1> [<index name 2>] [...]"
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {

@@ -1,6 +1,8 @@
 package com.machfour.macros.cli.modes
+
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.csv.exportFoodData
 import com.machfour.macros.csv.exportServings
 import com.machfour.macros.jvm.currentTimeString
@@ -11,11 +13,9 @@ import com.machfour.macros.sql.Table
 import java.io.FileWriter
 import java.io.IOException
 
-class Export(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "export"
-        private const val USAGE = "Usage: $programName $NAME [output.zip]"
-    }
+class Export(config: CliConfig): CommandImpl(config) {
+    override val name = "export"
+    override val usage = "Usage: ${config.programName} $name [output.zip]"
 
     override fun printHelp() {
         println(

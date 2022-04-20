@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
@@ -8,7 +9,6 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
-import com.machfour.datestamp.DateStamp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

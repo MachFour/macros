@@ -1,14 +1,18 @@
 package com.machfour.macros.cli
 
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 
 
-abstract class CommandImpl protected constructor(
-    final override val name: String,
-    final override val usage: String = "No help available for mode '${name}'",
-    val config: MacrosConfig,
-): com.machfour.macros.cli.Command {
-    
+abstract class CommandImpl protected constructor(val config: CliConfig): Command {
+    abstract override val name: String
+
+    override val usage: String
+        get() = "No help available for mode '${name}'"
+
+    // convenience
+    protected val noArgsUsage
+        get() = "Usage: ${config.programName} $name"
+
     // Subclasses should override this to provide more detailed help than just the usage string
     override fun printHelp() {
         println(usage)
@@ -16,16 +20,7 @@ abstract class CommandImpl protected constructor(
 
     override fun toString() = name
 
+    // logic for deciding whether a command is user-facing
     override val isUserCommand: Boolean
-        get() = com.machfour.macros.cli.CommandImpl.Companion.isUserCommand(name)
-
-    companion object {
-        // TODO this is a hack for now
-        const val programName: String = "macros"
-
-        // logic for deciding whether a command is user-facing
-        fun isUserCommand(name: String): Boolean {
-            return !name.startsWith("_")
-        }
-    }
+        get() = !name.startsWith("_")
 }

@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.csv.CsvException
 import com.machfour.macros.csv.importFoodData
 import com.machfour.macros.csv.importRecipes
@@ -32,12 +32,10 @@ private fun getCsvFile(args: List<String>, flag: String, default: String): Strin
 }
 
 
-class Import(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "import"
-        private const val USAGE = "Usage: $programName $NAME [--clear] [--norecipes] [--nofoods] " +
-                " [-f <foods.csv>] [-s <servings.csv>] [-r <recipes.csv>] [-i <ingredients.csv>]"
-    }
+class Import(config: CliConfig) : CommandImpl(config) {
+    override val name = "import"
+    override val usage = "Usage: ${config.programName} $name [--clear] [--norecipes] [--nofoods] " +
+            " [-f <foods.csv>] [-s <servings.csv>] [-r <recipes.csv>] [-i <ingredients.csv>]"
 
     override fun printHelp() {
         println("Imports CSV data for foods, servings, recipes and ingredients into the database.")

@@ -1,10 +1,11 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.insulin.parseInsulinArgument
 import com.machfour.macros.insulin.printInsulin
@@ -14,7 +15,11 @@ import java.io.FileReader
 import java.io.IOException
 
 
-class Read(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
+class Read(config: CliConfig) : CommandImpl(config) {
+    override val name = "read"
+    override val usage = "Usage: ${config.programName} $name <file> " +
+            "[ ${verboseFlag.usage} ] [${per100Flag.usage}] [${insulinFlag.full} <ic ratio>[:<protein factor]]"
+
     data class Flag(
         val name: String,
         val mnemonic: String? = null,
@@ -34,13 +39,10 @@ class Read(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USA
     }
 
     companion object {
-        private const val NAME = "read"
         private val helpFlag = Flag("help", "h")
         private val verboseFlag = Flag("verbose", "v")
         private val per100Flag = Flag("per100")
         private val insulinFlag = Flag("insulin")
-        private val USAGE = "Usage: $programName $NAME <file> " +
-            "[ ${verboseFlag.usage} ] [${per100Flag.usage}] [${insulinFlag.full} <ic ratio>[:<protein factor]]"
     }
 
     override fun doAction(args: List<String>): Int {

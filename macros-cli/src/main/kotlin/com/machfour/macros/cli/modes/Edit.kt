@@ -1,7 +1,8 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.*
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -20,7 +21,7 @@ private fun addPortion(toEdit: Meal, db: SqlDatabase) {
     val inputString = cliGetStringInput()
     if (inputString != null && inputString.isNotEmpty()) {
         val spec = FileParser.makefoodPortionSpecFromLine(inputString)
-        processPortions(toEdit, listOf(spec), db)
+        listOf(spec).processAndAddTo(toEdit, db)
     }
 }
 
@@ -125,12 +126,10 @@ private const val nonInteractiveHelpString =
         "\n" + "3. <food index name> (this means 1 of the default serving)" +
         "\n" + "(<> denotes a mandatory argument and [] denotes an optional argument)"
 
-class Edit(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "edit"
-        private const val USAGE = "Usage: $programName $NAME [meal [day]]"
+class Edit(config: CliConfig) : CommandImpl(config) {
+    override val name = "edit"
 
-    }
+    override val usage: String = "Usage: ${config.programName} $name [meal [day]]"
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {
@@ -212,7 +211,7 @@ class Edit(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USA
     }
 
     override fun printHelp() {
-        println(USAGE)
+        println(usage)
         println("Interactive meal editor")
         println()
         println()

@@ -1,4 +1,3 @@
 rootProject.name = 'macros'
 include 'macros-cli'
 include 'libmacros'
-

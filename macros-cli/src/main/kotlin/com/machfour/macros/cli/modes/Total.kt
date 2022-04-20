@@ -1,10 +1,11 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.parsing.MealSpec
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
@@ -13,11 +14,11 @@ import com.machfour.macros.sql.SqlException
 /*
  * Prints out totals for all DB recorded meals in a day
  */
-class Total(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "total"
-        private const val USAGE = "Usage: $programName $NAME (<meal name>|--all) [<day>] [-v|--verbose] [--per100]"
+class Total(config: CliConfig) : CommandImpl(config) {
+    override val name = "total"
+    override val usage = "Usage: ${config.programName} $name (<meal name>|--all) [<day>] [-v|--verbose] [--per100]"
 
+    companion object {
         private fun makeMealSpec(args: List<String>, isAllMeals: Boolean): MealSpec {
             /* logic:
              * if isAllMeals is true:

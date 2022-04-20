@@ -7,7 +7,7 @@ import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.dayStringParse
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
@@ -16,11 +16,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-class Meals(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "meals"
-        private const val USAGE = "Usage: $programName $NAME [day]"
-    }
+class Meals(config: CliConfig) : CommandImpl(config) {
+    override val name = "meals"
+    override val usage = "Usage: ${config.programName} $name [day]"
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {

@@ -3,18 +3,15 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printFood
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.sql.SqlException
 
 
-class ShowFood(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "show"
-        private const val USAGE = "Usage: $programName $NAME <index_name>"
-
-    }
+class ShowFood(config: CliConfig) : CommandImpl(config) {
+    override val name = "show"
+    override val usage = "Usage: ${config.programName} $name <index_name>"
 
     override fun doAction(args: List<String>) : Int {
         if (args.size == 1 || args.contains("--help")) {

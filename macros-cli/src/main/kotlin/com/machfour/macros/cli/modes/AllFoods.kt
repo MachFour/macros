@@ -3,19 +3,16 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.getAllFoodsMap
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 
 
-class AllFoods(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "allfoods"
-        private const val USAGE = "Usage: $programName $NAME"
-
-    }
+class AllFoods(config: CliConfig) : CommandImpl(config) {
+    override val name: String = "allfoods"
+    override val usage: String = "Usage: ${config.programName} $name"
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {

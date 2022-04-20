@@ -1,7 +1,6 @@
 package com.machfour.macros.csv
 
-import com.machfour.macros.core.MacrosConfig
-import com.machfour.macros.csv.*
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.linux.LinuxConfig
@@ -27,7 +26,7 @@ class CsvTest {
         lateinit var db: LinuxDatabase
 
         // TODO make test config
-        val config: MacrosConfig = LinuxConfig()
+        val config: CliConfig = LinuxConfig()
         const val TEST_DB_LOCATION = "/home/max/devel/macros/test.sqlite"
         const val REAL_DB_LOCATION = "/home/max/devel/macros/macros.sqlite"
         const val TEST_WRITE_DIR = "/home/max/devel/macros/test"

@@ -1,15 +1,14 @@
 package com.machfour.macros.cli.modes
 
+import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.makeMealSpec
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 
 
-class NewMeal(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "newmeal"
-        private const val USAGE = "Usage: $programName $NAME <meal name> [<day>]"
-    }
+class NewMeal(config: CliConfig) : CommandImpl(config) {
+    override val name = "newmeal"
+    override val usage = "Usage: ${config.programName} $name <meal name> [<day>]"
 
     override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {

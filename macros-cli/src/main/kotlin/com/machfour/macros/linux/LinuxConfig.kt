@@ -1,16 +1,18 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
+import com.machfour.macros.jvm.joinFilePath
 import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlDatabaseImpl
-import com.machfour.macros.jvm.joinFilePath
 
-internal class LinuxConfig : MacrosConfig {
+internal class LinuxConfig : CliConfig {
     companion object {
         internal const val PROJECT_DIR = "/home/max/devel/macros"
 
         private const val programName = "macros"
+        private const val programVersion = "2022.1"
+
         private const val DEFAULT_DB_NAME = "macros.sqlite"
         private const val DATA_DIR = "/home/max/devel/macros-data"
         private const val DB_DIR = PROJECT_DIR
@@ -31,6 +33,8 @@ internal class LinuxConfig : MacrosConfig {
     }
 
     override val programName = Companion.programName
+    override val programVersion = Companion.programVersion
+
     override val dbName = DEFAULT_DB_NAME
 
     // allows setting up until the database is requested for the first time

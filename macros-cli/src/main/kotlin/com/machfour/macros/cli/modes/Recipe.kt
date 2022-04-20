@@ -4,7 +4,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.cliGetChar
 import com.machfour.macros.cli.utils.printIngredients
 import com.machfour.macros.cli.utils.printNutrientData
-import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.ingredients.readRecipes
 import com.machfour.macros.ingredients.saveRecipes
@@ -13,11 +13,9 @@ import java.io.FileReader
 import java.io.IOException
 
 
-class Recipe(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
-    companion object {
-        private const val NAME = "recipe"
-        private const val USAGE = "Usage: $programName $NAME <recipes.json>"
-    }
+class Recipe(config: CliConfig): CommandImpl(config) {
+    override val name = "recipe"
+    override val usage = "Usage: ${config.programName} $name <recipes.json>"
 
     override fun doAction(args: List<String>) : Int {
         if (args.contains("--help")) {

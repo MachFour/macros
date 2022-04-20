@@ -28,7 +28,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib:1.6.20"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20") // for use()
-    implementation(rootProject)
+    implementation(project(":libmacros"))
 
     // for lanterna, sqlite-jdbc, ExprK
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))

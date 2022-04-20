@@ -1,7 +1,6 @@
 package com.machfour.macros.linux
 
 import com.machfour.macros.cli.initCommands
-import com.machfour.macros.cli.noArgsCommand
 import com.machfour.macros.cli.parseCommand
 import kotlin.system.exitProcess
 
@@ -32,7 +31,7 @@ object LinuxMain {
 
         // set up all the file paths
         initCommands(config)
-        val cmd = if (args.isEmpty()) noArgsCommand() else parseCommand(args[0])
+        val cmd = parseCommand(args.firstOrNull())
         val argList = args.toMutableList()
         checkDbLocationOverride(argList, config)
 

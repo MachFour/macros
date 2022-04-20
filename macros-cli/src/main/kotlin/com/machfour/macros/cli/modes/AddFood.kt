@@ -4,20 +4,19 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.interactive.FoodEditor
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgument
+import com.machfour.macros.core.CliConfig
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.queries.getFoodIdsByIndexName
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import java.io.IOException
 
+class AddFood(config: CliConfig) : CommandImpl(config) {
+    override val name: String = "addfood"
+    override val usage: String = "Usage: ${config.programName} $name <index name>"
 
-class AddFood(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USAGE, config) {
     companion object {
-        private const val NAME = "addfood"
-        private const val USAGE = "Usage: $programName $NAME <index name>"
-
         /*
          * Ensures the given index name is not already in the database; returns true if it is not present.
          */
@@ -34,7 +33,7 @@ class AddFood(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, 
         }
         val indexNameArg = findArgument(args, 1)
         if (indexNameArg !is ArgParsingResult.KeyValFound) {
-            print(usage)
+            println(usage)
             return -1
         }
         val indexName = indexNameArg.argument

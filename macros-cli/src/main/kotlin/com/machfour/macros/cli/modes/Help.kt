@@ -7,7 +7,7 @@ import com.machfour.macros.core.CliConfig
 
 class Help(config: CliConfig) : CommandImpl(config) {
     override val name = "help"
-    override val usage = "Usage: ${config.programName} $name"
+    override val usage = noArgsUsage
 
     override fun printHelp() {
         println("################################")

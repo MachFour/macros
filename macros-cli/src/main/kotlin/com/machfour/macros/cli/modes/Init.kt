@@ -8,7 +8,7 @@ import com.machfour.macros.sql.SqlException
 
 class Init(config: CliConfig): CommandImpl(config) {
     override val name = "init"
-    override val usage = "Usage: ${config.programName} $name"
+    override val usage = noArgsUsage
 
     override fun printHelp() {
         println("Recreates and initialises the database. All previous data is deleted!")

@@ -12,7 +12,7 @@ import com.machfour.macros.sql.SqlException
 
 class AllFoods(config: CliConfig) : CommandImpl(config) {
     override val name: String = "allfoods"
-    override val usage: String = "Usage: ${config.programName} $name"
+    override val usage: String = noArgsUsage
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {

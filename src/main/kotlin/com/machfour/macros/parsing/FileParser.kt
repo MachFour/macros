@@ -1,8 +1,7 @@
-package com.machfour.macros.cli.utils
+package com.machfour.macros.parsing
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.currentDateStamp
-import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
@@ -15,7 +14,6 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.unitWithAbbrOrNull
-import com.machfour.macros.util.FoodPortionSpec
 import com.machfour.macros.util.javaTrim
 import java.io.BufferedReader
 import java.io.IOException
@@ -48,14 +46,14 @@ class FileParser {
                 val mealTitle = mealPattern.find(line)
                 if (mealTitle != null) {
                     // make a new meal
-                    val m = makeMealSpec(mealTitle.groupValues[1])
+                    val m = MealSpec(mealTitle.groupValues[1], null)
                     currentFpSpecs = ArrayList()
                     specMap[m] = currentFpSpecs
                 } else if (line.isNotEmpty() && !line.startsWith("#")) {
                     // ignore 'comment lines' and treat anything else as a FoodPortionSpec.
                     // make a new meal if necessary
                     if (currentFpSpecs == null) {
-                        val m = makeMealSpec("Unnamed meal")
+                        val m = MealSpec("Unnamed meal", null)
                         currentFpSpecs = ArrayList()
                         specMap[m] = currentFpSpecs
                     }

@@ -5,7 +5,6 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.util.stringJoin
 import com.machfour.macros.validation.MacrosValidator
 import com.machfour.macros.validation.ValidationError
 import com.machfour.macros.validation.tableValidator
@@ -256,7 +255,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
-        return stringJoin(invalidFieldNames(displayStrings), sep = ", ")
+        return invalidFieldNames(displayStrings).joinToString(separator = " ")
     }
 
 }

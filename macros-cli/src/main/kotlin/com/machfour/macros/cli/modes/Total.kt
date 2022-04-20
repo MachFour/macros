@@ -1,11 +1,11 @@
 package com.machfour.macros.cli.modes
 
-import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.MealSpec
+import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
+import com.machfour.macros.parsing.MealSpec
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
@@ -41,7 +41,7 @@ class Total(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, US
                 else -> null
             }
 
-            return MealSpec.makeMealSpec(mealName, dayString)
+            return makeMealSpec(mealName, dayString)
         }
     }
 
@@ -73,9 +73,10 @@ class Total(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, US
 
         } else {
             try {
-                val mealsForDay = getMealsForDay(ds, mealSpec.day!!)
+                val day = mealSpec.day!!
+                val mealsForDay = getMealsForDay(ds, day)
                 if (mealsForDay.isEmpty()) {
-                    println("No meals recorded on " + mealSpec.day.prettyPrint())
+                    println("No meals recorded on " + day.prettyPrint())
                 } else {
                     printMeals(mealsForDay.values, verbose, per100, true)
                 }

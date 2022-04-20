@@ -1,8 +1,7 @@
 package com.machfour.macros.cli.modes
 
-import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.MealSpec
 import com.machfour.macros.cli.utils.findArgument
+import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.core.MacrosConfig
 
 
@@ -24,7 +23,7 @@ class NewMeal(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, 
 
         val mealNameArg = findArgument(args, 1)
         val dayArg = findArgument(args, 2)
-        val mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg)
+        val mealSpec = makeMealSpec(mealNameArg, dayArg)
 
         mealSpec.process(ds, true)
 

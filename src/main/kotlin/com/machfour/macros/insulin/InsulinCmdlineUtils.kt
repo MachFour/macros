@@ -4,7 +4,7 @@ import com.machfour.macros.nutrients.FoodNutrientData
 
 // parses a commmand line for the given flag, then tries to parse the string following that flag
 // in the form <ic ratio> <ic ratio>:<protein factor>, where <ic ratio> and <protein factor> are Doubles
-@Throws(java.lang.NumberFormatException::class)
+@Throws(NumberFormatException::class)
 fun parseInsulinArgument(arg: String) : Pair<Double, Double?> {
     val insulinParams = arg.split(":", limit = 2)
     val icRatio = insulinParams[0].toDouble()

@@ -27,6 +27,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.9.0")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     implementation(files("libs/ExprK.jar"))
     api(files("libs/datestamp.jar"))

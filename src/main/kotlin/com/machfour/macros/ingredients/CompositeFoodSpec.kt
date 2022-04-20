@@ -5,24 +5,16 @@ import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.sql.datatype.Types
 
 class CompositeFoodSpec(val indexName: String, val name: String, variety: String?, notes: String?) {
-    val variety: String?
-    val notes: String?
+    val variety: String? = variety.emptyAsNull()
+    val notes: String? = notes.emptyAsNull()
     private val ingredients = ArrayList<IngredientSpec>()
 
-    init {
-        this.variety = emptyStringAsNull(variety)
-        this.notes = emptyStringAsNull(notes)
-    }
-
-
-    private fun emptyStringAsNull(input: String?): String? {
-        return when (input) {
-            null -> null
-            else -> try {
-                Types.TEXT.fromRawString(input) // empty string -> null data
-            } catch (ignored: TypeCastException) {
-                null
-            }
+    // null / empty string -> null data
+    private fun String?.emptyAsNull(): String? {
+        return try {
+            Types.TEXT.fromRawString(this.orEmpty())
+        } catch (ignored: TypeCastException) {
+            null
         }
     }
 

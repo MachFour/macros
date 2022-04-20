@@ -1,4 +1,4 @@
-package com.machfour.macros.cli.utils
+package com.machfour.macros.parsing
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.macros.core.ObjectSource
@@ -16,16 +16,13 @@ import com.machfour.macros.sql.SqlException
  * and implements default behaviour for retrieving the meal when not
  * all fields are fully specified
  */
-class MealSpec {
-    val name: String?
-    val day: DateStamp?
+class MealSpec(val name: String?, val day: DateStamp?, error: String? = null) {
 
     // whether parameters were actually given (true) or the default value used (false)
-    val isMealSpecified: Boolean
-        get() = name != null
+    val isMealSpecified: Boolean = name != null
 
     // not just day != null - if no day was given we use current date as default.
-    val isDaySpecified: Boolean
+    val isDaySpecified: Boolean = day != null
 
     var processedObject: Meal? = null
         private set
@@ -34,34 +31,11 @@ class MealSpec {
     var isCreated = false
         private set
 
-    var error: String? = null
+    var error: String? = error
         private set
 
     // has process() been called?
     private var processed = false
-
-
-    private constructor(name: String?, day: DateStamp?) {
-        this.name = name
-        this.day = day
-        this.isDaySpecified = day != null
-    }
-
-    private constructor(name: String?, dayString: String?) {
-        val day = dayStringParse(dayString)
-        if (day == null) {
-            error = String.format("Invalid day format: '%s'. ", dayString)
-            error += "Must be a number (e.g. 0 for today, -1 for yesterday), or a date: yyyy-mm-dd"
-        }
-        this.name = name
-        this.day = day
-        this.isDaySpecified = day != null && dayString != null
-    }
-
-    private constructor(
-        nameArg: ArgParsingResult.KeyValFound,
-        dayArg: ArgParsingResult.KeyValFound
-    ) : this(nameArg.argument, dayArg.argument)
 
     @Throws(SqlException::class)
     private fun getOrCreateMeal(ds: SqlDatabase, day: DateStamp, name: String): Meal {
@@ -118,7 +92,8 @@ class MealSpec {
         } else {
             // if a name was given, try to find a matching meal with that name
             // name cannot be null since it is implied by isMealSpecified
-            val nameMatch = mealsForDay.searchForName(name!!)
+            val name = name!!
+            val nameMatch = mealsForDay.values.firstOrNull { it.name == name }
             when {
                 nameMatch != null -> {
                     processedObject = nameMatch
@@ -146,44 +121,4 @@ class MealSpec {
     }
 
 
-    companion object {
-        // extracts a meal specification from the argument list using the following rules:
-        // -d <day> specifies a day to search for, or on which to create the meal if create = true
-        // -m <name> specifies a name for the meal, which is created if create = true and it doesn't already exist.
-        // Both options can be omitted under certain condititions:
-        // If -d is omitted then the current day is used.
-        // If there are no meals recorded for the day, then an error is given.
-        //fun makeMealSpec(args: List<String>): MealSpec {
-        //    val dayArg: ArgParsingResult = findArgumentFromFlag(args, "-d")
-        //    val mealArg: ArgParsingResult = findArgumentFromFlag(args, "-m")
-        //    return MealSpec(dayArg, mealArg)
-        //}
-
-        fun makeMealSpec(name: String? = null, dayString: String? = null): MealSpec {
-            val day = dayStringParse(dayString)
-            return MealSpec(name, day)
-        }
-
-        fun makeMealSpec(nameArg: ArgParsingResult, dayArg: ArgParsingResult): MealSpec {
-            return when {
-                nameArg !is ArgParsingResult.KeyValFound -> {
-                    MealSpec(name = null, day = null).also {
-                        it.error = "-d option requires an argument: <day>"
-                    }
-                }
-                dayArg !is ArgParsingResult.KeyValFound -> {
-                    MealSpec(name = null, day = null).also {
-                        it.error = "-m option requires an argument: <meal>"
-                    }
-                }
-                else -> {
-                    MealSpec(nameArg, dayArg)
-                }
-            }
-        }
-
-        fun Map<Long, Meal>.searchForName(name: String): Meal? {
-            return values.firstOrNull { it.name == name }
-        }
-    }
 }

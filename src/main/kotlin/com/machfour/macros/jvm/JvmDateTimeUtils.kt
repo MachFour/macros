@@ -1,14 +1,25 @@
-package com.machfour.macros.util
+package com.machfour.macros.jvm
 
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import com.machfour.datestamp.DateStamp
+import com.machfour.datestamp.makeDateStamp
+import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.entities.Meal
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.FormatStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
+
+val MacrosEntity<*>.createInstant: Instant
+    get() = Instant.ofEpochSecond(createTime)
+
+val MacrosEntity<*>.modifyInstant: Instant
+    get() = Instant.ofEpochSecond(modifyTime)
+
+val Meal.startTimeInstant: Instant
+    get() = Instant.ofEpochSecond(startTime)
+
 
 val ISO_LOCAL_HOUR_MINUTE_12H: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendValue(ChronoField.CLOCK_HOUR_OF_AMPM, 2)
@@ -17,14 +28,11 @@ val ISO_LOCAL_HOUR_MINUTE_12H: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendLiteral(' ')
     .appendText(ChronoField.AMPM_OF_DAY)
     .toFormatter()
-
-
 val ISO_LOCAL_HOUR_MINUTE: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendValue(ChronoField.HOUR_OF_DAY, 2)
     .appendLiteral(':')
     .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
     .toFormatter()
-
 val FILE_TIMESTAMP: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendValue(ChronoField.YEAR, 4)
     .appendLiteral('-')
@@ -38,19 +46,11 @@ val FILE_TIMESTAMP: DateTimeFormatter = DateTimeFormatterBuilder()
     .appendLiteral(':')
     .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
     .toFormatter()
-
-val LOCALIZED_DATE_MEDIUM: DateTimeFormatter = DateTimeFormatter
-    .ofLocalizedDate(FormatStyle.MEDIUM)
-
-val LOCALIZED_DATE_SHORT: DateTimeFormatter = DateTimeFormatter
-    .ofLocalizedDate(FormatStyle.SHORT)
-
-val LOCALIZED_DATETIME_MEDIUM: DateTimeFormatter = DateTimeFormatter
-    .ofLocalizedDateTime(FormatStyle.MEDIUM)
+val LOCALIZED_DATE_MEDIUM: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+val LOCALIZED_DATE_SHORT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+val LOCALIZED_DATETIME_MEDIUM: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
     .withZone(ZoneId.systemDefault())
-
-val LOCALIZED_DATETIME_SHORT: DateTimeFormatter = DateTimeFormatter
-    .ofLocalizedDateTime(FormatStyle.SHORT)
+val LOCALIZED_DATETIME_SHORT: DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
     .withZone(ZoneId.systemDefault())
 
 // returns a ZonedDateTime from the given instant with the system default ZoneID
@@ -69,4 +69,12 @@ fun Instant.toEpochSecond(truncate: ChronoUnit = ChronoUnit.SECONDS): Long {
 
 fun currentTimeString(): String {
     return LocalDateTime.now().format(FILE_TIMESTAMP)
+}
+
+fun LocalDate.toDateStamp(): DateStamp {
+    return makeDateStamp(year, monthValue, dayOfMonth)
+}
+
+fun DateStamp.toLocalDate(): LocalDate {
+    return LocalDate.of(year, month, day)
 }

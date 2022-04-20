@@ -1,11 +1,11 @@
 package com.machfour.macros.cli.modes
 
-import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.*
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
+import com.machfour.macros.parsing.FileParser
 import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getMealById
 import com.machfour.macros.queries.saveObject
@@ -143,7 +143,7 @@ class Edit(config: MacrosConfig) : com.machfour.macros.cli.CommandImpl(NAME, USA
 
         val ds = config.database
 
-        val mealSpec = MealSpec.makeMealSpec(mealNameArg, dayArg)
+        val mealSpec = makeMealSpec(mealNameArg, dayArg)
         mealSpec.process(ds, true)
 
         if (mealSpec.error != null) {

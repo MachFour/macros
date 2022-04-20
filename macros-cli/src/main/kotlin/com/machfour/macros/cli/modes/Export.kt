@@ -1,14 +1,13 @@
 package com.machfour.macros.cli.modes
-import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.csv.exportFoodData
 import com.machfour.macros.csv.exportServings
+import com.machfour.macros.jvm.currentTimeString
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import com.machfour.macros.util.currentTimeString
 import java.io.FileWriter
 import java.io.IOException
 

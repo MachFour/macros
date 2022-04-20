@@ -1,4 +1,4 @@
-package com.machfour.macros.util
+package com.machfour.macros.parsing
 
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Unit

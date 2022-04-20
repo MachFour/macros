@@ -5,7 +5,6 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.tableValidator
-import java.time.Instant
 
 // ensures that the presence of the ID is consistent with the semantics of the objectSource
 // see ObjectSource class for more documentation

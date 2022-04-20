@@ -1,21 +1,20 @@
 package com.machfour.macros.cli.modes
 
-import com.machfour.macros.cli.CommandImpl
-import com.machfour.macros.cli.utils.FileParser.Companion.makefoodPortionSpecFromLine
-import com.machfour.macros.cli.utils.FileParser.Companion.processFpSpec
-import com.machfour.macros.cli.utils.MealSpec
-import com.machfour.macros.cli.utils.MealSpec.Companion.makeMealSpec
+import com.machfour.macros.cli.utils.makeMealSpec
 import com.machfour.macros.cli.utils.printMeal
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.MacrosConfig
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
+import com.machfour.macros.parsing.FileParser.Companion.makefoodPortionSpecFromLine
+import com.machfour.macros.parsing.FileParser.Companion.processFpSpec
+import com.machfour.macros.parsing.FoodPortionSpec
+import com.machfour.macros.parsing.MealSpec
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.FoodPortionSpec
 
 fun processPortions(toAddTo: Meal, specs: List<FoodPortionSpec>, db: SqlDatabase): Int {
     if (specs.isEmpty()) {
@@ -82,20 +81,10 @@ class Portion(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, U
         val mealSpec: MealSpec
         val separator = args.indexOf("-s")
         mealSpec = when (separator) {
-            1, -1 -> {
-                // no meal info specified
-                makeMealSpec()
-            }
-            2 -> {
-                // args looks like ["portion", "<meal name>", "-s", ...]
-                makeMealSpec(args[1])
-            }
-            3 -> {
-                // args looks like ["portion", "<meal name>", "<day>", "-s", ...]
-                makeMealSpec(args[1], args[2])
-            }
+            1, -1 -> makeMealSpec() // no meal info specified
+            2 -> makeMealSpec(args[1]) // args looks like ["portion", "<meal name>", "-s", ...]
+            3 -> makeMealSpec(args[1], args[2]) // args looks like ["portion", "<meal name>", "<day>", "-s", ...]
             0 -> {
-                assert(false) { "'-s' is where the command name should be!" }
                 println("There can only be at most two arguments before '-s'")
                 return 1
             }
@@ -106,7 +95,7 @@ class Portion(config: MacrosConfig): com.machfour.macros.cli.CommandImpl(NAME, U
         }
         if (!mealSpec.isMealSpecified) {
             val name = mealSpec.name
-            val dayString = if (mealSpec.day != null) mealSpec.day.prettyPrint() else "(invalid day)"
+            val dayString = mealSpec.day?.prettyPrint() ?: "(invalid day)"
             println("No meal specified, assuming $name on $dayString")
         }
         mealSpec.process(ds, true)

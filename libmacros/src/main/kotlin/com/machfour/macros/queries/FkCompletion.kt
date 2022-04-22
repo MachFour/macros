@@ -77,8 +77,8 @@ private fun <M : FkEntity<M>, J: Any, N> completeFkCol(
 ): List<M> {
     val parentKeyData = objects.map {
         // needs to be either imported data, new (from builder), or computed, for Recipe nutrition data
-        assert(it.source in allowedObjectSources) { "Object is not from import, new or computed" }
-        assert(it.fkParentKeyData.isNotEmpty()) { "Object has no FK data maps" }
+        check(it.source in allowedObjectSources) { "Object is not from import, new or computed" }
+        check(it.fkParentKeyData.isNotEmpty()) { "Object has no FK data maps" }
         it.getFkParentKey(fkCol)
     }
 
@@ -137,7 +137,7 @@ private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Coll
 
     return partiallyCompletedObjects.map {
         // Check everything's fine and (not yet implemented) change source to ObjectSource.IMPORT_FK_PRESENT
-        assert(fkIdsPresent(it))
+        check(fkIdsPresent(it))
         factory.construct(it.data, it.source)
     }
 }

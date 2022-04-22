@@ -51,7 +51,7 @@ class FoodNutrientData(
                         qtyObject.convertValueTo(GRAMS, density)
                     }
                     else -> {
-                        assert(false) { "Invalid unit type for quantity value object $qtyObject" }
+                        check(false) { "Invalid unit type for quantity value object $qtyObject" }
                         0.0
                     }
                 }
@@ -213,7 +213,7 @@ class FoodNutrientData(
     // Any mismatches are ignored; this object's data is preferred in all cases
     // Nothing is mutated; a new NutrientData object is returned with data copies
     fun fillMissingData(other: FoodNutrientData): FoodNutrientData {
-        //assert(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
+        //check(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
         val result = FoodNutrientData(dataCompleteIfNotNull = false)
 
         val factory = FoodNutrientValue.factory

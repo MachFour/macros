@@ -51,7 +51,7 @@ fun getMealById(db: SqlDatabase, id: Long): Meal? {
 //        WriteQueries.saveObject(ds, editedFp)
 //        val updatedFp = QueryHelpers.getRawObjectsByIds(ds, FoodPortionTable, listOf(fp.id))
 
-//        assert(updatedFp.size == 1) { "more than 1 new food portion returned" }
+//        check(updatedFp.size == 1) { "more than 1 new food portion returned" }
 //        processRawFoodPortions(ds, newMeal, updatedFp, mapOf(fp.foodId to fp.food))
 
 //        fp.removeFromMeal()

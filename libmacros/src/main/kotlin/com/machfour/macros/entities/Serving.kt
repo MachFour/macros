@@ -58,7 +58,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     }
 
     fun initFood(f: Food) {
-        assert(foreignKeyMatches(this, ServingTable.FOOD_ID, f))
+        check(foreignKeyMatches(this, ServingTable.FOOD_ID, f))
         food = f
     }
 

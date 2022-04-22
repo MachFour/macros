@@ -118,7 +118,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             // TODO throw exception?
             return
         }
-        assert(settableColumns.contains(col))
+        check(settableColumns.contains(col))
         val oldValue: J? = this[col]
         draftData.put(col, value)
 
@@ -141,7 +141,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             // TODO throw exception?
             return
         }
-        assert(settableColumns.contains(col))
+        check(settableColumns.contains(col))
         try {
             val castValue = col.type.fromRawString(value)
             setFieldInternal(col, castValue, wasTypeMismatch = false)

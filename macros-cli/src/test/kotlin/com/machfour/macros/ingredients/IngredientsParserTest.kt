@@ -1,15 +1,10 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.entities.CompositeFood
-import com.machfour.macros.ingredients.createCompositeFoods
-import com.machfour.macros.ingredients.deserialiseIngredientsJson
-import com.machfour.macros.ingredients.readRecipes
-import com.machfour.macros.ingredients.saveRecipes
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.stringJoin
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -43,7 +38,7 @@ class IngredientsParserTest {
                 @Suppress("UNUSED")
                 val newFoods: Collection<CompositeFood> = createCompositeFoods(ingredientSpecs, db)
                 println("Composite Foods Read:")
-                println(stringJoin(ingredientSpecs, sep = "\n"))
+                println(ingredientSpecs.joinToString("\n"))
             }
         } catch (e: IOException) {
             Assertions.fail(e)

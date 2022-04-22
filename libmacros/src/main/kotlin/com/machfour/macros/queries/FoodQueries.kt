@@ -118,7 +118,7 @@ fun getFoodIdsByIndexName(db: SqlDatabase, indexNames: Collection<String>): Map<
 @Throws(SqlException::class)
 fun getFoodIdByIndexName(db: SqlDatabase, indexName: String): Long? {
     val idMap = getIdsFromKeys(db, FoodTable, FoodTable.INDEX_NAME, listOf(indexName))
-    assert(idMap.size <= 1) { "More than one ID with indexName $indexName" }
+    check(idMap.size <= 1) { "More than one ID with indexName $indexName" }
     return idMap.values.firstOrNull()
 }
 

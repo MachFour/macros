@@ -7,6 +7,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.unitWithAbbr
 import com.machfour.macros.util.toRoundedString
+import com.machfour.macros.util.toString
 
 abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
     data: RowData<M>,
@@ -49,16 +50,15 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
         get() = data[notesCol]
 
     fun prettyFormat(withNotes: Boolean): String {
-        val quantityStr = "%.1f".format(quantity)
         return buildString {
-            append("${food.mediumName}, ${quantityStr}${qtyUnit.abbr}")
+            append("${food.mediumName}, ${this@FoodQuantity.quantity.toString(1)}${qtyUnit.abbr}")
             servingString?.let { append(" ($it)") }
             notes?.takeIf { withNotes && it.isNotEmpty() }?.let { append(" [$it]") }
         }
     }
 
     fun initFoodAndNd(f: Food) {
-        assert(foreignKeyMatches(this, foodIdCol, f))
+        check(foreignKeyMatches(this, foodIdCol, f))
         food = f
         nutrientData = f.nutrientData.let {
             if (it.qtyUnit != qtyUnit) {
@@ -71,8 +71,8 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
 
     // for use during construction
     fun initServing(s: Serving) {
-        assert(serving == null && foreignKeyMatches(this, servingIdCol, s))
-        assert(foodId == s.foodId)
+        check(serving == null && foreignKeyMatches(this, servingIdCol, s))
+        check(foodId == s.foodId)
         serving = s
     }
 

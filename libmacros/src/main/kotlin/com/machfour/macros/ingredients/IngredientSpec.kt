@@ -1,8 +1,9 @@
 package com.machfour.macros.ingredients
 
+import com.machfour.macros.util.toString
+
 data class IngredientSpec(val indexName: String, val quantity: Double, val unit: String, val notes: String?) {
     override fun toString(): String {
-        val quantityString = "%.2f".format(quantity)
-        return "{ indexName: $indexName, quantity: ${quantityString}, quantityUnit: $unit, notes: $notes }"
+        return "{ indexName: $indexName, quantity: ${quantity.toString(2)}, quantityUnit: $unit, notes: $notes }"
     }
 }

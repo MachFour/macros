@@ -7,4 +7,3 @@ fun pauseUntilEnter() {
         // do nothing
     }
 }
-

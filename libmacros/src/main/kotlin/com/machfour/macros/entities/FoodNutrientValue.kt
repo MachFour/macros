@@ -57,8 +57,8 @@ class FoodNutrientValue internal constructor(
 
     // should only be called by Food class when this object is added to it
     internal fun setFood(f: Food) {
-        assert(food == null) { "Food already set" }
-        assert(foreignKeyMatches(this, FoodNutrientValueTable.FOOD_ID, f)) { "Food ID does not match" }
+        check(food == null) { "Food already set" }
+        check(foreignKeyMatches(this, FoodNutrientValueTable.FOOD_ID, f)) { "Food ID does not match" }
         food = f
     }
 

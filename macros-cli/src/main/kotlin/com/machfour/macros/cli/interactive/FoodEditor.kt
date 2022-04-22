@@ -27,6 +27,7 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.util.displayLength
+import com.machfour.macros.util.fmt
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
 
@@ -402,9 +403,8 @@ class FoodEditor constructor(
                 wideChars = s.displayLength()
                 displayLength = s.length + wideChars
             }
-            assert(displayLength <= width)
-            val align = if (rightAlign) "" else "-"
-            return String.format("%" + align + (width - wideChars) + "s", s)
+            check(displayLength <= width)
+            return s.fmt(width - wideChars, !rightAlign)
         }
     }
 
@@ -506,7 +506,7 @@ class FoodEditor constructor(
         println("Actions: ", actionPaddingWidth, false)
         for (a in Action.values()) {
             val indicator = if (!isEditing && a == currentAction) " > " else "   "
-            print(String.format(" %s %s", indicator, a.niceName), actionPaddingWidth, true)
+            print(" $indicator ${a.niceName}", actionPaddingWidth, true)
         }
     }
 

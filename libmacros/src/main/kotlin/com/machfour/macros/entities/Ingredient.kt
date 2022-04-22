@@ -54,8 +54,8 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
     }
 
     fun initCompositeFood(f: Food) {
-        assert(f is CompositeFood && f.foodType === FoodType.COMPOSITE)
-        assert(parentFoodId == f.id)
+        check(f is CompositeFood && f.foodType === FoodType.COMPOSITE)
+        check(parentFoodId == f.id)
         parentFood = f
     }
 

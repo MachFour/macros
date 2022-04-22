@@ -23,7 +23,7 @@ fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOpt
     for (objectData in resultData) {
         val key = objectData[keyColumn]
         checkNotNull(key) { "found null key in $t" }
-        assert(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
+        check(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
         objects[key] = t.construct(objectData, ObjectSource.DATABASE)
     }
     return objects

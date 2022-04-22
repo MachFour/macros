@@ -149,7 +149,7 @@ fun <M, I: Any, J: Any> selectColumnMap(
         } else if (key == null) {
             continue
         }
-        assert(!unorderedResults.containsKey(key)) {
+        check(!unorderedResults.containsKey(key)) {
             "Two rows in $t table contained the same value $key in unique column $keyColumn!"
         }
         unorderedResults[key] = value
@@ -182,7 +182,7 @@ private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
     objectMap: Map<K, M>,
     uniqueCol: Column<M, J>
 ): Set<J> {
-    assert(uniqueCol.isUnique)
+    check(uniqueCol.isUnique)
 
     val objectValues = objectMap.values.mapNotNull { it.getData(uniqueCol) }
 

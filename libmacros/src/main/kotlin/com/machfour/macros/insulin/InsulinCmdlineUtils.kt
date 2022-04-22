@@ -1,6 +1,8 @@
 package com.machfour.macros.insulin
 
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.util.fmt
+import com.machfour.macros.util.toString
 
 // parses a commmand line for the given flag, then tries to parse the string following that flag
 // in the form <ic ratio> <ic ratio>:<protein factor>, where <ic ratio> and <protein factor> are Doubles
@@ -12,8 +14,8 @@ fun parseInsulinArgument(arg: String) : Pair<Double, Double?> {
     return Pair(icRatio, proteinFactor)
 }
 
-private const val labelPrintWidth = "8"
-private const val unitsPrintWidth = "6"
+private const val labelPrintWidth = 8
+private const val unitsPrintWidth = 6
 private val labels = listOf("Carbs", "Protein", "Total")
 
 fun printInsulin(nd: FoodNutrientData, icRatio: Double, proteinFactor: Double?) {
@@ -30,7 +32,8 @@ fun printInsulin(nd: FoodNutrientData, icRatio: Double, proteinFactor: Double?) 
 
     val values = listOf(forCarbs, forProtein, total)
     for (i in 0 until 3) {
-        println("%${labelPrintWidth}s: %${unitsPrintWidth}.2fU".format(labels[i], values[i]))
+        print(labels[i].fmt(labelPrintWidth) + ": ")
+        println(values[i].toString(2).fmt(unitsPrintWidth) + "U")
     }
 
     println()

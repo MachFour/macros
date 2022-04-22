@@ -30,7 +30,7 @@ abstract class SqlDatabaseImpl : SqlDatabase {
 
     @Throws(SqlException::class)
     override fun <M, I: Any> selectNonNullColumn(query: SingleColumnSelect<M, I>): List<I> {
-        assert(!query.selectColumn.isNullable) { "Select column is nullable: ${query.selectColumn}" }
+        check(!query.selectColumn.isNullable) { "Select column is nullable: ${query.selectColumn}" }
 
         return selectColumn(query).mapNotNull { it }
     }

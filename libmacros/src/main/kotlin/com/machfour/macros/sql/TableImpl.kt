@@ -61,7 +61,7 @@ abstract class TableImpl<M>(
         for (c in columns) {
             when (c) {
                 is ColumnImpl<M, *> -> c.table = this
-                else -> assert(false) { "Columns must be of ColumnImpl type" }
+                else -> check(false) { "Columns must be of ColumnImpl type" }
             }
         }
     }

@@ -9,6 +9,7 @@ import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.ingredients.readRecipes
 import com.machfour.macros.ingredients.saveRecipes
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.util.toString
 import java.io.FileReader
 import java.io.IOException
 
@@ -63,11 +64,11 @@ class Recipe(config: CliConfig): CommandImpl(config) {
             val unit = nd.qtyUnitAbbr
             // if entered not per 100g, print both original amount and per 100 g
             if (nd.quantity != 100.0) {
-                println("Per %.0f%s:".format(nd.quantity, unit))
+                println("Per ${nd.quantity.toString(0)}$unit:")
                 printNutrientData(nd, false)
                 println()
             }
-            println("Per %.0f%s:".format(nd.quantity, unit)) // should now be 100
+            println("Per 100$unit:")
             printNutrientData(nd.rescale100(), false)
             println()
             println("================================================")

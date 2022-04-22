@@ -34,10 +34,9 @@ fun <M: NutrientValue<M>> formatNutrientValue(
     defaultValue: Double = 0.0,
     width: Int = 0,
 ): String {
-    val widthFmt = if (width > 0) "$width" else ""
-    val floatFmt = if (withDp) ".1f" else ".0f"
-    val qty = data.amountOf(nutrient, unit, defaultValue)
-    return "%$widthFmt$floatFmt".format(qty)
+    return data.amountOf(nutrient, unit, defaultValue)
+        .toString(precision = if (withDp) 1 else 0)
+        .fmt(width)
 }
 
 fun formatQuantity(
@@ -47,7 +46,7 @@ fun formatQuantity(
     width: Int = 0,
     unitWidth: Int = 0,
     withDp: Boolean = false,
-    alignLeft: Boolean = false,
+    qtyAlignLeft: Boolean = false,
     unitAlignLeft: Boolean = false,
     spaceBeforeUnit: Boolean = false
 ): String {
@@ -60,26 +59,21 @@ fun formatQuantity(
     } else {
         ""
     }
+
+    val qtyString = qty.toString(precision = if (withDp) 1 else 0)
+
     // first format the unit, recording final unit width
-    val finalUnitWidth: Int
-    val formattedUnitString = if (unit != null && unitAbbr.isNotEmpty()) {
-        val space = if (spaceBeforeUnit) " " else ""
-        val unitString = space + unitAbbr
-        finalUnitWidth = if (unitWidth <= 0) unitString.length else (unitWidth + space.length)
-        val left = if (unitAlignLeft) "-" else ""
-        "%${left}${finalUnitWidth}s".format(unitString)
+    val unitSpace = if (spaceBeforeUnit) " " else ""
+    val unitString = if (unit != null && unitAbbr.isNotEmpty()) {
+        unitSpace + unitAbbr.fmt(unitWidth, unitAlignLeft)
     } else {
-        finalUnitWidth = 0
         ""
     }
 
-    val floatFmt = if (withDp) ".1f" else ".0f"
-    return if (alignLeft) {
-        val formattedQty = "%${floatFmt}${formattedUnitString}".format(qty)
-        if (width > 0) String.format("%-${width}s", formattedQty) else formattedQty
+    return if (qtyAlignLeft) {
+        (qtyString + unitString).fmt(width, true)
     } else {
-        val qtyWidthStr = if (width > 0) "${width - finalUnitWidth}" else ""
-        "%$qtyWidthStr$floatFmt".format(qty) + formattedUnitString
+         qtyString.fmt(width - unitString.length) + unitString
     }
 }
 
@@ -104,12 +98,6 @@ fun formatNutrientData(
     withDp: Boolean = false,
     monoSpaceAligned: Boolean = false,
 ): String {
-    val lineFormat = if (monoSpaceAligned) {
-        val qtyLength = if (withDp) 6 else 4
-        "%15s: %${qtyLength}s %-2s"
-    } else {
-        "%s: %s %s"
-    }
 
     return buildString {
         for (n in nutrients) {
@@ -123,7 +111,16 @@ fun formatNutrientData(
                 preferDataUnit = preferDataUnits,
                 withDp = withDp
             )
-            append(lineFormat.format(colName, value, unitStr))
+            if (monoSpaceAligned) {
+                append(colName.fmt(minWidth = 15))
+                append(": ")
+                append(value.fmt(minWidth = if (withDp) 6 else 4))
+                append(" ")
+                append(unitStr.fmt(minWidth = 2, leftAlign = true))
+
+            } else {
+                append("$colName: $value $unitStr")
+            }
             //append("$colName: $value $unitStr")
             if (!data.hasCompleteData(n)) {
                 // mark incomplete

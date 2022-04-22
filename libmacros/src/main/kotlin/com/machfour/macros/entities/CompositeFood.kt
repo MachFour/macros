@@ -19,7 +19,7 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
     private var ingredientsNutrientDataNeedsUpdate = false
 
     init {
-        assert(FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
+        check(FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
     }
 
     // add overriding nutrient value
@@ -64,7 +64,7 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
         get() = mutableIngredients // should be immutable
 
     fun addIngredient(i: Ingredient) {
-        assert(!mutableIngredients.contains(i) && foreignKeyMatches(i, IngredientTable.PARENT_FOOD_ID, this))
+        check(!mutableIngredients.contains(i) && foreignKeyMatches(i, IngredientTable.PARENT_FOOD_ID, this))
         mutableIngredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients

@@ -12,6 +12,7 @@ import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.util.fmt
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -53,12 +54,12 @@ class Meals(config: CliConfig) : CommandImpl(config) {
             } else {
                 println("Meals recorded on " + d.prettyPrint() + ":")
                 println()
-                println("%-16s %-16s".format("Name", "Last Modified"))
+                println("Name".fmt(16, true) + " " + "Last Modified".fmt(16, true))
                 println("=================================")
                 val dateFormat = DateTimeFormatter.ofLocalizedTime(FormatStyle.LONG)
                 for (m in meals.values) {
                     val mealDate = m.modifyInstant.atZone(ZoneId.systemDefault())
-                    println("%-16s %16s".format(m.name, dateFormat.format(mealDate)))
+                    println(m.name.fmt(16, true) + " " + dateFormat.format(mealDate).fmt(16))
                 }
             }
         } catch (e: SqlException) {

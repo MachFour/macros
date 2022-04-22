@@ -1,7 +1,6 @@
 package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Table
-import com.machfour.macros.util.stringJoin
 
 internal class DeleteStatementImpl<M> private constructor(
     table: Table<M>,
@@ -14,7 +13,7 @@ internal class DeleteStatementImpl<M> private constructor(
             it.add("FROM")
             it.add(table.name)
             it.add(whereExpression.toSql())
-            stringJoin(it, sep = " ")
+            it.joinToString(separator = " ")
         }
     }
 

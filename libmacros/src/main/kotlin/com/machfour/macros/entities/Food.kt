@@ -131,7 +131,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     }
 
     fun setFoodCategory(c: FoodCategory) {
-        assert(!this::foodCategory.isInitialized && foreignKeyMatches(this, FoodTable.CATEGORY, c))
+        check(!this::foodCategory.isInitialized && foreignKeyMatches(this, FoodTable.CATEGORY, c))
         foodCategory = c
     }
 
@@ -142,7 +142,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         get() = Companion.factory
 
     fun addServing(s: Serving) {
-        assert(!servingsInternal.contains(s) && foreignKeyMatches(s, ServingTable.FOOD_ID, this))
+        check(!servingsInternal.contains(s) && foreignKeyMatches(s, ServingTable.FOOD_ID, this))
         servingsInternal.add(s)
         if (s.isDefault) {
             setDefaultServing(s)
@@ -150,8 +150,8 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     }
 
     private fun setDefaultServing(s: Serving) {
-        assert(defaultServing == null) { "Default serving already set" }
-        assert(servingsInternal.contains(s)) { "Serving does not belong to this food" }
+        check(defaultServing == null) { "Default serving already set" }
+        check(servingsInternal.contains(s)) { "Serving does not belong to this food" }
         defaultServing = s
     }
 

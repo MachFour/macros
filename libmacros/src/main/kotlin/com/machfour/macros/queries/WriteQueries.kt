@@ -73,7 +73,7 @@ fun <M : MacrosEntity<M>> saveObjects(
         ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(db, objects, false)
         ObjectSource.DB_EDIT -> updateObjects(db, objects)
         ObjectSource.DATABASE -> {
-            assert(false) { "Saving unmodified database object" }
+            check(false) { "Saving unmodified database object" }
             0
         }
         ObjectSource.RESTORE -> {
@@ -81,11 +81,11 @@ fun <M : MacrosEntity<M>> saveObjects(
             insertObjects(db, objects, true)
         }
         ObjectSource.COMPUTED -> {
-            assert(false) { "Saving a computed object" }
+            check(false) { "Saving a computed object" }
             0
         }
         else -> {
-            assert(false) { "Unrecognised object source: $objectSource" }
+            check(false) { "Unrecognised object source: $objectSource" }
             0
         }
     }

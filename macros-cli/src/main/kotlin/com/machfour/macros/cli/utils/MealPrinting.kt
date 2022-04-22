@@ -6,14 +6,13 @@ import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
+import com.machfour.macros.util.fmtUnicode
 import com.machfour.macros.util.formatNutrientValue
 import com.machfour.macros.util.formatQuantity
-import com.machfour.macros.util.formatUnicodeString
-import com.machfour.macros.util.stringJoin
 
 // printing widths
 const val foodNameWidth = 41
-const val servingWidth = 7
+const val servingWidth = 8
 const val shortDataWidth = 6
 const val longDataWidth = 7
 
@@ -39,9 +38,9 @@ private val verboseTableCols = listOf(
  * Prints a row of a table (helper method for printMeal())
  */
 private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Boolean>) {
-    assert(row.size == widths.size && row.size == rightAlign.size)
+    check(row.size == widths.size && row.size == rightAlign.size)
     for (i in row.indices) {
-        print(formatUnicodeString(row[i], widths[i], !rightAlign[i]) + columnSep)
+        print(row[i].fmtUnicode(widths[i], !rightAlign[i]) + columnSep)
     }
     println()
 }
@@ -70,7 +69,7 @@ private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, 
                 unitStrings = EnglishUnitNames,
                 width = servingWidth,
                 unitWidth = 2,
-                alignLeft = false,
+                qtyAlignLeft = false,
                 spaceBeforeUnit = true,
                 unitAlignLeft = true
         )
@@ -82,9 +81,9 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     //Columns: first the food name, then one for each nutrient, then quantity/serving
     val numCols = 1 + nutrientCols.size + 1
     // holds the meal name and labels for each nutrient column
-    val headingRow: MutableList<String> = ArrayList(numCols)
-    val rowWidths: MutableList<Int> = ArrayList(numCols)
-    val rightAlign: MutableList<Boolean> = ArrayList(numCols)
+    val headingRow = ArrayList<String>(numCols)
+    val rowWidths = ArrayList<Int>(numCols)
+    val rightAlign = ArrayList<Boolean>(numCols)
     // first column has meal name (heading) and food names for other rows
     headingRow.add(meal.name)
     rowWidths.add(foodNameWidth)
@@ -101,14 +100,14 @@ fun printMeal(meal: Meal, verbose: Boolean) {
         rightAlign.add(true)
     }
     // last column is quantity, so is a bit longer
-    headingRow.add(EnglishColumnNames.getAbbreviatedName(QUANTITY))
+    // also offset the heading to align with the digits, not the units
+    headingRow.add(EnglishColumnNames.getAbbreviatedName(QUANTITY) + "   ")
     rowWidths.add(servingWidth)
     rightAlign.add(true)
 
     // row separator spans all columns plus each separator, but we discount the space
     // after the last separator
-    val rowSepLength = rowWidths.sum() + rowWidths.size * columnSep.length - 1
-    val rowSeparator = stringJoin(listOf("="), copies = rowSepLength)
+    val rowSeparator = "=".repeat(rowWidths.sum() + rowWidths.size * columnSep.length - 1)
     printRow(headingRow, rowWidths, rightAlign)
     println(rowSeparator)
     // now we get to the actual data
@@ -126,8 +125,7 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     val totalName = "Total for ${meal.name}"
     val totalNd = meal.nutrientTotal()
     // for total data, just use the quantity and unit from the sum
-    val totalRow =
-        nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
+    val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
     printRow(totalRow, rowWidths, rightAlign)
 }
 

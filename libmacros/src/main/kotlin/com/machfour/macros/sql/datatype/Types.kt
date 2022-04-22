@@ -77,7 +77,7 @@ class Types {
             val falsey = falseyStrings.contains(data.lowercase())
 
             // can't be both (bad programming)
-            assert(!(truthy && falsey))
+            check(!(truthy && falsey))
 
             // if neither then it's a user problem
             return if (!truthy && !falsey) {

@@ -26,7 +26,7 @@ import com.machfour.macros.sql.generator.OrderByDirection
 //    val foodIds = CoreQueries.selectSingleColumn(ds, FoodPortionTable, FoodPortionTable.FOOD_ID) {
 //        where(FoodPortionTable.ID, listOf(fpId))
 //    }
-//    assert(foodIds.size <= 1) { "Returned multiple food ids for one foodportion id" }
+//    check(foodIds.size <= 1) { "Returned multiple food ids for one foodportion id" }
 //    return foodIds.getOrNull(0)?.let {
 //        FoodQueries.getFoodById(ds, it)
 //    }

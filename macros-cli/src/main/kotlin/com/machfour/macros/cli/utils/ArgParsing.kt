@@ -39,7 +39,7 @@ fun findArgumentFromFlag(args: List<String>, flag: String): ArgParsingResult {
 
 // just attempts to use the given argument index
 fun findArgument(args: List<String>, argIdx: Int): ArgParsingResult {
-    assert(argIdx >= 0)
+    check(argIdx >= 0)
     return if (argIdx < args.size) {
         ArgParsingResult.ArgFound(argIdx, args[argIdx])
     } else {

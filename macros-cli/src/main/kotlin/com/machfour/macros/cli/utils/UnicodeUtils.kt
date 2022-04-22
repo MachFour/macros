@@ -79,24 +79,22 @@ fun String.displayLength() = if (isEmpty()) 0 else length + countDoubleWidthChar
 // Fullwidth characters take up two monospace character widths in a terminal. This function reduces
 // the padding space applied by the string format function so that the result appears in the terminal
 // with the correct width. Essentially, it reduces 'width' by the number of fullwidth characters in s
-fun formatUnicodeString(s: String, width: Int, leftAlign: Boolean) : String {
-    val align = if (leftAlign) "-" else ""
-
+fun String.fmtUnicode(width: Int, leftAlign: Boolean) : String {
     // displayed length of text appears to be length() + numDoubleWidthChars characters long.
     // Equivalently, we can reduce width by this amount, to get the printing right
-    val formatWidth = maxOf(width - s.countDoubleWidthChars(), 0)
+    val formatWidth = maxOf(width - countDoubleWidthChars(), 0)
 
 
     // prevent long strings from overrunning the width:
     // replace "This is a really long string"
     // with    "This is a really lo.."
-    val truncatedString = if (s.length > formatWidth) {
+    val truncatedString = if (length > formatWidth) {
         val newWidth = maxOf(formatWidth - 2, 0)
         // TODO this may reduce by too much, with double width chars
-        s.substring(0, newWidth - 2) + ".."
+        substring(0, newWidth - 2) + ".."
     } else {
-        s
+        this
     }
     //String widthStr = String.valueOf(width);
-    return "%${align}${formatWidth}s".format(truncatedString)
+    return truncatedString.fmt(formatWidth, leftAlign)
 }

@@ -150,7 +150,7 @@ class Edit(config: CliConfig) : CommandImpl(config) {
             return 1
         }
         if (mealSpec.isCreated) {
-            val createMsg = String.format("Created meal '%s' on %s", mealSpec.name, mealSpec.day)
+            val createMsg = "Created meal '${mealSpec.name}' on ${mealSpec.day}"
             println(createMsg)
         }
         val toEdit = mealSpec.processedObject

@@ -59,7 +59,7 @@ private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredi
     // get notes
     // create Ingredients Object
     if (!ingredientMap.containsKey(spec.indexName)) {
-        throw RuntimeException(String.format("No food found in ingredientMap with index name %s", spec.indexName))
+        throw RuntimeException("No food found in ingredientMap with index name ${spec.indexName}")
     }
     val ingredientId = ingredientMap[spec.indexName]
     val builder = MacrosBuilder(IngredientTable)
@@ -78,13 +78,7 @@ private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredi
 
 private fun extractIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>): Set<String> {
     // say there are an average of 4 ingredients per composite food
-    val indexNames: MutableSet<String> = HashSet(4 * allSpecs.size)
-    for (cSpec in allSpecs) {
-        for ((indexName) in cSpec.getIngredients()) {
-            indexNames.add(indexName)
-        }
-    }
-    return indexNames
+    return allSpecs.flatMap { it.getIngredients() }.map { it.indexName }.toHashSet()
 }
 
 // creates a composite food and ingredients objects from the given spec

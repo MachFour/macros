@@ -114,7 +114,7 @@ class MealSpec(val name: String?, val day: DateStamp?, error: String? = null) {
                 }
             }
         }
-        assert(error != null || processedObject != null) { "No error message but no created object" }
+        check(error != null || processedObject != null) { "No error message but no created object" }
         if (error != null) {
             return
         }

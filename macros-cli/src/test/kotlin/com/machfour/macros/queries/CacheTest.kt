@@ -9,9 +9,6 @@ import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
-import com.machfour.macros.queries.FlowDataSource
-import com.machfour.macros.queries.clearTable
-import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.*
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
@@ -114,7 +111,7 @@ internal class CacheTest {
         val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
         assertNotNull(cachedFood1)
 
-        assert(cachedFood1.identityHashCode() == cachedFood2.identityHashCode())
+        check(cachedFood1.identityHashCode() == cachedFood2.identityHashCode())
     }
 
     @Test
@@ -132,7 +129,7 @@ internal class CacheTest {
         val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
         dataSource.saveObject(alteredFood)
         val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
-        assert(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
+        check(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
     }
 
 }

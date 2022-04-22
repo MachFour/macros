@@ -119,7 +119,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     }
 
     private fun assertMutable() {
-        assert(!isImmutable) { "NutrientData has been made immutable" }
+        check(!isImmutable) { "NutrientData has been made immutable" }
     }
     
     operator fun get(n: Nutrient): M? = data[n.index]
@@ -195,7 +195,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     private fun calculateMacroEnergy(unit: Unit = KILOJOULES): Double {
         require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
         // this is also ensured by database
-        assert(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
+        check(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
 
         val totalEnergy =
             totalEnergyNutrients.fold(0.0) { s, n -> s + energyComponentsMapKj.getValue(n) }

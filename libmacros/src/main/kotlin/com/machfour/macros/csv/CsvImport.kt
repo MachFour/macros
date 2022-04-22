@@ -45,7 +45,7 @@ internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): 
                 extractedSomething = true
             }
         }
-        assert(extractedSomething) { "No data extracted from CSV row: $csvRow. Has the file been saved with comma delimiters?" }
+        check(extractedSomething) { "No data extracted from CSV row: $csvRow. Has the file been saved with comma delimiters?" }
     }
 }
 
@@ -73,7 +73,7 @@ private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<F
             put(FoodNutrientValueTable.UNIT_ID, unit.id)
             put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
         }
-        assert(nutrientValueData.hasValue(FoodNutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
+        check(nutrientValueData.hasValue(FoodNutrientValueTable.VALUE)) { "Value was null for line $csvRow" }
 
         data.add(nutrientValueData)
     }

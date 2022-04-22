@@ -2,23 +2,23 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.names.EnglishUnitNames
+import com.machfour.macros.util.fmt
+import com.machfour.macros.util.fmtUnicode
 import com.machfour.macros.util.formatQuantity
-import com.machfour.macros.util.formatUnicodeString
-import com.machfour.macros.util.stringJoin
 
 // Ingredients printing parameters
 private const val quantityWidth = 10
 private const val notesWidth = 25
 private const val sideEdge = "|"
 private const val topBottomEdge = "-"
-private const val lineFormat = " $sideEdge %s  %${quantityWidth}s  %-${notesWidth}s $sideEdge"
 private const val lineLength = foodNameWidth + notesWidth + quantityWidth + sideEdge.length + sideEdge.length + 6
-private val hLine = " $sideEdge" + stringJoin(listOf(topBottomEdge), copies = lineLength - 2) + sideEdge
+private val hLine = " " + sideEdge + topBottomEdge.repeat(lineLength - 2) + sideEdge
 
 fun printLine(foodName: String, quantityString: String, noteString: String) {
     // have to treat food name specially in case it contains unicode characters
-    val formattedName = formatUnicodeString(foodName, foodNameWidth, leftAlign = true)
-    println(lineFormat.format(formattedName, quantityString, noteString))
+    val formattedName = foodName.fmtUnicode(foodNameWidth, leftAlign = true)
+    println(" $sideEdge $formattedName  ${quantityString.fmt(quantityWidth)}  "
+            + noteString.fmt(notesWidth, true) + " $sideEdge")
 }
 
 fun printIngredients(ingredients: List<Ingredient>) {

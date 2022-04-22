@@ -85,7 +85,7 @@ class FileParser {
         }
 
         fun processFpSpec(fps: FoodPortionSpec, m: Meal, f: Food) {
-            assert(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
+            check(f.indexName == fps.foodIndexName) { "Food does not match index name of spec" }
             val serving = if (!fps.isServingMode) {
                 // use unit if specified, otherwise default unit of food's nutrition data
                 null
@@ -268,7 +268,7 @@ class FileParser {
                     if (createdObject != null) {
                         m.addFoodPortion(createdObject)
                     } else {
-                        assert(fps.error.isNotEmpty()) { "No FoodPortion created but no error message" }
+                        check(fps.error.isNotEmpty()) { "No FoodPortion created but no error message" }
                         errorLines[fileLine] = fps.error
                     }
                 }

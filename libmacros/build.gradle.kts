@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
 }
@@ -14,10 +16,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
 }
 
 dependencies {
@@ -29,7 +29,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
-    implementation(files("../libs/ExprK.jar"))
     api(files("../libs/datestamp.jar"))
 
     // testing
@@ -38,6 +37,16 @@ dependencies {
 }
 
 tasks.withType<Copy> {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}
+
+tasks.withType<Jar> {
+    // This code recursively collects and copies all of a project's files and adds them to the JAR itself.
+    // One can extend this task, to skip certain files or particular types at will
+    from(configurations.runtimeClasspath.map {
+            config -> config.map { if (it.isDirectory) it else zipTree(it) }
+    })
+
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
 

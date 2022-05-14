@@ -25,7 +25,7 @@ private fun initFoodPortion() : FoodPortion {
         setField(FoodPortionTable.QUANTITY, 50.0)
         setField(FoodPortionTable.QUANTITY_UNIT, "g")
         setField(FoodPortionTable.NOTES, "This is an example food portion")
-        build()
+        build(ObjectSource.TEST)
     }
 
     fp.initFoodAndNd(food)

@@ -11,6 +11,7 @@ import com.machfour.macros.schema.FoodTable.CATEGORY
 import com.machfour.macros.schema.FoodTable.DENSITY
 import com.machfour.macros.schema.FoodTable.EXTRA_DESC
 import com.machfour.macros.schema.FoodTable.FOOD_TYPE
+import com.machfour.macros.schema.FoodTable.ID
 import com.machfour.macros.schema.FoodTable.INDEX_NAME
 import com.machfour.macros.schema.FoodTable.NAME
 import com.machfour.macros.schema.FoodTable.NOTES
@@ -35,6 +36,7 @@ val exampleFood2: Food by lazy {
 
 private fun init1(): Food {
     val data = RowData(FoodTable)
+    data.put(ID, 1L)
     data.put(INDEX_NAME, "food1")
     data.put(BRAND, "Max's")
     data.put(VARIETY, "really good with a really long variety name just to see what happens")
@@ -44,11 +46,12 @@ private fun init1(): Food {
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     data.put(USDA_INDEX, null)
     data.put(NUTTAB_INDEX, null)
-    return Food.factory.construct(data, ObjectSource.IMPORT)
+    return Food.factory.construct(data, ObjectSource.TEST)
 }
 
 private fun init2(): Food {
     val data = RowData(FoodTable)
+    data.put(ID, 2L)
     data.put(INDEX_NAME, "generic-oil")
     data.put(VARIETY, "Super oily")
     data.put(EXTRA_DESC, "in a bottle")
@@ -58,7 +61,7 @@ private fun init2(): Food {
     data.put(CATEGORY, "oils")
     data.put(DENSITY, 0.92)
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
-    val f = Food.factory.construct(data, ObjectSource.IMPORT)
+    val f = Food.factory.construct(data, ObjectSource.TEST)
 
     val nutritionData = listOf(
           FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES)

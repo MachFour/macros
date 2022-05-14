@@ -4,11 +4,12 @@ package com.machfour.macros.core
 class SearchRelevance private constructor(val value: Int): Comparable<SearchRelevance> {
     companion object {
         val EVERYTHING = SearchRelevance(Int.MIN_VALUE)
-        val HIDDEN = SearchRelevance(-20)
-        val EXCLUDE_HIDDEN = SearchRelevance(0)
-        val INBUILT = SearchRelevance(20)
-        val USER = SearchRelevance(40)
-        val STARRED = SearchRelevance(60)
+        val HIDDEN = SearchRelevance(-200)
+        val EXCLUDE_HIDDEN = SearchRelevance(-100)
+        val UNSET = SearchRelevance(0)
+        val INBUILT = SearchRelevance(200)
+        val USER = SearchRelevance(400)
+        val STARRED = SearchRelevance(600)
 
         fun fromValue(value: Int) = SearchRelevance(value)
     }

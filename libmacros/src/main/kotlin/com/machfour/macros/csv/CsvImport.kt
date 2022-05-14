@@ -3,6 +3,7 @@ package com.machfour.macros.csv
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.names.ENERGY_UNIT_NAME
 import com.machfour.macros.names.QUANTITY_UNIT_NAME
@@ -12,6 +13,7 @@ import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.queries.*
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.FoodTable.SEARCH_RELEVANCE
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.*
@@ -284,8 +286,8 @@ fun <J: Any> importFoodData(
             // set search relevance from food type, if not already set
             val foodType = FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)
             val defaultSearchRelevance = foodType?.defaultSearchRelevance?.value
-            if (!data.hasValue(FoodTable.SEARCH_RELEVANCE) && defaultSearchRelevance != null) {
-                data.put(FoodTable.SEARCH_RELEVANCE, defaultSearchRelevance)
+            if (defaultSearchRelevance != null && data[SEARCH_RELEVANCE] == SearchRelevance.UNSET.value) {
+                data.put(SEARCH_RELEVANCE, defaultSearchRelevance)
             }
         },
         modifyNutrientValueData

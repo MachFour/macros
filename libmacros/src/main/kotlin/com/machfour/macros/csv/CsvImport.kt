@@ -9,10 +9,7 @@ import com.machfour.macros.names.QUANTITY_UNIT_NAME
 import com.machfour.macros.nutrients.AllNutrients
 import com.machfour.macros.nutrients.ENERGY
 import com.machfour.macros.nutrients.QUANTITY
-import com.machfour.macros.queries.completeForeignKeys
-import com.machfour.macros.queries.findUniqueColumnConflicts
-import com.machfour.macros.queries.getFoodByIndexName
-import com.machfour.macros.queries.saveObjects
+import com.machfour.macros.queries.*
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
@@ -22,6 +19,7 @@ import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.unitWithAbbr
 import com.machfour.macros.util.javaTrim
+import com.machfour.macros.util.multiAssociateBy
 import com.machfour.macros.validation.SchemaViolation
 import org.supercsv.io.CsvMapReader
 import org.supercsv.io.ICsvMapReader
@@ -296,20 +294,58 @@ fun <J: Any> importFoodData(
     return saveImportedFoods(db, csvFoods, foodKeyCol)
 }
 
-// TODO detect existing servings
+// Returns map of existing serving IDs / servings that were matched with ones in the CSV that were skipped,
+// or empty list if skipExisting was false
 @Throws(IOException::class, SqlException::class, TypeCastException::class)
 fun <J: Any> importServings(
     db: SqlDatabase,
     servingCsv: Reader,
     foodKeyCol: Column<Food, J>,
+    skipExisting: Boolean,
     ignoreKeys: Set<J> = emptySet(),
-) {
+): Map<Long, Serving> {
     val csvServings = buildServings(servingCsv, foodKeyCol)
     val nonExcludedServings = csvServings.filterNot {
         ignoreKeys.contains(it.getFkParentKey(ServingTable.FOOD_ID)[foodKeyCol])
     }
     val completedServings = completeForeignKeys(db, nonExcludedServings, ServingTable.FOOD_ID)
-    saveObjects(db, completedServings, ObjectSource.IMPORT)
+    val servingsToSave: List<Serving>
+    val matchedDuplicateServings: Map<Long, Serving>
+    if (skipExisting) {
+        // non-duplicated servings
+        val newServingsByFoodId = completedServings.multiAssociateBy { it.foodId }
+        // Maps food ID and name to list of servings with that name and food ID.
+        // Generally we have one or two servings per food, so it's a bit overkill, but oh well.
+        val existingServingsByNameByFoodId =
+            getRawObjectsForParentFk(db, newServingsByFoodId.keys, ServingTable, ServingTable.FOOD_ID)
+                .values
+                .multiAssociateBy { it.foodId }
+                .mapValues { it.value.multiAssociateBy { s -> s.name } }
+
+        servingsToSave = ArrayList()
+        matchedDuplicateServings = HashMap()
+        // If a completed serving has same name quantity as an existing serving with the same food ID, ignore it
+        for ((foodId, newServingsWithId) in newServingsByFoodId) {
+            val existingServingsByName = existingServingsByNameByFoodId.getOrDefault(foodId, emptyMap())
+
+            for (s in newServingsWithId) {
+                // see if name and quantity match
+                val existingServingMatch = existingServingsByName[s.name]?.firstOrNull { it.quantity == s.quantity }
+                if (existingServingMatch == null) {
+                    servingsToSave.add(s)
+                } else {
+                    matchedDuplicateServings[existingServingMatch.id] = existingServingMatch
+                }
+
+            }
+        }
+    } else {
+        servingsToSave = completedServings
+        matchedDuplicateServings = emptyMap()
+    }
+    saveObjects(db, servingsToSave, ObjectSource.IMPORT)
+    return matchedDuplicateServings
+
 }
 
 @Throws(IOException::class, SqlException::class, TypeCastException::class)

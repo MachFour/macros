@@ -30,3 +30,15 @@ fun <K, V, R> Map<K, V>.transformValueOrElse(key: K, elseValue: R, transform: (V
         else -> transform(value)
     }
 }
+fun <E, K> Collection<E>.multiAssociateBy(key: (E) -> K): Map<K, List<E>> {
+    return buildMap {
+        for (e in this@multiAssociateBy) {
+            val k = key(e)
+            if (k !in this) {
+                this[k] = ArrayList()
+            }
+            (getValue(k) as ArrayList).add(e)
+        }
+    }
+}
+

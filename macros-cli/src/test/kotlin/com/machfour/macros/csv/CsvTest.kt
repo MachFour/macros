@@ -110,7 +110,7 @@ class CsvTest {
         try {
             // save foods first
             FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
-            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME) }
+            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME, false) }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")

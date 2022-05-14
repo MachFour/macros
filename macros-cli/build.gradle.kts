@@ -50,9 +50,7 @@ tasks.withType<Jar> {
             config -> config.map { if (it.isDirectory) it else zipTree(it) }
     })
 
-    manifest {
-        attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
-    }
+    manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
 
     duplicatesStrategy = DuplicatesStrategy.WARN
 }

@@ -125,14 +125,14 @@ private fun <M : FkEntity<M>, J: Any, N> completeFkCol(
 // is inserted without depending on unknown fields/IDs of other types, the second depends only on the first, and so on
 @Throws(SqlException::class)
 // private for now, can make it public if we ever need multiple column completion
-private fun <M : FkEntity<M>> completeForeignKeys(ds: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
+private fun <M : FkEntity<M>> completeForeignKeys(db: SqlDatabase, objects: Collection<M>, which: List<Column.Fk<M, *, *>>): List<M> {
     val factory = objects.firstOrNull()?.factory ?: return emptyList()
 
     // mutable copy of first argument
     var partiallyCompletedObjects: List<M> = ArrayList(objects)
     // cycle through the FK columns.
     for (fkCol in which) {
-        partiallyCompletedObjects = completeFkCol(ds, partiallyCompletedObjects, fkCol)
+        partiallyCompletedObjects = completeFkCol(db, partiallyCompletedObjects, fkCol)
     }
 
     return partiallyCompletedObjects.map {

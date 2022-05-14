@@ -80,17 +80,28 @@ fun <M, J: Any> getRawObjectsWithKeys(
 
 
 @Throws(SqlException::class)
+@Deprecated("Use other function", ReplaceWith("getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol"))
 fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
     parentObjectMap: Map<Long, N>,
     childTable: Table<M>,
     fkCol: Column.Fk<M, Long, N>
 ): Map<Long, M> {
-    if (parentObjectMap.isEmpty()) {
+    return getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol)
+}
+
+@Throws(SqlException::class)
+fun <M, N> getRawObjectsForParentFk(
+    db: SqlDatabase,
+    parentIds: Collection<Long>,
+    childTable: Table<M>,
+    fkCol: Column.Fk<M, Long, N>
+): Map<Long, M> {
+    if (parentIds.isEmpty()) {
         return emptyMap()
     }
     val ids = selectNonNullColumn(db, childTable.idColumn) {
-        where(fkCol, parentObjectMap.keys)
+        where(fkCol, parentIds)
     }
     // if empty, no objects in the child table refer to any of the parent objects/rows
     return if (ids.isEmpty()) emptyMap() else getRawObjectsWithIds(db, childTable, ids)

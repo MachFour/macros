@@ -10,6 +10,7 @@ import com.machfour.macros.csv.importFoodData
 import com.machfour.macros.csv.importRecipes
 import com.machfour.macros.csv.importServings
 import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients
@@ -124,7 +125,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 }
 
                 if (conflictingFoods.isNotEmpty()) {
-                    println("The following foods could not be be imported due to naming conflicts:")
+                    println("Note: the following ${conflictingFoods.size} duplicate foods were not imported:")
                     conflictingFoods.forEach { println(it.key) }
                 }
 
@@ -132,11 +133,12 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println()
 
                 println("Importing servings from $servingCsvFile")
+                val duplicatedServings: Map<Long, Serving>
                 FileReader(servingCsvFile).use { reader ->
-                    val excludeKeys = conflictingFoods.values.mapNotNull { it.data[foodKeyCol] }.toSet()
-                    importServings(db, reader, foodKeyCol, excludeKeys)
+                    duplicatedServings = importServings(db, reader, foodKeyCol, true)
                 }
                 println("Saved servings")
+                println("Note: skipped ${duplicatedServings.size} duplicated servings")
                 println()
             }
             if (!noRecipes) {

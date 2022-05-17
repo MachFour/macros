@@ -1,7 +1,7 @@
 package com.machfour.macros.linux
 
-import com.machfour.macros.sql.SqlConfig
 import com.machfour.macros.jvm.joinFilePath
+import com.machfour.macros.sql.SqlConfig
 
 class LinuxSqlConfig: SqlConfig {
     companion object {
@@ -13,7 +13,7 @@ class LinuxSqlConfig: SqlConfig {
             "inbuilt-units-nutrients-triggers.sql",
         )
 
-        private val SQL_DIR = joinFilePath(LinuxConfig.PROJECT_DIR, "src/main/resources/sql")
+        private val SQL_DIR = joinFilePath(LinuxConfig.PROJECT_DIR, "libmacros/src/main/resources/sql")
     }
 
     override val initSqlName = Companion.initSqlName

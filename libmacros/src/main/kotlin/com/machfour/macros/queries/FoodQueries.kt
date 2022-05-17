@@ -235,10 +235,10 @@ private fun processRawFoodMap(ds: SqlDatabase, foodMap: Map<Long, Food>) {
     if (foodMap.isNotEmpty()) {
         //Map<Long, Serving> servings = getRawServingsForFoods(idMap);
         //Map<Long, NutrientData> nData = getRawNutrientDataForFoods(idMap);
-        val servings = getRawObjectsForParentFk(ds, foodMap, ServingTable, ServingTable.FOOD_ID)
+        val servings = getRawObjectsForParentFk(ds, foodMap.keys, ServingTable, ServingTable.FOOD_ID)
         val nutrientValues =
-            getRawObjectsForParentFk(ds, foodMap, FoodNutrientValueTable, FoodNutrientValueTable.FOOD_ID)
-        val ingredients = getRawObjectsForParentFk(ds, foodMap, IngredientTable, IngredientTable.PARENT_FOOD_ID)
+            getRawObjectsForParentFk(ds, foodMap.keys, FoodNutrientValueTable, FoodNutrientValueTable.FOOD_ID)
+        val ingredients = getRawObjectsForParentFk(ds, foodMap.keys, IngredientTable, IngredientTable.PARENT_FOOD_ID)
         val categories = getAllFoodCategories(ds)
         processRawIngredients(ds, ingredients)
         processRawFoodMap(foodMap, servings, nutrientValues, ingredients, categories)

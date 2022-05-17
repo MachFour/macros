@@ -39,13 +39,13 @@ class Export(config: CliConfig): CommandImpl(config) {
         try {
             println("Exporting foods to $outputFoodCsvName")
             FileWriter(outputFoodCsvName).use {
-                exportFoodData(config.database, it, foodKeyCol)
+                it.write(exportFoodData(config.database, foodKeyCol))
             }
 
             println("Exporting servings to $outputServingCsvName")
 
             FileWriter(outputServingCsvName).use {
-                exportServings(config.database, it, foodKeyCol, emptySet())
+                it.write(exportServings(config.database, foodKeyCol, emptySet()))
             }
 
         } catch (e: SqlException) {

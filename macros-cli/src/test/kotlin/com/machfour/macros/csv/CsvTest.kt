@@ -59,7 +59,7 @@ class CsvTest {
         var csvFoods: Map<String, Food>
         try {
             FileReader(config.foodCsvPath).use {
-                csvFoods = buildFoodObjectTree(it, FoodTable.INDEX_NAME)
+                csvFoods = buildFoodObjectTree(it.readText(), FoodTable.INDEX_NAME)
                 Assertions.assertNotEquals(0, csvFoods.size, "CSV read in zero foods!")
             }
         } catch (e: IOException) {
@@ -76,11 +76,11 @@ class CsvTest {
         var csvServings: List<Serving>
         try {
             FileReader(config.servingCsvPath).use {
-                csvServings = buildServings(it, FoodTable.INDEX_NAME)
+                csvServings = buildServings(it.readText(), FoodTable.INDEX_NAME)
                 Assertions.assertNotEquals(0, csvServings.size, "CSV read in zero servings!")
                 println(csvServings[0])
             }
-        } catch (e: IOException) {
+        } catch (e: CsvException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
@@ -92,11 +92,11 @@ class CsvTest {
     @Test
     fun testCsvSaveFoods() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
-        } catch (e: IOException) {
+        } catch (e: CsvException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
@@ -109,12 +109,12 @@ class CsvTest {
     fun testCsvSaveServings() {
         try {
             // save foods first
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
-            FileReader(config.servingCsvPath).use { importServings(db, it, FoodTable.INDEX_NAME, false) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
+            FileReader(config.servingCsvPath).use { importServings(db, it.readText(), FoodTable.INDEX_NAME, false) }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
-        } catch (e: IOException) {
+        } catch (e: CsvException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
         } catch (e: TypeCastException) {
@@ -130,7 +130,7 @@ class CsvTest {
     fun testCsvWriteFoods() {
         try {
             val foods = getAllRawObjects(db, FoodTable)
-            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { writeObjectsToCsv(FoodTable, it, foods.values) }
+            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { it.write(writeObjectsToCsv(FoodTable, foods.values)) }
         } catch (e: IOException) {
             e.printStackTrace()
             Assertions.fail("IOException was thrown")
@@ -144,7 +144,7 @@ class CsvTest {
     fun testCsvWriteServings() {
         try {
             val servings = getAllRawObjects(db, ServingTable)
-            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { writeObjectsToCsv(ServingTable, it, servings.values) }
+            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { it.write(writeObjectsToCsv(ServingTable, servings.values)) }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -158,10 +158,10 @@ class CsvTest {
     @Test
     fun testCsvSaveRecipes() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it, FoodTable.INDEX_NAME) }
+            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
             FileReader(config.recipeCsvPath).use { recipeCsv ->
                 FileReader(config.ingredientsCsvPath).use { ingredientCsv ->
-                    importRecipes(db, recipeCsv, ingredientCsv)
+                    importRecipes(db, recipeCsv.readText(), ingredientCsv.readText())
                 }
             }
         } catch (e: SqlException) {

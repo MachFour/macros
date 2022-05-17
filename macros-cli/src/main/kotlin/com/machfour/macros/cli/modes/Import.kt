@@ -20,7 +20,6 @@ import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
-import java.io.IOException
 
 
 private fun getCsvFile(args: List<String>, flag: String, default: String): String? {
@@ -121,7 +120,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
 
                 val conflictingFoods: Map<String, Food>
                 FileReader(foodCsvFile).use { reader ->
-                    conflictingFoods = importFoodData(db, reader, foodKeyCol)
+                    conflictingFoods = importFoodData(db, reader.readText(), foodKeyCol)
                 }
 
                 if (conflictingFoods.isNotEmpty()) {
@@ -135,7 +134,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println("Importing servings from $servingCsvFile")
                 val duplicatedServings: Map<Long, Serving>
                 FileReader(servingCsvFile).use { reader ->
-                    duplicatedServings = importServings(db, reader, foodKeyCol, true)
+                    duplicatedServings = importServings(db, reader.readText(), foodKeyCol, true)
                 }
                 println("Saved servings")
                 println("Note: skipped ${duplicatedServings.size} duplicated servings")
@@ -145,7 +144,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println("Importing recipes and ingredients from $recipeCsvFile...")
                 FileReader(recipeCsvFile).use { recipeReader ->
                     FileReader(ingredientsCsvFile).use { ingredientsReader ->
-                        importRecipes(db, recipeReader, ingredientsReader)
+                        importRecipes(db, recipeReader.readText(), ingredientsReader.readText())
                     }
                 }
                 println("Saved recipes and ingredients")
@@ -155,19 +154,16 @@ class Import(config: CliConfig) : CommandImpl(config) {
             println()
             printlnErr("SQL Exception occurred: ${e1.message}")
             return 1
-        } catch (e2: IOException) {
+        } catch (e2: CsvException) {
             println()
-            printlnErr("IO exception occurred: ${e2.message}")
+            printlnErr("CSV import exception occurred: ${e2.message}")
+            printlnErr("Please check the format of the CSV files")
             return 1
         } catch (e3: TypeCastException) {
             println()
             printlnErr("Type cast exception occurred: ${e3.message}")
             printlnErr("Please check the format of the CSV files")
             return 1
-        } catch (e4: CsvException) {
-            println()
-            printlnErr("CSV import exception occurred: ${e4.message}")
-            printlnErr("Please check the format of the CSV files")
         }
 
         println()

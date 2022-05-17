@@ -23,13 +23,13 @@ tasks.withType<KotlinCompile> {
 dependencies {
     implementation(kotlin("stdlib:1.6.20"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
-    implementation("net.sf.supercsv:super-csv:2.4.0")
     implementation("com.google.code.gson:gson:2.9.0")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     api(files("../libs/datestamp.jar"))
+    api(files("/home/max/devel/kotlin-csv/lib/build/libs/kotlin-csvlib-1.0-SNAPSHOT.jar"))
 
     // testing
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")

@@ -103,7 +103,7 @@ CREATE TABLE Food (
     , density              REAL DEFAULT NULL
     -- allows user to 'hide' foods. 0 means normal relevance, i.e. do not prioritise.
     -- -1 is deprioritised / 'hidden'
-    , search_relevance     INTEGER NOT NULL DEFAULT 0
+    , search_relevance     INTEGER DEFAULT NULL
     -- timestamps are stored in unix time, and set via triggers
 
     -- referencing the name of the food category makes importing foods a LOT easier

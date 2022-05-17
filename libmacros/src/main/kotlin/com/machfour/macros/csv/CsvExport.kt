@@ -15,37 +15,43 @@ import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.units.StandardNutrientUnits
-import java.io.IOException
-import java.io.Reader
-import java.io.Writer
 
 
-@Throws(IOException::class, SqlException::class)
+@Throws(SqlException::class)
 private fun getFoodsForExport(db: SqlDatabase) = getFoodsByType(db, FoodType.PRIMARY)
 
-@Throws(IOException::class, SqlException::class)
+@Throws(SqlException::class)
 private fun getRecipesForExport(db: SqlDatabase) = getFoodsByType(db, FoodType.COMPOSITE)
 
-private val foodColumnsToExclude = setOf(
-    FoodTable.ID,
-    FoodTable.CREATE_TIME,
-    FoodTable.MODIFY_TIME,
-    FoodTable.SEARCH_RELEVANCE
-)
+private val foodColumnsForExport by lazy {
+    val foodColumnsToExclude = setOf(
+        FoodTable.ID,
+        FoodTable.CREATE_TIME,
+        FoodTable.MODIFY_TIME,
+        FoodTable.SEARCH_RELEVANCE
+    )
 
-private val servingColumnsToExclude = setOf(
-    ServingTable.ID,
-    ServingTable.CREATE_TIME,
-    ServingTable.MODIFY_TIME,
-    ServingTable.FOOD_ID,
-)
+    FoodTable.columns.filterNot { it in foodColumnsToExclude }
+}
+
+private val servingColumnsForExport by lazy {
+    val servingColumnsToExclude = setOf(
+        ServingTable.ID,
+        ServingTable.CREATE_TIME,
+        ServingTable.MODIFY_TIME,
+        ServingTable.FOOD_ID,
+    )
+
+    ServingTable.columns.filterNot { it in servingColumnsToExclude }
+}
+
+private val nutrientDataColumnNames = listOf("quantity_unit", "energy_unit") + AllNutrients.map { it.csvName }
+
 
 private fun prepareFoodDataForExport(f: Food): Map<String, String> {
     return buildMap {
-        FoodTable.columns
-            .filterNot { foodColumnsToExclude.contains(it) }
-            // null data gets mapped to empty string
-            .forEach { col -> put(col.sqlName, f.data.getAsRawString(col)) }
+        // null data gets mapped to empty string
+        foodColumnsForExport.forEach { col -> put(col.sqlName, f.data.getAsRawString(col)) }
     }
 }
 
@@ -64,20 +70,17 @@ private fun prepareNutrientDataForExport(nd: FoodNutrientData): Map<String, Stri
 private fun <J: Any> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food, J>): Map<String, String> {
     return buildMap {
         put(foodKeyCol.sqlName, s.food.data.getAsRawString(foodKeyCol))
-        ServingTable.columns
-            .filterNot { servingColumnsToExclude.contains(it) }
-            // null data gets mapped to empty string
-            .forEach { col -> put(col.sqlName, s.data.getAsRawString(col)) }
+        // null data gets mapped to empty string
+        servingColumnsForExport.forEach { col -> put(col.sqlName, s.data.getAsRawString(col)) }
     }
 }
 
 
-@Throws(IOException::class, SqlException::class)
+@Throws(SqlException::class)
 fun <J: Any> exportFoodData(
     db: SqlDatabase,
-    foodCsv: Writer,
     foodKeyCol: Column<Food, J>,
-) {
+): String {
     require(foodKeyCol.isUnique)
 
     val dataForExport = getFoodsForExport(db).values.map {
@@ -86,46 +89,45 @@ fun <J: Any> exportFoodData(
         foodData + nutrientData
     }
 
-    val header = dataForExport.firstOrNull()?.keys?.toTypedArray() ?: return
+    val header = foodColumnsForExport.map { it.sqlName } + nutrientDataColumnNames
 
-    with(getMapWriter(foodCsv)) {
-        writeHeader(*header)
-        dataForExport.forEach { write(it, *header) }
-        flush()
+    val rows = buildList {
+        add(header)
+        dataForExport.forEach { add(header.map { column -> it[column] ?: "" }) }
     }
+
+    return getCsvWriter().write(rows)
 }
 
-@Throws(IOException::class, SqlException::class, TypeCastException::class)
+@Throws(SqlException::class, TypeCastException::class)
 fun <J: Any> exportServings(
     db: SqlDatabase,
-    servingCsv: Writer,
     foodKeyCol: Column<Food, J>,
     ignoreFoodIds: Set<Long>,
-) {
+): String {
 
     // list of (food, serving) for each serving of a primary food
     val servingsForExport = getFoodsForExport(db)
         .filterNot { ignoreFoodIds.contains(it.key) }
         .flatMap { (_, food) -> food.servings }
 
-    val dataForExport = servingsForExport
-        .map { prepareServingDataForExport(it, foodKeyCol) }
+    val dataForExport = servingsForExport.map { prepareServingDataForExport(it, foodKeyCol) }
 
-    val header = dataForExport.firstOrNull()?.keys?.toTypedArray() ?: return
+    val header = servingColumnsForExport.map { it.sqlName }
 
-    with(getMapWriter(servingCsv)) {
-        writeHeader(*header)
-        dataForExport.forEach { write(it, *header) }
-        flush()
+    val rows = buildList {
+        add(header)
+        dataForExport.forEach { add(header.map { column -> it[column] ?: "" }) }
     }
+
+    return getCsvWriter().write(rows)
+
 }
 
-@Throws(IOException::class, SqlException::class)
+@Throws(SqlException::class)
 fun exportRecipes(
     db: SqlDatabase,
-    recipeCsv: Reader,
-    ingredientCsv: Reader
-) {
+): Pair<String, String> {
     val recipesForExport = getRecipesForExport(db)
     TODO()
 }

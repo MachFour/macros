@@ -80,7 +80,7 @@ fun <M, J: Any> getRawObjectsWithKeys(
 
 
 @Throws(SqlException::class)
-@Deprecated("Use other function", ReplaceWith("getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol"))
+@Deprecated("Use other function", ReplaceWith("getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol)"))
 fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
     parentObjectMap: Map<Long, N>,

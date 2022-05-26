@@ -45,7 +45,7 @@ fun <E> stringJoin(
         }
         // remove the last sep
         if (sep.isNotEmpty()) {
-            delete(length - sep.length, length - 1)
+            delete(length - sep.length, length)
         }
     }
 }

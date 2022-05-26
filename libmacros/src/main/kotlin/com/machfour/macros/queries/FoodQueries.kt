@@ -8,6 +8,7 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll
+import com.machfour.macros.util.stringJoin
 import com.machfour.macros.util.unionAll
 
 // excluding index name
@@ -46,7 +47,7 @@ fun foodSearch(
 // TODO
 //  - provide simple control of how exhaustive the search is
 //  - most exhaustive search: substring search of all columns
-//  - be adaptive - if there only few results, add more results from less selective searches
+//  - be adaptive - if there are only a few results, add more results from less selective searches
 //  e.g. not just prefix searches as strings get longer
 @Throws(SqlException::class)
 fun foodSearch(
@@ -59,9 +60,20 @@ fun foodSearch(
     }
 
     val indexName = listOf(FoodTable.INDEX_NAME)
+    val searchRelevance = FoodTable.SEARCH_RELEVANCE.sqlName
+    val foodType = FoodTable.FOOD_TYPE.sqlName
 
     val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
-        andWhere("${FoodTable.SEARCH_RELEVANCE} >= ${minRelevance.value}")
+        val relevantFoodTypes = FoodType.values().filter { it.defaultSearchRelevance >= minRelevance }
+        val defaultRelevanceTest = when (relevantFoodTypes.size) {
+            0 -> ""
+            1 -> "OR ($searchRelevance IS NULL AND $foodType == '${relevantFoodTypes.first()}')"
+            else -> "OR ($searchRelevance IS NULL AND $foodType IN (" +
+                    stringJoin(relevantFoodTypes, sep = ", ", itemPrefix = "'", itemSuffix = "'") + "))"
+        }
+        val relevantEnough = "$searchRelevance >= ${minRelevance.value} " + defaultRelevanceTest
+        println(relevantEnough)
+        andWhere(relevantEnough)
     }
 
 

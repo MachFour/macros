@@ -1,10 +1,10 @@
 package com.machfour.macros.schema
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.TableImpl
 import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.entities.NutrientGoalDayMapping
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "NutrientGoalDayMapping"

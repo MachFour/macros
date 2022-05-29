@@ -1,10 +1,12 @@
-package com.machfour.macros.sql
+package com.machfour.macros.core
 
-import com.machfour.macros.core.Factory
-import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.schema.CREATE_TIME_COLUMN_NAME
 import com.machfour.macros.schema.ID_COLUMN_NAME
 import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.ColumnImpl
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.Table
 
 abstract class TableImpl<M>(
     final override val name: String,

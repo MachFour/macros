@@ -8,7 +8,6 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
 import com.machfour.macros.util.intersectAll
-import com.machfour.macros.util.stringJoin
 import com.machfour.macros.util.unionAll
 
 // excluding index name
@@ -68,8 +67,8 @@ fun foodSearch(
         val defaultRelevanceTest = when (relevantFoodTypes.size) {
             0 -> ""
             1 -> "OR ($searchRelevance IS NULL AND $foodType == '${relevantFoodTypes.first()}')"
-            else -> "OR ($searchRelevance IS NULL AND $foodType IN (" +
-                    stringJoin(relevantFoodTypes, sep = ", ", itemPrefix = "'", itemSuffix = "'") + "))"
+            else -> "OR ($searchRelevance IS NULL AND $foodType IN " +
+                    relevantFoodTypes.joinToString(separator = ", ", prefix = "(", postfix = ")") { "'$it'" }
         }
         val relevantEnough = "$searchRelevance >= ${minRelevance.value} " + defaultRelevanceTest
         println(relevantEnough)

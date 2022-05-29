@@ -1,9 +1,9 @@
 package com.machfour.macros.schema
 
+import com.machfour.macros.core.TableImpl
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "Unit"

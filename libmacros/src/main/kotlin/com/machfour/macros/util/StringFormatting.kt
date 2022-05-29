@@ -9,7 +9,7 @@ fun CharSequence.fmt(minWidth: Int, leftAlign: Boolean = false, padChar: Char = 
     val numChars = (minWidth - length).coerceAtLeast(0)
     val s = this
     return buildString {
-        repeat(numChars) { append(padChar) }
+        append(padChar.toString().repeat(numChars))
         if (leftAlign) insert(0, s) else append(s)
     }
 }
@@ -18,12 +18,12 @@ fun Float.toString(precision: Int): String {
     return toDouble().toString(precision)
 }
 
-fun Double.toString(precision: Int): String {
+fun Double.toString(precision: Int, trimTrailingZeros: Boolean = false): String {
     require(precision >= 0) { "Precision must be >= 0 (was $precision)" }
     return when {
         isNaN() -> "NaN"
         isInfinite() -> if (this < 0) "-∞" else "∞"
-        this == 0.0 -> if (precision == 0) "0" else "0." + "0".repeat(precision)
+        this == 0.0 -> if (precision == 0 || trimTrailingZeros) "0" else "0." + "0".repeat(precision)
         else -> {
             val multiplied = this * 10.0.pow(precision)
             // Check if operation is out of range; if so denote it with a > or < sign as appropriate
@@ -46,6 +46,21 @@ fun Double.toString(precision: Int): String {
                     }
                     append('.')
                     append(s.substring(s.length - precision, s.length))
+
+                    if (trimTrailingZeros && endsWith('0')) {
+                        var trailingZerosStart = lastIndex
+
+                        while(trailingZerosStart > 0 && this[trailingZerosStart - 1] == '0') {
+                            trailingZerosStart--
+                        }
+
+                        deleteRange(trailingZerosStart, length)
+
+                        // remove decimal point if needed
+                        if (endsWith('.')) {
+                            deleteCharAt(lastIndex)
+                        }
+                    }
                 } else {
                     append(s)
                 }
@@ -60,6 +75,6 @@ fun Double.toRoundedString(maxPrecision: Int = 3, roundTolerance: Double = 1e-4)
     return if (abs(error) < roundTolerance) {
         asInt.toString()
     } else {
-        toString(maxPrecision)
+        toString(maxPrecision, trimTrailingZeros = true)
     }
 }

@@ -5,35 +5,26 @@ import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
 import com.machfour.macros.sql.generator.Conjuction
-import com.machfour.macros.util.stringJoin
 
 // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
 // needs to be entered as DATE('date_string'), so that logic is implemented here
-private fun getSqlPlaceholder(columnType: SqlType<*>): String {
+private fun SqlType<*>.getSqlPlaceholder(): String {
     // for now, DateStamp is the only special one
-    return when (columnType) {
+    return when (this) {
         // need the space here in order for the JDBC binding code to work properly
         Types.DATESTAMP -> "DATE( ? )"
         else -> "?"
     }
 }
 
-private fun <M> makePlaceholders(columns: List<Column<M, *>>, placeholderFormat: (c: Column<M, *>) -> String): String {
-    return columns.joinToString(separator = ", ") { placeholderFormat(it) }
-}
-
 // creates SQL placeholders for the given (ordered) list of columns
 private fun <M> makeInsertPlaceholders(columns: List<Column<M, *>>): String {
-    return makePlaceholders(columns) { getSqlPlaceholder(it.type) }
-}
-
-internal fun <M> joinColumnNames(columns: Iterable<Column<M, *>>, suffix: String = ""): String {
-    return stringJoin(columns, sep = ", ", itemSuffix = suffix) { it.sqlName }
+    return columns.joinToString(separator = ", ") { it.type.getSqlPlaceholder() }
 }
 
 // creates SQL placeholders for the given (ordered) list of columns
 internal fun <M> makeSqlUpdatePlaceholders(columns: List<Column<M, *>>): String {
-    return makePlaceholders(columns) { it.sqlName + " = " + getSqlPlaceholder(it.type) }
+    return columns.joinToString(separator = ", ") { it.sqlName + " = " + it.type.getSqlPlaceholder() }
 }
 
 // " WHERE column1 = ?"
@@ -55,7 +46,7 @@ internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int?
         return ""
     }
 
-    val placeholder = getSqlPlaceholder(whereColumnExpr.type)
+    val placeholder = whereColumnExpr.type.getSqlPlaceholder()
 
     //if (whereColumn.type().equals(DATESTAMP)) {
     //    sb.append("DATE(").append(whereColumn.sqlName()).append(")");
@@ -65,8 +56,7 @@ internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int?
     return if (nValues == 1) {
         " WHERE $colName = $placeholder"
     } else {
-        val placeholders = stringJoin(listOf(placeholder), sep = ", ", copies = nValues)
-        " WHERE $colName IN (${placeholders})"
+        " WHERE $colName IN (${"$placeholder, ".repeat(nValues - 1)}$placeholder)"
     }
 }
 
@@ -79,9 +69,10 @@ internal fun <M> makeSqlWhereLikeString(
         0 -> ""
         1 -> " WHERE " + likeColumns.single().sqlName + " LIKE ?"
         else -> {
-            val bracketedWhereClauses: MutableList<String> = ArrayList(likeColumns.size)
-            for (c in likeColumns) {
-                bracketedWhereClauses.add("(" + c.sqlName + " LIKE ?)")
+            val bracketedWhereClauses = buildList {
+                for (c in likeColumns) {
+                    add("(" + c.sqlName + " LIKE ?)")
+                }
             }
             " WHERE " + bracketedWhereClauses.joinToString(separator = " ${conjunction.sql} ")
         }
@@ -91,7 +82,7 @@ internal fun <M> makeSqlWhereLikeString(
 // columns must be a subset of table.columns()
 fun <M> sqlInsertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
     val placeholders = makeInsertPlaceholders(orderedColumns)
-    val columnSql = joinColumnNames(orderedColumns)
+    val columnSql = orderedColumns.joinToString(separator = ", ") { it.sqlName }
     return "INSERT INTO ${t.name} ($columnSql) VALUES ($placeholders)"
 }
 

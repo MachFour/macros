@@ -2,7 +2,6 @@ package com.machfour.macros.sql.generator
 
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.joinColumnNames
 
 internal class SelectQueryImpl<M> private constructor(
     table: Table<M>,
@@ -28,7 +27,7 @@ internal class SelectQueryImpl<M> private constructor(
         if (columns.isEmpty()) {
             query.add("*")
         } else {
-            query.add(joinColumnNames(columns))
+            query.add(columns.joinToString(separator = ", ") { it.sqlName })
         }
         if (fromSuffix != null) {
             query.add(", $fromSuffix")

@@ -56,25 +56,21 @@ internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int?
     return if (nValues == 1) {
         " WHERE $colName = $placeholder"
     } else {
-        " WHERE $colName IN (${"$placeholder, ".repeat(nValues - 1)}$placeholder)"
+        " WHERE $colName IN (" + "$placeholder, ".repeat(nValues - 1) + placeholder + ")"
     }
 }
 
-// " WHERE (likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ..."
+// " WHERE ((likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ...)"
 internal fun <M> makeSqlWhereLikeString(
-    likeColumns: Collection<Column<M, String>>,
+    likeCols: Collection<Column<M, String>>,
     conjunction: Conjuction = Conjuction.OR,
 ): String {
-    return when (likeColumns.size) {
+    return when (likeCols.size) {
         0 -> ""
-        1 -> " WHERE " + likeColumns.single().sqlName + " LIKE ?"
+        1 -> "WHERE (" + likeCols.single().sqlName + " LIKE ?)"
         else -> {
-            val bracketedWhereClauses = buildList {
-                for (c in likeColumns) {
-                    add("(" + c.sqlName + " LIKE ?)")
-                }
-            }
-            " WHERE " + bracketedWhereClauses.joinToString(separator = " ${conjunction.sql} ")
+            val conjunctionSeparator = " ${conjunction.sql} "
+            "WHERE (" + likeCols.joinToString(conjunctionSeparator) { "(${it.sqlName} LIKE ?)" } + ")"
         }
     }
 }

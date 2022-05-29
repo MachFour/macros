@@ -60,6 +60,7 @@ fun <M> stringSearch(
         whereLike(cols, keywordCopies)
         extraOptions()
     }
+    println(query.toSql())
     return db.selectNonNullColumn(query)
 }
 

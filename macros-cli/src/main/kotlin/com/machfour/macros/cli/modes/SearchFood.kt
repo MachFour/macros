@@ -4,13 +4,14 @@ import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printFoodList
 import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.queries.foodSearch
 import com.machfour.macros.queries.getFoodsById
 import com.machfour.macros.sql.SqlException
 
 class SearchFood(config: CliConfig) : CommandImpl(config) {
     override val name = "search"
-    override val usage = "Usage: ${config.programName} $name <keyword>"
+    override val usage = "Usage: ${config.programName} $name <keyword> [min search relevance]"
 
     override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {
@@ -23,8 +24,12 @@ class SearchFood(config: CliConfig) : CommandImpl(config) {
         val ds = config.database
         val searchString = args[1]
         val keywords = searchString.split(Regex("\\s"))
+
+        val minRelevance: SearchRelevance = args.getOrNull(2)?.toIntOrNull()?.let { SearchRelevance.fromValue(it) }
+            ?: SearchRelevance.EXCLUDE_HIDDEN
+
         val resultFoods = try {
-            val resultIds = foodSearch(ds, keywords)
+            val resultIds = foodSearch(ds, keywords, minRelevance = minRelevance)
             if (resultIds.isNotEmpty()) {
                 getFoodsById(ds, resultIds)
             } else {

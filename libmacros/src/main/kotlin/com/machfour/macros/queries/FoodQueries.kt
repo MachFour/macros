@@ -30,13 +30,9 @@ fun foodSearch(
     minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
 ): Set<Long> {
     // map will be empty if keywords is empty
-    return keywords.map { foodSearch(db, it, minRelevance) }.let {
-        if (matchAll) {
-            it.intersectAll()
-        } else {
-            it.unionAll()
-        }
-    }
+    return keywords
+        .map { foodSearch(db, it, minRelevance) }
+        .let { if (matchAll) it.intersectAll() else it.unionAll() }
 }
 
 // Searches Index name, name, variety and brand for prefix, then index name for anywhere
@@ -62,17 +58,18 @@ fun foodSearch(
     val searchRelevance = FoodTable.SEARCH_RELEVANCE.sqlName
     val foodType = FoodTable.FOOD_TYPE.sqlName
 
+    val relevantFoodTypes = FoodType.values().filter { it.defaultSearchRelevance >= minRelevance }
+    val foodTypeFilter = when (relevantFoodTypes.size) {
+        0 -> "false"
+        1 -> "$foodType == '${relevantFoodTypes.first()}'"
+        else -> "$foodType IN (${relevantFoodTypes.joinToString(", ") { "'$it'" }})"
+    }
+
+    val relevanceFilter = "$searchRelevance IS NOT NULL AND $searchRelevance >= ${minRelevance.value} " +
+            "OR $searchRelevance IS NULL AND $foodTypeFilter"
+
     val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
-        val relevantFoodTypes = FoodType.values().filter { it.defaultSearchRelevance >= minRelevance }
-        val defaultRelevanceTest = when (relevantFoodTypes.size) {
-            0 -> ""
-            1 -> "OR ($searchRelevance IS NULL AND $foodType == '${relevantFoodTypes.first()}')"
-            else -> "OR ($searchRelevance IS NULL AND $foodType IN " +
-                    relevantFoodTypes.joinToString(separator = ", ", prefix = "(", postfix = ")") { "'$it'" }
-        }
-        val relevantEnough = "$searchRelevance >= ${minRelevance.value} " + defaultRelevanceTest
-        println(relevantEnough)
-        andWhere(relevantEnough)
+        andWhere(relevanceFilter)
     }
 
 

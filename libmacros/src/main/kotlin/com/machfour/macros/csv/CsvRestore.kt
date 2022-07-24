@@ -8,10 +8,6 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import java.io.IOException
-import java.io.InputStream
-import java.util.zip.ZipException
-import java.util.zip.ZipInputStream
 
 // Method for reading CSV files that directly correspond to a table
 @Throws(CsvParseException::class, TypeCastException::class)
@@ -43,25 +39,4 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: String): List<M
 fun <M : MacrosEntity<M>> SqlDatabase.restoreTable(t: Table<M>, csvData: String) {
     val objects = buildObjectsForRestore(t, csvData)
     saveObjects(this, objects, ObjectSource.RESTORE)
-}
-
-@Throws(SqlException::class, CsvParseException::class, IOException::class, TypeCastException::class, ZipException::class)
-fun SqlDatabase.restoreFromZip(zipInput: InputStream) {
-    ZipInputStream(zipInput).use { zip ->
-        val reader = zip.reader()
-        while (true) {
-            val entry = zip.nextEntry ?: break
-            //Log.d(TAG, "doCsvRestore(): found entry in zip: ${entry.name}")
-            if (entry.comment != zipEntryComment) {
-                println("Entry '${entry.name}' is not commented with '$zipEntryComment', skipping")
-                continue
-            }
-            val table = csvZipBackupTables.find { entry.name == it.backupName }
-            if (table != null) {
-                println("Entry '${entry.name}' does not match a backup table name, skipping")
-                restoreTable(table, reader.readText())
-            }
-        }
-    }
-
 }

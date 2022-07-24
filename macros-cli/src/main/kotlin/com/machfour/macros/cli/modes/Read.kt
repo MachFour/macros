@@ -91,7 +91,7 @@ class Read(config: CliConfig) : CommandImpl(config) {
         val fileParser = FileParser()
         val meals: List<Meal>
         try {
-            FileReader(filename).use { meals = fileParser.parseFile(config.database, it) }
+            FileReader(filename).use { meals = fileParser.parseFile(config.database, it.readLines()) }
         } catch (e1: IOException) {
             printlnErr("IO exception occurred: " + e1.message)
             return 1

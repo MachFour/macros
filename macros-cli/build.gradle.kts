@@ -26,8 +26,8 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib:1.6.20"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20") // for use()
+    implementation(kotlin("stdlib:1.7.10"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10") // for use()
     implementation(project(":libmacros"))
 
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))

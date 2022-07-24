@@ -21,8 +21,8 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
     implementation("com.google.code.gson:gson:2.9.0")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")

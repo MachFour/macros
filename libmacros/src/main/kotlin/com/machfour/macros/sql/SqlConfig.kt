@@ -1,7 +1,5 @@
 package com.machfour.macros.sql
 
-import java.io.File
-
 interface SqlConfig {
 
     val initSqlName: String
@@ -11,14 +9,5 @@ interface SqlConfig {
     val initSqlFilePath: String
     val trigSqlFilePaths: List<String>
     val dataSqlFilePath: String
-
-    val initSqlFile: File
-        get() = File(initSqlFilePath)
-
-    val trigSqlFiles: List<File>
-        get() = trigSqlFilePaths.map { File(it) }
-
-    val dataSqlFile: File
-        get() = File(dataSqlFilePath)
 
 }

@@ -3,7 +3,7 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.csv.restoreFromZip
+import com.machfour.macros.jvm.restoreFromZip
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileInputStream

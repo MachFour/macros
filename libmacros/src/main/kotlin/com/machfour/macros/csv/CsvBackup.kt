@@ -9,10 +9,6 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import java.io.OutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipException
-import java.util.zip.ZipOutputStream
 
 // don't edit keyset!
 private fun <M> prepareDataForBackup(data: RowData<M>): Map<String, String> {
@@ -63,20 +59,4 @@ fun <M : MacrosEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {
     val rawObjectMap = getAllRawObjects(this, t)
     val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
     return writeObjectsToCsv(t, allRawObjects)
-}
-
-
-@Throws(SqlException::class, ZipException::class)
-fun SqlDatabase.createZipBackup(zipFileOut: OutputStream) {
-    ZipOutputStream(zipFileOut).use { zip ->
-        val writer = zip.writer()
-        for (table in csvZipBackupTables) {
-            val entry = ZipEntry(table.backupName).apply { comment = zipEntryComment }
-            zip.putNextEntry(entry)
-            writer.write(exportTableToCsv(table))
-            zip.closeEntry()
-        }
-        zip.finish()
-        zip.close()
-    }
 }

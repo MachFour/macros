@@ -15,9 +15,6 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.unitWithAbbrOrNull
 import com.machfour.macros.util.javaTrim
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.Reader
 
 class FileParser {
     private val errorLines = LinkedHashMap<String, String>()
@@ -40,7 +37,7 @@ class FileParser {
             val specMap: MutableMap<MealSpec, List<FoodPortionSpec>> = LinkedHashMap()
             // if we encounter a food line before a meal title,
             // have to instantiate a dummy meal to hold it
-            var currentFpSpecs: MutableList<FoodPortionSpec>? = null
+            var currentFpSpecs: ArrayList<FoodPortionSpec>? = null
             for (index in fileLines.indices) {
                 val line = fileLines[index].javaTrim()
                 val mealTitle = mealPattern.find(line)
@@ -68,20 +65,6 @@ class FileParser {
         private fun getAllIndexNames(allFpSpecs: Collection<List<FoodPortionSpec>>): Set<String> {
             val foodIndexNames = allFpSpecs.flatMap { it.map { spec -> spec.foodIndexName } }
             return foodIndexNames.toSet()
-        }
-
-        // like Files.readAllLines() but for a reader input.
-        // Make sure to close the reader afterwards
-        @Throws(IOException::class)
-        private fun readAllLines(`in`: Reader): List<String> {
-            val allLines: MutableList<String> = ArrayList()
-            val r = BufferedReader(`in`)
-            var s = r.readLine()
-            while (s != null) {
-                allLines.add(s)
-                s = r.readLine()
-            }
-            return allLines
         }
 
         fun processFpSpec(fps: FoodPortionSpec, m: Meal, f: Food) {
@@ -237,10 +220,8 @@ class FileParser {
         }
     }
 
-    // make sure to close the reader afterwards
-    @Throws(IOException::class, SqlException::class)
-    fun parseFile(db: SqlDatabase, fileReader: Reader): List<Meal> {
-        val fileLines = readAllLines(fileReader)
+    @Throws(SqlException::class)
+    fun parseFile(db: SqlDatabase, fileLines: List<String>): List<Meal> {
         // also gets list of index names to retrieve
         val mealSpecs = createSpecFromLines(fileLines)
 

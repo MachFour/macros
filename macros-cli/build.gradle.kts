@@ -26,31 +26,50 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib:1.7.10"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10") // for use()
+    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // for use()
     implementation(project(":libmacros"))
+
+    // dunno why this is needed here now - it worked before just having it in libmacros
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))
     implementation(files("../libs/sqlite-jdbc-3.34.0.jar"))
 
     // testing
+    
+    val junitVersion = "5.9.0"
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.withType<Jar> {
-    // This code recursively collects and copies all of a project's files and adds them to the JAR itself.
-    // One can extend this task, to skip certain files or particular types at will
-    from(configurations.runtimeClasspath.map {
-            config -> config.map { if (it.isDirectory) it else zipTree(it) }
-    })
+tasks {
+    val sourcesJar by creating(Jar::class) {
+        archiveClassifier.set("sources")
+        from(sourceSets.main.get().allSource)
+    }
 
-    manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
+    val binaryJar by creating(Jar::class) {
+        dependsOn(":libmacros:binaryJar")
+        // from(java.sourceSets.main.get().allSource)
+        from(configurations.runtimeClasspath.map {
+                config -> config.map { if (it.isDirectory) it else zipTree(it) }
+        })
+        manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
+        duplicatesStrategy = DuplicatesStrategy.WARN
 
-    duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+    artifacts {
+        add("archives", binaryJar)
+        add("archives", sourcesJar)
+    }
+
 }
+
+
+//tasks.withType<Jar> { }

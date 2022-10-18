@@ -21,31 +21,46 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.google.code.gson:gson:2.9.0")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     api(files("../libs/datestamp.jar"))
     api(files("/home/max/devel/kotlin-csv/lib/build/libs/kotlin-csvlib-1.0-SNAPSHOT.jar"))
 
     // testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+    val junitVersion = "5.9.0"
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.withType<Copy> {
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
 
-tasks.withType<Jar> {
-    manifest {
-        attributes["Manifest-Version"] = 1.0
-        attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
+tasks {
+    val sourcesJar by creating(Jar::class) {
+        archiveClassifier.set("sources")
+        from(sourceSets.main.get().allSource)
     }
 
-    duplicatesStrategy = DuplicatesStrategy.WARN
+    val binaryJar by creating(Jar::class) {
+        // from(java.sourceSets.main.get().allSource)
+        manifest {
+            attributes["Manifest-Version"] = 1.0
+            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
+        }
+
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    artifacts {
+        add("archives", sourcesJar)
+        add("archives", binaryJar)
+    }
+
 }
 

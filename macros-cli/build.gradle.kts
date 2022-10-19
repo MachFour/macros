@@ -48,28 +48,17 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks {
-    val sourcesJar by creating(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
-    }
-
-    val binaryJar by creating(Jar::class) {
-        dependsOn(":libmacros:binaryJar")
-        // from(java.sourceSets.main.get().allSource)
-        from(configurations.runtimeClasspath.map {
-                config -> config.map { if (it.isDirectory) it else zipTree(it) }
-        })
-        manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
-        duplicatesStrategy = DuplicatesStrategy.WARN
-
-    }
-    artifacts {
-        add("archives", binaryJar)
-        add("archives", sourcesJar)
-    }
-
+// https://stackoverflow.com/a/60068986
+tasks.register<Jar>(name = "sourceJar") {
+    from(sourceSets.main.get().allSource)
+    archiveClassifier.set("sources")
 }
 
-
-//tasks.withType<Jar> { }
+tasks.register<Jar>(name = "binaryJar") {
+    dependsOn(":libmacros:binaryJar")
+    from(configurations.runtimeClasspath.map {
+            config -> config.map { if (it.isDirectory) it else zipTree(it) }
+    })
+    manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}

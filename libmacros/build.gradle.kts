@@ -41,26 +41,17 @@ tasks.withType<Copy> {
     duplicatesStrategy = DuplicatesStrategy.WARN
 }
 
-tasks {
-    val sourcesJar by creating(Jar::class) {
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
-    }
-
-    val binaryJar by creating(Jar::class) {
-        // from(java.sourceSets.main.get().allSource)
-        manifest {
-            attributes["Manifest-Version"] = 1.0
-            attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
-        }
-
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-
-    artifacts {
-        add("archives", sourcesJar)
-        add("archives", binaryJar)
-    }
-
+// https://stackoverflow.com/a/60068986
+tasks.register<Jar>(name = "sourceJar") {
+    from(sourceSets.main.get().allSource)
+    archiveClassifier.set("sources")
 }
 
+tasks.register<Jar>(name = "binaryJar") {
+    manifest {
+        attributes["Manifest-Version"] = 1.0
+        attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.WARN
+}

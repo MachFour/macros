@@ -55,6 +55,7 @@ tasks.register<Jar>(name = "sourceJar") {
 }
 
 tasks.register<Jar>(name = "binaryJar") {
+    dependsOn(":libmacros:jar")
     dependsOn(":libmacros:binaryJar")
     from(configurations.runtimeClasspath.map {
             config -> config.map { if (it.isDirectory) it else zipTree(it) }

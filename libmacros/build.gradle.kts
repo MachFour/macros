@@ -52,6 +52,7 @@ tasks.register<Jar>(name = "binaryJar") {
         attributes["Manifest-Version"] = 1.0
         attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { it.name }
     }
+    from(sourceSets.main.get().output)
 
     duplicatesStrategy = DuplicatesStrategy.WARN
 }

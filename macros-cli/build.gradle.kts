@@ -54,9 +54,15 @@ tasks.register<Jar>(name = "sourceJar") {
     archiveClassifier.set("sources")
 }
 
+// apparently this is needed
+tasks.named<KotlinCompile>("compileKotlin") {
+    dependsOn(":libmacros:binaryJar")
+}
+
 tasks.register<Jar>(name = "binaryJar") {
     dependsOn(":libmacros:jar")
-    dependsOn(":libmacros:binaryJar")
+
+    from(sourceSets.main.get().output)
     from(configurations.runtimeClasspath.map {
             config -> config.map { if (it.isDirectory) it else zipTree(it) }
     })

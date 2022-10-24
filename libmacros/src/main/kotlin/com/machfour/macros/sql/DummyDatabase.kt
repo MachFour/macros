@@ -2,7 +2,7 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.sql.generator.*
 
-class DummyDatabase: SqlDatabase {
+private class DummyDatabase: SqlDatabase {
     override fun openConnection() {}
 
     override fun closeConnection() {}

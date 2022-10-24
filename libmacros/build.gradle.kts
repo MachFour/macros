@@ -23,12 +23,12 @@ tasks.withType<KotlinCompile> {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.9.1")
     // Not used yet - just have it here so that I will see when there's an update available.
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 
-    api(files("../libs/datestamp.jar"))
+    api(files("/home/max/devel/datestamp/build/libs/datestamp-jvm-1.0-SNAPSHOT.jar"))
     api(files("/home/max/devel/kotlin-csv/lib/build/libs/kotlin-csvlib-1.0-SNAPSHOT.jar"))
 
     // testing

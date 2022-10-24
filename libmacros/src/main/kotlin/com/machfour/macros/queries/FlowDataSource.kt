@@ -9,10 +9,11 @@ import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
+// Caches foods and meals from queries to upstream static data source
+// NOTE: the cached meal objects do NOT reference the cached food objects,
+// however changes to foods are tracked and trigger reloads of the meals.
 class FlowDataSource(
     private val database: SqlDatabase,
 ): StaticDataSource(database) {
@@ -36,9 +37,11 @@ class FlowDataSource(
 
     private val foods: MutableMap<Long, Food> = LinkedHashMap(100)
     private val meals: MutableMap<Long, Meal> = LinkedHashMap(100)
+    private val mealIdsForDays: MutableMap<DateStamp, Set<Long>> = LinkedHashMap(10)
 
     private val foodsFlow: MutableStateFlow<Map<Long, Food>> = MutableStateFlow(emptyMap())
     private val mealsFlow: MutableStateFlow<Map<Long, Meal>> = MutableStateFlow(emptyMap())
+    private val mealIdsForDaysFlow: MutableStateFlow<Map<DateStamp, Set<Long>>> = MutableStateFlow(emptyMap())
 
     private fun <T> Map<Long, T>.idMissing(id: Long): Boolean {
         return !containsKey(id) && id != MacrosEntity.NO_ID
@@ -83,14 +86,26 @@ class FlowDataSource(
 
     @Throws(SqlException::class)
     override fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>> {
-        val ids = getMealIdsForDay(day)
-        return getMeals(ids)
+        refreshDay(day)
+
+        return combine(mealsFlow, mealIdsForDaysFlow) { meals, mealIdsForDay ->
+            // key should exist in map refreshDay() but just in case
+            val ids = mealIdsForDay[day] ?: return@combine emptyMap()
+            meals.filterKeys { ids.contains(it) }
+        }
+    }
+
+    @Throws(SqlException::class)
+    private fun refreshDay(day: DateStamp) {
+        val mealIds = getMealIdsForDay(day)
+        refreshMeals(meals.missingIdsFrom(mealIds))
+        mealIdsForDays[day] = mealIds.toSet()
+        mealIdsForDaysFlow.value = mealIdsForDays.toMap()
     }
 
     @Throws(SqlException::class)
     override fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>> {
-        val missingIds = meals.missingIdsFrom(ids)
-        refreshMeals(missingIds)
+        refreshMeals(meals.missingIdsFrom(ids))
         val idSet = ids.toHashSet()
 
         return mealsFlow.map { meals -> meals.filterKeys { idSet.contains(it) } }
@@ -109,12 +124,12 @@ class FlowDataSource(
         }
     }
 
+    // Refreshes the given foods in the cache, as well as meals containing those foods
     @Throws(SqlException::class)
     private fun refreshFoods(ids: Collection<Long>) {
         if (pauseRefreshes) {
             foodRefreshQueue.addAll(ids)
         } else {
-            
             val newData = getFoodsById(database, ids)
             foods.putAll(newData)
             for (missingId in newData.missingIdsFrom(ids)) {
@@ -169,6 +184,7 @@ class FlowDataSource(
     override fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int {
         val numSaved = saveObjects(database, objects, source)
         // TODO copied from WriteQueries
+        // problem: don't know id after saving here (it was NO_ID)
         when (source) {
             ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEach { afterDbInsert(it) } }
             ObjectSource.DB_EDIT -> { objects.forEach { afterDbEdit(it) } }
@@ -183,9 +199,10 @@ class FlowDataSource(
     }
 
     private fun <M : MacrosEntity<M>> afterDbInsert(obj: M) {
+        // problem: don't know id after saving here (it was NO_ID)
         when (obj) {
             is Food ->  { allFoodsNeedsRefresh = true }
-            is Meal ->  { /* seems to work without anything here */ }
+            is Meal ->  { refreshDay(obj.day) }
 
             is FoodNutrientValue -> markCacheStale(obj.foodId, FoodTable)
             is FoodPortion -> markCacheStale(obj.mealId, MealTable)

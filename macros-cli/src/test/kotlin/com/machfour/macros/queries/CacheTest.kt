@@ -16,6 +16,7 @@ import com.machfour.macros.units.GRAMS
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -132,4 +133,21 @@ internal class CacheTest {
         check(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
     }
 
+    @Test
+    fun testSaveMealForDay() {
+        val dataSource = FlowDataSource(db)
+        val mealDay = testMeal.day
+        val mealsForDay = dataSource.getMealsForDay(mealDay)
+
+        val mealsBeforeAdding = runBlocking { mealsForDay.first() }
+        assertEquals(1, mealsBeforeAdding.size)
+
+        dataSource.saveObject(testMeal)
+
+        val mealsAfterAdding = runBlocking { mealsForDay.first() }
+        assertEquals(2, mealsAfterAdding.size)
+
+
+
+    }
 }

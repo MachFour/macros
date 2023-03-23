@@ -68,6 +68,7 @@ INSERT INTO FoodCategory (name) VALUES
     , ('meat')
     , ('miscellaneous')
     , ('nuts and seeds')
+    , ('pasta')
     , ('poultry and eggs')
     , ('preserved or dried foods')
     , ('recipes')

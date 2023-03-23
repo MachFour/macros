@@ -1,6 +1,7 @@
 package com.machfour.macros.util
 
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
@@ -26,10 +27,10 @@ fun Double.toString(precision: Int, trimTrailingZeros: Boolean = false): String 
         this == 0.0 -> if (precision == 0 || trimTrailingZeros) "0" else "0." + "0".repeat(precision)
         else -> {
             val multiplied = this * 10.0.pow(precision)
-            // Check if operation is out of range; if so denote it with a > or < sign as appropriate
             val s = multiplied.roundToLong().toString()
 
             buildString {
+                // Check if operation is out of range; if so denote it with a > or < sign as appropriate
                 if (multiplied > Long.MAX_VALUE) {
                     // roundToLong() will truncate to Long.MAX_VALUE
                     append('>')
@@ -39,13 +40,16 @@ fun Double.toString(precision: Int, trimTrailingZeros: Boolean = false): String 
                 }
                 if (precision > 0) {
                     // put in decimal place in the right spot
-                    if (s.length - precision == 0) {
-                        append('0')
+                    if (s.length - precision <= 0) {
+                        append("0.")
+                        // add extra zeros if number is small
+                        repeat(max(precision - s.length, 0)) { append('0') }
+                        append(s)
                     } else {
                         append(s.substring(0, s.length - precision))
+                        append('.')
+                        append(s.substring(s.length - precision, s.length))
                     }
-                    append('.')
-                    append(s.substring(s.length - precision, s.length))
 
                     if (trimTrailingZeros && endsWith('0')) {
                         var trailingZerosStart = lastIndex

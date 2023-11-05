@@ -26,7 +26,7 @@ CREATE TABLE Unit (
         CHECK (inbuilt IN (0, 1))
     , CONSTRAINT positive_conversion
         CHECK (metric_equivalent > 0)
-);
+) STRICT;
 
 
 CREATE TABLE Nutrient (
@@ -38,7 +38,7 @@ CREATE TABLE Nutrient (
     , inbuilt              INTEGER NOT NULL DEFAULT 0
     , CONSTRAINT boolean_inbuilt
         CHECK (inbuilt IN (0, 1))
-);
+) STRICT;
 
 
 CREATE TABLE Food (
@@ -114,7 +114,7 @@ CREATE TABLE Food (
         ON DELETE SET DEFAULT
     , CONSTRAINT full_name_identifiable
         UNIQUE (brand, variety, name, extra_desc)
-);
+) STRICT;
 
 
 CREATE UNIQUE INDEX food_index ON Food (index_name);
@@ -125,7 +125,7 @@ CREATE TABLE FoodCategory (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL UNIQUE
-);
+) STRICT;
 
 
 CREATE TABLE FoodAttribute (
@@ -133,7 +133,7 @@ CREATE TABLE FoodAttribute (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL UNIQUE
-);
+) STRICT;
 
 
 CREATE TABLE AttributeMapping (
@@ -155,7 +155,7 @@ CREATE TABLE AttributeMapping (
         REFERENCES FoodAttribute (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-);
+) STRICT;
 
 
 -- so you can put in '1 tin' of tuna, not 95g.
@@ -198,7 +198,7 @@ CREATE TABLE Serving (
         UNIQUE (food_id, is_default)
     , CONSTRAINT null_or_true
         CHECK (is_default IS NULL OR is_default = 1)
-);
+) STRICT;
 
 
 -- a collection of nutrient goal values
@@ -207,7 +207,7 @@ CREATE TABLE NutrientGoal (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , name                 TEXT NOT NULL
-);
+) STRICT;
 
 
 -- maps nutrient goals to days
@@ -224,7 +224,7 @@ CREATE TABLE NutrientGoalDayMapping (
         REFERENCES NutrientGoal (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-);
+) STRICT;
 
 
 CREATE TABLE Meal (
@@ -262,7 +262,7 @@ CREATE TABLE Meal (
         REFERENCES NutrientGoal (id)
         ON UPDATE CASCADE
         ON DELETE SET NULL
-);
+) STRICT;
 
 
 CREATE TABLE FoodPortion (
@@ -322,7 +322,7 @@ CREATE TABLE FoodPortion (
               ON UPDATE CASCADE
     , CONSTRAINT valid_recipe_version
           CHECK (recipe_max_version >= 1)
-);
+) STRICT;
 
 
 CREATE TABLE Ingredient (
@@ -382,7 +382,7 @@ CREATE TABLE Ingredient (
               ON UPDATE CASCADE
     , CONSTRAINT cannot_contain_itself
           CHECK (parent_food_id != id)
-);
+) STRICT;
 
 
 CREATE TABLE FoodNutrientValue (
@@ -431,7 +431,7 @@ CREATE TABLE FoodNutrientValue (
         UNIQUE (food_id, nutrient_id, version)
     , CONSTRAINT valid_version
           CHECK (version >= 1)
-);
+) STRICT;
 
 
 CREATE TABLE NutrientGoalValue (
@@ -473,7 +473,7 @@ CREATE TABLE NutrientGoalValue (
         REFERENCES NutrientGoal (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-);
+) STRICT;
 
 
 CREATE TABLE RegularMeal (
@@ -488,6 +488,6 @@ CREATE TABLE RegularMeal (
         REFERENCES Meal (id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-);
+) STRICT;
 
 -- vim: et ts=4

@@ -81,6 +81,7 @@ CREATE TABLE Food (
     -- Notes are not normally displayed, so food has to be recognisable without them
 
       id                   INTEGER PRIMARY KEY ASC
+    -- timestamps are stored in unix time, and set via triggers
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , index_name           TEXT NOT NULL UNIQUE
@@ -89,29 +90,22 @@ CREATE TABLE Food (
     , name                 TEXT NOT NULL
     , extra_desc           TEXT DEFAULT NULL
     , notes                TEXT DEFAULT NULL
-    , category             TEXT NOT NULL DEFAULT 'uncategorised'
-    -- for internal use so not constrained, but nominal values are according to previous constraint:
-    -- CHECK (food_type IN ('primary', 'composite', 'usda', 'nuttab', 'special'))
+    , category             TEXT DEFAULT NULL
+    -- for internal use, may be made redundant by data_source field
     , food_type            TEXT NOT NULL DEFAULT 'primary'
     -- miscellaneous metadata
     , usda_index           INTEGER DEFAULT NULL UNIQUE
     , nuttab_index         TEXT DEFAULT NULL UNIQUE
-    -- old NutritionData fields
+    -- notes to record where they got the data, and another other useful info
     , data_source          TEXT DEFAULT NULL
     , data_notes           TEXT DEFAULT NULL
     -- for liquids, how to convert between grams and mL. Measured in g/cm^3
     , density              REAL DEFAULT NULL
-    -- allows user to 'hide' foods. 0 means normal relevance, i.e. do not prioritise.
-    -- -1 is deprioritised / 'hidden'
+    -- allows storing an individual user relevance measure per food.
+    -- could be useful to use it as an offset from a default relevance,
+    -- based on the food type
     , search_relevance     INTEGER DEFAULT NULL
-    -- timestamps are stored in unix time, and set via triggers
 
-    -- referencing the name of the food category makes importing foods a LOT easier
-    , CONSTRAINT valid_category
-        FOREIGN KEY (category)
-        REFERENCES FoodCategory (name)
-        ON UPDATE CASCADE
-        ON DELETE SET DEFAULT
     , CONSTRAINT full_name_identifiable
         UNIQUE (brand, variety, name, extra_desc)
 ) STRICT;
@@ -245,15 +239,6 @@ CREATE TABLE Meal (
     -- records nutrient goal, if one is set for this meal
     , goal_id              INTEGER DEFAULT NULL
 
-    -- table restriction
-    --, CONSTRAINT valid_meal_description
-    --    FOREIGN KEY (name)
-    --    REFERENCES MealDescription (name)
-    --    -- don't care, just keep old name
-    --    ON DELETE NO ACTION
-    --    ON UPDATE CASCADE
-    -- , CONSTRAINT single_meal_per_day
-    --    UNIQUE (day, name)
     , CONSTRAINT nonnegative_duration
         CHECK (duration >= 0)
 

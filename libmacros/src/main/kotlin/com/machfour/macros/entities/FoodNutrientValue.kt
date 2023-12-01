@@ -55,6 +55,10 @@ class FoodNutrientValue internal constructor(
     var food: Food? = null
         private set
 
+    val version: Int
+        get() = this.data[FoodNutrientValueTable.VERSION]!!
+
+
     // should only be called by Food class when this object is added to it
     internal fun setFood(f: Food) {
         check(food == null) { "Food already set" }

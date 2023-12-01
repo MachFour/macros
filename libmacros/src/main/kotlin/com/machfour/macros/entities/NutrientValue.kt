@@ -27,6 +27,8 @@ abstract class NutrientValue<M : NutrientValue<M>> protected constructor(
     val value: Double = this.data[valueCol]!!
     val unit: Unit = unitWithId(this.data[unitIdCol]!!)
     val nutrient: Nutrient = nutrientWithId(nutrientId)
+    val constraintSpec: Int
+        get() = this.data[constraintSpecCol]!!
 
     // Converts this value into the given unit, if possible.
     // Density is only used when converting quantity (usually in the context of a FoodNutrientValue)

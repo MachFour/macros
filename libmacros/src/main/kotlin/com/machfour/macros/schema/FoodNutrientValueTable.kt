@@ -24,7 +24,7 @@ private val unitId = nutrientValueUnitColumn(columns)
 private val value = nutrientValueValueColumn(columns)
 private val constraintSpec = nutrientValueConstraintColumn(columns)
 
-// might have NO_ID value if it's not being stored in the database (i.e computed value)
+// might have NO_ID value if it's not being stored in the database (i.e. computed value)
 private val foodId =
     builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
         .buildFkFor(FoodTable, FoodTable.ID, columns)

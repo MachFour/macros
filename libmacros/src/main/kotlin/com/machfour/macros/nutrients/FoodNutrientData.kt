@@ -60,7 +60,7 @@ class FoodNutrientData(
                 //unnormalisedDensity += density * quantity
             }
 
-            sumData.quantityObj = FoodNutrientValue.makeComputedValue(
+            sumData.quantityObjInternal = FoodNutrientValue.makeComputedValue(
                 sumQuantity,
                 QUANTITY,
                 GRAMS
@@ -91,11 +91,13 @@ class FoodNutrientData(
             return sumData
         }
     }
+    val quantityObj: FoodNutrientValue
+        get() = quantityObjInternal
 
     // using null coalescing means that hasData(QUANTITY) will still return false
-    var quantityObj: FoodNutrientValue
+    private var quantityObjInternal: FoodNutrientValue
         get() = this[QUANTITY] ?: dummyQuantity
-        set(value) {
+        private set(value) {
             this[QUANTITY] = value
         }
 
@@ -175,7 +177,6 @@ class FoodNutrientData(
      *    This only works for mass units, not when the quantity unit is in ml
      */
 
-    // mutates the NutrientData
     fun withQuantityUnit(newUnit: Unit, density: Double? = null, allowDefaultDensity: Boolean = false) : FoodNutrientData {
         val densityConversionNeeded = qtyUnit.type !== newUnit.type
         if (!allowDefaultDensity) {
@@ -186,7 +187,7 @@ class FoodNutrientData(
         val fallbackDensity = (if (allowDefaultDensity) 1.0 else null)
 
         return copy().also {
-            it.quantityObj = quantityObj.convert(newUnit, density ?: fallbackDensity)
+            it.quantityObjInternal = quantityObj.convert(newUnit, density ?: fallbackDensity)
             it.markCompleteData(QUANTITY, densityConversionNeeded && density == null)
         }
     }
@@ -201,7 +202,7 @@ class FoodNutrientData(
         } else {
             copy()
         }
-        for (nv in nutrientValuesExcludingQuantity) {
+        for (nv in valuesExcludingQuantity) {
             val n = nv.nutrient
             convertedData[n] = nv.convert(defaultUnits[n])
             convertedData.markCompleteData(n, hasCompleteData(n))

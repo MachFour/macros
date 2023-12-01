@@ -50,13 +50,13 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return "${table.name} id=${id}, objSrc=${source}, data=${data}"
     }
 
-    final override val id: Long
+    final override val id: EntityId
         get() = data[table.idColumn]!!
 
-    final override val createTime: Long
+    final override val createTime: Instant
         get() = data[table.createTimeColumn]!!
 
-    final override val modifyTime: Long
+    final override val modifyTime: Instant
         get() = data[table.modifyTimeColumn]!!
 
     final override val hasId: Boolean

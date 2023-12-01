@@ -12,6 +12,14 @@ class SearchRelevance private constructor(val value: Int): Comparable<SearchRele
         val STARRED = SearchRelevance(600)
 
         fun fromValue(value: Int) = SearchRelevance(value)
+        fun fromValue(value: Int?) = value?.let { SearchRelevance(it) } ?: UNSET
+    }
+
+    operator fun plus(other: SearchRelevance): SearchRelevance {
+        return SearchRelevance(value + other.value)
+    }
+    operator fun minus(other: SearchRelevance): SearchRelevance {
+        return SearchRelevance(value - other.value)
     }
 
     override fun compareTo(other: SearchRelevance): Int = value.compareTo(other.value)

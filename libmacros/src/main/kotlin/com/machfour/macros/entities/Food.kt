@@ -50,8 +50,9 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
                 withExtra = true,
                 sortable = true
             )
-                .replace(Regex("[()\\[\\]{}&%!$#@*^+=:;<>?/\\\\]"), replacement = "")
+                .replace(Regex("[()\\[\\]{}&%~`!$#@*^+=:;<>?/\\\\]"), replacement = "")
                 .replace(Regex("[\\s-,]+"), replacement = "-")
+                .removePrefix("-")
                 .removeSuffix("-")
         }
 
@@ -77,26 +78,27 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
                 it != null && (includeEmptyFields || it.isNotEmpty())
             }
 
-            val prettyName = StringBuilder(basicName)
-            if (sortable) {
-                if (withBrand && isPresent(brand)) {
-                    prettyName.append(", ").append(brand)
+            return buildString {
+                append(basicName)
+                if (sortable) {
+                    if (withBrand && isPresent(brand)) {
+                        append(", $brand")
+                    }
+                    if (isPresent(variety)) {
+                        append(", $variety")
+                    }
+                } else {
+                    if (withVariety && isPresent(variety)) {
+                        insert(0, "$variety ")
+                    }
+                    if (withBrand && isPresent(brand)) {
+                        insert(0, "$brand ")
+                    }
                 }
-                if (isPresent(variety)) {
-                    prettyName.append(", ").append(variety)
-                }
-            } else {
-                if (withVariety && isPresent(variety)) {
-                    prettyName.insert(0, "$variety ")
-                }
-                if (withBrand && isPresent(brand)) {
-                    prettyName.insert(0, "$brand ")
+                if (withExtra && isPresent(extraDesc)) {
+                    append(" ($extraDesc)")
                 }
             }
-            if (withExtra && isPresent(extraDesc)) {
-                prettyName.append(" (").append(extraDesc).append(")")
-            }
-            return prettyName.toString()
         }
 
         fun processFoodType(rowData: RowData<Food>): FoodType {
@@ -243,11 +245,11 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     val categoryName: String
         get() = data[FoodTable.CATEGORY]!!
 
+    val relevanceOffset: SearchRelevance
+        get() = SearchRelevance.fromValue(data[FoodTable.SEARCH_RELEVANCE])
     val searchRelevance: SearchRelevance
-        get() = when (val overrideValue = data[FoodTable.SEARCH_RELEVANCE]) {
-                null -> foodType.defaultSearchRelevance
-                else -> SearchRelevance.fromValue(overrideValue)
-            }
+        get() = foodType.baseSearchRelevance + relevanceOffset
+
 
     // Returns the most recent time out of
     // - food (table) modify time
@@ -256,7 +258,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     // Ensure servings and nutrient values are added first!
     val userModifyTime: Long by lazy {
         val servingModifyTime = servings.maxOfOrNull { it.modifyTime } ?: 0
-        val nutrientValueModifyTime = nutrientData.nutrientValues.maxOfOrNull { it.modifyTime } ?: 0
+        val nutrientValueModifyTime = nutrientData.values.maxOfOrNull { it.modifyTime } ?: 0
         maxOf(modifyTime, maxOf(servingModifyTime, nutrientValueModifyTime))
     }
 
@@ -275,8 +277,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             withVariety = withVariety,
             withExtra = withExtra,
             sortable = sortable,
-
-            )
+        )
     }
 
 }

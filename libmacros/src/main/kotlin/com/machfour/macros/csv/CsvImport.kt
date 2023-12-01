@@ -251,7 +251,7 @@ private fun <J: Any> saveImportedFoods(
 
     // get out the nutrition data
     val nvObjects = foodsToSave.flatMap { (_, food) ->
-        food.nutrientData.nutrientValues.onEach {
+        food.nutrientData.values.onEach {
             // link it to the food so that the DB can create the correct foreign key entries
             it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, foodKeyCol, food)
         }
@@ -265,6 +265,7 @@ private fun <J: Any> saveImportedFoods(
 }
 
 @Throws(SqlException::class, TypeCastException::class)
+@Deprecated("use readFoodData and then save to database separately")
 fun <J: Any> importFoodData(
     db: SqlDatabase,
     foodCsv: String,
@@ -272,15 +273,23 @@ fun <J: Any> importFoodData(
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
 ): Map<J, Food> {
+    val csvFoods = readFoodData(foodCsv, foodKeyCol, modifyFoodData, modifyNutrientValueData)
+    return saveImportedFoods(db, csvFoods, foodKeyCol)
+}
 
-    val csvFoods = buildFoodObjectTree(
+@Throws(SqlException::class, TypeCastException::class)
+fun <J : Any> readFoodData(
+    foodCsv: String,
+    foodKeyCol: Column<Food, J>,
+    modifyFoodData: ((RowData<Food>) -> Unit)? = null,
+    modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
+): Map<J, Food> {
+    return buildFoodObjectTree(
         foodCsv,
         foodKeyCol = foodKeyCol,
         modifyFoodData = { data -> modifyFoodData?.let { it(data) } },
         modifyNutrientValueData
     )
-
-    return saveImportedFoods(db, csvFoods, foodKeyCol)
 }
 
 // Returns map of existing serving IDs / servings that were matched with ones in the CSV that were skipped,

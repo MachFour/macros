@@ -21,13 +21,13 @@ interface MacrosEntity<M : MacrosEntity<M>> {
         }
     }
 
-    val id: Long
+    val id: EntityId
 
     val hasId: Boolean
         get() = (id != NO_ID)
 
-    val createTime: Long
-    val modifyTime: Long
+    val createTime: Instant
+    val modifyTime: Instant
 
     // whether this object was created from a database instance or whether it was created by the
     // application (e.g. by a 'new object' action initiated by the user)

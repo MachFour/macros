@@ -58,7 +58,7 @@ fun foodSearch(
     val searchRelevance = FoodTable.SEARCH_RELEVANCE.sqlName
     val foodType = FoodTable.FOOD_TYPE.sqlName
 
-    val relevantFoodTypes = FoodType.values().filter { it.defaultSearchRelevance >= minRelevance }
+    val relevantFoodTypes = FoodType.entries.filter { it.baseSearchRelevance >= minRelevance }
     val foodTypeFilter = when (relevantFoodTypes.size) {
         0 -> "false"
         1 -> "$foodType == '${relevantFoodTypes.first()}'"

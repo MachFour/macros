@@ -68,11 +68,11 @@ open class GenericNutrientData<M: NutrientValue<M>>(
             }
         }
 
-    val nutrientValues: List<M>
+    val values: List<M>
         get() = data.filterNotNull()
 
-    val nutrientValuesExcludingQuantity: List<M>
-        get() = nutrientValues.filter { it.nutrientId != QUANTITY.id }
+    val valuesExcludingQuantity: List<M>
+        get() = values.filter { it.nutrientId != QUANTITY.id }
 
     // map of protein, fat, saturated fat, carbs, sugar, fibre to proportion of total energy
     private val energyProportionsMap: Map<Nutrient, Double> by lazy {

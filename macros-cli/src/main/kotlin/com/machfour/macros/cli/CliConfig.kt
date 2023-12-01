@@ -20,5 +20,4 @@ interface CliConfig {
     val database: SqlDatabase
     // for unusual low-level operations on the database
     val databaseImpl: SqlDatabaseImpl
-
 }

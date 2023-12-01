@@ -34,7 +34,7 @@ fun cliGetDouble(): Double? {
 
 fun cliGetStringInput(): String? {
     return try {
-        readLine()?.javaTrim()
+        readlnOrNull()?.javaTrim()
     } catch (e: IOException) {
         printlnErr("Error reading input: " + e.message)
         null

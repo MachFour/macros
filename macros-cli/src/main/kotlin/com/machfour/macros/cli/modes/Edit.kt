@@ -19,8 +19,8 @@ private fun addPortion(toEdit: Meal, db: SqlDatabase) {
     println("Please enter the portion information (see help for how to specify a food portion)")
     // copy from portion
     val inputString = cliGetStringInput()
-    if (inputString != null && inputString.isNotEmpty()) {
-        val spec = FileParser.makefoodPortionSpecFromLine(inputString)
+    if (!inputString.isNullOrEmpty()) {
+        val spec = FileParser.makeFoodPortionSpecFromLine(inputString)
         listOf(spec).processAndAddTo(toEdit, db)
     }
 }

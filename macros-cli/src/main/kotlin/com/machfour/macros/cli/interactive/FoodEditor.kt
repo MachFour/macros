@@ -32,7 +32,7 @@ import com.machfour.macros.validation.ValidationError
 import java.io.IOException
 
 // TODO servings?
-class FoodEditor constructor(
+class FoodEditor(
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
     private val ds: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
@@ -41,7 +41,7 @@ class FoodEditor constructor(
     private val screen: Screen = defaultScreen()) {
 
     companion object {
-        private val NUM_ACTIONS = Action.values().size
+        private val NUM_ACTIONS = Action.entries.size
         private val FOOD_TABLE_COLUMNS = FoodTable.columns
 
         // Layout parameters
@@ -178,7 +178,7 @@ class FoodEditor constructor(
                 nextActionOrdinal += NUM_ACTIONS
             }
         }
-        currentAction = Action.values()[nextActionOrdinal]
+        currentAction = Action.entries[nextActionOrdinal]
     }
 
     private fun <M : MacrosEntity<M>, J: Any> getErrorMessage(b: MacrosBuilder<M>, col: Column<M, J>): String? {
@@ -504,7 +504,7 @@ class FoodEditor constructor(
     @Throws(IOException::class)
     private fun printActionRow() {
         println("Actions: ", actionPaddingWidth, false)
-        for (a in Action.values()) {
+        for (a in Action.entries) {
             val indicator = if (!isEditing && a == currentAction) " > " else "   "
             print(" $indicator ${a.niceName}", actionPaddingWidth, true)
         }
@@ -578,7 +578,7 @@ class FoodEditor constructor(
             val f = foodBuilder.build()
             try {
                 try {
-                    val nutrientValues = nutrientData.nutrientValues.onEach {
+                    val nutrientValues = nutrientData.values.onEach {
                         // link the food to the nutrient values
                         it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, f)
                     }
@@ -659,7 +659,7 @@ class FoodEditor constructor(
         setEditingValue(currentFieldData)
     }
 
-    private enum class Action constructor(val niceName: String) {
+    private enum class Action(val niceName: String) {
         MORE_FIELDS("Extra fields"), //TODO
         SAVE("Save"),
         RESET("Reset"),

@@ -54,7 +54,7 @@ class FileParser {
                         currentFpSpecs = ArrayList()
                         specMap[m] = currentFpSpecs
                     }
-                    val fpSpec = makefoodPortionSpecFromLine(line)
+                    val fpSpec = makeFoodPortionSpecFromLine(line)
                     fpSpec.lineIdx = index
                     currentFpSpecs.add(fpSpec)
                 }
@@ -130,7 +130,7 @@ class FileParser {
         //index name  separator  number of servings
         // (default serving assumed, error if no default serving registered)
         // returns null if there was an error during parsing (not a DB error)
-        fun makefoodPortionSpecFromLine(line: String): FoodPortionSpec {
+        fun makeFoodPortionSpecFromLine(line: String): FoodPortionSpec {
             // if you don't specify an array length limit, it won't match empty strings between commas
             val tokens = line.split(",", limit = 4).map { it.javaTrim() }
 

@@ -3,37 +3,30 @@ package com.machfour.macros.cli
 import com.machfour.macros.cli.modes.*
 import com.machfour.macros.util.javaTrim
 
-// File that holds static instances of all the other commands
-
-private val commandConstructors = listOf<(CliConfig) -> Command>(
-    { config -> Help(config) },
-    { config -> Edit(config) },
-    { config -> Meals(config) },
-    { config -> ShowFood(config) },
-    { config -> AddFood(config) },
-    { config -> DeleteFood(config) },
-    { config -> Portion(config) },
-    { config -> NewMeal(config) },
-    { config -> Read(config) },
-    { config -> SearchFood(config) },
-    { config -> Total(config) },
-    { config -> Recipe(config) },
-    { config -> AllFoods(config) },
-    { config -> Import(config) },
-    { config -> Export(config) },
-    { config -> Backup(config) },
-    { config -> Restore(config) },
-    { config -> Init(config) },
-    { config -> Version(config) },
-    { config -> InvalidCommand(config) },
-    { config -> NoArgs(config) }
+private val commandConstructors = listOf(
+    ::Help,
+    ::Edit,
+    ::Meals,
+    ::ShowFood,
+    ::AddFood,
+    ::DeleteFood,
+    ::Portion,
+    ::NewMeal,
+    ::Read,
+    ::SearchFood,
+    ::Total,
+    ::Recipe,
+    ::AllFoods,
+    ::Import,
+    ::Export,
+    ::Backup,
+    ::Restore,
+    ::Json,
+    ::Init,
+    ::Version,
+    ::InvalidCommand,
+    ::NoArgs,
 )
-
-private var initialised = false
-
-private fun checkInitialised() {
-    check(initialised) { "Commands not initialised" }
-}
 
 private fun String.clean(): String {
     val trimmed = javaTrim()
@@ -43,26 +36,22 @@ private fun String.clean(): String {
     }
 }
 
-lateinit var commandsByName: Map<String, Command>
-    private set
+private val commandsByNameInternal: MutableMap<String, Command> = HashMap()
+val commandsByName: Map<String, Command>
+    get() = commandsByNameInternal
+
+val commands: Collection<Command>
+    get() = commandsByName.values
 
 // and then init commands
 fun initCommands(config: CliConfig) {
-    commandsByName = commandConstructors.associate { constructor ->
-        constructor(config).let { it.name to it }
-    }
-    initialised = true
+    commandsByNameInternal.putAll(
+        commandConstructors.map { it(config) }.associateBy { it.name }
+    )
 }
-
-val commands: Collection<Command>
-    get() {
-        checkInitialised()
-        return commandsByName.values
-    }
 
 // Parses the name of a command from the first element of args
 fun parseCommand(cmdArg: String?): Command {
-    checkInitialised()
     val commandName = when (val it = cmdArg?.clean()) {
         null -> noArgsCommandName
         in commandsByName -> it

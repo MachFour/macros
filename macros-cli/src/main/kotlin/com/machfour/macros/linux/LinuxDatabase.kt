@@ -100,10 +100,8 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
         private fun ResultSet.processResultSet(resultSetAction: (ResultSet) -> Unit) {
             use {
-                it.next()
-                while (!it.isAfterLast) {
+                while (it.next()) {
                     resultSetAction(it)
-                    it.next()
                 }
             }
         }

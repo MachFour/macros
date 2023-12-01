@@ -31,10 +31,12 @@ dependencies {
     implementation(project(":libmacros"))
 
     // dunno why this is needed here now - it worked before just having it in libmacros
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))
-    implementation(files("../libs/sqlite-jdbc-3.34.0.jar"))
+    implementation(files("../libs/sqlite-jdbc-3.44.0.0.jar"))
+    implementation(files("../libs/slf4j-api-1.7.36.jar"))
+    implementation(files("../libs/slf4j-simple-1.7.36.jar"))
 
     // testing
     

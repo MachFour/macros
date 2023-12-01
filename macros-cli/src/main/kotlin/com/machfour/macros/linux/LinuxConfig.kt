@@ -11,7 +11,7 @@ internal class LinuxConfig : CliConfig {
         internal const val PROJECT_DIR = "/home/max/devel/macros"
 
         private const val programName = "macros"
-        private const val programVersion = "2022.1"
+        private const val programVersion = "2023.1"
 
         private const val DEFAULT_DB_NAME = "macros.sqlite"
         private const val DATA_DIR = "/home/max/devel/macros-data"
@@ -23,7 +23,7 @@ internal class LinuxConfig : CliConfig {
 
         private val LIB_DIR = joinFilePath(PROJECT_DIR, "libs")
 
-        private const val SQLITE_JDBC_VERSION = "3.34.0"
+        private const val SQLITE_JDBC_VERSION = "3.44.0.0"
         const val SQLITE_NATIVE_LIB_NAME = "libsqlitejdbc-${SQLITE_JDBC_VERSION}.so"
 
         val SQLITE_NATIVE_LIB_DIR = LIB_DIR

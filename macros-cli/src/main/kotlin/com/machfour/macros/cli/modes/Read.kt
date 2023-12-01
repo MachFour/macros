@@ -50,10 +50,10 @@ class Read(config: CliConfig) : CommandImpl(config) {
             printHelp()
             println()
             println("Please specify a file to read")
-            return -1
+            return 2
         } else if (helpFlag.containedIn(args)) {
             printHelp()
-            return -1
+            return 2
         }
         val filename = args[1]
         val verbose = verboseFlag.containedIn(args)

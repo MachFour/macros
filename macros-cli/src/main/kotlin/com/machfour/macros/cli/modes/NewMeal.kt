@@ -13,7 +13,7 @@ class NewMeal(config: CliConfig) : CommandImpl(config) {
     override fun doAction(args: List<String>): Int {
         if (args.size == 1 || args.contains("--help")) {
             printHelp()
-            return -1
+            return 2
         }
 
         // cases: day not specified vs day specified

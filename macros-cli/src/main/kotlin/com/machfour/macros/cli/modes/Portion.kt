@@ -8,7 +8,7 @@ import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.parsing.FileParser.Companion.makefoodPortionSpecFromLine
+import com.machfour.macros.parsing.FileParser.Companion.makeFoodPortionSpecFromLine
 import com.machfour.macros.parsing.FileParser.Companion.processFpSpec
 import com.machfour.macros.parsing.FoodPortionSpec
 import com.machfour.macros.parsing.MealSpec
@@ -98,14 +98,9 @@ class Portion(config: CliConfig): CommandImpl(config) {
         }
 
         // now read everything after the '-s' as food portion specs
-        val specs = buildList {
-            for (index in separator + 1 until args.size) {
-                add(makefoodPortionSpecFromLine(args[index]))
-            }
-        }
-
+        val specs = args.drop(separator + 1).map{ makeFoodPortionSpecFromLine(it) }
         val processedMeal = checkNotNull(mealSpec.processedObject) {
-            "mealspec did not correctly process object but no error was given "
+            "mealspec did not correctly process object but no error was given"
         }
 
         return specs.processAndAddTo(processedMeal, ds)

@@ -25,7 +25,7 @@ class Restore(config: CliConfig): CommandImpl(config) {
         }
         if (args.size < 2) {
             printHelp()
-            return -1
+            return 2
         }
 
         // default output dir

@@ -29,12 +29,12 @@ class AddFood(config: CliConfig) : CommandImpl(config) {
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {
             printHelp()
-            return -1
+            return 2
         }
         val indexNameArg = findArgument(args, 1)
         if (indexNameArg !is ArgParsingResult.KeyValFound) {
             println(usage)
-            return -1
+            return 2
         }
         val indexName = indexNameArg.argument
 

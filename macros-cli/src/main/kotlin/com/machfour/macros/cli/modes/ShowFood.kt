@@ -19,7 +19,7 @@ class ShowFood(config: CliConfig) : CommandImpl(config) {
             if (args.size == 1) {
                 println("Please enter the index name of the food to show")
             }
-            return -1
+            return 2
         }
         val verbose = args.contains("-v") || args.contains("--verbose")
 

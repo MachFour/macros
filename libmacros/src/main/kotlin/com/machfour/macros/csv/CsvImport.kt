@@ -230,11 +230,7 @@ fun <J: Any> buildServings(
 
 // foods maps from index name to food object. Food object must have nutrition data attached
 @Throws(SqlException::class)
-private fun <J: Any> saveImportedFoods(
-    db: SqlDatabase,
-    foods: Map<J, Food>,
-    foodKeyCol: Column<Food, J>,
-): Map<J, Food> {
+fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>, foodKeyCol: Column<Food, J>): Map<J, Food> {
     // collect all the index names to be imported, and check if they're already in the DB.
     val conflictingFoods = findUniqueColumnConflicts(db, foods)
 
@@ -279,14 +275,14 @@ fun <J: Any> importFoodData(
 
 @Throws(SqlException::class, TypeCastException::class)
 fun <J : Any> readFoodData(
-    foodCsv: String,
-    foodKeyCol: Column<Food, J>,
+    csv: String,
+    keyCol: Column<Food, J>,
     modifyFoodData: ((RowData<Food>) -> Unit)? = null,
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
 ): Map<J, Food> {
     return buildFoodObjectTree(
-        foodCsv,
-        foodKeyCol = foodKeyCol,
+        csv,
+        foodKeyCol = keyCol,
         modifyFoodData = { data -> modifyFoodData?.let { it(data) } },
         modifyNutrientValueData
     )

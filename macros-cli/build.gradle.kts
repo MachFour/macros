@@ -27,11 +27,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") // for use()
     implementation(project(":libmacros"))
 
     // dunno why this is needed here now - it worked before just having it in libmacros
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))
     implementation(files("../libs/sqlite-jdbc-3.44.0.0.jar"))
@@ -39,7 +39,6 @@ dependencies {
     implementation(files("../libs/slf4j-simple-1.7.36.jar"))
 
     // testing
-    
     val junitVersion = "5.9.0"
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")

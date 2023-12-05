@@ -9,8 +9,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class JsonNutrientValue(
+    @kotlinx.serialization.Transient
     override val id: EntityId = MacrosEntity.NO_ID,
+    @kotlinx.serialization.Transient
     override val created: Instant = 0,
+    @kotlinx.serialization.Transient
     override val modified: Instant = 0,
     val value: Double,
     val unit: String,

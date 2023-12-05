@@ -1,56 +1,69 @@
 package com.machfour.macros.json
 
 import kotlinx.serialization.json.Json
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.archivers.zip.ZipFile
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import java.nio.channels.SeekableByteChannel
 
 class ZipKtTest {
     class ZipTestCase(
         val name: String,
-        val serialize: (Collection<JsonFood>, ByteArrayOutputStream) -> Unit,
-        val deserialize: (ByteArrayInputStream) -> Collection<JsonFood>,
+        val serializer: Json,
+        val serialize: (Collection<JsonFood>, SeekableByteChannel, Json) -> Unit,
+        val deserialize: (SeekableByteChannel, Json) -> Collection<JsonFood>,
     )
-
     @Test
     fun testJsonZipRoundTrip() {
         val testcases = listOf(
             ZipTestCase(
-                name = "typical",
-                serialize = { foods, out ->
-                    val serializer = Json { prettyPrint = true }
-                    serialiseFoodsToZip(foods, out, serializer)
+                name = "zip, typical",
+                serializer = Json { prettyPrint = true },
+                serialize = { foods, channel, serializer ->
+                    val out = ZipArchiveOutputStream(channel)
+                    serializeFoodsToZip(foods, serializer, out)
                 },
-                deserialize = { deserializeFoodsFromZip(it) }
+                deserialize = { channel, serializer ->
+                    val input = ZipFile(channel)
+                    deserializeFoodsFromZip(input, serializer, true)
+                }
             ),
             ZipTestCase(
                 name = "no pretty print",
-                serialize = { foods, out ->
-                    val serializer = Json { prettyPrint = false }
-                    serialiseFoodsToZip(foods, out, serializer)
+                serializer = Json { prettyPrint = false },
+                serialize = { foods, channel, serializer ->
+                    val out = ZipArchiveOutputStream(channel)
+                    serializeFoodsToZip(foods, serializer, out)
                 },
-                deserialize = { deserializeFoodsFromZip(it) }
+                deserialize = { channel, serializer ->
+                    val input = ZipFile(channel)
+                    deserializeFoodsFromZip(input, serializer, true)
+                }
             ),
             ZipTestCase(
                 name = "custom filename",
-                serialize = { foods, out ->
-                    val serializer = Json { prettyPrint = true }
+                serializer = Json { prettyPrint = true },
+                serialize = { foods, channel, serializer ->
+                    val out = ZipArchiveOutputStream(channel)
                     var i = 0
-                    serialiseFoodsToZip(foods, out, serializer, getFilename = { "${i++}.json" })
+                    serializeFoodsToZip(foods, serializer, out, getFilename = { "${i++}.json" })
                 },
-                deserialize = { deserializeFoodsFromZip(it, filenameIsIndexName = false) }
+                deserialize = { channel, serializer ->
+                    val input = ZipFile(channel)
+                    deserializeFoodsFromZip(input, serializer, false)
+                }
             ),
         )
 
         val expect = deserializedTestFoods
-        val out = ByteArrayOutputStream(1*1024*1024)
 
         for (t in testcases) {
-            t.serialize(expect, out)
-            val actual = t.deserialize(ByteArrayInputStream(out.toByteArray()))
+            val out = SeekableInMemoryByteChannel(16*1024)
+            t.serialize(expect, out, t.serializer)
+            val actual = t.deserialize(out, t.serializer)
             assertIterableEquals(expect, actual)
-            out.reset()
         }
     }
 }

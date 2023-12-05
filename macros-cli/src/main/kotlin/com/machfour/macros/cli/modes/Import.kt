@@ -5,11 +5,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.csv.CsvException
-import com.machfour.macros.csv.importFoodData
-import com.machfour.macros.csv.importRecipes
-import com.machfour.macros.csv.importServings
-import com.machfour.macros.entities.Food
+import com.machfour.macros.csv.*
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods
@@ -17,6 +13,7 @@ import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import java.io.FileReader
@@ -31,6 +28,20 @@ private fun getCsvFile(args: List<String>, flag: String, default: String): Strin
 
 }
 
+internal fun clearFoodsAndServings(db: SqlDatabase) {
+    // have to clear in reverse order
+    // TODO Ingredients, servings, NutrientValues cleared by cascade?
+    deleteAllIngredients(db)
+    clearTable(db, ServingTable)
+    clearTable(db, FoodNutrientValueTable)
+    clearTable(db, FoodTable)
+}
+
+internal fun clearRecipes(db: SqlDatabase) {
+    // nutrition data deleted by cascade
+    deleteAllIngredients(db)
+    deleteAllCompositeFoods(db)
+}
 
 class Import(config: CliConfig) : CommandImpl(config) {
     override val name = "import"
@@ -62,27 +73,27 @@ class Import(config: CliConfig) : CommandImpl(config) {
             return 0
         }
         val doClear = args.contains("--clear")
-        val noRecipes = args.contains("--norecipes")
-        val noFoodsServings = args.contains("--nofoods")
+        val doRecipes = !args.contains("--norecipes")
+        val doFoodsAndServings = !args.contains("--nofoods")
 
 
         val foodCsvFile = getCsvFile(args, "-f", config.foodCsvPath) ?: run {
-            printlnErr("Error - '-f' flag given but food.csv not specified")
+            printlnErr("'-f' must specify <food.csv> path")
             return 1
         }
 
         val servingCsvFile = getCsvFile(args, "-s", config.servingCsvPath) ?: run {
-            printlnErr("Error - '-s' flag given but serving.csv not specified")
+            printlnErr("'-s' flag must specify <serving.csv> path")
             return 1
         }
 
         val recipeCsvFile = getCsvFile(args, "-r", config.recipeCsvPath) ?: run {
-            printlnErr("Error - '-r' flag given but recipe.csv not specified")
+            printlnErr("'-r' flag must specify <recipe.csv> path")
             return 1
         }
 
         val ingredientsCsvFile = getCsvFile(args, "-i", config.ingredientsCsvPath) ?: run {
-            printlnErr("Error - '-i' flag given but ingredient.csv not specified")
+            printlnErr("'-i' must specify <ingredient.csv> path")
             return 1
         }
 
@@ -91,25 +102,18 @@ class Import(config: CliConfig) : CommandImpl(config) {
         val db = config.database
         try {
             if (doClear) {
-                if (!noFoodsServings) {
-                    println("Clearing existing foods, servings, nutrition data and ingredients...")
-                    // have to clear in reverse order
-                    // TODO Ingredients, servings, NutrientValues cleared by cascade?
-                    deleteAllIngredients(db)
-                    clearTable(db, ServingTable)
-                    clearTable(db, FoodNutrientValueTable)
-                    clearTable(db, FoodTable)
-                } else if (!noRecipes) {
-                    println("Clearing existing recipes and ingredients...")
-                    // nutrition data deleted by cascade
-                    deleteAllIngredients(db)
-                    deleteAllCompositeFoods(db)
+                if (doFoodsAndServings) {
+                    println("Clearing existing foods, servings, nutrition data and ingredients")
+                    clearFoodsAndServings(db)
+                } else if (doRecipes) {
+                    println("Clearing existing recipes and ingredients")
+                    clearRecipes(db)
                 } else {
                     println("Warning: nothing was cleared because both --nofoods and --norecipes were used")
                 }
                 println()
             }
-            if (!noFoodsServings) {
+            if (doFoodsAndServings) {
                 println("Importing foods and nutrition data from $foodCsvFile...")
 
                 val foodKeyCol = if (foodCsvFile.contains("nuttab")) {
@@ -118,14 +122,10 @@ class Import(config: CliConfig) : CommandImpl(config) {
                     FoodTable.INDEX_NAME
                 }
 
-                val conflictingFoods: Map<String, Food>
-                FileReader(foodCsvFile).use { reader ->
-                    conflictingFoods = importFoodData(db, reader.readText(), foodKeyCol)
-                }
-
-                if (conflictingFoods.isNotEmpty()) {
-                    println("Note: the following ${conflictingFoods.size} duplicate foods were not imported:")
-                    conflictingFoods.forEach { println(it.key) }
+                val csvFoods = FileReader(foodCsvFile).use { readFoodData(it.readText(), foodKeyCol) }
+                saveImportedFoods(db, csvFoods, foodKeyCol).takeIf { it.isNotEmpty() }?.let {
+                    println("Note: the following ${it.size} duplicate foods were not imported")
+                    it.forEach { (_, food) -> println(food.indexName) }
                 }
 
                 println("Saved foods and nutrition data")
@@ -140,7 +140,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println("Note: skipped ${duplicatedServings.size} duplicated servings")
                 println()
             }
-            if (!noRecipes) {
+            if (doRecipes) {
                 println("Importing recipes and ingredients from $recipeCsvFile...")
                 FileReader(recipeCsvFile).use { recipeReader ->
                     FileReader(ingredientsCsvFile).use { ingredientsReader ->
@@ -152,16 +152,16 @@ class Import(config: CliConfig) : CommandImpl(config) {
             }
         } catch (e1: SqlException) {
             println()
-            printlnErr("SQL Exception occurred: ${e1.message}")
+            printlnErr("SQL error: ${e1.message}")
             return 1
         } catch (e2: CsvException) {
             println()
-            printlnErr("CSV import exception occurred: ${e2.message}")
+            printlnErr("CSV error: ${e2.message}")
             printlnErr("Please check the format of the CSV files")
             return 1
         } catch (e3: TypeCastException) {
             println()
-            printlnErr("Type cast exception occurred: ${e3.message}")
+            printlnErr("Type error: ${e3.message}")
             printlnErr("Please check the format of the CSV files")
             return 1
         }

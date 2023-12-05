@@ -46,14 +46,10 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             }
         }
 
-        // Helper SQL methods
-        private fun <M> bindData(p: PreparedStatement, values: RowData<M>, orderedColumns: List<Column<M, *>>) {
-            bindData(p, values, orderedColumns, null)
-        }
-
-        private fun <M> bindData(p: PreparedStatement, values: RowData<M>, orderedColumns: List<Column<M, *>>, extra: Any?) {
+        // Helper SQL method
+        private fun <M> bindData(p: PreparedStatement, values: RowData<M>, columns: List<Column<M, *>>, extra: Any? = null) {
             var colIndex = 1 // parameters are 1 indexed!
-            for (col in orderedColumns) {
+            for (col in columns) {
                 // Internally, setObject() relies on a ladder of instanceof checks
                 p.setObject(colIndex, values.getAsRaw(col))
                 colIndex++
@@ -71,38 +67,31 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             }
         }
 
-        private fun <J: Any> ResultSet.getColumn(column: Column<*, J>) : J? {
+        private fun <J : Any> ResultSet.getColumn(column: Column<*, J>): J? {
             val resultValue = getObject(column.sqlName)
             return try {
                 column.type.fromRaw(resultValue)
             } catch (e: TypeCastException) {
-                // this line throws an exception, so code won't reach here
                 throw SqlException.forTypeCastError(resultValue, column)
             }
         }
 
-        private fun <M> fillRowData(data: RowData<M>, rs: ResultSet, columns: Collection<Column<M, *>> = data.table.columns) {
-            for (col in columns) {
-                val rawValue = rs.getObject(col.sqlName)
+        private fun <M> ResultSet.toRowData(table: Table<M>, cols: List<Column<M, *>> = table.columns): RowData<M> {
+            val data = RowData(table, cols)
+            for (col in cols) {
+                val rawValue = getObject(col.sqlName)
                 try {
                     data.putFromRaw(col, rawValue)
                 } catch (e: TypeCastException) {
                     throw SqlException.forTypeCastError(rawValue, col)
                 }
             }
-        }
-
-        private fun <M> ResultSet.toRowData(table: Table<M>, columns: Collection<Column<M, *>> = table.columns) : RowData<M> {
-            val data = RowData(table, columns)
-            fillRowData(data, this, columns)
             return data
         }
 
-        private fun ResultSet.processResultSet(resultSetAction: (ResultSet) -> Unit) {
-            use {
-                while (it.next()) {
-                    resultSetAction(it)
-                }
+        private fun ResultSet.processResultSet(action: (ResultSet) -> Unit) = use {
+            while (it.next()) {
+                action(it)
             }
         }
 
@@ -120,7 +109,6 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
     private val dataSource = makeSQLiteDataSource(dbFile)
 
-    // records how much time spent in database transactions
     private var cachedConnection: Connection? = null
 
     // returns persistent connection if there is one, otherwise a new temporary one.

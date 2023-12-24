@@ -1,42 +1,54 @@
 package com.machfour.macros.insulin
 
+import com.machfour.macros.nutrients.CARBOHYDRATE
+import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.PROTEIN
 import com.machfour.macros.util.fmt
 import com.machfour.macros.util.toString
 
-// parses a commmand line for the given flag, then tries to parse the string following that flag
-// in the form <ic ratio> <ic ratio>:<protein factor>, where <ic ratio> and <protein factor> are Doubles
-@Throws(NumberFormatException::class)
-fun parseInsulinArgument(arg: String) : Pair<Double, Double?> {
-    val insulinParams = arg.split(":", limit = 2)
-    val icRatio = insulinParams[0].toDouble()
-    val proteinFactor = insulinParams.takeIf { it.size == 2 }?.get(1)?.toDouble()
-    return Pair(icRatio, proteinFactor)
+// parses a string in one of the following forms:
+// 1. <ic ratio>
+// 2. <ic ratio>:<fat factor>:<protein factor>
+// where all quantities are positive floating point numbers
+fun parseInsulinArgument(arg: String) : BolusCalculator? {
+    val params = arg
+        .split(":")
+        .also { if (it.size !in listOf(1, 3)) { return null } }
+        .map { it.toDoubleOrNull()?.takeIf { d -> d > 0.0 } ?: return null }
+
+    return BolusCalculator(
+        icRatio = params[0],
+        fatF = params.getOrNull(1),
+        proteinF = params.getOrNull(2),
+    )
 }
 
 private const val labelPrintWidth = 8
 private const val unitsPrintWidth = 6
-private val labels = listOf("Carbs", "Protein", "Total")
 
-fun printInsulin(nd: FoodNutrientData, icRatio: Double, proteinFactor: Double?) {
+fun printInsulin(nd: FoodNutrientData, params: BolusCalculator) {
     println("========")
     println("Insulin:")
     println("========")
     println()
 
-    val insulinParams = InsulinParams(icRatio, proteinFactor ?: 0.0)
+    val insulin = params.insulinForNutrientData(nd)
+    val data = listOf(
+        "Carbs" to insulin[CARBOHYDRATE]?.first,
+        "Fat" to insulin[FAT]?.first,
+        "Protein" to insulin[PROTEIN]?.first,
+        "Total" to insulin.asIterable().sumOf { it.value.first ?: 0.0 },
+    )
 
-    val forCarbs = insulinForCarbs(nd, insulinParams) ?: 0.0
-    val forProtein = insulinForProtein(nd, insulinParams) ?: 0.0
-    val total = forCarbs + forProtein
-
-    val values = listOf(forCarbs, forProtein, total)
-    for (i in 0 until 3) {
-        print(labels[i].fmt(labelPrintWidth) + ": ")
-        println(values[i].toString(2).fmt(unitsPrintWidth) + "U")
+    for ((label, value) in data) {
+        print(label.fmt(labelPrintWidth) + "  ")
+        println((value?.toString(2) ?: "").fmt(unitsPrintWidth) + "U")
     }
 
     println()
-    println("IC Ratio: $icRatio")
-    println("Protein factor: $proteinFactor")
+
+    println("IC Ratio: ${params.icRatio}")
+    println("Fat factor: ${params.fatF}")
+    println("Protein factor: ${params.proteinF}")
 }

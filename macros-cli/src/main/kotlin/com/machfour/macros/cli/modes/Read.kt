@@ -7,6 +7,7 @@ import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.entities.Meal
+import com.machfour.macros.insulin.BolusCalculator
 import com.machfour.macros.insulin.parseInsulinArgument
 import com.machfour.macros.insulin.printInsulin
 import com.machfour.macros.parsing.FileParser
@@ -60,20 +61,15 @@ class Read(config: CliConfig) : CommandImpl(config) {
         val per100 = per100Flag.containedIn(args)
 
         val insulinArg = findArgumentFromFlag(args, insulinFlag.full)
-        val icRatio: Double?
-        val proteinFactor: Double?
+        val insulinCalc: BolusCalculator?
 
         when (insulinArg) {
             is ArgParsingResult.KeyValFound -> {
-                try {
-                    parseInsulinArgument(insulinArg.argument).let {
-                        icRatio = it.first
-                        proteinFactor = it.second
-                    }
-                } catch (e: NumberFormatException) {
+                insulinCalc = parseInsulinArgument(insulinArg.argument)
+                if (insulinCalc == null) {
                     printlnErr(
-                        "I:C ratio and protein factor in ${insulinFlag.full} argument " +
-                                "must be numeric and separated by a colon with no space"
+                        "I:C ratio and fat/protein factors (if used) in ${insulinFlag.full} " +
+                                " argument must be numeric, positive and separated by ':' characters"
                     )
                     return 1
                 }
@@ -83,8 +79,7 @@ class Read(config: CliConfig) : CommandImpl(config) {
                 return 1
             }
             else -> {
-                icRatio = null
-                proteinFactor = null
+                insulinCalc = null
             }
         }
 
@@ -111,8 +106,8 @@ class Read(config: CliConfig) : CommandImpl(config) {
             return 2
         }
 
-        if (icRatio != null) {
-            printInsulin(Meal.sumNutrientData(meals), icRatio, proteinFactor)
+        if (insulinCalc != null) {
+            printInsulin(Meal.sumNutrientData(meals), insulinCalc)
         }
 
         return 0

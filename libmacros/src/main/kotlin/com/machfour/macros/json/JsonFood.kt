@@ -63,15 +63,16 @@ data class JsonFood(
     val relevanceOffset: Int = 0,
 
     // A set is used so that unordered comparisons can be done
-    val servings: Set<JsonServing> = emptySet(),
-    val nutrients: Map<String, JsonNutrientValue> = emptyMap(),
+    val servings: List<JsonServing> = emptyList(),
+    val nutrients: Map<String, JsonQuantity> = emptyMap(),
+    val ingredients: List<JsonIngredient> = emptyList(),
 ): JsonEntity() {
     companion object {
-        private val Food.jsonServings: Set<JsonServing>
-            get() = servings.map { JsonServing(it) }.toSet()
+        private val Food.jsonServings: List<JsonServing>
+            get() = servings.map { JsonServing(it) }
 
-        private val Food.jsonNutrientValues: Map<String, JsonNutrientValue>
-            get() = nutrientData.values.associateBy({ it.nutrient.csvName }) { JsonNutrientValue(it) }
+        private val Food.jsonNutrientValues: Map<String, JsonQuantity>
+            get() = nutrientData.values.associateBy({ it.nutrient.csvName }) { JsonQuantity(it) }
     }
 
     constructor(f: Food): this(

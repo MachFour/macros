@@ -28,5 +28,4 @@ class JsonTest {
 
         assertIterableEquals(expected, actual)
     }
-
 }

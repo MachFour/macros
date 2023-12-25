@@ -14,32 +14,30 @@ val apple = JsonFood(
     dataNotes = null,
     density = null,
     relevanceOffset = 0,
-    servings = setOf(
+    servings = listOf(
         JsonServing(
             name = "small",
-            quantity = 80.0,
-            quantityUnit = "g",
+            quantity = JsonQuantity(value = 80.0, unit = "g"),
             isDefault = false,
             notes = "about the size of a mandarin",
         ),
         JsonServing(
             name = "large",
-            quantity = 120.0,
-            quantityUnit = "g",
+            quantity = JsonQuantity(value = 120.0, unit = "g"),
             isDefault = false,
             notes = "about the size of a tennis ball",
         )
     ),
     nutrients = mapOf(
-        "quantity" to JsonNutrientValue(value = 100.0, unit = "g"),
-        "energy" to JsonNutrientValue(value = 247.0, unit = "kJ"),
-        "protein" to JsonNutrientValue(value = 0.3, unit = "g"),
-        "fat" to JsonNutrientValue(value = 0.4, unit = "g"),
-        "saturated_fat" to JsonNutrientValue(value = 0.0, unit = "g"),
-        "carbohydrate" to JsonNutrientValue(value = 12.4, unit = "g"),
-        "sugar" to JsonNutrientValue(value = 11.9, unit = "g"),
-        "fibre" to JsonNutrientValue(value = 2.4, unit = "g"),
-        "sodium" to JsonNutrientValue(value = 0.0, unit = "mg"),
+        "quantity" to JsonQuantity(value = 100.0, unit = "g"),
+        "energy" to JsonQuantity(value = 247.0, unit = "kJ"),
+        "protein" to JsonQuantity(value = 0.3, unit = "g"),
+        "fat" to JsonQuantity(value = 0.4, unit = "g"),
+        "saturated_fat" to JsonQuantity(value = 0.0, unit = "g"),
+        "carbohydrate" to JsonQuantity(value = 12.4, unit = "g"),
+        "sugar" to JsonQuantity(value = 11.9, unit = "g"),
+        "fibre" to JsonQuantity(value = 2.4, unit = "g"),
+        "sodium" to JsonQuantity(value = 0.0, unit = "mg"),
     )
 )
 
@@ -55,16 +53,14 @@ val appleJSON = """
         "nuttab_index": "06D10433",
         "servings": [
             {
-                "name": "large",
-                "quantity": 120.0,
-                "quantity_unit": "g",
-                "notes": "about the size of a tennis ball"
+                "name": "small",
+                "quantity": { "value": 80.0, "unit": "g" },
+                "notes": "about the size of a mandarin"
             },
             {
-                "name": "small",
-                "quantity": 80.0,
-                "quantity_unit": "g",
-                "notes": "about the size of a mandarin"
+                "name": "large",
+                "quantity": { "value": 120.0, "unit": "g" },
+                "notes": "about the size of a tennis ball"
             }
         ],
         "nutrients": {
@@ -107,17 +103,16 @@ val carrotCakes = JsonFood(
     dataNotes = "7.4g xylitol, 6.7g erythritol, 5.2g glycerol, 6.7g polydextrose",
     density = null,
     relevanceOffset = 0,
-    servings = setOf(
+    servings = listOf(
         JsonServing(
             name = "slice",
-            quantity = 75.0,
-            quantityUnit = "g",
+            quantity = JsonQuantity(value = 75.0, unit = "g"),
             isDefault = true,
             notes = null,
         )
     ),
     nutrients = mapOf(
-        "quantity" to JsonNutrientValue(
+        "quantity" to JsonQuantity(
             id = -100,
             created = 0,
             modified = 0,
@@ -125,15 +120,15 @@ val carrotCakes = JsonFood(
             unit = "g",
             constraintSpec = 0,
         ),
-        "energy" to JsonNutrientValue(value = 1262.0, unit = "kJ"),
-        "protein" to JsonNutrientValue(value = 3.0, unit = "g"),
-        "fat" to JsonNutrientValue(value = 18.4, unit = "g"),
-        "saturated_fat" to JsonNutrientValue(value = 5.9, unit = "g"),
-        "carbohydrate" to JsonNutrientValue(value = 14.4, unit = "g"),
-        "sugar" to JsonNutrientValue(value = 3.8, unit = "g"),
-        "fibre" to JsonNutrientValue(value = 19.4, unit = "g"),
-        "sodium" to JsonNutrientValue(value = 284.0, unit = "mg"),
-        "sugar_alcohol" to JsonNutrientValue(value = 19.3, unit = "g"),
+        "energy" to JsonQuantity(value = 1262.0, unit = "kJ"),
+        "protein" to JsonQuantity(value = 3.0, unit = "g"),
+        "fat" to JsonQuantity(value = 18.4, unit = "g"),
+        "saturated_fat" to JsonQuantity(value = 5.9, unit = "g"),
+        "carbohydrate" to JsonQuantity(value = 14.4, unit = "g"),
+        "sugar" to JsonQuantity(value = 3.8, unit = "g"),
+        "fibre" to JsonQuantity(value = 19.4, unit = "g"),
+        "sodium" to JsonQuantity(value = 284.0, unit = "mg"),
+        "sugar_alcohol" to JsonQuantity(value = 19.3, unit = "g"),
     )
 )
 
@@ -152,8 +147,7 @@ val carrotCakesJSON = """
         "servings": [
             {
                 "name": "slice",
-                "quantity": 75.0,
-                "quantity_unit": "g",
+                "quantity": { "value": 75.0, "unit": "g" },
                 "is_default": true
             }
         ],

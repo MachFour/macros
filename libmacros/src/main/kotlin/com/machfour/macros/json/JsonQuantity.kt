@@ -8,7 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class JsonNutrientValue(
+data class JsonQuantity(
     @kotlinx.serialization.Transient
     override val id: EntityId = MacrosEntity.NO_ID,
     @kotlinx.serialization.Transient
@@ -19,14 +19,14 @@ data class JsonNutrientValue(
     val unit: String,
     @SerialName("constraint_spec")
     val constraintSpec: Int = 0,
-    ): JsonEntity() {
-        constructor(nv: FoodNutrientValue): this(
-            id = nv.id,
-            created = nv.createTime,
-            modified = nv.modifyTime,
-            unit = nv.unit.abbr,
-            value = nv.value,
-            constraintSpec = nv.constraintSpec,
-        )
+): JsonEntity() {
 
+    constructor(nv: FoodNutrientValue): this(
+        id = nv.id,
+        created = nv.createTime,
+        modified = nv.modifyTime,
+        value = nv.value,
+        unit = nv.unit.abbr,
+        constraintSpec = nv.constraintSpec,
+    )
 }

@@ -13,12 +13,8 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -26,23 +22,22 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
     implementation(project(":libmacros"))
+    implementation(libs.kotlin.stdlib)
 
     // dunno why this is needed here now - it worked before just having it in libmacros
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(files("../libs/lanterna-3.1.0-alpha1.jar"))
-    implementation(files("../libs/sqlite-jdbc-3.44.0.0.jar"))
+    implementation(files("../libs/sqlite-jdbc-3.49.1.0.jar"))
     implementation(files("../libs/slf4j-api-1.7.36.jar"))
     implementation(files("../libs/slf4j-simple-1.7.36.jar"))
 
     // testing
-    val junitVersion = "5.9.0"
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 tasks.getByName<Test>("test") {
@@ -65,7 +60,7 @@ tasks.register<Jar>(name = "binaryJar") {
 
     from(sourceSets.main.get().output)
     from(configurations.runtimeClasspath.map {
-            config -> config.map { if (it.isDirectory) it else zipTree(it) }
+        config -> config.map { if (it.isDirectory) it else zipTree(it) }
     })
     manifest.attributes["Main-Class"] = "com.machfour.macros.linux.LinuxMain"
     duplicatesStrategy = DuplicatesStrategy.WARN

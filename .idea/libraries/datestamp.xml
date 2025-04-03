@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="datestamp">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/datestamp.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

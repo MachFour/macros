@@ -3,8 +3,10 @@ package com.machfour.macros.sample
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.nutrients.*
+import com.machfour.macros.schema.FoodCategoryTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.FoodTable.BRAND
 import com.machfour.macros.schema.FoodTable.CATEGORY
@@ -26,15 +28,15 @@ import com.machfour.macros.units.MILLILITRES
 
 // Food with no nutrition data
 val exampleFood1: Food by lazy {
-    init1()
+    initIngredientFood1()
 }
 
 // Food with nutrition data that has nonunit density
 val exampleFood2: Food by lazy {
-    init2()
+    initIngredientFood2()
 }
 
-private fun init1(): Food {
+private fun initIngredientFood1(): Food {
     val data = RowData(FoodTable)
     data.put(ID, 1L)
     data.put(INDEX_NAME, "food1")
@@ -49,7 +51,7 @@ private fun init1(): Food {
     return Food.factory.construct(data, ObjectSource.TEST)
 }
 
-private fun init2(): Food {
+private fun initIngredientFood2(): Food {
     val data = RowData(FoodTable)
     data.put(ID, 2L)
     data.put(INDEX_NAME, "generic-oil")
@@ -63,21 +65,27 @@ private fun init2(): Food {
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     val f = Food.factory.construct(data, ObjectSource.TEST)
 
+    val foodCategory = RowData(FoodCategoryTable).run {
+        put(FoodCategoryTable.NAME, "oils")
+        FoodCategory.factory.construct(this, ObjectSource.TEST)
+    }
+    f.setFoodCategory(foodCategory)
+
     val nutritionData = listOf(
-          FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES)
-        , FoodNutrientValue.makeComputedValue(40.0, PROTEIN, GRAMS)
-        , FoodNutrientValue.makeComputedValue(20.0, CARBOHYDRATE, GRAMS)
-        , FoodNutrientValue.makeComputedValue(92.0, FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(12.0, SATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(50.0, SUGAR, GRAMS)
-        , FoodNutrientValue.makeComputedValue(20.0, POLYUNSATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(10.0, MONOUNSATURATED_FAT, GRAMS)
-        , FoodNutrientValue.makeComputedValue(100.0, WATER, GRAMS)
-        , FoodNutrientValue.makeComputedValue(2.0, FIBRE, GRAMS)
-        , FoodNutrientValue.makeComputedValue(1000.0, SODIUM, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(200.0, CALCIUM, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(40.0, IRON, MILLIGRAMS)
-        , FoodNutrientValue.makeComputedValue(100.0, QUANTITY, MILLILITRES)
+        FoodNutrientValue.makeComputedValue(1000.0, ENERGY, CALORIES),
+        FoodNutrientValue.makeComputedValue(40.0, PROTEIN, GRAMS),
+        FoodNutrientValue.makeComputedValue(20.0, CARBOHYDRATE, GRAMS),
+        FoodNutrientValue.makeComputedValue(92.0, FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(12.0, SATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(50.0, SUGAR, GRAMS),
+        FoodNutrientValue.makeComputedValue(20.0, POLYUNSATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(10.0, MONOUNSATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(100.0, WATER, GRAMS),
+        FoodNutrientValue.makeComputedValue(2.0, FIBRE, GRAMS),
+        FoodNutrientValue.makeComputedValue(1000.0, SODIUM, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(200.0, CALCIUM, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(40.0, IRON, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(100.0, QUANTITY, MILLILITRES),
     )
 
     for (nv in nutritionData) {

@@ -4,9 +4,22 @@ import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.Instant
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.foodname.FoodDescription
+import com.machfour.macros.foodname.indexNamePrototype
+import com.machfour.macros.nutrients.nutrientWithNameOrNull
+import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
+import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.RowData
+import com.machfour.macros.units.unitWithAbbrOrNull
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class JsonFood(
     override val id: EntityId = MacrosEntity.NO_ID,
@@ -16,13 +29,13 @@ data class JsonFood(
     // The basic name of the food, e.g. 'apple', 'chicken breast', 'chocolate bar'. It should be
     // a short but descriptive name as when screen space is limited, this is the only field shown.
     @SerialName("basic_name")
-    val basicName: String,
+    override val basicName: String,
 
     // Brand name or company producing the food. Usually not important for fresh produce.
-    val brand: String? = null,
+    override val brand: String? = null,
 
     // Food-specific variety, e.g. low-fat (milk), green (apple), lean (beef mince).
-    val variety: String? = null,
+    override val variety: String? = null,
 
     // Extra description that helps identify the food, e.g. flavour, raw/cooked, fresh/frozen.
     // The usage of this field overlaps with variety slightly, and variety alone is often sufficient.
@@ -33,11 +46,12 @@ data class JsonFood(
     // A keyword name for the food which can uniquely identify it.
     // It can be generated from basic_name, brand, variety, and extraDescription if necessary.
     @SerialName("index_name")
-    val indexName: String = Food.indexNamePrototype(basicName, brand, variety, extraDescription),
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
+    override val indexName: String = indexNamePrototype(basicName, brand, variety, extraDescription),
 
     // Used to store longer-form information about the food. Not displayed in lists or summaries;
     // shown in the detailed information screen for this specific food.
-    val notes: String? = null,
+    override val notes: String? = null,
 
     val category: String? = null,
 
@@ -49,11 +63,11 @@ data class JsonFood(
 
     // Source of the nutrition data, e.g. "Label", "Website", "Calculated"
     @SerialName("data_source")
-    val dataSource: String? = null,
+    override val dataSource: String? = null,
 
     // Notes regarding the nutrient data, e.g. any inaccuracies or
     @SerialName("data_notes")
-    val dataNotes: String? = null,
+    override val dataNotes: String? = null,
 
     val density: Double? = null,
 
@@ -66,7 +80,7 @@ data class JsonFood(
     val servings: List<JsonServing> = emptyList(),
     val nutrients: Map<String, JsonQuantity> = emptyMap(),
     val ingredients: List<JsonIngredient> = emptyList(),
-): JsonEntity() {
+): JsonEntity(), FoodDescription {
     companion object {
         private val Food.jsonServings: List<JsonServing>
             get() = servings.map { JsonServing(it) }
@@ -95,4 +109,63 @@ data class JsonFood(
         servings = f.jsonServings,
         nutrients = f.jsonNutrientValues,
     )
+
+    override val extraDesc: String?
+        get() = extraDescription
+
+    fun toRowData() = RowData(FoodTable).apply {
+        put(FoodTable.ID, id)
+        put(FoodTable.CREATE_TIME, created)
+        put(FoodTable.MODIFY_TIME, modified)
+        put(FoodTable.INDEX_NAME, indexName)
+        put(FoodTable.BRAND, brand)
+        put(FoodTable.VARIETY, variety)
+        put(FoodTable.EXTRA_DESC, extraDescription)
+        put(FoodTable.NAME, basicName)
+        put(FoodTable.NOTES, notes)
+        put(FoodTable.USDA_INDEX, usdaIndex)
+        put(FoodTable.NUTTAB_INDEX, nuttabIndex)
+        put(FoodTable.DATA_SOURCE, dataSource)
+        put(FoodTable.DATA_NOTES, dataNotes)
+        put(FoodTable.DENSITY, density)
+        put(FoodTable.SEARCH_RELEVANCE, relevanceOffset)
+        put(FoodTable.CATEGORY, category)
+    }
+
+    fun getServingData() = servings.mapNotNull {
+        // if unit invalid, skip this entry
+        val unit = unitWithAbbrOrNull(it.quantity.unit) ?: return@mapNotNull null
+        RowData(ServingTable).apply {
+            put(ServingTable.ID, MacrosEntity.NO_ID)
+            put(ServingTable.CREATE_TIME, created)
+            put(ServingTable.MODIFY_TIME, modified)
+            put(ServingTable.FOOD_ID, id)
+            put(ServingTable.QUANTITY, it.quantity.value)
+            put(ServingTable.QUANTITY_UNIT, unit.abbr)
+            put(ServingTable.IS_DEFAULT, it.isDefault)
+            put(ServingTable.NAME, it.name)
+            put(ServingTable.NOTES, it.notes)
+        }
+    }
+
+    fun getNutrientValueData(): Map<Nutrient, RowData<FoodNutrientValue>> {
+        return buildMap {
+            for ((name, quantity) in nutrients) {
+                // if nutrient or unit are invalid, skip this entry
+                val nutrient = nutrientWithNameOrNull(name) ?: continue
+                val unit = unitWithAbbrOrNull(quantity.unit) ?: continue
+                this[nutrient] = RowData(FoodNutrientValueTable).apply {
+                    put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)
+                    put(FoodNutrientValueTable.CREATE_TIME, created)
+                    put(FoodNutrientValueTable.MODIFY_TIME, modified)
+                    put(FoodNutrientValueTable.VALUE, quantity.value)
+                    put(FoodNutrientValueTable.UNIT_ID, unit.id)
+                    put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
+                    put(FoodNutrientValueTable.FOOD_ID, id)
+                    put(FoodNutrientValueTable.CONSTRAINT_SPEC, quantity.constraintSpec)
+                }
+            }
+        }
+    }
 }
+

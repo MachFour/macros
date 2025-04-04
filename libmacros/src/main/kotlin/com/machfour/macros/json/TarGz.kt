@@ -8,6 +8,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 // Serializes the given collection of foods to JSON and writes them to the
 // given stream in the .tar.gz format.
@@ -20,10 +22,22 @@ fun serializeFoodsToTarGz(
     output: GzipCompressorOutputStream,
     getFilename: (JsonFood) -> String = { "${it.indexName}.json" },
 ) {
-    return TarArchiveOutputStream(output).use { tar ->
-        serializeFoods(foods, serializer, tar, getFilename) { filename, size ->
-            TarArchiveEntry(filename).also { it.size = size }
+    val tos = TarArchiveOutputStream(output)
+    tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
+    return tos.use { tar ->
+        serializeFoods(foods, serializer, tar, getFilename) { fn, s ->
+            TarArchiveEntry(fn).apply { size = s }
         }
+    }
+}
+
+fun serializeFoodsToTarGzStream(
+    foods: Collection<JsonFood>,
+    serializer: Json,
+    stream: OutputStream,
+) {
+    GzipCompressorOutputStream(stream).use {
+        serializeFoodsToTarGz(foods, serializer, it)
     }
 }
 
@@ -33,9 +47,7 @@ fun serializeFoodsToTarGzFile(
     path: String
 ) {
     FileOutputStream(path).use { os ->
-        GzipCompressorOutputStream(os).use {
-            serializeFoodsToTarGz(foods, serializer, it)
-        }
+        serializeFoodsToTarGzStream(foods, serializer, os)
     }
 }
 
@@ -56,14 +68,22 @@ fun deserializeFoodsFromTarGz(
     }
 }
 
+fun deserializeFoodsFromTarGzStream(
+    input: InputStream,
+    serializer: Json,
+    filenameIsIndexName: Boolean = true,
+): List<JsonFood> {
+    return GzipCompressorInputStream(input).use { gz ->
+        deserializeFoodsFromTarGz(gz, serializer, filenameIsIndexName)
+    }
+}
+
 fun deserializeFoodsFromTarGzFile(
     path: String,
     serializer: Json,
     filenameIsIndexName: Boolean = true,
 ): List<JsonFood> {
     return FileInputStream(path).use {
-        GzipCompressorInputStream(it).use { gz ->
-            deserializeFoodsFromTarGz(gz, serializer, filenameIsIndexName)
-        }
+        deserializeFoodsFromTarGzStream(it, serializer, filenameIsIndexName)
     }
 }

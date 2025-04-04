@@ -1,8 +1,8 @@
 package com.machfour.macros.json
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
@@ -10,6 +10,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipFile
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 
 internal fun <E: ArchiveEntry> serializeFoods(
     foods: Collection<JsonFood>,
@@ -18,9 +19,8 @@ internal fun <E: ArchiveEntry> serializeFoods(
     getFilename: (JsonFood) -> String = { "${it.indexName}.json" },
     makeArchiveEntry: (filename: String, size: Long) -> E,
 ) {
-    val serialisedFoods = foods.map { serializer.encodeToString<JsonFood>(it) }
-
-    for ((f, json) in foods.zip(serialisedFoods)) {
+    for (f in foods) {
+        val json = serializer.encodeToString<JsonFood>(f)
         val filename = getFilename(f)
         val jsonBytes = json.toByteArray()
         val entry = makeArchiveEntry(filename, jsonBytes.size.toLong())
@@ -41,9 +41,14 @@ internal fun deserializeFood(
     filenameIsIndexName: Boolean
 ): JsonFood {
     val bytes = inputStream.readNBytes(entry.size.toInt())
-    val food = serializer.decodeFromString<JsonFood>(String(bytes))
-    return if (!filenameIsIndexName) food else
+    val parsed = serializer.parseToJsonElement(String(bytes))
+    val noIndexName = (parsed as? JsonObject)?.getOrDefault("index_name", "") == ""
+    val food = serializer.decodeFromJsonElement<JsonFood>(parsed)
+    return if (filenameIsIndexName && noIndexName) {
         food.copy(indexName = entry.name.removeSuffix(".json"))
+    } else {
+        food
+    }
 }
 
 // Serializes the given collection of foods to JSON and writes them to the
@@ -59,6 +64,18 @@ fun serializeFoodsToZip(
 ) {
     return serializeFoods(foods, serializer, output, getFilename) { filename, size ->
         ZipArchiveEntry(filename).also { it.size = size }
+    }
+}
+
+// Use this when a file path is not available
+// However, deserialisation is not supported!
+fun serializeFoodsToZip(
+    foods: Collection<JsonFood>,
+    serializer: Json,
+    outputStream: OutputStream,
+) {
+    ZipArchiveOutputStream(outputStream).use {
+        serializeFoodsToZip(foods, serializer, it)
     }
 }
 
@@ -93,7 +110,8 @@ fun deserializeFoodsFromZipFile(
     serializer: Json,
     filenameIsIndexName: Boolean = true
 ) : List<JsonFood> {
-    return ZipFile(zipPath).use {
+    val builder = ZipFile.Builder().setPath(zipPath)
+    return builder.get().use {
         deserializeFoodsFromZip(it, serializer, filenameIsIndexName)
     }
 }

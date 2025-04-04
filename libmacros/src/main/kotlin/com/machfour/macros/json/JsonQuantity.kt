@@ -20,7 +20,6 @@ data class JsonQuantity(
     @SerialName("constraint_spec")
     val constraintSpec: Int = 0,
 ): JsonEntity() {
-
     constructor(nv: FoodNutrientValue): this(
         id = nv.id,
         created = nv.createTime,

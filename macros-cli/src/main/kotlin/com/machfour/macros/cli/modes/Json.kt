@@ -3,7 +3,6 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
-import com.machfour.macros.entities.Food
 import com.machfour.macros.json.*
 import com.machfour.macros.queries.StaticDataSource
 import com.machfour.macros.sql.SqlException
@@ -17,7 +16,7 @@ private enum class ArchiveType {
 class Json(config: CliConfig): CommandImpl(config) {
     override val name = "json"
     override val usage = "Usage: ${config.programName} $name --export path/to/archive.ext (ext = zip or tar.gz)\n" +
-                         "       ${config.programName} $name --import path/to/archive.ext"
+                         "       ${config.programName} $name --import path/to/archive.ext [--clear]"
 
     override fun printHelp() {
         println(usage)
@@ -54,7 +53,7 @@ class Json(config: CliConfig): CommandImpl(config) {
         val archiveType = parseArchiveExtension(archivePath)
 
         return when(args[1]) {
-            "--import" -> { import(archivePath, archiveType, false) }
+            "--import" -> { import(archivePath, archiveType, args.contains("--clear")) }
             "--export" -> { export(archivePath, archiveType) }
             else -> {
                 println(usage)
@@ -64,7 +63,7 @@ class Json(config: CliConfig): CommandImpl(config) {
     }
 
     private fun export(destPath: String, archiveType: ArchiveType): Int {
-        val serializeFoods: (List<JsonFood>) -> Unit = when(archiveType) {
+        val serializeFoods: (Collection<JsonFood>) -> Unit = when(archiveType) {
             ArchiveType.Zip -> { { serializeFoodsToZipFile(it, JsonSerializer, destPath) } }
             ArchiveType.TarGz -> { { serializeFoodsToTarGzFile(it, JsonSerializer, destPath) } }
             ArchiveType.Unknown -> return handleUnrecognisedArchiveType()
@@ -72,13 +71,14 @@ class Json(config: CliConfig): CommandImpl(config) {
 
         val dataSource = StaticDataSource(config.database)
         try {
-            var foods: Map<Long, Food> = HashMap()
+            var jsonFoods: Map<Long, JsonFood> = HashMap()
             runBlocking {
-                dataSource.getAllFoods().collect { foods = it }
+                dataSource.getAllFoods().collect {
+                    jsonFoods = it.mapValues { (_, food) -> JsonFood(food) }
+                }
             }
-            val jsonFoods = foods.values.map { JsonFood(it) }
-            serializeFoods(jsonFoods)
-            println("Exported ${foods.size} foods to $destPath")
+            serializeFoods(jsonFoods.values)
+            println("Exported ${jsonFoods.size} foods to $destPath")
         } catch (e: SqlException) {
             return handleException(e)
         } catch (e: IOException) {
@@ -89,7 +89,7 @@ class Json(config: CliConfig): CommandImpl(config) {
     }
 
     private fun import(srcPath: String, archiveType: ArchiveType, clear: Boolean): Int {
-        val deserializeFoods: () -> List<JsonFood> = when(archiveType) {
+        val deserializeFoods: () -> Collection<JsonFood> = when(archiveType) {
             ArchiveType.Zip -> { { deserializeFoodsFromZipFile(srcPath, JsonSerializer) } }
             ArchiveType.TarGz -> { { deserializeFoodsFromTarGzFile(srcPath, JsonSerializer) } }
             ArchiveType.Unknown -> return handleUnrecognisedArchiveType()
@@ -106,14 +106,19 @@ class Json(config: CliConfig): CommandImpl(config) {
             return 1
         }
 
-        foods.takeIf { it.isNotEmpty() }?.let {
-            it.forEach { println(it.indexName) }
+        if (foods.isNotEmpty()) {
+            foods.forEach { println(it.indexName) }
             println()
         }
 
         println("Read ${foods.size} foods")
         println()
-        println("Unfortunately, Json import is not fully implemented yet. Sorry!")
+
+        val conflictingFoods = importJsonFoods(config.database, foods)
+        if (conflictingFoods.isNotEmpty()) {
+            println("Note: the following ${conflictingFoods.size} duplicate foods were not imported")
+            conflictingFoods.forEach { (_, food) -> println(food.indexName) }
+        }
         return 0
     }
 

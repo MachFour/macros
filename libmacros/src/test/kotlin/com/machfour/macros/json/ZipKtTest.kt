@@ -26,7 +26,7 @@ class ZipKtTest {
                     serializeFoodsToZip(foods, serializer, out)
                 },
                 deserialize = { channel, serializer ->
-                    val input = ZipFile(channel)
+                    val input = ZipFile.Builder().setSeekableByteChannel(channel).get()
                     deserializeFoodsFromZip(input, serializer, true)
                 }
             ),
@@ -38,7 +38,7 @@ class ZipKtTest {
                     serializeFoodsToZip(foods, serializer, out)
                 },
                 deserialize = { channel, serializer ->
-                    val input = ZipFile(channel)
+                    val input = ZipFile.Builder().setSeekableByteChannel(channel).get()
                     deserializeFoodsFromZip(input, serializer, true)
                 }
             ),
@@ -51,7 +51,7 @@ class ZipKtTest {
                     serializeFoodsToZip(foods, serializer, out, getFilename = { "${i++}.json" })
                 },
                 deserialize = { channel, serializer ->
-                    val input = ZipFile(channel)
+                    val input = ZipFile.Builder().setSeekableByteChannel(channel).get()
                     deserializeFoodsFromZip(input, serializer, false)
                 }
             ),

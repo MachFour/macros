@@ -37,7 +37,7 @@ val MILLIGRAMS = makeInbuiltUnit(
 )
 val MILLILITRES = makeInbuiltUnit(
     id = 2,
-    name = "milligrams",
+    name = "millilitres",
     abbr = "ml",
     metricEquivalent = 1.0,
     unitType = UnitType.VOLUME
@@ -91,40 +91,20 @@ private val inbuiltUnits = listOf(
     FLUID_OUNCES,
 )
 
-// can't register a new unit with ID smaller than this
-private val minValidNextId = inbuiltUnits.size
-
 private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr.toMapKey }.toMutableMap() }
 
 private val idMap: MutableMap<Long, Unit> by lazy { inbuiltUnits.associateBy { it.id }.toMutableMap() }
 
-// this is lowercase so that CSV units can be lower case
+// this is lowercase so that CSV units can be lowercase
 private val String.toMapKey: String
     get() = this.lowercase()
-
-fun registerUnit(unit: Unit) {
-    val id = unit.id
-    require(id >= minValidNextId) { "Unit IDs below $minValidNextId are used for inbuilt units"}
-
-    val abbrKey = unit.abbr.toMapKey
-
-    idMap[id]?.let {
-        error("Cannot register unit ${unit.name} - id $id is already used by $it}")
-    }
-    abbrMap[abbrKey]?.let {
-        error("Cannot register unit ${unit.name} - abbr $abbrKey is already used by ${abbrMap[abbrKey]}")
-    }
-
-    idMap[id] = unit
-    abbrMap[abbrKey] = unit
-}
 
 fun unitWithAbbrOrNull(abbr: String) = abbrMap[abbr.toMapKey]
 
 @Suppress("private")
 fun unitWithIdOrNull(id: Long) = idMap[id]
 
-// case insensitive
+// case-insensitive
 fun unitWithAbbr(abbr: String): Unit {
     return requireNotNull(unitWithAbbrOrNull(abbr)) { "No unit found with abbreviation $abbr" }
 }

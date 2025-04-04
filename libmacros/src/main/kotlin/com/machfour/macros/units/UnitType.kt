@@ -8,7 +8,7 @@ enum class UnitType(val id: Int, val niceName: String) {
     DENSITY(8, "density"),
     ;
 
-    // returns true if the the given flags match this UnitType's id
+    // returns true if the given flags match this UnitType's id
     fun matchedByFlags(flags: Int): Boolean {
         return (id and flags) != 0
     }
@@ -22,7 +22,7 @@ enum class UnitType(val id: Int, val niceName: String) {
 
         // allow specifying multiple unit types
         fun fromFlags(flags: Int): Set<UnitType> {
-            return values().filter { it.matchedByFlags(flags) }.toSet()
+            return entries.filter { it.matchedByFlags(flags) }.toSet()
         }
 
         fun asFlags(types: Array<out UnitType>): Int {

@@ -53,7 +53,7 @@ enum class ObjectSource(private val niceName: String) {
     DB_EDIT("edit"),
 
     /*
-     * Describes when objects are together, e.g. combined nutrition data objects.
+     * Describes when objects are combined together, e.g. nutrition data objects.
      * These objects shouldn't be saved in the DB, as obviously they can be computed from what is in there.
      * ID: no
      * MOD: yes
@@ -64,14 +64,14 @@ enum class ObjectSource(private val niceName: String) {
     /*
      * Describes when an object exists as hardcoded into the business logic
      * For example, Quantity units, and their corresponding unit servings.
-     * These objects also shouldn't be saved in the DB, as obviously they can be computed from what is in there.
+     * These objects are either already into the DB during initialization and should not otherwise be saved.
      * ID: no
      * MOD: no
      * DB: no
      */
     INBUILT("inbuilt"),
 
-    // just for testing
+    // For testing; application code skips foreign key/ID match assertions for these objects.
     TEST("test"),
 
     ;

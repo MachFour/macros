@@ -91,14 +91,15 @@ fun <M, J: Any> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>
 }
 
 fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
-    val idMap: MutableMap<Long, M> = LinkedHashMap(objects.size, 1.0f)
-    objects.forEach {
-        val id : Long = it.id
-        require(!idMap.containsKey(id)) { "Two objects had the same ID" }
-        idMap[id] = it
+    return buildMap {
+        objects.forEach {
+            require(!containsKey(it.id)) { "Objects have shared id (${it.id}): $it, ${this[it.id]}" }
+            this[it.id] = it
+        }
     }
-    return idMap
 }
+
+private val newline = Regex("\n")
 
 // Returns a list of strings such that each one is a complete SQL statement in the SQL
 // file represented by reader r.
@@ -108,36 +109,47 @@ fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
 // So the split token is the semicolon followed by two blank lines, i.e. statements
 // in the SQL file must be terminated by a semicolon immediately followed by \n\n
 // XXX Possible bug if the newline character is different on different platforms.
-fun createSplitSqlStatements(readLine: () -> String, linesAvailable: () -> Boolean): List<String> {
-    return createSqlStatements(readLine, linesAvailable, "\n")
+fun createSplitSqlStatements(lines: Sequence<String>): List<String> {
+    return createSqlStatements(lines = lines, lineSep = "\n")
         .split(";\n\n")
         // a double newline after the last statement will cause an empty final element
         // in the split list, which turns into a null statement ';' after the map.
         // The Android SQL library seems to spew at this (throws SQL exception despite the
-        // SQL code being 0 (NOT_AN_ERROR).
+        // SQL code being 0 (NOT_AN_ERROR)).
         // Anyway let's just filter everything to ensure we don't end up with any null statements
         .filter { it.isNotBlank() }
-        // replace remaining newline characters by spaces and add the semicolon back
-        .map { it.replace("\n".toRegex(), " ") + ";" }
+        // condense remaining whitespace and add the semicolon back
+        .map { it.replace(newlineAndSpace, " ").trim() + ";" }
 }
 
-fun createSqlStatements(readLine: () -> String, linesAvailable: () -> Boolean, lineSep: String = " "): String {
-    val trimmedDecommentedLines = ArrayList<String>()
-        // steps: remove all comment lines, trim, join, split on semicolon
-    while (linesAvailable()) {
-        var line = readLine()
-        val commentIndex = line.indexOf("--")
-        if (commentIndex == 0) {
-            continue // skip comment lines completely
-        } else if (commentIndex != -1) {
-            line = line.substring(0, commentIndex)
-        }
-        line = line.replace("\\s+".toRegex(), " ")
-        if (line != " ") {
-            trimmedDecommentedLines.add(line)
-        }
+
+private fun String.trimComment(commentMarker: String): String {
+    return when (val idx = indexOf(commentMarker)) {
+        -1 -> this
+        0 -> ""
+        else -> substring(0, idx)
     }
-    return trimmedDecommentedLines.joinToString(separator = lineSep)
+}
+
+val newlineAndSpace = Regex("[\n\\s]+")
+private val multiSpace = Regex("\\s+")
+
+fun createSqlStatements(
+    lines: Sequence<String>,
+    lineSep: String = " ",
+    commentMarker: String = "--"
+): String {
+    // 1. if a line is entirely a comment, ignore it
+    // 2. else line contains SQL and possibly a comment. strip the comment
+    // 3. if what's left is entirely space, ignore it
+    // 4. otherwise, add it to the list.
+    return lines.mapNotNull { line ->
+        if (line.isEmpty()) {
+            ""
+        } else {
+            line.trimComment(commentMarker).replace(multiSpace, " ").takeIf { it.isNotBlank() }
+        }
+    }.joinToString(separator = lineSep)
 }
 
 // Returns triggers that update the create and modify times of the given table.

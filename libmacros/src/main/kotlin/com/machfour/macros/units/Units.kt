@@ -76,7 +76,7 @@ val FLUID_OUNCES = makeInbuiltUnit(
     id = 7,
     name = "fluid ounces",
     abbr = "fl oz",
-    metricEquivalent = 30.0,
+    metricEquivalent = 29.5735295625,
     unitType = UnitType.VOLUME
 )
 

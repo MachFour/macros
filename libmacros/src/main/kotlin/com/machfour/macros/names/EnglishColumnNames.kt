@@ -53,7 +53,15 @@ object EnglishColumnNames: ColumnStrings, NutrientStrings {
         POTASSIUM to "Potassium",
         SALT to "Salt",
         ALCOHOL to "Alcohol",
-        CAFFEINE to "Caffeine"
+        CAFFEINE to "Caffeine",
+        ERYTHRITOL to "Erythritol",
+        GLYCEROL to "Glycerol",
+        ISOMALT to "Isomalt",
+        LACTITOL to "Lactitol",
+        MALTITOL to "Maltitol",
+        MANNITOL to "Mannitol",
+        SORBITOL to "Sorbitol",
+        XYLITOL to "Xylitol",
     )
 
     // TODO put ALLLLLLLLLLL columns in here

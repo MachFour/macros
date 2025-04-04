@@ -28,11 +28,21 @@ private val standardUnitMap = mapOf(
     ALCOHOL to GRAMS,
     SUGAR_ALCOHOL to GRAMS,
     CAFFEINE to MILLIGRAMS,
+    ERYTHRITOL to GRAMS,
+    GLYCEROL to GRAMS,
+    ISOMALT to GRAMS,
+    LACTITOL to GRAMS,
+    MALTITOL to GRAMS,
+    MANNITOL to GRAMS,
+    SORBITOL to GRAMS,
+    XYLITOL to GRAMS,
 )
 
 // standard metric units, using milligrams where appropriate
 object StandardNutrientUnits: NutrientUnits {
     override operator fun get(n: Nutrient) : Unit {
-        return standardUnitMap[n] ?: throw IllegalArgumentException("Nutrient $n has no default unit")
+        return standardUnitMap[n]
+            ?: unitsCompatibleWith(n).firstOrNull()
+            ?: throw IllegalArgumentException("Nutrient $n has no compatible units")
     }
 }

@@ -39,10 +39,17 @@ val STARCH               = makeInbuiltNutrient(16, STARCH_NAME, UnitType.MASS)
 val SALT                 = makeInbuiltNutrient(17, SALT_NAME, UnitType.MASS)
 val WATER                = makeInbuiltNutrient(18, WATER_NAME, UnitType.MASS, UnitType.VOLUME)
 val CARBOHYDRATE_BY_DIFF = makeInbuiltNutrient(19, CARBOHYDRATE_BY_DIFF_NAME, UnitType.MASS)
-val ALCOHOL              = makeInbuiltNutrient(20, ALCOHOL_NAME, UnitType.MASS)
+val ALCOHOL              = makeInbuiltNutrient(20, ALCOHOL_NAME, UnitType.MASS, UnitType.VOLUME)
 val SUGAR_ALCOHOL        = makeInbuiltNutrient(21, SUGAR_ALCOHOL_NAME, UnitType.MASS)
 val CAFFEINE             = makeInbuiltNutrient(22, CAFFEINE_NAME, UnitType.MASS)
-
+val ERYTHRITOL           = makeInbuiltNutrient(23, ERYTHRITOL_NAME, UnitType.MASS)
+val GLYCEROL             = makeInbuiltNutrient(24, GLYCEROL_NAME, UnitType.MASS)
+val ISOMALT              = makeInbuiltNutrient(25, ISOMALT_NAME, UnitType.MASS)
+val LACTITOL             = makeInbuiltNutrient(26, LACTITOL_NAME, UnitType.MASS)
+val MALTITOL             = makeInbuiltNutrient(27, MALTITOL_NAME, UnitType.MASS)
+val MANNITOL             = makeInbuiltNutrient(28, MANNITOL_NAME, UnitType.MASS)
+val SORBITOL             = makeInbuiltNutrient(29, SORBITOL_NAME, UnitType.MASS)
+val XYLITOL              = makeInbuiltNutrient(30, XYLITOL_NAME, UnitType.MASS)
 
 private val inbuiltNutrients = listOf(
     QUANTITY,
@@ -67,67 +74,35 @@ private val inbuiltNutrients = listOf(
     CARBOHYDRATE_BY_DIFF,
     ALCOHOL,
     SUGAR_ALCOHOL,
-    CAFFEINE
+    CAFFEINE,
+    ERYTHRITOL,
+    GLYCEROL,
+    ISOMALT,
+    LACTITOL,
+    MALTITOL,
+    MANNITOL,
+    SORBITOL,
+    XYLITOL,
 )
 
 
-private val minValidNextId = inbuiltNutrients.size
+private val idMap = inbuiltNutrients.associateBy { it.id }
+private val nameMap = inbuiltNutrients.associateBy { it.csvName }
 
-private val idMap: MutableMap<Long, Nutrient> by lazy { inbuiltNutrients.associateBy { it.id }.toMutableMap() }
-
-// initialised when registration is turned off
-private lateinit var nutrientSet: Set<Nutrient>
-private lateinit var nutrientSetWithoutQuantity: Set<Nutrient>
-
-private fun initNutrientSets() {
-    nutrientSet = inbuiltNutrients.toSet()
-    nutrientSetWithoutQuantity = nutrientSet.minusElement(QUANTITY)
-}
-
-// whether new Nutrients can be registered:
-// Since the nutrients are a global state, once nutrients start being used in NutrientData objects,
-// we can't be adding more.
-// This is set to false by any accesses of nutrientIterator, numNutrients, or fromId
-private var registrationAllowed = true
-    set(value) {
-        // only allow setting false
-        if (!value) {
-            field = value
-            initNutrientSets()
-        }
-    }
-
-fun registerNutrient(nutrient: Nutrient) {
-    check (registrationAllowed) { "Cannot add more nutrients after nutrient sets have been initialised" }
-
-    val id = nutrient.id
-    require(id >= minValidNextId) { "Nutrient IDs below $minValidNextId are used for inbuilt nutrients"}
-
-    idMap[id]?.let {
-        error("Cannot register nutrient ${nutrient.csvName} - id $id is already used by ${idMap[id]}")
-    }
-
-    idMap[id] = nutrient
-}
+private val nutrientSet = inbuiltNutrients.toSet()
+private val nutrientSetWithoutQuantity = nutrientSet.minusElement(QUANTITY)
 
 fun nutrientWithIdOrNull(id: Long): Nutrient? = idMap[id]
-
 fun nutrientWithId(id: Long): Nutrient = requireNotNull(nutrientWithIdOrNull(id)) { "No nutrient found with id $id" }
 
+fun nutrientWithNameOrNull(csvName: String): Nutrient? = nameMap[csvName]
+fun nutrientWithName(csvName: String): Nutrient = requireNotNull(nutrientWithNameOrNull(csvName)) { "No nutrient found with name $csvName" }
+
 val AllNutrients: Set<Nutrient>
-    get() {
-        registrationAllowed = false
-        return nutrientSet
-    }
+    get() = nutrientSet
 
 val AllNutrientsExceptQuantity: Set<Nutrient>
-    get() {
-        registrationAllowed = false
-        return nutrientSetWithoutQuantity
-    }
+    get() = nutrientSetWithoutQuantity
 
 val NumNutrients: Int
-    get() {
-        registrationAllowed = false
-        return idMap.size
-    }
+    get() = inbuiltNutrients.size

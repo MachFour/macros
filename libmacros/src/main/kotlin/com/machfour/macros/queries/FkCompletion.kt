@@ -12,7 +12,7 @@ private val allowedObjectSources = setOf(ObjectSource.IMPORT, ObjectSource.USER_
 
 // fkColumns by definition contains only the foreign key columns
 private fun <M : MacrosEntity<M>> fkIdsPresent(obj: M): Boolean {
-    // if the FK refers to an ID column and it's not nullable, make sure there's a value
+    // if the FK refers to an ID column, and it's not nullable, make sure there's a value
     return obj.table.fkColumns.none {
         (it.parentColumn == it.parentTable.idColumn && !it.isNullable) &&
                 (!obj.data.hasValue(it) || obj.getData(it) == MacrosEntity.NO_ID)
@@ -24,11 +24,11 @@ private fun <M: MacrosEntity<M>, J: Any, N> FkEntity<M>.copyFkNaturalKey(from: F
     
     // Generics ensure that the table types match
     @Suppress("UNCHECKED_CAST")
-    val parentKeyCol = requireNotNull(parentKey.columns.singleOrNull() as Column<N, J>?) {
+    val parentKeyCol = checkNotNull(parentKey.columns.singleOrNull() as Column<N, J>?) {
         "FkEntity $this requires exactly one FK parent column (got ${parentKey.columns})"
     }
     
-    val keyData = requireNotNull(parentKey[parentKeyCol]) {
+    val keyData = checkNotNull(parentKey[parentKeyCol]) {
         "Null parent key data for entity $this, FK $fkCol, parent key col $parentKeyCol"
     }
     setFkParentKey(fkCol, parentKeyCol, keyData)
@@ -50,9 +50,11 @@ private fun <M : MacrosEntity<M>, J: Any, N, I: Any> completeFkIdColHelper(
     data: List<RowData<N>>
 ): Map<I, J> {
     require(parentKeyCol.isUnique)
-    val uniqueColumnValues = data.map {
-        requireNotNull(it[parentKeyCol]) { "parent natural key column had null data" }
-    }.toSet()
+    val uniqueColumnValues = buildSet {
+        data.mapTo(this) {
+            requireNotNull(it[parentKeyCol]) { "parent natural key column had null data" }
+        }
+    }
 
     val completedParentKeys = selectColumnMap(
         db,
@@ -63,7 +65,7 @@ private fun <M : MacrosEntity<M>, J: Any, N, I: Any> completeFkIdColHelper(
         enforceNotNull = false
     )
     return completedParentKeys.mapValues {
-        requireNotNull(it.value) { "Value was null for key column ${it.key}" }
+        checkNotNull(it.value) { "Value was null for key column ${it.key}" }
     }
 }
 
@@ -82,7 +84,6 @@ private fun <M : FkEntity<M>, J: Any, N> completeFkCol(
         it.getFkParentKey(fkCol)
     }
 
-
     //val parentKeyCol: Column<N, *> = requireNotNull(fkCol.parentTable.naturalKeyColumn) {
     //    "Table ${fkCol.parentTable.name} has no natural key defined"
     //}
@@ -90,32 +91,27 @@ private fun <M : FkEntity<M>, J: Any, N> completeFkCol(
     // collect parent key columns of all objects, ensure they are the same
     val parentKeyCols: Set<Column<N, *>> = objects.flatMap { it.getFkParentKey(fkCol).columns }.toSet()
 
-    val parentKeyCol = parentKeyCols.singleOrNull() ?: error {
+    val parentKeyCol = checkNotNull(parentKeyCols.singleOrNull()) {
         "All objects must specify the same, single parent key column (got $parentKeyCols)"
     }
 
-
     val foreignKeyToIdMapping: Map<*, J> = completeFkIdColHelper(ds, fkCol, parentKeyCol, parentKeyData)
-
-    val completedObjects = objects.map {
+    return objects.map { obj ->
         // TODO might be able to remove one level of indirection here because the RowData object
         // only contains data for the parentNaturalKeyCol
-        val fkParentKey: RowData<N> = it.getFkParentKey(fkCol)
+        val fkParentKey: RowData<N> = obj.getFkParentKey(fkCol)
         val fkParentKeyData: Any = requireNotNull(fkParentKey[parentKeyCol]) {
-            "Fk data for $it (col = $fkCol) contained no data for parent key $parentKeyCol"
+            "Fk data for $obj (col = $fkCol) contained no data for parent key $parentKeyCol"
         }
-        val fkParentId: J = requireNotNull(foreignKeyToIdMapping[fkParentKeyData]) {
+        val fkParentId: J = checkNotNull(foreignKeyToIdMapping[fkParentKeyData]) {
             "Could not find ID for parent object (key: $parentKeyCol = $fkParentKeyData)"
         }
 
-        val newData = it.dataFullCopy().apply { put(fkCol, fkParentId) }
+        val newData = obj.dataFullCopy().also { it.put(fkCol, fkParentId) }
 
         // create new object nd copy over old FK data to new object
-        it.table.construct(newData, it.source).also { newObject ->
-            newObject.copyFkNaturalKeyMap(it)
-        }
+        obj.table.construct(newData, obj.source).also { it.copyFkNaturalKeyMap(obj) }
     }
-    return completedObjects
 }
 
 // Methods used when saving multiple new objects to the database at once which must be cross-referenced, and

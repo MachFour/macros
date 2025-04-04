@@ -9,7 +9,7 @@ class RowData<M> private constructor(
     // and store the values in a list according to that index.
     val table: Table<M>,
     val columns: Set<Column<M, *>>,
-    private val enforceNonNull: Boolean,
+    private val enforceNonNull: Boolean, // TODO remove (unused?)
     existing: RowData<M>?,
 ) {
 

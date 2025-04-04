@@ -64,7 +64,7 @@ fun <M, J: Any> getRawObjectsWithKeys(
     }
     val unorderedObjects = getRawObjects(db, keyCol) {
         if (iterateThreshold != null) {
-            where(keyCol, keys, iterateThreshold)
+            where(keyCol, keys, iterateThreshold = iterateThreshold)
         } else {
             where(keyCol, keys)
         }

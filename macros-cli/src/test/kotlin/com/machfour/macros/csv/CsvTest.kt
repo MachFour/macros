@@ -16,7 +16,10 @@ import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.validation.SchemaViolation
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
@@ -92,7 +95,10 @@ class CsvTest {
     @Test
     fun testCsvSaveFoods() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
+            FileReader(config.foodCsvPath).use {
+                val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
+                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+            }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -109,8 +115,13 @@ class CsvTest {
     fun testCsvSaveServings() {
         try {
             // save foods first
-            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
-            FileReader(config.servingCsvPath).use { importServings(db, it.readText(), FoodTable.INDEX_NAME, false) }
+            FileReader(config.foodCsvPath).use {
+                val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
+                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+            }
+            FileReader(config.servingCsvPath).use {
+                importServings(db, it.readText(), FoodTable.INDEX_NAME, false)
+            }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -130,7 +141,9 @@ class CsvTest {
     fun testCsvWriteFoods() {
         try {
             val foods = getAllRawObjects(db, FoodTable)
-            FileWriter("$TEST_WRITE_DIR/all-food.csv").use { it.write(writeObjectsToCsv(FoodTable, foods.values)) }
+            FileWriter("$TEST_WRITE_DIR/all-food.csv").use {
+                it.write(writeObjectsToCsv(FoodTable, foods.values))
+            }
         } catch (e: IOException) {
             e.printStackTrace()
             Assertions.fail("IOException was thrown")
@@ -144,7 +157,9 @@ class CsvTest {
     fun testCsvWriteServings() {
         try {
             val servings = getAllRawObjects(db, ServingTable)
-            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use { it.write(writeObjectsToCsv(ServingTable, servings.values)) }
+            FileWriter("$TEST_WRITE_DIR/all-serving.csv").use {
+                it.write(writeObjectsToCsv(ServingTable, servings.values))
+            }
         } catch (e: SqlException) {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
@@ -158,7 +173,10 @@ class CsvTest {
     @Test
     fun testCsvSaveRecipes() {
         try {
-            FileReader(config.foodCsvPath).use { importFoodData(db, it.readText(), FoodTable.INDEX_NAME) }
+            FileReader(config.foodCsvPath).use {
+                val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
+                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+            }
             FileReader(config.recipeCsvPath).use { recipeCsv ->
                 FileReader(config.ingredientsCsvPath).use { ingredientCsv ->
                     importRecipes(db, recipeCsv.readText(), ingredientCsv.readText())
@@ -174,13 +192,5 @@ class CsvTest {
             e.printStackTrace()
             Assertions.fail("Exception was thrown")
         }
-    }
-
-    @BeforeEach
-    fun setUp() {
-    }
-
-    @AfterEach
-    fun tearDown() {
     }
 }

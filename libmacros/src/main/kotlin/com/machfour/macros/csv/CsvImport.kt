@@ -155,9 +155,11 @@ private fun <J: Any> buildCompositeFoodObjectTree(
     foodKeyCol: Column<Food, J>,
     ingredientsMap: Map<J, List<Ingredient>>,
 ): Map<J, CompositeFood> {
-    val builtFoods = buildFoodObjectTree(recipeCsv, foodKeyCol, modifyFoodData = {
-        it.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName)
-    }).mapValues { it.value as CompositeFood }
+    val builtFoods = buildFoodObjectTree(
+        foodCsv = recipeCsv,
+        foodKeyCol = foodKeyCol,
+        modifyFoodData = { it.put(FoodTable.FOOD_TYPE, FoodType.COMPOSITE.niceName) }
+    ).mapValues { it.value as CompositeFood }
 
     for ((parentFoodIndexName, ingredients) in ingredientsMap) {
         val parentFood = builtFoods[parentFoodIndexName]
@@ -180,12 +182,12 @@ fun <J: Any> buildFoodObjectTree(
     val parsedDataMap = getFoodDataMap(foodCsv, foodKeyCol)
     return parsedDataMap.mapValues { (_, foodAndNutrientData) ->
         val (foodData, nutrientValueData) = foodAndNutrientData
-        modifyFoodData?.let { modify -> modify(foodData) }
+        modifyFoodData?.invoke(foodData)
 
         try {
             Food.factory.construct(foodData, ObjectSource.IMPORT).also { food ->
                 nutrientValueData.forEach {
-                    modifyNutrientValueData?.let { modify -> modify(it) }
+                    modifyNutrientValueData?.invoke(it)
                     val nv = FoodNutrientValue.factory.construct(it, ObjectSource.IMPORT)
                     food.addNutrientValue(nv)
                 }
@@ -257,19 +259,6 @@ fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>, foodKeyCol:
 }
 
 @Throws(SqlException::class, TypeCastException::class)
-@Deprecated("use readFoodData and then save to database separately")
-fun <J: Any> importFoodData(
-    db: SqlDatabase,
-    foodCsv: String,
-    foodKeyCol: Column<Food, J>,
-    modifyFoodData: ((RowData<Food>) -> Unit)? = null,
-    modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
-): Map<J, Food> {
-    val csvFoods = readFoodData(foodCsv, foodKeyCol, modifyFoodData, modifyNutrientValueData)
-    return saveImportedFoods(db, csvFoods, foodKeyCol)
-}
-
-@Throws(SqlException::class, TypeCastException::class)
 fun <J : Any> readFoodData(
     csv: String,
     keyCol: Column<Food, J>,
@@ -277,10 +266,10 @@ fun <J : Any> readFoodData(
     modifyNutrientValueData: ((RowData<FoodNutrientValue>) -> Unit)? = null,
 ): Map<J, Food> {
     return buildFoodObjectTree(
-        csv,
+        foodCsv = csv,
         foodKeyCol = keyCol,
-        modifyFoodData = { data -> modifyFoodData?.let { it(data) } },
-        modifyNutrientValueData
+        modifyFoodData = modifyFoodData,
+        modifyNutrientValueData = modifyNutrientValueData
     )
 }
 

@@ -212,23 +212,19 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
      * Returns the subset of the validationErrors map with non-empty error lists
      */
     val allErrors: Map<Column<M, *>, List<ValidationError>>
-        get() {
-            return validationErrors.filter { it.value.isNotEmpty() }
-        }
+        get() = validationErrors.filter { it.value.isNotEmpty() }
 
-    // computes what the data source of the newly build object should be
+    // computes what the data source of the newly built object should be
     private fun newObjectSource(): ObjectSource {
-        val editSource = when (val it = editInstance) {
-            null -> ObjectSource.USER_NEW
-            else -> it.source
-        }
-        return when (editSource) {
+        return when (val editSource = editInstance?.source) {
             // database objects are edited
             ObjectSource.DATABASE -> ObjectSource.DB_EDIT
             // don't allow creating new inbuilt objects
             ObjectSource.INBUILT -> ObjectSource.COMPUTED
+            null -> ObjectSource.USER_NEW
             else -> editSource
         }
+
     }
 
     /*
@@ -255,7 +251,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     }
 
     fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
-        return invalidFieldNames(displayStrings).joinToString(separator = " ")
+        return invalidFieldNames(displayStrings).joinToString(separator = ", ")
     }
 
 }

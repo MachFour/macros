@@ -55,7 +55,7 @@ private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, 
             this += formatNutrientValue(
                 data = nd,
                 nutrient = nutrient,
-                nutrientUnits = LegacyNutrientUnits,
+                units = LegacyNutrientUnits,
                 width = nutrientWidth,
                 withDp = verbose
             )

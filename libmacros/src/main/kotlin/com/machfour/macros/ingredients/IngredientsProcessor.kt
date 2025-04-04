@@ -76,9 +76,10 @@ private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredi
     return builder.build()
 }
 
-private fun extractIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>): Set<String> {
-    // say there are an average of 4 ingredients per composite food
-    return allSpecs.flatMap { it.getIngredients() }.map { it.indexName }.toHashSet()
+private fun allIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>) = buildSet {
+    for (s in allSpecs) {
+        s.getIngredients().mapTo(this) { it.indexName }
+    }
 }
 
 // creates a composite food and ingredients objects from the given spec
@@ -114,7 +115,7 @@ fun createCompositeFoods(
     parseResult: Collection<CompositeFoodSpec>,
     ds: SqlDatabase
 ): List<CompositeFood> {
-    val indexNames = extractIngredientIndexNames(parseResult)
+    val indexNames = allIngredientIndexNames(parseResult)
     // for invalid index names, the map won't have an entry
     val indexNameMap = getFoodIdsByIndexName(ds, indexNames)
     val results = buildList {
@@ -146,15 +147,15 @@ private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: Long): List
 
 // saves a composite food and all its ingredients into the database
 @Throws(SqlException::class)
-private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
+private fun saveCompositeFood(cf: CompositeFood, db: SqlDatabase) {
     try {
-        ds.openConnection()
+        db.openConnection()
         // If inserting ingredients fails, we want to be able to roll back the whole thing.
-        ds.beginTransaction()
+        db.beginTransaction()
 
         // First save the food and then retrieve it from the database, to get the ID
-        saveObject(ds, cf)
-        val saved = getFoodByIndexName(ds, cf.indexName)
+        saveObject(db, cf)
+        val saved = getFoodByIndexName(db, cf.indexName)
             ?: throw SqlException("Could not retrieved saved composite food")
         val id = saved.id
 
@@ -162,16 +163,16 @@ private fun saveCompositeFood(cf: CompositeFood, ds: SqlDatabase) {
         // TODO use completeFk function
         val newIngredients = addCompositeFoodId(cf.ingredients, id)
         // here we go!
-        insertObjects(ds, newIngredients, false)
+        insertObjects(db, newIngredients, false)
 
         // TODO nutrition data object to go along with it, if quantity is known
         //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientDataTable);
         //nData.setField(Schema.NutrientDataTable.DATA_SOURCE, "recipe");
         //nData.setField(Schema.NutrientDataTable.FOOD_ID, id);
         //nData.setField(Schema.NutrientDataTable.QUANTITY ,";
-        ds.endTransaction()
+        db.endTransaction()
     } finally {
-        ds.closeConnection()
+        db.closeConnection()
     }
 }
 

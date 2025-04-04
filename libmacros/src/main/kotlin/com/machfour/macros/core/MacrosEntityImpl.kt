@@ -8,20 +8,22 @@ import com.machfour.macros.validation.tableValidator
 
 // ensures that the presence of the ID is consistent with the semantics of the objectSource
 // see ObjectSource class for more documentation
-private fun checkObjectSource(source: ObjectSource, hasId: Boolean) {
+private fun checkIdPresence(source: ObjectSource, hasId: Boolean): Boolean {
     when (source) {
         ObjectSource.IMPORT,
         ObjectSource.USER_NEW,
         ObjectSource.COMPUTED -> {
-            check(!hasId) { "Object should not have an ID" }
+            return !hasId // object should not have an ID
         }
         ObjectSource.DB_EDIT,
         ObjectSource.RESTORE,
         ObjectSource.DATABASE,
         ObjectSource.INBUILT -> {
-            check(hasId) { "Object should have an ID" }
+            return hasId // object should have an ID
         }
-        ObjectSource.TEST -> {}
+        ObjectSource.TEST -> {
+            return true // never invalid
+        }
     }
 }
 
@@ -44,7 +46,11 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
             .validateData(data)
             .let { if (it.isNotEmpty()) { throw SchemaViolation(it) } }
 
-        checkObjectSource(source, hasId)
+        require(checkIdPresence(source, hasId)) {
+            if (hasId) { "Object should not have ID:\n" }
+            else { "Object should have ID:\n" } + data
+
+        }
     }
     override fun toString(): String {
         return "${table.name} id=${id}, objSrc=${source}, data=${data}"

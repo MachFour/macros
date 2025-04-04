@@ -17,6 +17,4 @@ data class JsonIngredient(
     val quantity: JsonQuantity,
     val servingName: String? = null,
     val notes: String? = null,
-): JsonEntity() {
-
-}
+): JsonEntity()

@@ -1,6 +1,5 @@
 package com.machfour.macros.json
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.junit.jupiter.api.Assertions.assertIterableEquals

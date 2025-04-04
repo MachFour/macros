@@ -25,9 +25,10 @@ object LinuxMain {
         // To insert a pause (until user presses Enter):
         val config = LinuxConfig()
 
-        // give the SQLite JDBC driver an extracted version of the native lib, otherwise it auto-extracts each time
-        System.setProperty("org.sqlite.lib.path", LinuxConfig.SQLITE_NATIVE_LIB_DIR)
-        System.setProperty("org.sqlite.lib.name", LinuxConfig.SQLITE_NATIVE_LIB_NAME)
+        // give the SQLite JDBC driver an extracted version of the native lib,
+        // otherwise it auto-extracts each time
+        System.setProperty("org.sqlite.lib.path", config.sqliteNativeLibDir)
+        System.setProperty("org.sqlite.lib.name", config.sqliteNativeLibName)
 
         // set up all the file paths
         initCommands(config)

@@ -123,9 +123,11 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 }
 
                 val csvFoods = FileReader(foodCsvFile).use { readFoodData(it.readText(), foodKeyCol) }
-                saveImportedFoods(db, csvFoods, foodKeyCol).takeIf { it.isNotEmpty() }?.let {
-                    println("Note: the following ${it.size} duplicate foods were not imported")
-                    it.forEach { (_, food) -> println(food.indexName) }
+                saveImportedFoods(db, csvFoods, foodKeyCol).also {
+                    if (it.isNotEmpty()) {
+                        println("Note: the following ${it.size} duplicate foods were not imported")
+                        it.forEach { (_, food) -> println(food.indexName) }
+                    }
                 }
 
                 println("Saved foods and nutrition data")

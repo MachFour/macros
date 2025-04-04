@@ -13,7 +13,8 @@ import com.machfour.macros.units.UnitType
 // class storing nutrition data for a food or meal
 
 class FoodNutrientData(
-    dataCompleteIfNotNull: Boolean = true
+    dataCompleteIfNotNull: Boolean = true,
+    private val density: Double? = null,
 ): GenericNutrientData<FoodNutrientValue>(dataCompleteIfNotNull) {
     companion object {
         // lazy because otherwise having it here messes up static initialisation
@@ -21,39 +22,27 @@ class FoodNutrientData(
             FoodNutrientValue.makeComputedValue(0.0, QUANTITY, GRAMS)
         }
 
-        val noData by lazy { FoodNutrientData() }
-
         // Sums each nutrition component
         // converts to default unit for each nutrient
         // Quantity is converted to mass using density provided, or using a default guess of 1
-        fun sum(items: List<FoodNutrientData>, densities: List<Double>? = null) : FoodNutrientData {
+        fun sum(items: List<NutrientData>) : FoodNutrientData {
             val sumData = FoodNutrientData(dataCompleteIfNotNull = false)
 
             // treat quantity first
             var sumQuantity = 0.0
             var densityGuessed = false
             //var unnormalisedDensity = 0.0
-            for ((index, data) in items.withIndex()) {
-                val qtyObject = data.quantityObj
-                val qtyUnit = qtyObject.unit
-                val quantity = when (qtyUnit.type) {
-                    UnitType.MASS -> {
-                        qtyObject.convertValueTo(GRAMS)
+            for (data in items) {
+                val qtyUnit = data.getUnit(QUANTITY)
+                val quantity = if (qtyUnit != null && qtyUnit.type == UnitType.VOLUME) {
+                    val volumeQty = data.amountOf(QUANTITY, qtyUnit, 0.0)
+                    val density = data.foodDensity ?: run {
+                        densityGuessed = true
+                        1.0
                     }
-                    UnitType.VOLUME -> {
-                        val density = when (densities != null) {
-                            true -> densities[index]
-                            false -> {
-                                densityGuessed = true
-                                1.0
-                            }
-                        }
-                        qtyObject.convertValueTo(GRAMS, density)
-                    }
-                    else -> {
-                        check(false) { "Invalid unit type for quantity value object $qtyObject" }
-                        0.0
-                    }
+                    convertUnit(QUANTITY, volumeQty, qtyUnit, GRAMS, density)
+                } else {
+                    data.amountOf(QUANTITY, GRAMS, 0.0)
                 }
                 sumQuantity += quantity
                 // gradually calculate overall density via weighted sum of densities
@@ -73,8 +62,8 @@ class FoodNutrientData(
                 var sumValue = 0.0
                 val unit = LegacyNutrientUnits[n]
                 for (data in items) {
-                    data[n]?.let {
-                        sumValue += it.convertValueTo(unit)
+                    data.amountOf(n, unit)?.let {
+                        sumValue += it
                         existsData = true
                     }
                     if (!data.hasCompleteData(n)) {
@@ -110,6 +99,10 @@ class FoodNutrientData(
     val qtyUnitAbbr: String
         get() = quantityObj.unit.abbr
 
+
+    override val foodDensity: Double?
+        get() = density
+
     override fun equals(other: Any?): Boolean {
         return (other as? FoodNutrientData)?.data?.equals(data) ?: false
     }
@@ -125,7 +118,7 @@ class FoodNutrientData(
 
     // creates a mutable copy
     override fun copy() : FoodNutrientData {
-        return FoodNutrientData(dataCompleteIfNotNull).also { copy ->
+        return FoodNutrientData(dataCompleteIfNotNull, density).also { copy ->
             for (i in data.indices) {
                 copy.data[i] = data[i]
                 copy.isDataComplete[i] = isDataComplete[i]
@@ -140,7 +133,7 @@ class FoodNutrientData(
     fun rescale(newQuantity: Double) : FoodNutrientData {
         val conversionRatio = newQuantity / quantityObj.value
 
-        val newData = FoodNutrientData(dataCompleteIfNotNull = true)
+        val newData = FoodNutrientData(dataCompleteIfNotNull = true, density = density)
         // completeData is false by default so we can just skip the iteration for null nutrients
         for (n in AllNutrients) {
             this[n]?.let {

@@ -1,7 +1,8 @@
 package com.machfour.macros.entities
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import com.machfour.macros.foodname.indexNamePrototype
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class FoodTest {
 
@@ -24,7 +25,7 @@ class FoodTest {
         for ((args, expected) in testCases) {
             val (name, brand, variety, extraDesc) = args
             requireNotNull(name)
-            val actual = Food.indexNamePrototype(name, brand, variety, extraDesc)
+            val actual = indexNamePrototype(name, brand, variety, extraDesc)
             assertEquals(expected, actual)
         }
 

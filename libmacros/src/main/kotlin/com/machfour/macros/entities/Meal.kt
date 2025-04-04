@@ -38,7 +38,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
 
     fun nutrientTotal(): FoodNutrientData {
         val allNutrientData = foodPortions.map { it.nutrientData }
-        return FoodNutrientData.sum(allNutrientData, null)
+        return FoodNutrientData.sum(allNutrientData)
     }
 
     val name: String

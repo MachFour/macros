@@ -70,7 +70,7 @@ class FoodTest {
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(1, saveObject(db, f))
+            assertEquals(50L, saveObject(db, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail<Any>("DB save threw exception")

@@ -29,15 +29,14 @@ class FoodNutrientValue internal constructor(
 
         // makes an object without ID or food
         fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit): FoodNutrientValue {
-            val data = RowData(FoodNutrientValueTable).apply {
+            return factory.construct(RowData(FoodNutrientValueTable).apply {
                 //put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
                 //put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
                 put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)
                 put(FoodNutrientValueTable.VALUE, value)
                 put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
                 put(FoodNutrientValueTable.UNIT_ID, unit.id)
-            }
-            return factory.construct(data, ObjectSource.COMPUTED)
+            }, ObjectSource.COMPUTED)
         }
     }
 
@@ -83,6 +82,4 @@ class FoodNutrientValue internal constructor(
     override fun convertValueTo(newUnit: Unit, density: Double?): Double {
         return super.convertValueTo(newUnit, food?.density ?: density)
     }
-
-
 }

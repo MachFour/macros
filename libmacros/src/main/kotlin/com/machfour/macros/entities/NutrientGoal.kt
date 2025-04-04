@@ -6,13 +6,11 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
-import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.GenericNutrientData
 import com.machfour.macros.schema.NutrientGoalTable
 import com.machfour.macros.schema.NutrientGoalValueTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
-import com.machfour.macros.units.StandardNutrientUnits
 
 
 class NutrientGoal internal constructor(
@@ -26,21 +24,6 @@ class NutrientGoal internal constructor(
 
         val table: Table<NutrientGoal>
             get() = NutrientGoalTable
-
-        // returns amount of nutrient in food nutrient data divided by goal amount, if both are present
-        // and goal is nonzero.
-        // If goal value is missing, returns null. If data value is missing or goal value is zero, returns zero.
-        fun FoodNutrientData.getProportionOfGoal(goal: NutrientGoal, n: Nutrient): Double? {
-            val goalValue = goal.targets[n]
-            return when {
-                goalValue == null -> null
-                goalValue.value == 0.0 -> 0.0
-                else -> {
-                    val unit = StandardNutrientUnits[n]
-                    (this[n]?.convertValueTo(unit) ?: 0.0) / goalValue.convertValueTo(unit)
-                }
-            }
-        }
 
         fun makeComputedObject(name: String): NutrientGoal {
             val data = RowData(table).apply {

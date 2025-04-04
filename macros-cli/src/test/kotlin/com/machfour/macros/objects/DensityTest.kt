@@ -67,7 +67,7 @@ class DensityTest {
         requireNotNull(density)
         val chickPea100mL = chickpeaNd.withQuantityUnit(MILLILITRES, density).rescale100()
         val water100mL = waterNd.withQuantityUnit(MILLILITRES, 1.0).rescale100()
-        val combined = FoodNutrientData.sum(listOf(chickPea100mL, water100mL), listOf(density, 1.0))
+        val combined = FoodNutrientData.sum(listOf(chickPea100mL, water100mL))
         Assertions.assertEquals(GRAMS, combined.quantityObj.unit)
         Assertions.assertEquals(100 + 100 * chickpeaFlour.density!!, combined.quantityObj.value)
         Assertions.assertTrue(combined.hasCompleteData(QUANTITY))

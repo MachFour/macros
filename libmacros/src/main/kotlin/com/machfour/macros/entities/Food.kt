@@ -2,9 +2,11 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
 import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.foodname.FoodDescription
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
+import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.units.GRAMS
@@ -13,93 +15,14 @@ import com.machfour.macros.units.UnitType
 
 // don't need hashcode override since equals implies super.equals true, so hashcode will match
 @Suppress("EqualsOrHashCode")
-open class Food internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) :
-        MacrosEntityImpl<Food>(dataMap, objectSource) {
+open class Food internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource):
+        MacrosEntityImpl<Food>(dataMap, objectSource), FoodDescription {
 
     companion object {
-        val descriptionColumns = listOf(
-            FoodTable.NAME,
-            FoodTable.BRAND,
-            FoodTable.VARIETY,
-            FoodTable.EXTRA_DESC,
-            FoodTable.NOTES,
-            FoodTable.INDEX_NAME,
-            FoodTable.DATA_SOURCE,
-            FoodTable.DATA_NOTES,
-        )
-
         // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
         // Hooray for preferring static constructors over new!!!
         val factory: Factory<Food>
             get() = Factories.food
-
-        fun indexNamePrototype(
-            basicName: String,
-            brand: String?,
-            variety: String?,
-            extraDesc: String?,
-        ): String {
-            // use sortable name but replace sequences of spaces (and dashes) with a single dash
-            return prettyFormat(
-                basicName = basicName,
-                brand = brand,
-                variety = variety,
-                extraDesc = extraDesc,
-                withBrand = true,
-                withVariety = true,
-                withExtra = true,
-                sortable = true
-            )
-                .replace(Regex("[()\\[\\]{}&%~`!$#@*^+=:;<>?/\\\\]"), replacement = "")
-                .replace(Regex("[\\s-,]+"), replacement = "-")
-                .removePrefix("-")
-                .removeSuffix("-")
-        }
-
-        /*
-         * Order of fields:
-         * if sortable:
-         *     <name>, <brand>, <variety> (<extra desc>)
-         * else:
-         *     <brand> <variety> <name> (<extra desc>)
-         */
-        fun prettyFormat(
-            basicName: String,
-            brand: String?,
-            variety: String?,
-            extraDesc: String?,
-            withBrand: Boolean = true,
-            withVariety: Boolean = true,
-            withExtra: Boolean = false,
-            sortable: Boolean = false,
-            includeEmptyFields: Boolean = true,
-        ): String {
-            val isPresent: (String?) -> Boolean = {
-                it != null && (includeEmptyFields || it.isNotEmpty())
-            }
-
-            return buildString {
-                append(basicName)
-                if (sortable) {
-                    if (withBrand && isPresent(brand)) {
-                        append(", $brand")
-                    }
-                    if (isPresent(variety)) {
-                        append(", $variety")
-                    }
-                } else {
-                    if (withVariety && isPresent(variety)) {
-                        insert(0, "$variety ")
-                    }
-                    if (withBrand && isPresent(brand)) {
-                        insert(0, "$brand ")
-                    }
-                }
-                if (withExtra && isPresent(extraDesc)) {
-                    append(" ($extraDesc)")
-                }
-            }
-        }
 
         fun processFoodType(rowData: RowData<Food>): FoodType {
             val foodTypeString = rowData[FoodTable.FOOD_TYPE]
@@ -119,7 +42,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         private set
 
     // TODO check nutrient data is initialised
-    open val nutrientData: FoodNutrientData = FoodNutrientData()
+    open val nutrientData: FoodNutrientData = FoodNutrientData(density = this.density)
 
     val foodType: FoodType = processFoodType(dataMap)
 
@@ -170,7 +93,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
 
     val validUnits: List<Unit>
         get() {
-            return ArrayList<Unit>().apply {
+            return buildList {
                 add(naturalUnit)
                 // allow conversion if density is given
                 if (density != null) {
@@ -195,11 +118,14 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     val nuttabIndex: String?
         get() = data[FoodTable.NUTTAB_INDEX]
 
-    val dataSource: String?
+    override val dataSource: String?
         get() = data[FoodTable.DATA_SOURCE]
 
-    val dataNotes: String?
+    override val dataNotes: String?
         get() = data[FoodTable.DATA_NOTES]
+
+    override fun hasDescriptionData(col: Column<Food, String>) = hasData(col)
+    override fun getDescriptionData(col: Column<Food, String>) = getData(col)
 
     val density: Double?
         get() = data[FoodTable.DENSITY]
@@ -212,34 +138,22 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
                 && nutrientData == other.nutrientData
     }
 
-    val shortName: String
-        get() = prettyFormat(withBrand = false, withVariety = false)
-
-    val longName: String
-        get() = prettyFormat(withExtra = true)
-
-    val mediumName: String
-        get() = prettyFormat()
-
-    val sortableName: String
-        get() = prettyFormat(withExtra = true, sortable = true)
-
-    val basicName: String
+    override val basicName: String
         get() = data[FoodTable.NAME]!!
 
-    val variety: String?
+    override val variety: String?
         get() = data[FoodTable.VARIETY]
 
-    val brand: String?
+    override val brand: String?
         get() = data[FoodTable.BRAND]
 
-    val extraDesc: String?
+    override val extraDesc: String?
         get() = data[FoodTable.EXTRA_DESC]
 
-    val notes: String?
+    override val notes: String?
         get() = data[FoodTable.NOTES]
 
-    val indexName: String
+    override val indexName: String
         get() = data[FoodTable.INDEX_NAME]!!
 
     val categoryName: String
@@ -261,23 +175,4 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
         val nutrientValueModifyTime = nutrientData.values.maxOfOrNull { it.modifyTime } ?: 0
         maxOf(modifyTime, maxOf(servingModifyTime, nutrientValueModifyTime))
     }
-
-    private fun prettyFormat(
-        withBrand: Boolean = true,
-        withVariety: Boolean = true,
-        withExtra: Boolean = false,
-        sortable: Boolean = false
-    ): String {
-        return prettyFormat(
-            basicName = basicName,
-            brand = brand,
-            variety = variety,
-            extraDesc = extraDesc,
-            withBrand = withBrand,
-            withVariety = withVariety,
-            withExtra = withExtra,
-            sortable = sortable,
-        )
-    }
-
 }

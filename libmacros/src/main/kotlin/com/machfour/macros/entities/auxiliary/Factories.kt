@@ -5,6 +5,7 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.foodname.indexNamePrototype
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 
@@ -23,7 +24,7 @@ object Factories {
             val brand = data[FoodTable.BRAND]
             val variety = data[FoodTable.VARIETY]
             val extraDesc = data[FoodTable.EXTRA_DESC]
-            data.put(FoodTable.INDEX_NAME, Food.indexNamePrototype(name, brand, variety, extraDesc))
+            data.put(FoodTable.INDEX_NAME, indexNamePrototype(name, brand, variety, extraDesc))
         }
 
         data.makeImmutable()

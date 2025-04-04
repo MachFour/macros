@@ -3,7 +3,6 @@ package com.machfour.macros.nutrients
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.NutrientValue
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.KILOJOULES
 import com.machfour.macros.units.NutrientUnits
 import com.machfour.macros.units.UnitType
@@ -13,40 +12,10 @@ import com.machfour.macros.units.UnitType
 
 open class GenericNutrientData<M: NutrientValue<M>>(
     val dataCompleteIfNotNull: Boolean = true
-) {
+): NutrientData {
     companion object {
-        private const val KJ_PER_G_PROTEIN = 17.0
-        private const val KJ_PER_G_FAT = 37.0
-        private const val KJ_PER_G_CARBOHYDRATE = 17.0
-        private const val KJ_PER_G_FIBRE = 8.27
-        private const val KJ_PER_G_ALCOHOL = 29.0
-
-        private const val CAL_TO_KJ_FACTOR = 4.186
-
         private val Nutrient.index : Int
             get() = id.toInt()
-
-
-        // lazy because otherwise having it here messes up static initialisation
-        val energyProportionNutrients by lazy {
-            setOf(
-                PROTEIN,
-                FAT,
-                SATURATED_FAT,
-                MONOUNSATURATED_FAT,
-                POLYUNSATURATED_FAT,
-                CARBOHYDRATE,
-                SUGAR,
-                STARCH,
-                FIBRE,
-                ALCOHOL
-            )
-        }
-
-        // lazy because otherwise having it here messes up static initialisation
-        val totalEnergyNutrients by lazy {
-            listOf(PROTEIN, FAT, CARBOHYDRATE, FIBRE)
-        }
     }
 
     protected val data: ArrayList<M?> = ArrayList(NumNutrients)
@@ -64,7 +33,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         set(value) {
             // cannot make mutable after being set
             if (value) {
-                field = value
+                field = true
             }
         }
 
@@ -74,13 +43,14 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     val valuesExcludingQuantity: List<M>
         get() = values.filter { it.nutrientId != QUANTITY.id }
 
-    // map of protein, fat, saturated fat, carbs, sugar, fibre to proportion of total energy
-    private val energyProportionsMap: Map<Nutrient, Double> by lazy {
-        makeEnergyProportionsMap()
-    }
     // map of protein, fat, saturated fat, carbs, sugar, fibre to amount of energy in calories
     private val energyComponentsMapKj: Map<Nutrient, Double> by lazy {
-        makeEnergyComponentsMapInKj()
+        makeEnergyComponentsMap(KILOJOULES)
+    }
+
+    // map of protein, fat, saturated fat, carbs, sugar, fibre to proportion of total energy
+    private val energyProportionsMap: Map<Nutrient, Double> by lazy {
+        makeEnergyProportionsMap(KILOJOULES, energyComponentsMapKj)
     }
 
 
@@ -124,7 +94,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
     
     operator fun get(n: Nutrient): M? = data[n.index]
 
-    fun amountOf(n: Nutrient, unit: Unit? = null): Double? {
+    override fun amountOf(n: Nutrient, unit: Unit?): Double? {
         return if (unit != null) {
             require(n.compatibleWith(unit)) { "Cannot convert nutrient $n to $unit" }
             this[n]?.convertValueTo(unit)
@@ -133,11 +103,11 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         }
     }
 
-    fun amountOf(n: Nutrient, unit: Unit? = null, defaultValue: Double): Double {
+    override fun amountOf(n: Nutrient, unit: Unit?, defaultValue: Double): Double {
         return amountOf(n, unit) ?: defaultValue
     }
 
-    fun hasNutrient(n: Nutrient) : Boolean {
+    override fun hasNutrient(n: Nutrient) : Boolean {
         return this[n] != null
     }
 
@@ -149,15 +119,22 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         }
     }
 
-    fun hasCompleteData(n: Nutrient) = isDataComplete[n.index]
+    override fun hasCompleteData(n: Nutrient) = isDataComplete[n.index]
 
     internal fun markCompleteData(n: Nutrient, complete: Boolean) {
         isDataComplete[n.index] = complete
     }
 
+    override val foodDensity: Double?
+        get() = null
 
-    fun getUnit(n: Nutrient, defaultUnits: NutrientUnits) : Unit {
-        return this[n]?.unit ?: defaultUnits[n]
+    override fun getUnit(n: Nutrient): Unit? {
+        return this[n]?.unit
+    }
+
+
+    override fun getUnit(n: Nutrient, defaultUnits: NutrientUnits) : Unit {
+        return getUnit(n) ?: defaultUnits[n]
     }
 
     // hack for USDA foods
@@ -175,7 +152,7 @@ open class GenericNutrientData<M: NutrientValue<M>>(
             0.0
         }
 
-    fun getEnergyProportion(n: Nutrient) : Double {
+    override fun getEnergyProportion(n: Nutrient) : Double {
         if (!energyProportionNutrients.contains(n)) {
             return 0.0
         }
@@ -183,81 +160,9 @@ open class GenericNutrientData<M: NutrientValue<M>>(
         return energyProportionsMap[n] ?: 0.0
     }
 
-    // calculations
-
     fun getEnergyAs(unit: Unit) : Double? {
         require(unit.type === UnitType.ENERGY) { "Unit $unit is not an energy unit "}
         return this[ENERGY]?.convertValueTo(unit)
-    }
-
-
-    // total energy predicted by macronutrient contents, rather than actual energy value
-    private fun calculateMacroEnergy(unit: Unit = KILOJOULES): Double {
-        require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
-        // this is also ensured by database
-        check(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
-
-        val totalEnergy =
-            totalEnergyNutrients.fold(0.0) { s, n -> s + energyComponentsMapKj.getValue(n) }
-        // have to divide by kJ/calories ratio if desired unit is calories
-        return totalEnergy / unit.metricEquivalent
-    }
-
-    // energy from each individual macronutrient in kilojoules
-    private fun makeEnergyComponentsMapInKj(): Map<Nutrient, Double> {
-        // preserve iteration order
-        val componentMap = LinkedHashMap<Nutrient, Double>()
-
-        val g = GRAMS
-        // energy from...
-        val satFat = amountOf(SATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val monoFat = amountOf(MONOUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val polyFat = amountOf(POLYUNSATURATED_FAT, g, 0.0) * KJ_PER_G_FAT
-        val sugar = amountOf(SUGAR, g, 0.0) * KJ_PER_G_CARBOHYDRATE
-        val starch = amountOf(STARCH, g, 0.0) * KJ_PER_G_CARBOHYDRATE
-
-        val protein = amountOf(PROTEIN, g, 0.0) * KJ_PER_G_PROTEIN
-        val fibre = amountOf(FIBRE, g, 0.0) * KJ_PER_G_FIBRE
-        val alcohol = amountOf(ALCOHOL, g, 0.0) * KJ_PER_G_ALCOHOL
-
-        // fat must be >= sat + mono + poly
-        val fat = (amountOf(FAT, g, 0.0) * KJ_PER_G_FAT)
-            .coerceAtLeast(satFat + monoFat + polyFat)
-        // correct subtypes: carbs must be >= sugar + starch
-        val carb = (amountOf(CARBOHYDRATE, g, 0.0) * KJ_PER_G_CARBOHYDRATE)
-            .coerceAtLeast(sugar + starch)
-
-        componentMap[PROTEIN] = protein
-        componentMap[FAT] = fat
-        componentMap[SATURATED_FAT] = satFat
-        componentMap[MONOUNSATURATED_FAT] = monoFat
-        componentMap[POLYUNSATURATED_FAT] = polyFat
-        componentMap[CARBOHYDRATE] = carb
-        componentMap[SUGAR] = sugar
-        componentMap[STARCH] = starch
-        componentMap[FIBRE] = fibre
-        componentMap[ALCOHOL] = alcohol
-
-        return componentMap
-    }
-
-
-    private fun makeEnergyProportionsMap() : Map<Nutrient, Double> {
-        // shouldn't matter whether we use KJ or calories here, as long as the amountOf() call below
-        // uses the same unit
-        val componentMap = energyComponentsMapKj // evaluated lazily
-
-        // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
-        val totalEnergy = calculateMacroEnergy()
-
-        // previously: use total energy is missing, falling back to sum of energy components
-        //val totalEnergy = nd.amountOf(ENERGY, unit, calculateMacrosEnergy())
-
-        return if (totalEnergy > 0) {
-            componentMap.mapValues { it.value/totalEnergy }
-        } else {
-            componentMap.mapValues { 0.0 }
-        }
     }
 }
 

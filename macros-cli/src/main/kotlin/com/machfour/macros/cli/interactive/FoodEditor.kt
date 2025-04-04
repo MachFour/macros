@@ -6,12 +6,14 @@ import com.googlecode.lanterna.input.KeyStroke
 import com.googlecode.lanterna.input.KeyType
 import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
+import com.machfour.macros.cli.utils.displayLength
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.formatting.fmt
 import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.nutrients.AllNutrients
@@ -26,8 +28,6 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.LegacyNutrientUnits
-import com.machfour.macros.util.displayLength
-import com.machfour.macros.util.fmt
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
 

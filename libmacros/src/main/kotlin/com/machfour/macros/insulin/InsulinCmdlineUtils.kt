@@ -1,44 +1,41 @@
 package com.machfour.macros.insulin
 
-import com.machfour.macros.nutrients.CARBOHYDRATE
-import com.machfour.macros.nutrients.FAT
-import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.PROTEIN
-import com.machfour.macros.util.fmt
-import com.machfour.macros.util.toString
+import com.machfour.macros.formatting.fmt
+import com.machfour.macros.formatting.toString
+import com.machfour.macros.nutrients.*
 
 // parses a string in one of the following forms:
 // 1. <ic ratio>
 // 2. <ic ratio>:<fat factor>:<protein factor>
 // where all quantities are positive floating point numbers
-fun parseInsulinArgument(arg: String) : BolusCalculator? {
+fun parseInsulinArgument(arg: String) : SimpleBolusCalculator? {
     val params = arg
         .split(":")
         .also { if (it.size !in listOf(1, 3)) { return null } }
         .map { it.toDoubleOrNull()?.takeIf { d -> d > 0.0 } ?: return null }
 
-    return BolusCalculator(
+    return SimpleBolusCalculator(
         icRatio = params[0],
-        fatF = params.getOrNull(1),
-        proteinF = params.getOrNull(2),
+        fatF = params.getOrNull(1) ?: 0.0,
+        proteinF = params.getOrNull(2) ?: 0.0,
     )
 }
 
 private const val labelPrintWidth = 8
 private const val unitsPrintWidth = 6
 
-fun printInsulin(nd: FoodNutrientData, params: BolusCalculator) {
+fun printInsulin(nd: FoodNutrientData, params: SimpleBolusCalculator) {
     println("========")
     println("Insulin:")
     println("========")
     println()
 
-    val insulin = params.insulinForNutrientData(nd)
+    val insulin = params.insulinFor(nd).totalMap()
     val data = listOf(
-        "Carbs" to insulin[CARBOHYDRATE]?.first,
-        "Fat" to insulin[FAT]?.first,
-        "Protein" to insulin[PROTEIN]?.first,
-        "Total" to insulin.asIterable().sumOf { it.value.first ?: 0.0 },
+        "Carbs" to insulin[CARBOHYDRATE],
+        "Fat" to insulin[FAT],
+        "Protein" to insulin[PROTEIN],
+        "Total" to insulin[QUANTITY]
     )
 
     for ((label, value) in data) {

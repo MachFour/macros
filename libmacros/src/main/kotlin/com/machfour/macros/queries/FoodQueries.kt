@@ -7,8 +7,6 @@ import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
-import com.machfour.macros.util.intersectAll
-import com.machfour.macros.util.unionAll
 
 // excluding index name
 private val foodSearchCols = listOf(
@@ -17,6 +15,14 @@ private val foodSearchCols = listOf(
     , FoodTable.BRAND
     , FoodTable.EXTRA_DESC
 )
+
+private fun <E> Iterable<Set<E>>.unionAll(): Set<E> {
+    return reduceOrNull { s, t -> s.union(t) } ?: emptySet()
+}
+
+private fun <E> Iterable<Set<E>>.intersectAll(): Set<E> {
+    return reduceOrNull { s, t -> s.intersect(t) } ?: emptySet()
+}
 
 // TODO
 //  - be adaptive - if there only few results, add more results from less selective searches

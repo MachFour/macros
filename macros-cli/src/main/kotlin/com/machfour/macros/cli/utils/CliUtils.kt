@@ -1,6 +1,5 @@
 package com.machfour.macros.cli.utils
 
-import com.machfour.macros.util.javaTrim
 import java.io.IOException
 
 private fun badNumberFormat(inputString: String?) {
@@ -34,7 +33,7 @@ fun cliGetDouble(): Double? {
 
 fun cliGetStringInput(): String? {
     return try {
-        readlnOrNull()?.javaTrim()
+        readlnOrNull()?.trim()
     } catch (e: IOException) {
         printlnErr("Error reading input: " + e.message)
         null

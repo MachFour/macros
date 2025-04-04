@@ -3,8 +3,8 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.formatting.currentTimeString
 import com.machfour.macros.jvm.createZipBackup
-import com.machfour.macros.jvm.currentTimeString
 import com.machfour.macros.sql.SqlException
 import java.io.FileOutputStream
 import java.io.IOException

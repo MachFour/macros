@@ -2,12 +2,12 @@ package com.machfour.macros.entities
 
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.formatting.toString
+import com.machfour.macros.formatting.toStringWithRounding
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.unitWithAbbr
-import com.machfour.macros.util.toRoundedString
-import com.machfour.macros.util.toString
 
 abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
     data: RowData<M>,
@@ -86,7 +86,7 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
     // it is formatted as an integer.
     private val servingCountString: String
         // test if can round
-        get() = servingCount.toRoundedString()
+        get() = servingCount.toStringWithRounding()
 
     val servingCount: Double
         get() {

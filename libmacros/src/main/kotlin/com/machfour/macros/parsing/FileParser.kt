@@ -14,7 +14,6 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.units.unitWithAbbrOrNull
-import com.machfour.macros.util.javaTrim
 
 class FileParser {
     private val errorLines = LinkedHashMap<String, String>()
@@ -39,7 +38,7 @@ class FileParser {
             // have to instantiate a dummy meal to hold it
             var currentFpSpecs: ArrayList<FoodPortionSpec>? = null
             for (index in fileLines.indices) {
-                val line = fileLines[index].javaTrim()
+                val line = fileLines[index].trim()
                 val mealTitle = mealPattern.find(line)
                 if (mealTitle != null) {
                     // make a new meal
@@ -132,7 +131,7 @@ class FileParser {
         // returns null if there was an error during parsing (not a DB error)
         fun makeFoodPortionSpecFromLine(line: String): FoodPortionSpec {
             // if you don't specify an array length limit, it won't match empty strings between commas
-            val tokens = line.split(",", limit = 4).map { it.javaTrim() }
+            val tokens = line.split(",", limit = 4).map { it.trim() }
 
             val indexName = tokens[0]
             var quantity = 0.0

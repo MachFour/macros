@@ -1,14 +1,12 @@
 package com.machfour.macros.cli.utils
 
+import com.machfour.macros.formatting.fmt
+import com.machfour.macros.formatting.toString
 import com.machfour.macros.names.DefaultDisplayStrings
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.NutrientStrings
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
-import com.machfour.macros.util.defaultNutrientsToPrint
-import com.machfour.macros.util.fmt
-import com.machfour.macros.util.formatNutrientData
-import com.machfour.macros.util.toString
 
 fun printNutrientData(foodNutrientData: FoodNutrientData, verbose: Boolean) {
     val string = formatNutrientData(

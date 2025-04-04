@@ -2,13 +2,11 @@ package com.machfour.macros.cli.utils
 
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.formatting.formatQuantity
 import com.machfour.macros.names.EnglishColumnNames
 import com.machfour.macros.names.EnglishUnitNames
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
-import com.machfour.macros.util.fmtUnicode
-import com.machfour.macros.util.formatNutrientValue
-import com.machfour.macros.util.formatQuantity
 
 // printing widths
 const val foodNameWidth = 41

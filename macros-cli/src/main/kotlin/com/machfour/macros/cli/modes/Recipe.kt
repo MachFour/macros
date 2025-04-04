@@ -6,10 +6,10 @@ import com.machfour.macros.cli.utils.cliGetChar
 import com.machfour.macros.cli.utils.printIngredients
 import com.machfour.macros.cli.utils.printNutrientData
 import com.machfour.macros.entities.CompositeFood
+import com.machfour.macros.formatting.toString
 import com.machfour.macros.ingredients.readRecipes
 import com.machfour.macros.ingredients.saveRecipes
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.toString
 import java.io.FileReader
 import java.io.IOException
 

@@ -7,7 +7,7 @@ import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printMeals
 import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.entities.Meal
-import com.machfour.macros.insulin.BolusCalculator
+import com.machfour.macros.insulin.SimpleBolusCalculator
 import com.machfour.macros.insulin.parseInsulinArgument
 import com.machfour.macros.insulin.printInsulin
 import com.machfour.macros.parsing.FileParser
@@ -61,7 +61,7 @@ class Read(config: CliConfig) : CommandImpl(config) {
         val per100 = per100Flag.containedIn(args)
 
         val insulinArg = findArgumentFromFlag(args, insulinFlag.full)
-        val insulinCalc: BolusCalculator?
+        val insulinCalc: SimpleBolusCalculator?
 
         when (insulinArg) {
             is ArgParsingResult.KeyValFound -> {

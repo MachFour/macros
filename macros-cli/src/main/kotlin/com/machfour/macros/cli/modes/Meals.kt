@@ -8,11 +8,11 @@ import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.dayStringParse
 import com.machfour.macros.cli.utils.findArgument
 import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.formatting.fmt
 import com.machfour.macros.jvm.modifyInstant
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
-import com.machfour.macros.util.fmt
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

@@ -1,7 +1,6 @@
 package com.machfour.macros.cli
 
 import com.machfour.macros.cli.modes.*
-import com.machfour.macros.util.javaTrim
 
 private val commandConstructors = listOf(
     ::Help,
@@ -29,7 +28,7 @@ private val commandConstructors = listOf(
 )
 
 private fun String.clean(): String {
-    val trimmed = javaTrim()
+    val trimmed = trim()
     return when (trimmed.startsWith("--")) {
         true -> trimmed.substring(2)
         else -> trimmed

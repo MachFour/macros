@@ -3,13 +3,11 @@ package com.machfour.macros.cli.utils
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
+import com.machfour.macros.formatting.fmt
+import com.machfour.macros.formatting.toString
 import com.machfour.macros.jvm.LOCALIZED_DATETIME_MEDIUM
 import com.machfour.macros.jvm.createInstant
 import com.machfour.macros.jvm.modifyInstant
-import com.machfour.macros.util.displayLength
-import com.machfour.macros.util.fmt
-import com.machfour.macros.util.fmtUnicode
-import com.machfour.macros.util.toString
 
 fun printFoodList(foods: Collection<Food>) {
     // work out how wide the column should be

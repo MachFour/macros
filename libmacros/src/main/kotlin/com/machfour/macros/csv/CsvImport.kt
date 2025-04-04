@@ -21,8 +21,6 @@ import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.unitWithAbbr
-import com.machfour.macros.util.javaTrim
-import com.machfour.macros.util.multiAssociateBy
 import com.machfour.macros.validation.SchemaViolation
 
 // don't edit csvRow keyset!
@@ -34,7 +32,7 @@ internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): 
         for ((colName, col) in relevantCols) {
             when (val valueString = csvRow[colName]) {
                 null -> putFromRaw(col, null)
-                else -> putFromString(col, valueString.javaTrim())
+                else -> putFromString(col, valueString.trim())
             }
             // check if anything actually got through
             if (hasValue(col)) {
@@ -207,7 +205,6 @@ fun <J: Any> buildServings(
     require(foodKeyCol.isUnique)
 
     val csvRows = getCsvParser().parse(servingCsv)
-
     return buildList {
         for (i in 1 until csvRows.size) {
             val header = csvRows[0]
@@ -233,7 +230,6 @@ fun <J: Any> buildServings(
 fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>, foodKeyCol: Column<Food, J>): Map<J, Food> {
     // collect all the index names to be imported, and check if they're already in the DB.
     val conflictingFoods = findUniqueColumnConflicts(db, foods)
-
     val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
     /*
     if (allowOverwrite) {
@@ -358,4 +354,14 @@ fun importRecipes(
 
     val completedIngredients = completeForeignKeys(db, allIngredients, IngredientTable.PARENT_FOOD_ID)
     saveObjects(db, completedIngredients, ObjectSource.IMPORT)
+}
+
+// Groups a collection of items into a map of lists using the given key function,
+// such that items in each list have a common key
+internal fun <E, K> Collection<E>.multiAssociateBy(key: (E) -> K): Map<K, List<E>> {
+    return buildMap {
+        for (e in this@multiAssociateBy) {
+            (getOrPut(key(e)) { ArrayList() } as MutableList).add(e)
+        }
+    }
 }

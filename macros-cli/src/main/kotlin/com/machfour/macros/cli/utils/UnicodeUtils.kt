@@ -1,5 +1,6 @@
-package com.machfour.macros.util
+package com.machfour.macros.cli.utils
 
+import com.machfour.macros.formatting.fmt
 import java.lang.Character.UnicodeBlock
 
 // https://stackoverflow.com/a/41982074/

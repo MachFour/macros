@@ -5,72 +5,71 @@ import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.PROTEIN
+import com.machfour.macros.units.GRAMS
 
-
-// Implements calculation of insulin bolus dosages from nutrition data, given
-// a specific insulin to carb ratio, and optionally fat and protein factors.
+// Interface for calculation of insulin bolus dosages from nutrition data.
+// Implementing classes define a particular calculation method and set of parameters.
+//
 // NOTE: INSULIN BOLUS CALCULATION FOR FAT AND PROTEIN IS NOT CLINICALLY VERIFIED.
 // USE AT YOUR OWN RISK!
-data class BolusCalculator(
-    val icRatio: Double,
-    val fatF: Double? = null,
-    val proteinF: Double? = null,
-) {
+interface BolusCalculator {
+    /*
+     Calculates insulin bolus in units, given amounts *in grams* of carbs,
+     fat and protein, using this calculator's I:C ratio (in U/g) and fat
+     and protein factors (if set). The carbs value should include sugar but
+     not include fibre.
 
-    constructor(
-        icRatio: Float,
-        fatFactor: Float? = null,
-        proteinFactor: Float? = null,
-    ): this(
-        icRatio = icRatio.toDouble(),
-        fatF = fatFactor?.toDouble(),
-        proteinF = proteinFactor?.toDouble(),
-    )
+     If precision is a non-negative number less than the precision of a double,
+     the insulin amounts are rounded to that number of decimal places.
+     The default value for precision is -1 (rounding disabled).
 
-    // direct conversions from fat and protein to insulin
-    val ifRatio: Double? = fatF?.let { it * icRatio }
-    val ipRatio: Double? = proteinF?.let { it * icRatio }
+     If this calculator's I:C ratio is set to zero, the returned InsulinAmounts
+     will have all values set to null except the totals.
+    */
+    fun insulinFor(
+        carbs: Double? = null,
+        fat: Double? = null,
+        protein: Double? = null,
+        precision: Int = -1,
+    ): InsulinAmounts
 
-    // Calculates insulin dosage (in units) given a carb amount (in grams) and
-    // this calculator's I/C ratio (in U/g). Returns null if the I/C ratio is 0.
-    fun insulinForCarbs(carbs: Double) = divideOrNull(carbs, icRatio)
+    /*
+     Calculates insulin bolus in units, given nutrient amounts *in grams*
+     using this calculator's I:C ratio (in U/g) and fat/protein factors (if set).
+     Currently, only CARBOHYDRATE, FAT and PROTEIN are considered.
+     The carbs value should include sugar but not include fibre.
 
-    // Calculates insulin dosage (in units) given a fat amount (in grams),
-    // based on this calculator's I/C ratio (in U/g), and fat factor.
-    // The fat factor estimates the ratio of glucose sensitivity between fat and carbs.
-    // Returns null if fat factor is not set or 0.
-    fun insulinForFat(fat: Double) = divideOrNull(fat, ifRatio)
+     If precision is a non-negative number less than the precision of a double,
+     the insulin amounts are rounded to that number of decimal places.
+     The default value for precision is -1 (rounding disabled).
 
-    // Calculates insulin dosage (in units) given a protein amount (in grams),
-    // based on this calculator's I/C ratio (in U/g), and protein factor.
-    // The protein factor estimates the ratio of glucose sensitivity between protein and carbs.
-    // Returns null if protein factor is not set or 0.
-    fun insulinForProtein(protein: Double) = divideOrNull(protein, ipRatio)
-
-    // Calculates the amount of insulin for each of carbs, fat and protein in the given
-    // NutrientData object, based on the insulinFor{Carbs,Fat,Protein} functions.
-    // The returned map contains a pair of (insulin amount, proportion of total) for each nutrient.
-    // If the nutrient data object is missing data for any nutrient, or for fat and protein, if
-    // this calculator does not have the factor set, the corresponding map value is a pair of nulls.
-    // If the total amount of insulin is zero (or all data is missing), proportions are null.
-    fun insulinForNutrientData(nd: FoodNutrientData): Map<Nutrient, Pair<Double?, Double?>> {
-        val amounts = mutableMapOf(
-            CARBOHYDRATE to nd.amountOf(CARBOHYDRATE)?.let { insulinForCarbs(it) },
-            FAT to nd.amountOf(FAT)?.let { insulinForFat(it) },
-            PROTEIN to nd.amountOf(PROTEIN)?.let { insulinForProtein(it) },
+     If this calculator's I:C ratio is set to zero, the returned InsulinAmounts
+     will have all values set to null except the totals.
+    */
+    fun insulinFor(
+        amounts: Map<Nutrient, Double>,
+        precision: Int = -1,
+    ): InsulinAmounts {
+        return insulinFor(
+            precision = precision,
+            carbs = amounts[CARBOHYDRATE],
+            fat = amounts[FAT],
+            protein = amounts[PROTEIN],
         )
-        val total = amounts.asIterable().sumOf { it.value ?: 0.0 }
-        return amounts.mapValues { (_, amount) -> amount to divideOrNull(amount, total) }
     }
-}
 
-private fun divideOrNull(dividend: Double?, divisor: Double?) : Double? {
-    if (dividend == null) {
-        return null
-    }
-    return when (divisor) {
-        null, 0.0 -> null
-        else -> dividend / divisor
+    // Same as above except values are extracted from the given FoodNutrientData,
+    // converting to grams if necessary.
+    fun insulinFor(
+        nd: FoodNutrientData,
+        precision: Int = -1
+    ): InsulinAmounts {
+        return insulinFor(
+            precision = precision,
+            carbs = nd.amountOf(CARBOHYDRATE, GRAMS),
+            fat = nd.amountOf(FAT, GRAMS),
+            protein = nd.amountOf(PROTEIN, GRAMS),
+        )
     }
 }
 

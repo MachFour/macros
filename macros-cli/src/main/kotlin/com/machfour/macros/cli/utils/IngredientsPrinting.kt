@@ -1,10 +1,9 @@
 package com.machfour.macros.cli.utils
 
 import com.machfour.macros.entities.Ingredient
+import com.machfour.macros.formatting.fmt
+import com.machfour.macros.formatting.formatQuantity
 import com.machfour.macros.names.EnglishUnitNames
-import com.machfour.macros.util.fmt
-import com.machfour.macros.util.fmtUnicode
-import com.machfour.macros.util.formatQuantity
 
 // Ingredients printing parameters
 private const val quantityWidth = 10

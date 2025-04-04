@@ -4,6 +4,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.makeSqlWhereLikeString
+import com.machfour.macros.sql.makeSqlWhereNullString
 import com.machfour.macros.sql.makeSqlWhereString
 
 // TODO allow combining multiple SqlWhere statements, each one with a single column
@@ -40,16 +41,16 @@ class SqlWhereExpr<M, J: Any> private constructor(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
                 whereValues = whereValues,
-                whereClause = makeSqlWhereString(whereColumnExpr, nValues = nValues),
+                whereClause = makeSqlWhereString(whereColumnExpr, nValues),
                 isIterated = iterated
             )
         }
 
-        fun <M, J: Any> where(whereColumnExpr: ColumnExpr<M, J>, isNotNull: Boolean): SqlWhereExpr<M, J> {
+        fun <M, J: Any> whereNull(whereColumnExpr: ColumnExpr<M, J>, negate: Boolean): SqlWhereExpr<M, J> {
             return SqlWhereExpr(
                 whereColumnExpr = whereColumnExpr,
                 whereColumnType = whereColumnExpr.type,
-                whereClause = makeSqlWhereString(whereColumnExpr, isNotNull = isNotNull)
+                whereClause = makeSqlWhereNullString(whereColumnExpr, negate)
             )
         }
 

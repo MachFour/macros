@@ -33,8 +33,8 @@ abstract class SqlStatementImpl<M>(
             whereExpression = SqlWhereExpr.where(whereColumnExpr, whereValues, whereValues.size > iterateThreshold)
         }
 
-        override fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean) {
-            whereExpression = SqlWhereExpr.where(whereColumnExpr, isNotNull)
+        override fun whereNull(whereColumnExpr: ColumnExpr<M, *>, negate: Boolean) {
+            whereExpression = SqlWhereExpr.whereNull(whereColumnExpr, !negate)
         }
 
         override fun where(whereString: String) {

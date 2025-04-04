@@ -27,21 +27,22 @@ internal fun <M> makeSqlUpdatePlaceholders(columns: List<Column<M, *>>): String 
     return columns.joinToString(separator = ", ") { it.sqlName + " = " + it.type.getSqlPlaceholder() }
 }
 
+// " WHERE column1 IS NULL"
+// " WHERE column1 IS NOT NULL"
+internal fun makeSqlWhereNullString(whereColumnExpr: ColumnExpr<*, *>, negate: Boolean = false): String {
+    val colName = whereColumnExpr.sql
+    val not = if (negate) "NOT" else ""
+    return " WHERE $colName IS $not NULL"
+}
+
 // " WHERE column1 = ?"
 // " WHERE column1 IN (?, ?, ?, ...?)"
-// " WHERE column1 IS [NOT] NULL
 // if nkeys is 0, no where string will be formed, so all objects will be returned.
 // exception thrown if nValues < 0
-internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int? = null, isNotNull: Boolean? = null): String {
+internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int): String {
     val colName = whereColumnExpr.sql
-    require((nValues != null) xor (isNotNull != null)) { "Must specify one of nValues or isNull" }
+    require(nValues >= 0) { "nValues cannot negative" }
 
-    if (isNotNull != null) {
-        val not = if (isNotNull) "NOT" else ""
-        return " WHERE $colName IS $not NULL"
-    }
-
-    check(nValues != null && nValues >= 0)
     if (nValues == 0) {
         return ""
     }

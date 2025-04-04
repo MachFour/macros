@@ -31,7 +31,7 @@ sealed interface SqlStatement<M> {
         // Android SQlite will not execute the query
         fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValues: Collection<J>, iterateThreshold: Int = DEFAULT_ITERATE_THRESHOLD)
 
-        fun where(whereColumnExpr: ColumnExpr<M, *>, isNotNull: Boolean)
+        fun whereNull(whereColumnExpr: ColumnExpr<M, *>, negate: Boolean)
 
         fun where(whereString: String)
 

@@ -140,13 +140,10 @@ fun <M, J: Any> deleteByNullStatus(
     db: SqlDatabase,
     t: Table<M>,
     whereColumn: Column<M, J>,
-    trueForNotNulls: Boolean
+    negate: Boolean
 ): Int {
     return db.deleteFromTable(SimpleDelete.build(t) {
-        where(
-            whereColumn,
-            isNotNull = trueForNotNulls
-        )
+        whereNull(whereColumn, negate)
     })
 }
 

@@ -31,62 +31,56 @@ import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.validation.ValidationError
 import java.io.IOException
 
+// Layout parameters
+private const val actionPadding = 18
+private const val columnNameWidth = 28
+
+// move cursor to relevant row, and columnNameWidth + 3 (3 for the "|" and ": ")
+private const val fieldValueStartCol = columnNameWidth + 3
+private const val fieldValueWidth = 20
+
+@Throws(IOException::class)
+private fun defaultScreen(): Screen {
+    val tf = DefaultTerminalFactory()
+    return tf.createScreen()
+}
+
+private fun isRecognisedKeyType(kt: KeyType): Boolean {
+    return when (kt) {
+        // things we care about
+        KeyType.Character,
+        KeyType.Backspace,
+        KeyType.ArrowLeft,
+        KeyType.ArrowRight,
+        KeyType.ArrowUp,
+        KeyType.ArrowDown,
+        KeyType.Enter,
+        KeyType.Escape -> true
+        // things we don't care about
+        KeyType.MouseEvent,
+        KeyType.Home,
+        KeyType.Delete,
+        KeyType.EOF,
+        KeyType.ReverseTab,
+        KeyType.Tab,
+        KeyType.Insert,
+        KeyType.CursorLocation -> false
+        else -> false
+    }
+}
+
+private fun errorMessageHint(): String {
+    return " *"
+}
+
 // TODO servings?
 class FoodEditor(
     //private static final int errorMsgStartCol = fieldValueStartCol + fieldValueWidth + 1;
-    private val ds: SqlDatabase,
+    private val db: SqlDatabase,
     private val foodBuilder: MacrosBuilder<Food>,
     private val nutrientBuilder: MacrosBuilder<FoodNutrientValue> = MacrosBuilder(FoodNutrientValueTable),
     private val displayStrings: DisplayStrings = DefaultDisplayStrings,
     private val screen: Screen = defaultScreen()) {
-
-    companion object {
-        private val NUM_ACTIONS = Action.entries.size
-        private val FOOD_TABLE_COLUMNS = FoodTable.columns
-
-        // Layout parameters
-        private const val actionPaddingWidth = 18
-        private const val columnNameWidth = 28
-
-        // move cursor to relevant row, and columnNameWidth + 3 (3 for the "|" and ": ")
-        private const val fieldValueStartCol = columnNameWidth + 3
-        private const val fieldValueWidth = 20
-
-        @Throws(IOException::class)
-        private fun defaultScreen(): Screen {
-            val tf = DefaultTerminalFactory()
-            return tf.createScreen()
-        }
-
-        private fun isRecognisedKeyType(kt: KeyType): Boolean {
-            return when (kt) {
-                // things we care about
-                KeyType.Character,
-                KeyType.Backspace,
-                KeyType.ArrowLeft,
-                KeyType.ArrowRight,
-                KeyType.ArrowUp,
-                KeyType.ArrowDown,
-                KeyType.Enter,
-                KeyType.Escape -> true
-                // things we don't care about
-                KeyType.MouseEvent,
-                KeyType.Home,
-                KeyType.Delete,
-                KeyType.EOF,
-                KeyType.ReverseTab,
-                KeyType.Tab,
-                KeyType.Insert,
-                KeyType.CursorLocation -> false
-                else -> false
-            }
-        }
-
-        private fun errorMessageHint(): String {
-            return " *"
-        }
-    }
-
 
     // stores built Nutrient Data objects
     private val nutrientData = FoodNutrientData()
@@ -147,8 +141,7 @@ class FoodEditor(
         }
 
     init {
-
-        val numFoodColumns = FOOD_TABLE_COLUMNS.size
+        val numFoodColumns = FoodTable.columns.size
         val numNdColumns = NumNutrients
         val totalColumns = numFoodColumns + numNdColumns
 
@@ -170,12 +163,12 @@ class FoodEditor(
     private fun stepAction(forward: Boolean) {
         var nextActionOrdinal = currentAction.ordinal
         if (forward) {
-            if (++nextActionOrdinal >= NUM_ACTIONS) {
-                nextActionOrdinal -= NUM_ACTIONS
+            if (++nextActionOrdinal >= Action.entries.size) {
+                nextActionOrdinal -= Action.entries.size
             }
         } else {
             if (--nextActionOrdinal < 0) {
-                nextActionOrdinal += NUM_ACTIONS
+                nextActionOrdinal += Action.entries.size
             }
         }
         currentAction = Action.entries[nextActionOrdinal]
@@ -324,7 +317,7 @@ class FoodEditor(
     // figure out which columns should be displayed.
     // Defaults to isUserEditable()
     private fun initDisplayColumns() {
-        for (col in FOOD_TABLE_COLUMNS) {
+        for (col in FoodTable.columns) {
             if (col.isUserEditable) {
                 foodColumnsForDisplay.add(col)
             }
@@ -480,8 +473,8 @@ class FoodEditor(
 
     // returns end index
     @Throws(IOException::class)
-    private fun <M : MacrosEntity<M>> printColumns(columns: Collection<Column<M, *>>, builder: MacrosBuilder<M>, initialColumnIndex: Int): Int {
-        var columnIndex = initialColumnIndex
+    private fun <M : MacrosEntity<M>> printColumns(columns: Collection<Column<M, *>>, builder: MacrosBuilder<M>, startCol: Int): Int {
+        var columnIndex = startCol
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
             printField(displayStrings.getFullName(col), builder.getAsString(col), columnIndex)
@@ -503,10 +496,10 @@ class FoodEditor(
 
     @Throws(IOException::class)
     private fun printActionRow() {
-        println("Actions: ", actionPaddingWidth, false)
+        println("Actions: ", actionPadding, false)
         for (a in Action.entries) {
             val indicator = if (!isEditing && a == currentAction) " > " else "   "
-            print(" $indicator ${a.niceName}", actionPaddingWidth, true)
+            print(" $indicator ${a.niceName}", actionPadding, true)
         }
     }
 
@@ -584,20 +577,20 @@ class FoodEditor(
                     }
 
                     // gotta do it in one go
-                    ds.openConnection()
-                    ds.beginTransaction()
-                    saveObject(ds, f)
+                    db.openConnection()
+                    db.beginTransaction()
+                    saveObject(db, f)
 
                     // get the food ID into the FOOD_ID field of the NutrientValues
-                    val completedNValues = completeForeignKeys(ds, nutrientValues, FoodNutrientValueTable.FOOD_ID)
+                    val completedNValues = completeForeignKeys(db, nutrientValues, FoodNutrientValueTable.FOOD_ID)
 
-                    saveObjects(ds, completedNValues, ObjectSource.USER_NEW)
-                    ds.endTransaction()
+                    saveObjects(db, completedNValues, ObjectSource.USER_NEW)
+                    db.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
                 } finally {
                     // TODO if exception is thrown here after an exception thrown
                     // in the above try block, the one here will hide the previous.
-                    ds.closeConnection()
+                    db.closeConnection()
                 }
             } catch (e: SqlException) {
                 setStatus("Could not save!", "SQL Exception occurred (see bottom)")
@@ -657,17 +650,5 @@ class FoodEditor(
             }
         }
         setEditingValue(currentFieldData)
-    }
-
-    private enum class Action(val niceName: String) {
-        MORE_FIELDS("Extra fields"), //TODO
-        SAVE("Save"),
-        RESET("Reset"),
-        EXIT("Exit"),
-        HELP("Help");
-
-        override fun toString(): String {
-            return niceName
-        }
     }
 }

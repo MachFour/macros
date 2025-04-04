@@ -1,8 +1,6 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.entities.Food
-import com.machfour.macros.ingredients.readRecipes
-import com.machfour.macros.ingredients.saveRecipes
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.deleteAllCompositeFoods
 import com.machfour.macros.queries.deleteAllIngredients

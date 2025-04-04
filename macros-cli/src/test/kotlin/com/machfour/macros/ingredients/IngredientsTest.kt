@@ -1,9 +1,6 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.printNutrientData
-import com.machfour.macros.ingredients.CompositeFoodSpec
-import com.machfour.macros.ingredients.IngredientSpec
-import com.machfour.macros.ingredients.createCompositeFoods
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.queries.clearTable
 import com.machfour.macros.queries.deleteAllCompositeFoods

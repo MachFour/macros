@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
@@ -28,8 +29,11 @@ interface MacrosDataSource {
     @Throws(SqlException::class)
     fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long>
 
+    @Throws(SqlException::class)
+    fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<Long>
+
     /*
-     * Single-shot functions, just passthrough to static queries
+     * Single-shot functions, just pass through to static queries
      */
     @Throws(SqlException::class)
     fun getFoodIdByIndexName(indexName: String): Long?
@@ -44,7 +48,7 @@ interface MacrosDataSource {
     fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long>
 
     @Throws(SqlException::class)
-    fun getCommonQuantities(foodId: Long): List<Pair<Double, Unit>>
+    fun getCommonQuantities(foodId: Long, limit: Int = -1): List<Triple<Double, Unit, String?>>
 
     /*
      * Flow functions -- update cache
@@ -90,7 +94,6 @@ interface MacrosDataSource {
     // Do we really need the list methods? The user will probably only edit one object at a time
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
-
     @Throws(SqlException::class)
     fun <M: MacrosEntity<M>> saveObject(o: M): Int {
         return saveObjects(listOf(o), o.source)
@@ -98,6 +101,14 @@ interface MacrosDataSource {
 
     @Throws(SqlException::class)
     fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
+
+    @Throws(SqlException::class)
+    fun <M: MacrosEntity<M>> saveObjectReturningId(o: M): EntityId {
+        return saveObjectsReturningIds(listOf(o), o.source).first()
+    }
+
+    @Throws(SqlException::class)
+    fun <M : MacrosEntity<M>> saveObjectsReturningIds(objects: Collection<M>, source: ObjectSource): List<EntityId>
 
     // The following two methods are made redundant because of saveObjects()
 
@@ -120,7 +131,7 @@ interface MacrosDataSource {
     fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int
 
     @Throws(SqlException::class)
-    fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>)
+    fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>)
 
     @Throws(SqlException::class)
     fun forgetFood(f: Food)

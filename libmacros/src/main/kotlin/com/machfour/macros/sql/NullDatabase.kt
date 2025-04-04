@@ -1,5 +1,6 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
 
 // Implementation of MacrosDataSource for testing which does nothing and returns empty data
@@ -8,7 +9,7 @@ class NullDatabase private constructor(): SqlDatabase {
         val Instance = NullDatabase()
     }
 
-    override fun openConnection() {}
+    override fun openConnection(getGeneratedKeys: Boolean) {}
 
     override fun closeConnection() {}
 
@@ -50,6 +51,10 @@ class NullDatabase private constructor(): SqlDatabase {
 
     override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
         return 0
+    }
+
+    override fun <M> insertRowsReturningIds(data: Collection<RowData<M>>, useDataIds: Boolean): List<EntityId> {
+        return emptyList()
     }
 
     override fun executeRawStatement(sql: String) {

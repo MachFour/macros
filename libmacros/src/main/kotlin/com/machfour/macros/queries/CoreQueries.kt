@@ -5,9 +5,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.generator.SelectQuery
-import com.machfour.macros.sql.generator.SingleColumnSelect
-import com.machfour.macros.sql.generator.TwoColumnSelect
+import com.machfour.macros.sql.generator.*
 
 @Throws(SqlException::class)
 fun <M> prefixSearch(
@@ -85,6 +83,21 @@ fun <M, I: Any, J: Any> selectTwoColumns(
     val table = select1.table
     return db.selectTwoColumns(TwoColumnSelect.build(table, select1, select2, queryOptions))
 }
+
+@Throws(SqlException::class)
+fun <M, I: Any, J: Any, K: Any> selectThreeColumns(
+    db: SqlDatabase,
+    select1: Column<M, I>,
+    select2: Column<M, J>,
+    select3: Column<M, K>,
+    queryOptions: SelectQuery.Builder<M>.() -> Unit
+): List<Triple<I?, J?, K?>> {
+    val table = select1.table
+    val columns = listOf(select1, select2, select3)
+    val resultData = db.selectMultipleColumns(MultiColumnSelect.build(table, columns, queryOptions))
+    return resultData.map { Triple(it[select1], it[select2], it[select3]) }
+}
+
 @Throws(SqlException::class)
 fun <M, I: Any> selectNonNullColumn(
     db: SqlDatabase,
@@ -127,7 +140,7 @@ fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J
 // The resulting map is unordered
 @Throws(SqlException::class)
 fun <M, I: Any, J: Any> selectColumnMap(
-    ds: SqlDatabase,
+    db: SqlDatabase,
     t: Table<M>,
     keyColumn: Column<M, I>,
     valueColumn: Column<M, J>,
@@ -142,11 +155,11 @@ fun <M, I: Any, J: Any> selectColumnMap(
     val query = TwoColumnSelect.build(t, keyColumn, valueColumn) {
         where(keyColumn, keys)
     }
-    val data = ds.selectTwoColumns(query)
+    val data = db.selectTwoColumns(query)
     for (pair in data) {
         val (key, value) = pair
         if (enforceNotNull) {
-            requireNotNull(key) { "Found null key in ${t}.$keyColumn!" }
+            checkNotNull(key) { "Found null key in ${t}.$keyColumn!" }
         } else if (key == null) {
             continue
         }
@@ -165,10 +178,8 @@ fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
 ): Map<K, M> {
     val table = objectMap.entries.firstOrNull()?.value?.table ?: return emptyMap()
 
-    val uniqueCols = table.columns.filter { it.isUnique }
-
     return buildMap {
-        for (col in uniqueCols) {
+        for (col in table.columns.filter { it.isUnique }) {
             val problemValues = findConflictingUniqueColumnValues(db, objectMap, col)
             objectMap.filterTo(this) { it.value.getData(col) in problemValues }
         }
@@ -183,16 +194,16 @@ private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
     objectMap: Map<K, M>,
     uniqueCol: Column<M, J>
 ): Set<J> {
-    check(uniqueCol.isUnique)
+    require(uniqueCol.isUnique)
 
     val objectValues = objectMap.values.mapNotNull { it.getData(uniqueCol) }
 
-    return if (objectValues.isEmpty()) {
-        emptySet()
-    } else {
-        selectSingleColumn(ds, uniqueCol) {
-            where(uniqueCol, objectValues)
-            distinct()
-        }.filterNotNullTo(HashSet())
+    if (objectValues.isEmpty()) {
+        return emptySet()
     }
+
+    return selectSingleColumn(ds, uniqueCol) {
+        where(uniqueCol, objectValues)
+        distinct()
+    }.filterNotNullTo(HashSet())
 }

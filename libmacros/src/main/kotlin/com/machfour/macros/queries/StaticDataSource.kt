@@ -1,13 +1,13 @@
 package com.machfour.macros.queries
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
-import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -69,8 +69,8 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return getDaysForMealIds(database, mealIds)
     }
 
-    override fun getCommonQuantities(foodId: Long): List<Pair<Double, Unit>> {
-        return getCommonQuantities(database, foodId)
+    override fun getCommonQuantities(foodId: Long, limit: Int): List<Triple<Double, Unit, String?>> {
+        return getCommonQuantities(database, foodId, limit)
     }
 
     override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
@@ -84,26 +84,29 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return saveObjects(database, objects, source)
     }
 
-    override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
-        val foodIdCol = FoodNutrientValueTable.FOOD_ID
+    override fun <M : MacrosEntity<M>> saveObjectsReturningIds(
+        objects: Collection<M>,
+        source: ObjectSource
+    ): List<EntityId> {
+        return saveObjectsReturningIds(database, objects, source)
+    }
+
+    override fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>) {
+        val (insertObjects, updateObjects) = nutrients.partition { it.source == ObjectSource.USER_NEW }
+
+        // add Food ID to data maps
+        val completedInsertObjects = insertObjects.map {
+            val data = it.dataFullCopy()
+            data.put(FoodNutrientValueTable.FOOD_ID, foodId)
+            FoodNutrientValue.factory.construct(data, ObjectSource.USER_NEW)
+        }
+
         try {
-            val (insertNutrients, updateNutrients) = nutrients.partition { it.source == ObjectSource.USER_NEW }
-
-            // link the new FoodNutrientValues to the food
-            for (nv in insertNutrients) {
-                nv.setFkParentKey(foodIdCol, FoodTable.INDEX_NAME, food)
-            }
-
             database.openConnection()
             database.beginTransaction()
 
-            // get the food ID into the FOOD_ID field of the NutrientValues
-            val completedNValues = completeForeignKeys(database, insertNutrients, foodIdCol)
-
-            saveObjects(completedNValues, ObjectSource.USER_NEW)
-            saveObjects(updateNutrients, ObjectSource.DB_EDIT)
-
-
+            saveObjects(completedInsertObjects, ObjectSource.USER_NEW)
+            saveObjects(updateObjects, ObjectSource.DB_EDIT)
             database.endTransaction()
         } finally {
             // TODO if exception is thrown here after an exception thrown
@@ -144,4 +147,7 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return recentFoodIds(database, howMany, distinct)
     }
 
+    override fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<Long> {
+        return recentMealIds(database, howMany, nameFilter)
+    }
 }

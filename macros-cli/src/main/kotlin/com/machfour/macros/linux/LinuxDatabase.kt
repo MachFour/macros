@@ -1,5 +1,7 @@
 package com.machfour.macros.linux
 
+import com.machfour.macros.core.EntityId
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.jvm.readSqlStatements
 import com.machfour.macros.jvm.wrapAsNativeException
 import com.machfour.macros.schema.AllTables
@@ -30,17 +32,15 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             return instance
         }
 
-        @Suppress("NewApi")
         @Throws(SqlException::class)
         fun deleteIfExists(dbFile: String): Boolean {
             try {
                 val dbPath = Paths.get(dbFile)
-                return if (Files.exists(dbPath)) {
-                    Files.delete(dbPath)
-                    true
-                } else {
-                    false
+                if (!Files.exists(dbPath)) {
+                    return false
                 }
+                Files.delete(dbPath)
+                return true
             } catch (e: IOException) {
                 throw e.wrapAsNativeException()
             }
@@ -108,24 +108,29 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     private val dataSource = makeSQLiteDataSource(dbFile)
+    private var currentConfig = dataSource.config
 
     private var cachedConnection: Connection? = null
 
+
     // returns persistent connection if there is one, otherwise a new temporary one.
-    private val connection: Connection
-        @Throws(SqlException::class)
-        get() {
-            try {
-                return cachedConnection ?: dataSource.connection
-            } catch (e: java.sql.SQLException) {
-                throw e.wrapAsNativeException()
-            }
+    @Throws(SqlException::class)
+    private fun getNewOrCachedConnection(returnGeneratedKeys: Boolean = false): Connection {
+        cachedConnection?.let { return it }
+
+        dataSource.config.isGetGeneratedKeys = returnGeneratedKeys
+        try {
+            return dataSource.connection
+        } catch (e: java.sql.SQLException) {
+            throw e.wrapAsNativeException()
         }
+    }
 
     @Throws(SqlException::class)
-    override fun openConnection() {
+    override fun openConnection(getGeneratedKeys: Boolean) {
         try {
             check(cachedConnection == null) { "A persistent connection is open already" }
+            dataSource.config.isGetGeneratedKeys = getGeneratedKeys
             cachedConnection = dataSource.connection
         } catch (e: java.sql.SQLException) {
             throw e.wrapAsNativeException()
@@ -188,8 +193,8 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SqlException::class)
     override fun initDb(config: SqlConfig) {
         // TODO insert data from Units and Nutrients classes instead of initial data
-        val getSqlFromPath: (String) -> String = { FileReader(File(it)).use { r -> readSqlStatements(r) } }
-        val c = connection
+        val getSqlFromPath: (String) -> String = { FileReader(File(it)).use { r -> r.readSqlStatements() } }
+        val c = getNewOrCachedConnection()
         try {
             c.createStatement().use { s ->
                 println("Create schema...")
@@ -221,7 +226,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
 
     @Throws(SqlException::class)
     override fun execRawSQLString(sql: String) {
-        val c = connection
+        val c = getNewOrCachedConnection()
         try {
             c.createStatement().use {
                 it.execute(sql)
@@ -272,7 +277,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     private fun executeSelectQuery(query: SelectQuery<*>, resultSetAction: (ResultSet) -> Unit) {
-        val c = connection
+        val c = getNewOrCachedConnection()
         try {
             val sql = query.toSql()
             if (query.hasBindArguments) {
@@ -299,43 +304,62 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SqlException::class)
-    override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
+    override fun <M> insertRowsReturningIds(data: Collection<RowData<M>>, useDataIds: Boolean): List<EntityId> {
         if (data.isEmpty()) {
-            return 0
+            return emptyList()
         }
-        var saved = 0
         val table = data.first().table
-        // even if we are inserting for the first time, there may be it has an ID that we want to keep intact
-        val columnsToInsert = if (withId) {
+        if (useDataIds) {
+            for (row in data) {
+                requireNotNull(row[table.idColumn]) { "insertIDs = true but data had null ID: $row" }
+            }
+        }
+
+        val columnsToInsert = if (useDataIds) {
             table.columns
         } else {
             table.columns.filter { it != table.idColumn }
         }
-        val c = connection
-        val statement = sqlInsertTemplate(table, columnsToInsert)
+
+        val returnedIds = ArrayList<EntityId>(data.size)
         var currentRow: RowData<M>? = null
+
+        val statement = sqlInsertTemplate(table, columnsToInsert)
+        val c = getNewOrCachedConnection(returnGeneratedKeys = !useDataIds)
         try {
             withDisabledAutoCommit(c) {
-                c.prepareStatement(statement).use { p ->
+                c.prepareStatement(statement).use { s ->
                     for (row in data) {
                         currentRow = row
-                        bindData(p, row, columnsToInsert)
-                        saved += p.executeUpdate()
-                        p.clearParameters()
+                        bindData(s, row, columnsToInsert)
+                        s.executeUpdate()
+                        if (!useDataIds) {
+                            s.generatedKeys.processResultSet {
+                                returnedIds.add(it.getLong(1))
+                            }
+                        } else {
+                            returnedIds.add(row[table.idColumn] ?: MacrosEntity.NO_ID)
+                        }
+                        s.clearParameters()
                     }
                 }
             }
         } catch (e: java.sql.SQLException) {
-            val msg = "${e.message} thrown by insertObjectData() on table ${table.name} and object data: $currentRow"
+            val msg = "${e.message} thrown by insertRows() on table ${table.name} and object data: $currentRow"
             throw SqlException(msg, e.cause)
         } finally {
             closeIfNecessary(c)
         }
-        return saved
+        return returnedIds
+    }
+
+    @Throws(SqlException::class)
+    override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
+        return insertRowsReturningIds(data, withId).size
     }
 
     override fun executeRawStatement(sql: String) {
-        val c = connection
+        val c = getNewOrCachedConnection()
         try {
             c.createStatement().use { it.executeUpdate(sql) }
         } catch (e: java.sql.SQLException) {
@@ -352,7 +376,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
         }
         var saved = 0
         val table = data.first().table
-        val c = connection
+        val c = getNewOrCachedConnection()
         try {
             withDisabledAutoCommit(c) {
                 c.prepareStatement(sqlUpdateTemplate(table, table.columns, table.idColumn)).use { p ->
@@ -374,7 +398,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     @Throws(SqlException::class)
     override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int {
         val sql = delete.toSql()
-        val c = connection
+        val c = getNewOrCachedConnection()
         try {
             if (delete.hasBindArguments) {
                 c.prepareStatement(sql).use {

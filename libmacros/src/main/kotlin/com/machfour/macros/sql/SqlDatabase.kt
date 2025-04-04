@@ -1,12 +1,13 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
 
 interface SqlDatabase {
     // Used to create a persistent connection that lasts across calls to the DB.
     // Caller MUST call closeConnection in a finally block
     @Throws(SqlException::class)
-    fun openConnection()
+    fun openConnection(getGeneratedKeys: Boolean = false)
 
     @Throws(SqlException::class)
     fun closeConnection()
@@ -45,6 +46,9 @@ interface SqlDatabase {
 
     @Throws(SqlException::class)
     fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
+
+    @Throws(SqlException::class)
+    fun <M> insertRowsReturningIds(data: Collection<RowData<M>>, useDataIds: Boolean): List<EntityId>
 
     // TODO add insert/update template
 

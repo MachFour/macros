@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
@@ -25,8 +26,13 @@ import com.machfour.macros.sql.generator.SimpleDelete
 // Do we really need the list methods? The user will probably only edit one object at a time
 // except for deleting a bunch of foodPortions from one meal, or servings from a food
 @Throws(SqlException::class)
-fun <M : MacrosEntity<M>> insertObjects(db: SqlDatabase, objects: Collection<M>, withId: Boolean): Int {
-    return db.insertRows(objects.map { it.data }, withId)
+fun <M : MacrosEntity<M>> insertObjects(db: SqlDatabase, objects: Collection<M>, useDataIds: Boolean): Int {
+    return db.insertRows(objects.map { it.data }, useDataIds)
+}
+
+@Throws(SqlException::class)
+fun <M : MacrosEntity<M>> insertObjectsReturningIds(db: SqlDatabase, objects: Collection<M>, useDataIds: Boolean): List<EntityId> {
+    return db.insertRowsReturningIds(objects.map { it.data }, useDataIds)
 }
 
 @Throws(SqlException::class)
@@ -56,10 +62,34 @@ private fun <M : MacrosEntity<M>> deleteObjectsById(
 }
 
 // returns number of objects saved correctly (i.e. 0 or 1)
-// NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 @Throws(SqlException::class)
-fun <M : MacrosEntity<M>> saveObject(db: SqlDatabase, o: M): Int {
-    return saveObjects(db, listOf(o), o.source)
+fun <M : MacrosEntity<M>> saveObject(db: SqlDatabase, o: M): EntityId {
+    return saveObjectsReturningIds(db, listOf(o), o.source).first()
+}
+
+@Throws(SqlException::class)
+fun <M : MacrosEntity<M>> saveObjectsReturningIds(
+    db: SqlDatabase,
+    objects: Collection<M>,
+    objectSource: ObjectSource
+    ): List<EntityId> {
+    return when (objectSource) {
+        ObjectSource.IMPORT, ObjectSource.USER_NEW -> {
+            insertObjectsReturningIds(db, objects, false)
+        }
+        ObjectSource.DB_EDIT -> {
+            updateObjects(db, objects)
+            objects.map { it.id }
+        }
+        ObjectSource.DATABASE -> error { "Saving unmodified database object" }
+        ObjectSource.RESTORE -> {
+            // will have ID. Assume database has been cleared?
+            insertObjectsReturningIds(db, objects, true)
+        }
+        ObjectSource.COMPUTED -> error { "Saving a computed object" }
+        ObjectSource.TEST -> error { "Saving a test object" }
+        ObjectSource.INBUILT -> error { "Saving an inbuilt object" }
+    }
 }
 
 // TODO pull these functions up to DataSource level
@@ -72,22 +102,14 @@ fun <M : MacrosEntity<M>> saveObjects(
     return when (objectSource) {
         ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(db, objects, false)
         ObjectSource.DB_EDIT -> updateObjects(db, objects)
-        ObjectSource.DATABASE -> {
-            check(false) { "Saving unmodified database object" }
-            0
-        }
+        ObjectSource.DATABASE -> error { "Saving unmodified database object" }
         ObjectSource.RESTORE -> {
             // will have ID. Assume database has been cleared?
             insertObjects(db, objects, true)
         }
-        ObjectSource.COMPUTED -> {
-            check(false) { "Saving a computed object" }
-            0
-        }
-        else -> {
-            check(false) { "Unrecognised object source: $objectSource" }
-            0
-        }
+        ObjectSource.COMPUTED -> error { "Saving a computed object" }
+        ObjectSource.TEST -> error { "Saving a test object" }
+        ObjectSource.INBUILT -> error { "Saving an inbuilt object" }
     }
 }
 
@@ -99,7 +121,7 @@ fun forgetFood(db: SqlDatabase, f: Food) {
     require(f.source === ObjectSource.DATABASE) { "Food ${f.indexName} is not in DB" }
     // delete nutrition data, foodQuantities, servings, then food
 
-    // servings and nutrient values are deleted on cascade, so we only have to worry about foodquantities
+    // servings and nutrient values are deleted on cascade, so we only have to worry about food quantities
     deleteWhere(db, FoodPortionTable, FoodPortionTable.FOOD_ID, listOf(f.id))
     deleteWhere(db, IngredientTable, IngredientTable.FOOD_ID, listOf(f.id))
     deleteObject(db, f)

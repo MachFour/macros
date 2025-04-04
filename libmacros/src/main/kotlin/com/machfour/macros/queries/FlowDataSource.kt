@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
@@ -193,9 +194,23 @@ class FlowDataSource(
         return numSaved
     }
 
-    override fun saveNutrientsToFood(food: Food, nutrients: List<FoodNutrientValue>) {
-        super.saveNutrientsToFood(food, nutrients)
-        afterDbEdit(food)
+    @Throws(SqlException::class)
+    override fun <M : MacrosEntity<M>> saveObjectsReturningIds(objects: Collection<M>, source: ObjectSource): List<EntityId> {
+        val ids = saveObjectsReturningIds(database, objects, source)
+        // TODO copied from WriteQueries
+        // problem: don't know id after saving here (it was NO_ID)
+        // --> but now we do!!
+        when (source) {
+            ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEach { afterDbInsert(it) } }
+            ObjectSource.DB_EDIT -> { objects.forEach { afterDbEdit(it) } }
+            else -> {}
+        }
+        return ids
+    }
+
+    override fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>) {
+        super.saveNutrientsToFood(foodId, nutrients)
+        afterNutrientsSaved(foodId)
     }
 
     private fun <M : MacrosEntity<M>> afterDbInsert(obj: M) {
@@ -212,6 +227,10 @@ class FlowDataSource(
 
     private fun cachedMealForFpId(id: Long): Meal? {
         return meals.values.find { it.foodPortions.any { fp -> fp.id == id } }
+    }
+
+    private fun afterNutrientsSaved(foodId: EntityId) {
+        markCacheStale(foodId, FoodTable)
     }
 
     private fun <M : MacrosEntity<M>> afterDbEdit(obj: M) {

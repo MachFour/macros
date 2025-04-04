@@ -20,11 +20,15 @@ fun IOException.wrapAsNativeException(): SqlException {
     return SqlException("[IO Exception] $message", cause)
 }
 
+private fun BufferedReader.getLines() = generateSequence {
+    if (ready()) readLine() else null
+}
+
 @Throws(SqlException::class)
-fun readSqlStatements(r: Reader, lineSep: String = " "): String {
+fun Reader.readSqlStatements(lineSep: String = " "): String {
     try {
-        BufferedReader(r).use { reader ->
-            return createSqlStatements(reader::readLine, reader::ready, lineSep)
+        return BufferedReader(this).use {
+            createSqlStatements(lines = it.getLines(), lineSep = lineSep)
         }
     } catch (e: IOException) {
         throw e.wrapAsNativeException()
@@ -32,10 +36,10 @@ fun readSqlStatements(r: Reader, lineSep: String = " "): String {
 }
 
 @Throws(SqlException::class)
-fun readSplitSqlStatements(r: Reader, lineSep: String = " "): List<String> {
+fun Reader.readSplitSqlStatements(): List<String> {
     try {
-        BufferedReader(r).use { reader ->
-            return createSplitSqlStatements(reader::readLine, reader::ready)
+        BufferedReader(this).use {
+            return createSplitSqlStatements(it.getLines())
         }
     } catch (e: IOException) {
         throw e.wrapAsNativeException()

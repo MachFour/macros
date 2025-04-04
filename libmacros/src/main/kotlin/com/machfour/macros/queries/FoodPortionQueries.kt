@@ -1,19 +1,21 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.ColumnMax.Companion.max
 import com.machfour.macros.sql.generator.OrderByDirection
 
-//fun getServingId(dataSource: MacrosDataSource, fpId: Long) : Long? {
+//fun getServingId(dataSource: MacrosDataSource, fpId: EntityId) : EntityId? {
 //    return CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.SERVING_ID) {
 //        where(FoodPortionTable.ID, listOf(fpId))
 //    }.getOrNull(0)
 //}
 
-//fun getQuantityUnit(dataSource: MacrosDataSource, fpId: Long) : Unit? {
+//fun getQuantityUnit(dataSource: MacrosDataSource, fpId: EntityId) : Unit? {
 //    val abbr = CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.QUANTITY_UNIT) {
 //            where(FoodPortionTable.ID, listOf(fpId))
 //        }.getOrNull(0)
@@ -22,7 +24,7 @@ import com.machfour.macros.sql.generator.OrderByDirection
 //    }
 //}
 
-//fun getFoodForFoodPortionId(ds: MacrosDataSource, fpId: Long): Food? {
+//fun getFoodForFoodPortionId(ds: MacrosDataSource, fpId: EntityId): Food? {
 //    val foodIds = CoreQueries.selectSingleColumn(ds, FoodPortionTable, FoodPortionTable.FOOD_ID) {
 //        where(FoodPortionTable.ID, listOf(fpId))
 //    }
@@ -33,7 +35,7 @@ import com.machfour.macros.sql.generator.OrderByDirection
 //}
 
 @Throws(SqlException::class)
-fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> {
+fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<EntityId> {
     // NOTE this can't actually give the create time.
     // Need to SELECT MAX(create_time) for that (not just ORDER BY)
     val query = selectTwoColumns(
@@ -53,18 +55,39 @@ fun recentFoodIds(db: SqlDatabase, howMany: Int, distinct: Boolean): List<Long> 
     return query.mapNotNull { it.first }
 }
 
-fun getCommonQuantities(db: SqlDatabase, foodId: Long): List<Pair<Double, Unit>> {
-    val quantity = FoodPortionTable.QUANTITY
-    val quantityUnit = FoodPortionTable.QUANTITY_UNIT
+@Throws(SqlException::class)
+fun recentMealIds(db: SqlDatabase, howMany: Int, nameFilter: Collection<String>): List<EntityId> {
     val query = selectTwoColumns(
         db = db,
-        select1 = FoodPortionTable.QUANTITY,
-        select2 = FoodPortionTable.QUANTITY_UNIT,
+        select1 = MealTable.ID,
+        select2 = MealTable.MODIFY_TIME,
+    ) {
+        if (nameFilter.isNotEmpty()) {
+            where(MealTable.NAME, nameFilter)
+        }
+        orderBy(MealTable.MODIFY_TIME.max(), OrderByDirection.DESCENDING)
+        limit(howMany)
+    }
+    return query.mapNotNull { it.first }
+}
+
+fun getCommonQuantities(db: SqlDatabase, foodId: EntityId, limit: Int = -1): List<Triple<Double, Unit, String?>> {
+    val quantity = FoodPortionTable.QUANTITY
+    val quantityUnit = FoodPortionTable.QUANTITY_UNIT
+    val servingID = FoodPortionTable.SERVING_ID
+    val query = selectThreeColumns(
+        db = db,
+        select1 = quantity,
+        select2 = quantityUnit,
+        select3 = servingID,
     ) {
         fromSuffix("COUNT (*) as count")
-        groupBy("$quantity, $quantityUnit")
-        orderBy("count DESC")
         where(FoodPortionTable.FOOD_ID, foodId)
+        groupBy("$quantity, $quantityUnit, $servingID")
+        orderBy("count DESC")
+        if (limit >= 0) {
+            limit(limit)
+        }
     }
-    return query.filterIsInstance<Pair<Double, Unit>>()
+    return query.filterIsInstance<Triple<Double, Unit, String?>>()
 }

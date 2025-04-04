@@ -1,12 +1,13 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
 
 abstract class SqlDatabaseImpl : SqlDatabase {
     // caller-managed connection, useful to reduce number of calls to DB
     // caller needs to call closeConnection() after. Use with begin and end transaction
     @Throws(SqlException::class)
-    abstract override fun openConnection()
+    abstract override fun openConnection(getGeneratedKeys: Boolean)
 
     @Throws(SqlException::class)
     abstract override fun closeConnection()
@@ -48,8 +49,10 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int
 
     @Throws(SqlException::class)
-    abstract override fun <M> updateRows(data: Collection<RowData<M>>): Int
+    abstract override fun <M> insertRowsReturningIds(data: Collection<RowData<M>>, useDataIds: Boolean): List<EntityId>
 
+    @Throws(SqlException::class)
+    abstract override fun <M> updateRows(data: Collection<RowData<M>>): Int
 
     @Throws(SqlException::class)
     abstract override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int

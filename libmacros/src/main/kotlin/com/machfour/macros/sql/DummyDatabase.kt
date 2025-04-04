@@ -1,9 +1,10 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
 
 private class DummyDatabase: SqlDatabase {
-    override fun openConnection() {}
+    override fun openConnection(getGeneratedKeys: Boolean) {}
 
     override fun closeConnection() {}
 
@@ -55,6 +56,10 @@ private class DummyDatabase: SqlDatabase {
 
     override fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int {
         return 0
+    }
+
+    override fun <M> insertRowsReturningIds(data: Collection<RowData<M>>, useDataIds: Boolean): List<EntityId> {
+        return emptyList()
     }
 
     override fun executeRawStatement(sql: String) {

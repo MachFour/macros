@@ -91,17 +91,16 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return data.hasValue(col)
     }
 
-    override fun dataCopy(withMetadata: Boolean): RowData<M> {
-        val copy = data.copy()
-        return when (withMetadata) {
-            true -> copy
-            false -> copy.apply {
-                //copy.setDefaultData(listOf(table.idColumn, table.createTimeColumn, table.modifyTimeColumn))
-                put(table.idColumn, MacrosEntity.NO_ID)
-                put(table.createTimeColumn, 0L)
-                put(table.modifyTimeColumn, 0L)
-            }
+    override fun dataCopyWithoutMetadata(): RowData<M> {
+        return data.copy().apply {
+            put(table.idColumn, NO_ID)
+            put(table.createTimeColumn, 0L)
+            put(table.modifyTimeColumn, 0L)
         }
+    }
+
+    override fun dataFullCopy(): RowData<M> {
+        return data.copy()
     }
 
     // this also works for import (without IDs) because both columns are NO_ID
@@ -111,10 +110,11 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         parentObj: MacrosEntity<N>
     ): Boolean {
         val parentCol = childCol.parentColumn
-        val parentIdCol = parentObj.table.idColumn
-        return childObj.getData(childCol) == parentObj.getData(parentCol) ||
-                // disable ID check for TEST objects
-                (parentCol == parentIdCol && parentObj.source == ObjectSource.TEST)
+        if (parentCol == parentObj.table.idColumn && parentObj.source == ObjectSource.TEST) {
+            // disable ID check for TEST objects
+            return true
+        }
+        return childObj.getData(childCol) == parentObj.getData(parentCol)
     }
 
 }

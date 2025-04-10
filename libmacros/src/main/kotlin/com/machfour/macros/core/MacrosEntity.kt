@@ -28,6 +28,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
     val data: RowData<M>
     val table: Table<M>
 
-    fun dataCopy(withMetadata: Boolean = false): RowData<M>
-    fun dataFullCopy(): RowData<M> = dataCopy(withMetadata = true)
+    // Data copy without ID or create/modify times
+    fun dataCopyWithoutMetadata(): RowData<M>
+    fun dataFullCopy(): RowData<M>
 }

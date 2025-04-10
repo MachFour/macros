@@ -234,8 +234,7 @@ class FoodNutrientData(
 }
 
 private fun FoodNutrientValue.cloneWithoutMetadata(): FoodNutrientValue {
-    val data = dataCopy(withMetadata = false)
-    return factory.construct(data, ObjectSource.COMPUTED)
+    return factory.construct(dataCopyWithoutMetadata(), ObjectSource.COMPUTED)
 }
 
 

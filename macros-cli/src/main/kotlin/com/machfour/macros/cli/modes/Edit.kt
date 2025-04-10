@@ -87,7 +87,7 @@ private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
     }
 
     try {
-        val newData = portions[n].dataCopy(withMetadata = false)
+        val newData = portions[n].dataCopyWithoutMetadata()
         newData.put(FoodPortionTable.QUANTITY, newQty)
         saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
     } catch (e3: SqlException) {

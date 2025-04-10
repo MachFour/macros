@@ -5,7 +5,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.validation.SchemaViolation
-import com.machfour.macros.validation.tableValidator
+import com.machfour.macros.validation.validateNonNull
 
 // ensures that the presence of the ID is consistent with the semantics of the objectSource
 // see ObjectSource class for more documentation
@@ -43,9 +43,9 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
 
-        tableValidator(data.table)
-            .validateData(data)
-            .let { if (it.isNotEmpty()) { throw SchemaViolation(it) } }
+        validateNonNull(data).takeIf { it.isNotEmpty() }?.let {
+            throw SchemaViolation(it)
+        }
 
         require(checkIdPresence(source, hasId)) {
             if (hasId) { "Object should not have ID:\n" }

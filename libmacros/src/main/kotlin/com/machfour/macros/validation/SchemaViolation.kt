@@ -2,7 +2,6 @@ package com.machfour.macros.validation
 
 import com.machfour.macros.sql.Column
 
-class SchemaViolation : RuntimeException {
-    constructor (c: Column<*, *>, v: ValidationError) : super("Schema error (" + v + ") found in column: " + c.sqlName)
-    constructor(errorMap: Map<out Column<*, *>, List<ValidationError>>) : super("Schema errors found:$errorMap")
+class SchemaViolation(errorMap: Map<out Column<*, *>, List<ValidationError>>) :
+    IllegalArgumentException("Schema errors found: $errorMap") {
 }

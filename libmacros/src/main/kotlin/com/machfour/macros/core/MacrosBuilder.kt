@@ -5,23 +5,13 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
-import com.machfour.macros.validation.MacrosValidator
 import com.machfour.macros.validation.ValidationError
-import com.machfour.macros.validation.tableValidator
+import com.machfour.macros.validation.validateNonNull
 
 
-class MacrosBuilder<M : MacrosEntity<M>> private constructor(
-    private val table: Table<M>,
-    private val validator: MacrosValidator<M> = tableValidator(table),
-    fromInstance: M?
-) {
-    constructor(
-        table: Table<M>, validator: MacrosValidator<M> = tableValidator(table)
-    ) : this(table, validator, null)
-
-    constructor(
-        fromInstance: M, validator: MacrosValidator<M> = tableValidator(fromInstance.table)
-    ) : this(fromInstance.table, validator, fromInstance)
+class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val table: Table<M>, fromInstance: M?) {
+    constructor(table: Table<M>) : this(table, null)
+    constructor(fromInstance: M) : this(fromInstance.table, fromInstance)
 
     var finishedInit = false
 
@@ -173,7 +163,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
             if (wasTypeMismatch) {
                 add(ValidationError.TYPE_MISMATCH)
             } else {
-                addAll(validator.validateSingle(draftData, col))
+                addAll(validateNonNull(draftData, col))
             }
         }
     }
@@ -182,7 +172,7 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
         // clear previous error values
         validationErrors.values.forEach { it.clear() }
 
-        val newErrors = validator.validateData(draftData)
+        val newErrors = validateNonNull(draftData)
 
         // XXX note this will erase type mismatch errors
         for ((col, errors) in newErrors) {

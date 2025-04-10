@@ -41,8 +41,6 @@ interface Column<M, J: Any> : ColumnExpr<M, J> {
 
         fun notNull(): Builder<J>
 
-        fun inSecondaryKey(): Builder<J>
-
         fun unique(): Builder<J>
 
         fun defaultsTo(value: J?): Builder<J>

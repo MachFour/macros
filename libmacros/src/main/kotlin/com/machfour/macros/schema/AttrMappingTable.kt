@@ -17,13 +17,13 @@ private val id = idColumnBuildFor(columns)
 private val create_time = createTimeColumnBuildFor(columns)
 private val modify_time = modifyTimeColumnBuildFor(columns)
 private val food_id =
-    builder("food_id", Types.ID).notEditable().notNull().inSecondaryKey()
-        .buildFkFor(FoodTable, FoodTable.ID, columns )
+    builder("food_id", Types.ID).notEditable().notNull()
+        .buildFkFor(FoodTable, FoodTable.ID, columns)
 private val attribute_id =
-    builder("attribute_id", Types.ID).notEditable().notNull().inSecondaryKey()
+    builder("attribute_id", Types.ID).notEditable().notNull()
         .buildFkFor(FoodAttributeTable, FoodAttributeTable.ID, columns)
 
-object AttrMappingTable: TableImpl<AttrMapping>(tableName, AttrMapping.factory, columns) {
+object AttrMappingTable : TableImpl<AttrMapping>(tableName, AttrMapping.factory, columns) {
     val ID: Column<AttrMapping, Long>
         get() = id
     val CREATE_TIME: Column<AttrMapping, Long>

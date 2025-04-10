@@ -20,7 +20,7 @@ private val modifyTime = modifyTimeColumnBuildFor(columns)
 
 private val nutrientId = nutrientValueNutrientColumn(columns)
 private val unitId = nutrientValueUnitColumn(columns)
-private val value = nutrientValueValueColumn(columns)
+private val value = nutrientValueAmountColumn(columns)
 private val constraintSpec = nutrientValueConstraintColumn(columns)
 
 private val goalId =

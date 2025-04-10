@@ -18,7 +18,7 @@ private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
 
 private val indexName =
-    builder("index_name", Types.TEXT).notNull().unique().inSecondaryKey().buildFor(columns)
+    builder("index_name", Types.TEXT).notNull().unique().buildFor(columns)
 private val name =
     builder("name", Types.TEXT).buildFor(columns)
 private val brand =
@@ -62,7 +62,7 @@ object FoodTable: TableImpl<Food>(tableName, Factories.food, columns) {
     val EXTRA_DESC: Column<Food, String>
         get() = extraDesc
     val NAME: Column<Food, String>
-        get() = com.machfour.macros.schema.name
+        get() = name
     val NOTES: Column<Food, String>
         get() = notes
     val FOOD_TYPE: Column<Food, String>

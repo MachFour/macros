@@ -21,51 +21,51 @@ internal fun <J: Any> builder(name: String, type: SqlType<J>): ColumnImpl.Builde
     return ColumnImpl.Builder(name, type)
 }
 
-internal fun <M> idColumnBuildFor(columnList: MutableList<Column<M, out Any>>)
-    = builder(ID_COLUMN_NAME, Types.ID).defaultsTo(NO_ID).notNull().unique().notEditable().buildFor(columnList)
+internal fun <M> idColumnBuildFor(columnList: MutableList<Column<M, out Any>>) =
+    builder(ID_COLUMN_NAME, Types.ID).defaultsTo(NO_ID).notNull().unique().notEditable().buildFor(columnList)
 
-internal fun <M> createTimeColumnBuildFor(columnList: MutableList<Column<M, out Any>>)
-    = builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().buildFor(columnList)
+internal fun <M> createTimeColumnBuildFor(columnList: MutableList<Column<M, out Any>>) =
+    builder(CREATE_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().buildFor(columnList)
 
-internal fun <M> modifyTimeColumnBuildFor(columnList: MutableList<Column<M, out Any>>)
-    = builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().buildFor(columnList)
+internal fun <M> modifyTimeColumnBuildFor(columnList: MutableList<Column<M, out Any>>) =
+    builder(MODIFY_TIME_COLUMN_NAME, Types.TIMESTAMP).defaultsTo(0L).notEditable().buildFor(columnList)
 
-internal fun <M> notesColumnBuildAndAdd(columnList: MutableList<Column<M, out Any>>)
-    = builder(NOTES_COLUMN_NAME, Types.TEXT).buildFor(columnList)
+internal fun <M> notesColumnBuildAndAdd(columnList: MutableList<Column<M, out Any>>) =
+    builder(NOTES_COLUMN_NAME, Types.TEXT).buildFor(columnList)
 
 // shared columns for FoodQuantity tables (FoodPortion, Ingredient)
 
-internal fun <M> foodQuantityQuantityCol(columns: MutableList<Column<M, out Any>>)
-    = builder("quantity", Types.REAL).notNull().buildFor(columns)
+internal fun <M> foodQuantityQuantityCol(columns: MutableList<Column<M, out Any>>) =
+    builder("quantity", Types.REAL).notNull().buildFor(columns)
 
-internal fun <M> foodQuantityQuantityUnitCol(columns: MutableList<Column<M, out Any>>)
-    = builder("quantity_unit", Types.TEXT).notEditable().notNull()
+internal fun <M> foodQuantityQuantityUnitCol(columns: MutableList<Column<M, out Any>>) =
+    builder("quantity_unit", Types.TEXT).notEditable().notNull()
         .buildFkFor(UnitTable, UnitTable.ABBREVIATION, columns)
 
-internal fun <M> foodQuantityFoodIdCol(columns: MutableList<Column<M, out Any>>)
-    = builder("food_id", Types.ID).notEditable().notNull()
+internal fun <M> foodQuantityFoodIdCol(columns: MutableList<Column<M, out Any>>) =
+    builder("food_id", Types.ID).notEditable().notNull()
         .buildFkFor(FoodTable, FoodTable.ID, columns)
 
-internal fun <M> foodQuantityServingIdCol(columns: MutableList<Column<M, out Any>>)
-    = builder("serving_id", Types.ID).notEditable()
+internal fun <M> foodQuantityServingIdCol(columns: MutableList<Column<M, out Any>>) =
+    builder("serving_id", Types.ID).notEditable()
         .buildFkFor(ServingTable, ServingTable.ID, columns)
 
-internal fun <M> foodQuantityNutrientMaxVersionCol(columns: MutableList<Column<M, out Any>>)
-    = builder("nutrient_max_version", Types.INTEGER).notEditable().notNull().defaultsTo(1)
+internal fun <M> foodQuantityNutrientMaxVersionCol(columns: MutableList<Column<M, out Any>>) =
+    builder("nutrient_max_version", Types.INTEGER).notEditable().notNull().defaultsTo(1)
         .buildFor(columns)
 
 // Shared columns for NutrientValue tables (FoodNutrientValue, NutrientGoalValue)
 
-internal fun <M> nutrientValueNutrientColumn(columns: MutableList<Column<M, out Any>>)
-    = builder("nutrient_id", Types.ID).notNull().notEditable().inSecondaryKey()
+internal fun <M> nutrientValueNutrientColumn(columns: MutableList<Column<M, out Any>>) =
+    builder("nutrient_id", Types.ID).notNull().notEditable()
         .buildFkFor(NutrientTable, NutrientTable.ID, columns)
 
-internal fun <M> nutrientValueUnitColumn(columns: MutableList<Column<M, out Any>>)
-    = builder("unit_id", Types.ID).notNull().notEditable()
-            .buildFkFor(UnitTable, UnitTable.ID, columns)
+internal fun <M> nutrientValueUnitColumn(columns: MutableList<Column<M, out Any>>) =
+    builder("unit_id", Types.ID).notNull().notEditable()
+        .buildFkFor(UnitTable, UnitTable.ID, columns)
 
-internal fun <M> nutrientValueValueColumn(columns: MutableList<Column<M, out Any>>)
-    = builder("value", Types.REAL).notNull().buildFor(columns)
+internal fun <M> nutrientValueAmountColumn(columns: MutableList<Column<M, out Any>>) =
+    builder("value", Types.REAL).notNull().buildFor(columns)
 
-internal fun <M> nutrientValueConstraintColumn(columns: MutableList<Column<M, out Any>>)
-    = builder("constraint_spec", Types.INTEGER).notNull().defaultsTo(0).buildFor(columns)
+internal fun <M> nutrientValueConstraintColumn(columns: MutableList<Column<M, out Any>>) =
+    builder("constraint_spec", Types.INTEGER).notNull().defaultsTo(0).buildFor(columns)

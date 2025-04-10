@@ -20,7 +20,7 @@ private val name =
 private val typeId =
     builder("type_id", Types.INTEGER).notEditable().notNull().buildFor(columns)
 private val abbreviation =
-    builder("abbreviation", Types.TEXT).notNull().inSecondaryKey().unique().buildFor(columns)
+    builder("abbreviation", Types.TEXT).notNull().unique().buildFor(columns)
 private val metricEquivalent =
     builder("metric_equivalent", Types.REAL).notNull().buildFor(columns)
 private val inbuilt =

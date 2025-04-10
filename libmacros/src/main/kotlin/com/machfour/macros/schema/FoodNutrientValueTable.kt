@@ -21,12 +21,12 @@ private val modifyTime = modifyTimeColumnBuildFor(columns)
 
 private val nutrientId = nutrientValueNutrientColumn(columns)
 private val unitId = nutrientValueUnitColumn(columns)
-private val value = nutrientValueValueColumn(columns)
+private val value = nutrientValueAmountColumn(columns)
 private val constraintSpec = nutrientValueConstraintColumn(columns)
 
 // might have NO_ID value if it's not being stored in the database (i.e. computed value)
 private val foodId =
-    builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID).inSecondaryKey()
+    builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID)
         .buildFkFor(FoodTable, FoodTable.ID, columns)
 private val version =
     builder("version", Types.INTEGER).notNull().defaultsTo(1).buildFor(columns)

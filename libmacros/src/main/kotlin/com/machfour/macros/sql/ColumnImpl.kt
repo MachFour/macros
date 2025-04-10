@@ -50,8 +50,6 @@ internal open class ColumnImpl<M, J: Any> private constructor(
 
         override fun notNull() = apply { nullable = false }
 
-        override fun inSecondaryKey() = this
-
         override fun unique() = apply { unique = true }
 
         override fun defaultsTo(value: J?) = apply { defaultValue = { value } }

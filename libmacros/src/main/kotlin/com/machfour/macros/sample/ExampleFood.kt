@@ -21,22 +21,19 @@ import com.machfour.macros.schema.FoodTable.NUTTAB_INDEX
 import com.machfour.macros.schema.FoodTable.USDA_INDEX
 import com.machfour.macros.schema.FoodTable.VARIETY
 import com.machfour.macros.sql.RowData
-import com.machfour.macros.units.CALORIES
-import com.machfour.macros.units.GRAMS
-import com.machfour.macros.units.MILLIGRAMS
-import com.machfour.macros.units.MILLILITRES
+import com.machfour.macros.units.*
 
 // Food with no nutrition data
 val exampleFood1: Food by lazy {
-    initIngredientFood1()
+    initExampleFood1()
 }
 
 // Food with nutrition data that has nonunit density
 val exampleFood2: Food by lazy {
-    initIngredientFood2()
+    initExampleFood2()
 }
 
-private fun initIngredientFood1(): Food {
+private fun initExampleFood1(): Food {
     val data = RowData(FoodTable)
     data.put(ID, 1L)
     data.put(INDEX_NAME, "food1")
@@ -48,10 +45,40 @@ private fun initIngredientFood1(): Food {
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     data.put(USDA_INDEX, null)
     data.put(NUTTAB_INDEX, null)
-    return Food.factory.construct(data, ObjectSource.TEST)
+    val f = Food.factory.construct(data, ObjectSource.TEST)
+
+    val foodCategory = RowData(FoodCategoryTable).run {
+        put(FoodCategoryTable.NAME, "uncategorised")
+        FoodCategory.factory.construct(this, ObjectSource.TEST)
+    }
+
+    f.setFoodCategory(foodCategory)
+
+    val nutritionData = listOf(
+        FoodNutrientValue.makeComputedValue(200.0, ENERGY, KILOJOULES),
+        FoodNutrientValue.makeComputedValue(4.0, PROTEIN, GRAMS),
+        FoodNutrientValue.makeComputedValue(12.0, CARBOHYDRATE, GRAMS),
+        FoodNutrientValue.makeComputedValue(9.0, FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(1.0, SATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(5.0, SUGAR, GRAMS),
+        FoodNutrientValue.makeComputedValue(5.0, POLYUNSATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(2.0, MONOUNSATURATED_FAT, GRAMS),
+        FoodNutrientValue.makeComputedValue(10.0, WATER, MILLILITRES),
+        FoodNutrientValue.makeComputedValue(10.0, FIBRE, GRAMS),
+        FoodNutrientValue.makeComputedValue(500.0, SODIUM, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(20.0, CALCIUM, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(4.0, IRON, MILLIGRAMS),
+        FoodNutrientValue.makeComputedValue(100.0, QUANTITY, GRAMS),
+    )
+
+    for (nv in nutritionData) {
+        f.addNutrientValue(nv)
+    }
+
+    return f
 }
 
-private fun initIngredientFood2(): Food {
+private fun initExampleFood2(): Food {
     val data = RowData(FoodTable)
     data.put(ID, 2L)
     data.put(INDEX_NAME, "generic-oil")

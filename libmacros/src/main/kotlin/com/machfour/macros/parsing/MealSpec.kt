@@ -21,9 +21,6 @@ class MealSpec(val name: String?, val day: DateStamp?, error: String? = null) {
     // whether parameters were actually given (true) or the default value used (false)
     val isMealSpecified: Boolean = name != null
 
-    // not just day != null - if no day was given we use current date as default.
-    val isDaySpecified: Boolean = day != null
-
     var processedObject: Meal? = null
         private set
 

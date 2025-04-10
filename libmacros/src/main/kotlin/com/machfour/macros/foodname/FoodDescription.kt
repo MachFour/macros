@@ -31,19 +31,39 @@ interface FoodDescription {
     fun hasDescriptionData(col: Column<Food, String>): Boolean {
         return getDescriptionData(col) != null
     }
-    val shortName: String
-        get() = prettyFormat(withBrand = false, withVariety = false)
 
-    val longName: String
-        get() = prettyFormat(withExtra = true)
+    val shortName: String
+        get() = prettyFormat(withBrand = false, withVariety = false, withExtra = false, sortable = false)
 
     val mediumName: String
-        get() = prettyFormat()
+        get() = prettyFormat(withBrand = true, withVariety = true, withExtra = false, sortable = false)
+
+    val longName: String
+        get() = prettyFormat(withBrand = true, withVariety = true, withExtra = true, sortable = false)
 
     val sortableName: String
-        get() = prettyFormat(withExtra = true, sortable = true)
+        get() = prettyFormat(withBrand = true, withVariety = true, withExtra = true, sortable = true)
 
 }
+
+private fun FoodDescription.prettyFormat(
+    withBrand: Boolean,
+    withVariety: Boolean,
+    withExtra: Boolean,
+    sortable: Boolean,
+): String {
+    return formatFoodName(
+        basicName = basicName,
+        brand = brand,
+        variety = variety,
+        extraDesc = extraDesc,
+        withBrand = withBrand,
+        withVariety = withVariety,
+        withExtra = withExtra,
+        sortable = sortable,
+    )
+}
+
 
 val foodDescriptionColumns = listOf(
     FoodTable.NAME,
@@ -123,23 +143,5 @@ fun formatFoodName(
         }
     }
 
-}
-
-private fun FoodDescription.prettyFormat(
-    withBrand: Boolean = true,
-    withVariety: Boolean = true,
-    withExtra: Boolean = false,
-    sortable: Boolean = false
-): String {
-    return formatFoodName(
-        basicName = basicName,
-        brand = brand,
-        variety = variety,
-        extraDesc = extraDesc,
-        withBrand = withBrand,
-        withVariety = withVariety,
-        withExtra = withExtra,
-        sortable = sortable,
-    )
 }
 

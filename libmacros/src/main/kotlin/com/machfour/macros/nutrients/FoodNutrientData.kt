@@ -2,7 +2,7 @@
 
 package com.machfour.macros.nutrients
 
-import com.machfour.macros.core.MacrosEntity.Companion.cloneWithoutMetadata
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.units.GRAMS
@@ -210,8 +210,6 @@ class FoodNutrientData(
         //check(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
         val result = FoodNutrientData(dataCompleteIfNotNull = false)
 
-        val factory = FoodNutrientValue.factory
-
         for (n in AllNutrients) {
             // note: hasCompleteData is a stricter condition than hasData:
             // hasCompleteData can be false even if there is a non-null value for that column, when the
@@ -221,9 +219,11 @@ class FoodNutrientData(
             val thisValue = this[n]
             val otherValue = other[n]
 
-            val resultValue = (thisValue ?: otherValue)?.let { factory.cloneWithoutMetadata(it) }
-            val resultIsDataComplete =
-                if (thisValue != null) this.hasCompleteData(n) else other.hasCompleteData(n)
+            val resultValue = (thisValue ?: otherValue)?.cloneWithoutMetadata()
+            val resultIsDataComplete = when (thisValue) {
+                null -> other.hasCompleteData(n)
+                else -> this.hasCompleteData(n)
+            }
 
             result[n] = resultValue
             result.markCompleteData(n, resultIsDataComplete)
@@ -233,5 +233,9 @@ class FoodNutrientData(
 
 }
 
+private fun FoodNutrientValue.cloneWithoutMetadata(): FoodNutrientValue {
+    val data = dataCopy(withMetadata = false)
+    return factory.construct(data, ObjectSource.COMPUTED)
+}
 
 

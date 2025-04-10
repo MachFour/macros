@@ -15,7 +15,7 @@ object EnglishColumnNames: ColumnStrings, NutrientStrings {
         QUANTITY to "Qty"
     )
 
-    // longer (but really medium name for nutrients printed in verbose mode
+    // longer (but really medium name for nutrients printed in verbose mode)
     private val longerNutrientNames = mapOf(
         ENERGY to "Energy",
         PROTEIN to "Protein",
@@ -68,22 +68,22 @@ object EnglishColumnNames: ColumnStrings, NutrientStrings {
     // TODO put ALLLLLLLLLLL columns in here
     private val columnNames = mapOf(
         // Food Table
-          FoodTable.ID to "ID"
-        , FoodTable.CREATE_TIME to "Creation time"
-        , FoodTable.MODIFY_TIME to "Last modified"
-        , FoodTable.INDEX_NAME to "Index name"
-        , FoodTable.BRAND to "Brand"
-        , FoodTable.VARIETY to "Variety"
-        , FoodTable.EXTRA_DESC to "Extra description"
-        , FoodTable.NAME to "Name"
-        , FoodTable.NOTES to "Notes"
-        , FoodTable.FOOD_TYPE to "Food Type"
-        , FoodTable.USDA_INDEX to "USDA DB index"
-        , FoodTable.NUTTAB_INDEX to "NUTTAB DB index"
-        , FoodTable.CATEGORY to "Category"
-        , FoodTable.DATA_NOTES to "Data Notes"
-        , FoodTable.DATA_SOURCE to "Data Source"
-        , FoodTable.DENSITY to "Density (g/mL)"
+        FoodTable.ID to "ID",
+        FoodTable.CREATE_TIME to "Creation time",
+        FoodTable.MODIFY_TIME to "Last modified",
+        FoodTable.INDEX_NAME to "Index name",
+        FoodTable.BRAND to "Brand",
+        FoodTable.VARIETY to "Variety",
+        FoodTable.EXTRA_DESC to "Extra description",
+        FoodTable.NAME to "Name",
+        FoodTable.NOTES to "Notes",
+        FoodTable.FOOD_TYPE to "Food Type",
+        FoodTable.USDA_INDEX to "USDA DB index",
+        FoodTable.NUTTAB_INDEX to "NUTTAB DB index",
+        FoodTable.CATEGORY to "Category",
+        FoodTable.DATA_NOTES to "Data Notes",
+        FoodTable.DATA_SOURCE to "Data Source",
+        FoodTable.DENSITY to "Density (g/mL)",
     )
 
     override fun getFullName(col: Column<*, *>): String {

@@ -10,27 +10,15 @@ import com.machfour.macros.sql.Table
 interface MacrosEntity<M : MacrosEntity<M>> {
     companion object {
         const val NO_ID: Long = -100
-
-        // special ID for the 'null' serving of just grams / mL
-        const val UNIT_SERVING: Long = -101
-        const val NO_DATE: Long = -99
-        const val UNSET = Double.NaN
-
-        fun <M: MacrosEntity<M>> Factory<M>.cloneWithoutMetadata(obj: MacrosEntity<M>): M {
-            return construct(obj.dataCopy(withMetadata = false), ObjectSource.COMPUTED)
-        }
     }
 
     val id: EntityId
-
     val hasId: Boolean
-        get() = (id != NO_ID)
 
     val createTime: Instant
     val modifyTime: Instant
 
-    // whether this object was created from a database instance or whether it was created by the
-    // application (e.g. by a 'new object' action initiated by the user)
+    // e.g. whether this object was constructed from a database instance or user input
     val source: ObjectSource
 
     // Used to get data by column objects
@@ -39,9 +27,7 @@ interface MacrosEntity<M : MacrosEntity<M>> {
 
     val data: RowData<M>
     val table: Table<M>
-    val factory: Factory<M>
 
-    fun dataCopy(withMetadata: Boolean): RowData<M>
+    fun dataCopy(withMetadata: Boolean = false): RowData<M>
     fun dataFullCopy(): RowData<M> = dataCopy(withMetadata = true)
-
 }

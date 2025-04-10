@@ -131,7 +131,7 @@ fun forgetFood(db: SqlDatabase, f: Food) {
 @Throws(SqlException::class)
 fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: Int) {
     db.executeRawStatement(
-        "UPDATE ${FoodTable.name} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
+        "UPDATE ${FoodTable.sqlName} SET ${FoodTable.SEARCH_RELEVANCE} = $value WHERE " +
                 "${FoodTable.FOOD_TYPE} = '${foodType.niceName}'"
     )
 }

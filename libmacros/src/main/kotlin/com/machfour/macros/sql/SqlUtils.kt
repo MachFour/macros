@@ -80,14 +80,14 @@ internal fun <M> makeSqlWhereLikeString(
 fun <M> sqlInsertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
     val placeholders = makeInsertPlaceholders(orderedColumns)
     val columnSql = orderedColumns.joinToString(separator = ", ") { it.sqlName }
-    return "INSERT INTO ${t.name} ($columnSql) VALUES ($placeholders)"
+    return "INSERT INTO ${t.sqlName} ($columnSql) VALUES ($placeholders)"
 }
 
 fun <M, J: Any> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
     val columnPlaceholders = makeSqlUpdatePlaceholders(orderedColumns)
     val whereString = makeSqlWhereString(keyCol, 1)
     // TODO dynamic placeholders
-    return "UPDATE ${t.name} SET $columnPlaceholders $whereString"
+    return "UPDATE ${t.sqlName} SET $columnPlaceholders $whereString"
 }
 
 fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
@@ -155,7 +155,7 @@ fun createSqlStatements(
 // Returns triggers that update the create and modify times of the given table.
 // Columns are determined using the Schema object so ensure it is updated.
 fun <M> createInitTimestampTriggers(t: Table<M>): List<String> {
-    val table = t.name
+    val table = t.sqlName
     val createTime = t.createTimeColumn.sqlName
     val modifyTime = t.modifyTimeColumn.sqlName
     val id = t.idColumn.sqlName

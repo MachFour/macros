@@ -11,7 +11,7 @@ internal class DeleteStatementImpl<M> private constructor(
         return ArrayList<String>().let {
             it.add(mode.sql)
             it.add("FROM")
-            it.add(table.name)
+            it.add(table.sqlName)
             it.add(whereExpression.toSql())
             it.joinToString(separator = " ")
         }

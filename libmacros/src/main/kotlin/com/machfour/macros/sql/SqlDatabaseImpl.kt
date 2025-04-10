@@ -5,9 +5,10 @@ import com.machfour.macros.sql.generator.*
 
 abstract class SqlDatabaseImpl : SqlDatabase {
     // caller-managed connection, useful to reduce number of calls to DB
-    // caller needs to call closeConnection() after. Use with begin and end transaction
+    // caller needs to call closeConnection() after. Use with begin and end transaction.
+    // Returns true if a new connection was opened, false if one was already open.
     @Throws(SqlException::class)
-    abstract override fun openConnection(getGeneratedKeys: Boolean)
+    abstract override fun openConnection(getGeneratedKeys: Boolean): Boolean
 
     @Throws(SqlException::class)
     abstract override fun closeConnection()
@@ -16,6 +17,9 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
     @Throws(SqlException::class)
     abstract override fun beginTransaction()
+
+    @Throws(SqlException::class)
+    abstract override fun rollbackTransaction()
 
     @Throws(SqlException::class)
     abstract override fun endTransaction()

@@ -9,7 +9,7 @@ import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 
 abstract class TableImpl<M>(
-    final override val name: String,
+    final override val sqlName: String,
     private val factory: Factory<M>,
     cols: List<Column<M, out Any>>
 ) : Table<M> {

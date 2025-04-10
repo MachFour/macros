@@ -127,21 +127,32 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
     }
 
     @Throws(SqlException::class)
-    override fun openConnection(getGeneratedKeys: Boolean) {
+    override fun openConnection(getGeneratedKeys: Boolean): Boolean {
+        if (cachedConnection != null) {
+            val cachedGetGeneratedKeys = dataSource.config.isGetGeneratedKeys
+            check(getGeneratedKeys == cachedGetGeneratedKeys) {
+                "openConnection(): requested getGeneratedKeys=$getGeneratedKeys, but there is " +
+                "already an open connection with getGeneratedKeys=$cachedGetGeneratedKeys"
+            }
+            return false
+        }
+
+        dataSource.config.isGetGeneratedKeys = getGeneratedKeys
+
         try {
-            check(cachedConnection == null) { "A persistent connection is open already" }
-            dataSource.config.isGetGeneratedKeys = getGeneratedKeys
             cachedConnection = dataSource.connection
         } catch (e: java.sql.SQLException) {
             throw e.wrapAsNativeException()
         }
+
+        return true
     }
 
     @Throws(SqlException::class)
     override fun closeConnection() {
         try {
             val c = cachedConnection
-            requireNotNull(c) { "A connection hasn't been opened" }
+            checkNotNull(c) { "A connection hasn't been opened" }
             // set instance variable to null first in case exception is thrown?
             // or is this shooting oneself in the foot?
             c.close()
@@ -173,6 +184,17 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             val cc = cachedConnection
             checkNotNull(cc) { "Connection not open, call openConnection() first" }
             cc.autoCommit = false
+        } catch (e: java.sql.SQLException) {
+            throw e.wrapAsNativeException()
+        }
+    }
+
+    @Throws(SqlException::class)
+    override fun rollbackTransaction() {
+        try {
+            val cc = cachedConnection
+            checkNotNull(cc) { "Connection not open, call openConnection() first" }
+            cc.rollback()
         } catch (e: java.sql.SQLException) {
             throw e.wrapAsNativeException()
         }
@@ -345,7 +367,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                 }
             }
         } catch (e: java.sql.SQLException) {
-            val msg = "${e.message} thrown by insertRows() on table ${table.name} and object data: $currentRow"
+            val msg = "${e.message} thrown by insertRows() on table ${table.sqlName} and object data: $currentRow"
             throw SqlException(msg, e.cause)
         } finally {
             closeIfNecessary(c)

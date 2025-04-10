@@ -2,12 +2,14 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
+import java.sql.SQLException
 
 interface SqlDatabase {
     // Used to create a persistent connection that lasts across calls to the DB.
+    // Returns if a new connection was opened, false if one was already open.
     // Caller MUST call closeConnection in a finally block
     @Throws(SqlException::class)
-    fun openConnection(getGeneratedKeys: Boolean = false)
+    fun openConnection(getGeneratedKeys: Boolean = true): Boolean
 
     @Throws(SqlException::class)
     fun closeConnection()
@@ -16,6 +18,9 @@ interface SqlDatabase {
     // These functions can be used to temporarily disable autocommit and are useful to group multiple operations together
     @Throws(SqlException::class)
     fun beginTransaction()
+
+    @Throws(SQLException::class)
+    fun rollbackTransaction()
 
     @Throws(SqlException::class)
     fun endTransaction()

@@ -3,7 +3,7 @@ package com.machfour.macros.sql
 import com.machfour.macros.core.ObjectSource
 
 interface Table<M> {
-    val name: String
+    val sqlName: String
     val columns: List<Column<M, out Any>>
 
     // return all FK columns

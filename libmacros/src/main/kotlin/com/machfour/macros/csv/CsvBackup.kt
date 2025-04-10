@@ -52,7 +52,7 @@ internal const val zipEntryComment = "MacrosDBBackup"
 
 // returns app specific data directory
 internal val <M> Table<M>.backupName: String
-    get() = "$name.csv"
+    get() = "$sqlName.csv"
 
 @Throws(SqlException::class)
 fun <M : MacrosEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {

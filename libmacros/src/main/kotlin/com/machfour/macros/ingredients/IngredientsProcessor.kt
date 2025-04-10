@@ -148,19 +148,15 @@ private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: Long): List
 // saves a composite food and all its ingredients into the database
 @Throws(SqlException::class)
 private fun saveCompositeFood(cf: CompositeFood, db: SqlDatabase) {
+    val newConnection = db.openConnection(getGeneratedKeys = true)
     try {
-        db.openConnection()
         // If inserting ingredients fails, we want to be able to roll back the whole thing.
         db.beginTransaction()
 
         // First save the food and then retrieve it from the database, to get the ID
-        saveObject(db, cf)
-        val saved = getFoodByIndexName(db, cf.indexName)
-            ?: throw SqlException("Could not retrieved saved composite food")
-        val id = saved.id
+        val id = saveObject(db, cf)
 
         // Now we can edit the ingredients to have the ID
-        // TODO use completeFk function
         val newIngredients = addCompositeFoodId(cf.ingredients, id)
         // here we go!
         insertObjects(db, newIngredients, false)
@@ -171,8 +167,13 @@ private fun saveCompositeFood(cf: CompositeFood, db: SqlDatabase) {
         //nData.setField(Schema.NutrientDataTable.FOOD_ID, id);
         //nData.setField(Schema.NutrientDataTable.QUANTITY ,";
         db.endTransaction()
+    } catch (e: SqlException) {
+        db.rollbackTransaction()
+        throw e
     } finally {
-        db.closeConnection()
+        if (newConnection) {
+            db.closeConnection()
+        }
     }
 }
 

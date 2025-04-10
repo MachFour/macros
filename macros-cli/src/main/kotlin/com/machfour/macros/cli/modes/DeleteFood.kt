@@ -24,7 +24,7 @@ class DeleteFood(config: CliConfig) : CommandImpl(config) {
             return 2
         }
 
-        val ds = config.database
+        val db = config.database
 
         println("Retrieving foods...")
         println()
@@ -32,7 +32,7 @@ class DeleteFood(config: CliConfig) : CommandImpl(config) {
         val indexNamesToDelete = args.subList(1, args.size)
         val foodsToDelete: List<Food>
         try {
-            val retrievedFoods = getFoodsByIndexName(ds, indexNamesToDelete)
+            val retrievedFoods = getFoodsByIndexName(db, indexNamesToDelete)
             foodsToDelete = ArrayList(retrievedFoods.values)
         } catch (e: SqlException) {
             println("SQL Exception while retrieving foods: $e")
@@ -67,21 +67,22 @@ class DeleteFood(config: CliConfig) : CommandImpl(config) {
             println("Deleting foods...")
             println()
             try {
-                ds.openConnection()
-                ds.beginTransaction()
+                db.openConnection()
+                db.beginTransaction()
                 for (f in foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    deleteObject(ds, f)
+                    deleteObject(db, f)
                     println("Deleted " + f.indexName)
                 }
-                ds.endTransaction()
+                db.endTransaction()
             } catch (e: SqlException) {
+                db.rollbackTransaction()
                 printlnErr("SQL Exception occurred while deleting foods: $e")
                 printlnErr("No foods deleted")
                 return 1
             } finally {
                 try {
-                    ds.closeConnection()
+                    db.closeConnection()
                 } catch (e: SqlException) {
                     printlnErr("Warning: SQL exception occurred when closing the DB")
                 }

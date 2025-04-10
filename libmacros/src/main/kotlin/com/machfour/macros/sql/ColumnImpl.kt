@@ -38,7 +38,7 @@ internal open class ColumnImpl<M, J: Any> private constructor(
     ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique), Column.Fk<M, J, N> {
 
         override fun toString(): String {
-            return super.toString() + " (-> " + parentTable.name + "." + parentColumn.sqlName + ")"
+            return super.toString() + " (-> " + parentTable.sqlName + "." + parentColumn.sqlName + ")"
         }
     }
 

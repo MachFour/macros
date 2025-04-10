@@ -34,7 +34,7 @@ internal class SelectQueryImpl<M> private constructor(
         }
 
         query.add("FROM")
-        query.add(table.name)
+        query.add(table.sqlName)
 
         query.add(whereExpression.toSql())
 

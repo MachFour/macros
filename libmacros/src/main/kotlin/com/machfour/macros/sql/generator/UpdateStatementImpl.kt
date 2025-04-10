@@ -13,7 +13,7 @@ internal class UpdateStatementImpl<M> private constructor(
         //return "UPDATE ${table.name} SET $placeholders ${whereExpression.toSql()}"
         return ArrayList<String>().let {
             it.add(mode.sql)
-            it.add(table.name)
+            it.add(table.sqlName)
             it.add("SET")
             it.add(makeSqlUpdatePlaceholders(columns))
             it.add(whereExpression.toSql())

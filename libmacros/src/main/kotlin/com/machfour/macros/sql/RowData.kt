@@ -107,7 +107,7 @@ class RowData<M> private constructor(
     }
 
     override fun toString(): String {
-        val str = StringBuilder("RowData<").append(table.name).append("> [")
+        val str = StringBuilder("RowData<").append(table.sqlName).append("> [")
         for (col in columns) {
             str.append("${col.sqlName} = ${data[col.index]}, ")
         }

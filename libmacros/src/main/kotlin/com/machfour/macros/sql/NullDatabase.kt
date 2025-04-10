@@ -9,11 +9,15 @@ class NullDatabase private constructor(): SqlDatabase {
         val Instance = NullDatabase()
     }
 
-    override fun openConnection(getGeneratedKeys: Boolean) {}
+    override fun openConnection(getGeneratedKeys: Boolean): Boolean {
+        return false
+    }
 
     override fun closeConnection() {}
 
     override fun beginTransaction() {}
+
+    override fun rollbackTransaction() {}
 
     override fun endTransaction() {}
 

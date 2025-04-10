@@ -9,6 +9,7 @@ import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.SqlDatabase
+import com.machfour.macros.sql.SqlException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -101,17 +102,23 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
             FoodNutrientValue.factory.construct(data, ObjectSource.USER_NEW)
         }
 
+        var openedNewConnection = false
         try {
-            database.openConnection()
+            openedNewConnection = database.openConnection()
             database.beginTransaction()
 
             saveObjects(completedInsertObjects, ObjectSource.USER_NEW)
             saveObjects(updateObjects, ObjectSource.DB_EDIT)
             database.endTransaction()
+        } catch (e: SqlException) {
+            database.rollbackTransaction()
+            throw e
         } finally {
             // TODO if exception is thrown here after an exception thrown
             // in the above try block, the one here will hide the previous.
-            database.closeConnection()
+            if (openedNewConnection) {
+                database.closeConnection()
+            }
         }
     }
 

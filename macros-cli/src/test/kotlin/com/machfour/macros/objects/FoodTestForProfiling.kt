@@ -10,59 +10,44 @@ import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.fail
 
 class FoodTestForProfiling {
-    companion object {
-        private const val DB_LOCATION = "/home/max/devel/macros/test.sqlite"
-        private lateinit var db: LinuxDatabase
-        private lateinit var foodDc: RowData<Food>
-        private var testFood: Food? = null
+    private lateinit var db: LinuxDatabase
+    private lateinit var foodData: RowData<Food>
+    private var testFood: Food? = null
 
-        private fun initDb() {
-            db = LinuxDatabase.getInstance(DB_LOCATION)
-            try {
-                LinuxDatabase.deleteIfExists(DB_LOCATION)
-                db.initDb(LinuxSqlConfig())
-            } catch (e: SqlException) {
-                e.printStackTrace()
-            }
-
+    @BeforeTest
+    fun init() {
+        db = LinuxDatabase.getInstance("").apply {
+            openConnection(getGeneratedKeys = true)
+            initDb(LinuxSqlConfig)
         }
 
-        private fun doFood() {
-            foodDc = RowData(FoodTable).apply {
-                put(FoodTable.ID, MacrosEntity.NO_ID)
-                put(FoodTable.CREATE_TIME, 0L)
-                put(FoodTable.MODIFY_TIME, 0L)
-                put(FoodTable.INDEX_NAME, "food1")
-                put(FoodTable.BRAND, "Max's")
-                put(FoodTable.VARIETY, "really good")
-                put(FoodTable.NAME, "food")
-                put(FoodTable.NOTES, "notes")
-                put(FoodTable.CATEGORY, "dairy")
-                put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
-                put(FoodTable.USDA_INDEX, null)
-                put(FoodTable.NUTTAB_INDEX, null)
-            }
-            testFood = Food.factory.construct(foodDc, ObjectSource.IMPORT)
+        foodData = RowData(FoodTable).apply {
+            put(FoodTable.ID, MacrosEntity.NO_ID)
+            put(FoodTable.CREATE_TIME, 0L)
+            put(FoodTable.MODIFY_TIME, 0L)
+            put(FoodTable.INDEX_NAME, "food1")
+            put(FoodTable.BRAND, "Max's")
+            put(FoodTable.VARIETY, "really good")
+            put(FoodTable.NAME, "food")
+            put(FoodTable.NOTES, "notes")
+            put(FoodTable.CATEGORY, "dairy")
+            put(FoodTable.FOOD_TYPE, FoodType.PRIMARY.niceName)
+            put(FoodTable.USDA_INDEX, null)
+            put(FoodTable.NUTTAB_INDEX, null)
         }
-
-        @JvmStatic
-        @BeforeAll
-        fun init() {
-            initDb()
-            doFood()
-        }
+        testFood = Food.factory.construct(foodData, ObjectSource.IMPORT)
     }
 
     @Test
     fun saveALotOfFood() {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
-            val modifiedData = foodDc.copy().apply {
+            val modifiedData = foodData.copy().apply {
                 put(FoodTable.ID, i.toLong())
                 put(FoodTable.INDEX_NAME, "food$i")
             }
@@ -73,10 +58,8 @@ class FoodTestForProfiling {
         try {
             insertObjects(db, lotsOfFoods, true)
         } catch (e: SqlException) {
-            fail(e)
+            fail(e.message)
         }
-
     }
-
 
 }

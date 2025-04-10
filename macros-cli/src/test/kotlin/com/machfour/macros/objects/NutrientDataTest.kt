@@ -14,9 +14,9 @@ import com.machfour.macros.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class NutrientDataTest {
     companion object {

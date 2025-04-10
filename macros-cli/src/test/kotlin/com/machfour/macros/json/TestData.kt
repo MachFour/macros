@@ -100,7 +100,6 @@ val carrotCakes = JsonFood(
     usdaIndex = null,
     nuttabIndex = null,
     dataSource = "Label",
-    dataNotes = "sugar alcohol is sum of all the individual sugar alcohols",
     density = null,
     relevanceOffset = 0,
     servings = listOf(
@@ -147,7 +146,6 @@ val carrotCakesJSON = """
         "category": "desserts",
         "notes": "sugar free",
         "data_source": "Label",
-        "data_notes": "sugar alcohol is sum of all the individual sugar alcohols",
         "servings": [
             {
                 "name": "slice",
@@ -195,7 +193,7 @@ val carrotCakesJSON = """
             "fibre": {
                 "value": 19.4,
                 "unit": "g"
-            },
+            }
             "xylitol": {
                 "value": 7.4,
                 "unit": "g"
@@ -211,7 +209,7 @@ val carrotCakesJSON = """
             "polydextrose": {
                 "value": 6.7,
                 "unit": "g"
-            }
+            },
         }
     }
 """.trimIndent()

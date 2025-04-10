@@ -4,17 +4,19 @@ import kotlinx.serialization.json.Json
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipFile
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel
-import org.junit.jupiter.api.Assertions.assertIterableEquals
-import org.junit.jupiter.api.Test
 import java.nio.channels.SeekableByteChannel
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
 
 class ZipKtTest {
+
     class ZipTestCase(
         val name: String,
         val serializer: Json,
         val serialize: (Collection<JsonFood>, SeekableByteChannel, Json) -> Unit,
         val deserialize: (SeekableByteChannel, Json) -> Collection<JsonFood>,
     )
+
     @Test
     fun testJsonZipRoundTrip() {
         val testcases = listOf(
@@ -63,7 +65,7 @@ class ZipKtTest {
             val out = SeekableInMemoryByteChannel(16*1024)
             t.serialize(expect, out, t.serializer)
             val actual = t.deserialize(out, t.serializer)
-            assertIterableEquals(expect, actual)
+            assertContentEquals(expect, actual)
         }
     }
 }

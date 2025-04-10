@@ -1,34 +1,43 @@
 package com.machfour.macros.ingredients
 
+import com.machfour.macros.csv.readFoodData
+import com.machfour.macros.csv.saveImportedFoods
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.deleteAllCompositeFoods
-import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.linux.LinuxSqlConfig
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlException
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import java.io.FileReader
 import java.io.IOException
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.fail
+
+private const val TEST_CSV_DIR = "/home/max/devel/macros/test/test-csv"
+private const val TEST_FOOD_CSV = "$TEST_CSV_DIR/foods.csv"
 
 class IngredientsParserTest {
-    companion object {
-        private const val TEST_DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
-        private lateinit var db: LinuxDatabase
-        @BeforeAll
-        @JvmStatic
-        fun initDb() {
-            // TODO initialise database properly before each test
-            db = LinuxDatabase.getInstance(TEST_DB_LOCATION)
-            try {
-                deleteAllIngredients(db)
-                deleteAllCompositeFoods(db)
-            } catch (e: SqlException) {
-                println("Could not delete existing composite foods and/or clear ingredients table!")
-                Assertions.fail(e)
-            }
+
+    private lateinit var db: LinuxDatabase
+
+    @BeforeTest
+    fun init() {
+        db = LinuxDatabase.getInstance("").apply {
+            openConnection(getGeneratedKeys = true)
+            initDb(LinuxSqlConfig)
         }
+        val csvFoods = FileReader(TEST_FOOD_CSV).use {
+            readFoodData(it.readText(), FoodTable.INDEX_NAME)
+        }
+        saveImportedFoods(db, csvFoods)
     }
+
+    @AfterTest
+    fun deInit() {
+        db.closeConnection()
+    }
+
 
     @Test
     fun deserialise() {
@@ -41,9 +50,9 @@ class IngredientsParserTest {
                 println(ingredientSpecs.joinToString("\n"))
             }
         } catch (e: IOException) {
-            Assertions.fail(e)
+            fail(e.message)
         } catch (e: SqlException) {
-            Assertions.fail(e)
+            fail(e.message)
         }
     }
 
@@ -59,9 +68,9 @@ class IngredientsParserTest {
                 }
             }
         } catch (e: IOException) {
-            Assertions.fail(e)
+            fail(e.message)
         } catch (e: SqlException) {
-            Assertions.fail(e)
+            fail(e.message)
         }
     }
 
@@ -73,9 +82,9 @@ class IngredientsParserTest {
                 saveRecipes(recipes, db)
             }
         } catch (e: IOException) {
-            Assertions.fail(e)
+            fail(e.message)
         } catch (e: SqlException) {
-            Assertions.fail(e)
+            fail(e.message)
         }
     }
 

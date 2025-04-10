@@ -56,7 +56,7 @@ internal class LinuxConfig : CliConfig {
     override val database: SqlDatabase
         get() = databaseImpl
 
-    override val sqlConfig: SqlConfig = LinuxSqlConfig()
+    override val sqlConfig: SqlConfig = LinuxSqlConfig
 
     override val foodCsvPath = joinFilePath(DATA_DIR, FOOD_CSV_NAME)
     override val servingCsvPath = joinFilePath(DATA_DIR, SERVING_CSV_NAME)

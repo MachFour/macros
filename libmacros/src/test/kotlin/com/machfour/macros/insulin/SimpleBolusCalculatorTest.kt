@@ -4,8 +4,8 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.GRAMS
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SimpleBolusCalculatorTest {
 

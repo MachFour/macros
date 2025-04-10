@@ -1,17 +1,15 @@
 package com.machfour.macros.json
 
-import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.Instant
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Serving
-import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.findUniqueColumnConflicts
 import com.machfour.macros.queries.saveObjects
+import com.machfour.macros.queries.saveObjectsReturningIds
 import com.machfour.macros.schema.FoodNutrientValueTable
-import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
@@ -29,7 +27,6 @@ fun importJsonFoods(
     return saveJsonFoods(
         db = db,
         jsonFoods = jsonFoods,
-        overrideFoodId = MacrosEntity.NO_ID,
         overrideCreateTime = currentTime,
         overrideModifyTime = currentTime,
     )
@@ -39,21 +36,19 @@ fun importJsonFoods(
 fun saveJsonFoods(
     db: SqlDatabase,
     jsonFoods: Collection<JsonFood>,
-    overrideFoodId: EntityId? = null,
     overrideCreateTime: Instant? = null,
     overrideModifyTime: Instant? = null,
 ): Map<String, JsonFood> {
-    val foods = jsonFoods.associate { jsonFood ->
+    val rawFoodsToImport = jsonFoods.associate { jsonFood ->
         val data = jsonFood.toRowData().apply {
-            overrideFoodId?.let { put(FoodTable.ID, it)}
             tweakTimes(overrideCreateTime, overrideModifyTime)
         }
         jsonFood.indexName to Food.factory.construct(data, ObjectSource.IMPORT)
     }
 
     // collect all the index names to be imported, and check if they're already in the DB.
-    val conflictingFoods = findUniqueColumnConflicts(db, foods)
-    val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
+    val conflictingFoods = findUniqueColumnConflicts(db, rawFoodsToImport)
+    val foodsToSave = rawFoodsToImport.values.filterNot { conflictingFoods.contains(it.indexName) }
 
     val invalidFoods = ArrayList<JsonFood>()
     val nutrientValues = ArrayList<FoodNutrientValue>()
@@ -61,22 +56,31 @@ fun saveJsonFoods(
 
     // get out the nutrition data
 
+    val newConnection = db.openConnection(getGeneratedKeys = true)
+    db.beginTransaction()
+    val foodIds = saveObjectsReturningIds(db, foodsToSave, ObjectSource.IMPORT)
+    val indexNameToId = foodsToSave.withIndex()
+        .associate { (index, food) -> food.indexName to foodIds[index] }
+
     for (jf in jsonFoods) {
-        val food = foodsToSave[jf.indexName] ?: continue
+        val savedId = indexNameToId[jf.indexName] ?: continue
 
         val servingData = jf.getServingData().onEach { data ->
-            overrideFoodId?.let { data.put(ServingTable.FOOD_ID, it) }
+            data.put(ServingTable.FOOD_ID, savedId)
             data.tweakTimes(overrideCreateTime, overrideModifyTime)
         }
+
         if (servingData.size != jf.servings.size) {
-            // some nutrients were invalid
+            // some servings were invalid
             invalidFoods.add(jf)
             continue
         }
+
         val nutrientValueData = jf.getNutrientValueData().onEach { (_, data) ->
-            overrideFoodId?.let { data.put(FoodNutrientValueTable.FOOD_ID, it) }
+            data.put(FoodNutrientValueTable.FOOD_ID, savedId)
             data.tweakTimes(overrideCreateTime, overrideModifyTime)
         }
+
         if (nutrientValueData.size != jf.nutrients.size) {
             // some nutrients were invalid
             invalidFoods.add(jf)
@@ -84,28 +88,20 @@ fun saveJsonFoods(
         }
 
         for (s in servingData) {
-            Serving.factory.construct(s, ObjectSource.IMPORT).also {
-                // link it to the food so that the DB can create the correct foreign key entries
-                it.setFkParentKey(ServingTable.FOOD_ID, FoodTable.INDEX_NAME, food)
-                servings.add(it)
-            }
+            servings.add(Serving.factory.construct(s, ObjectSource.IMPORT))
         }
 
         for (nv in nutrientValueData.values) {
-            FoodNutrientValue.factory.construct(nv, ObjectSource.IMPORT).also {
-                // link it to the food so that the DB can create the correct foreign key entries
-                it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, food)
-                nutrientValues.add(it)
-            }
+            nutrientValues.add(FoodNutrientValue.factory.construct(nv, ObjectSource.IMPORT))
         }
     }
 
-    saveObjects(db, foodsToSave.values, ObjectSource.IMPORT)
-    completeForeignKeys(db, nutrientValues, FoodNutrientValueTable.FOOD_ID).also {
-        saveObjects(db, it, ObjectSource.IMPORT)
-    }
-    completeForeignKeys(db, servings, ServingTable.FOOD_ID).also {
-        saveObjects(db, it, ObjectSource.IMPORT)
+    saveObjects(db, nutrientValues, ObjectSource.IMPORT)
+    saveObjects(db, servings, ObjectSource.IMPORT)
+
+    db.endTransaction()
+    if (newConnection) {
+        db.closeConnection()
     }
 
     if (conflictingFoods.isEmpty()) {

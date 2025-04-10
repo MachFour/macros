@@ -6,8 +6,8 @@ import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.PROTEIN
 import com.machfour.macros.units.GRAMS
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ComplexBolusCalculatorTest {
 
@@ -28,7 +28,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "icRatio: expected $e for $name, got $g")
+            assertEquals(e, g, "icRatio: expected $e for $name, got $g")
         }
     }
 
@@ -44,7 +44,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calc0gCarbs: expected $e for $name, got $g")
+            assertEquals(e, g, "calc0gCarbs: expected $e for $name, got $g")
         }
     }
 
@@ -68,7 +68,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calc100gCarbs: expected $e for $name, got $g")
+            assertEquals(e, g, "calc100gCarbs: expected $e for $name, got $g")
         }
     }
 
@@ -92,7 +92,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calc100gFat: expected $e for $name, got $g")
+            assertEquals(e, g, "calc100gFat: expected $e for $name, got $g")
         }
     }
 
@@ -116,7 +116,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calc40gProtein: expected $e for $name, got $g")
+            assertEquals(e, g, "calc40gProtein: expected $e for $name, got $g")
         }
     }
 
@@ -133,7 +133,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calcEmptyNutrientData: expected $e for $name, got $g")
+            assertEquals(e, g, "calcEmptyNutrientData: expected $e for $name, got $g")
         }
     }
 
@@ -306,7 +306,7 @@ class ComplexBolusCalculatorTest {
         for (name in expected.keys) {
             val e = expected.getValue(name)
             val g = got.getValue(name)
-            Assertions.assertEquals(e, g, "calcFullNutrientDataWithRounding: expected $e for $name, got $g")
+            assertEquals(e, g, "calcFullNutrientDataWithRounding: expected $e for $name, got $g")
         }
     }
 }

@@ -25,7 +25,7 @@ class InsertRowsReturningIdsTest {
     @Test
     fun testInsertRowsReturningIds() {
         db.openConnection(getGeneratedKeys = true)
-        db.initDb(LinuxSqlConfig())
+        db.initDb(LinuxSqlConfig)
 
         val food1 = with (RowData(FoodTable)) {
             put(FoodTable.INDEX_NAME, "food1")

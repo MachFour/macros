@@ -3,12 +3,12 @@ package com.machfour.macros.json
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
-import org.junit.jupiter.api.Assertions.assertIterableEquals
-import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
 
 class TarGzKtTest {
     class TarGzTestCase(
@@ -63,7 +63,7 @@ class TarGzKtTest {
         for (t in testcases) {
             t.serialize(expect, out, t.serializer)
             val actual = t.deserialize(ByteArrayInputStream(out.toByteArray()), t.serializer)
-            assertIterableEquals(expect, actual)
+            assertContentEquals(expect, actual)
             out.reset()
         }
     }

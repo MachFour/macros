@@ -3,6 +3,7 @@ package com.machfour.macros.csv
 import com.machfour.ksv.CsvConfig
 import com.machfour.ksv.CsvParseException
 import com.machfour.ksv.CsvParser
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
@@ -135,14 +136,13 @@ private fun makeIngredients(
                 ingredientData.put(IngredientTable.PARENT_FOOD_ID, MacrosEntity.NO_ID)
                 ingredientData.put(IngredientTable.FOOD_ID, ingredientFood.id)
                 Ingredient.factory.construct(ingredientData, ObjectSource.IMPORT).let {
-                    it.setFkParentKey(IngredientTable.PARENT_FOOD_ID, FoodTable.INDEX_NAME, compositeIndexName)
                     it.initFoodAndNd(ingredientFood)
                     // add new ingredient data to existing list in the map, or create one if it doesn't exist.
                     getOrPut(compositeIndexName) { ArrayList() }.add(it)
                 }
             }
         } catch (e: SqlException) {
-            throw CsvException(e.message?: "")
+            throw CsvException(e.message ?: "")
         }
     }
 }
@@ -200,26 +200,24 @@ fun <J: Any> buildFoodObjectTree(
 }
 
 @Throws(TypeCastException::class)
-fun <J: Any> buildServings(
+fun <J: Any> buildServingsWithFoodKeys(
     servingCsv: String,
     foodKeyCol: Column<Food, J>
-): List<Serving> {
+): List<Pair<Serving, J>> {
     require(foodKeyCol.isUnique)
 
     val csvRows = getCsvParser().parse(servingCsv)
+    val header = csvRows[0]
     return buildList {
         for (i in 1 until csvRows.size) {
-            val header = csvRows[0]
             val columns = csvRows[i]
-            val csvRow = header.indices.associate { j -> header[j] to columns[j] }
-            val servingData = extractCsvData(csvRow, ServingTable)
-            val rawFoodKey = csvRow[foodKeyCol.sqlName]
-                ?: throw CsvException("Food $foodKeyCol was null for row: $csvRow")
-            val foodKey = requireNotNull(foodKeyCol.type.fromRawString(rawFoodKey))
+            val csvRowMap = header.indices.associate { j -> header[j] to columns[j] }
+            val servingData = extractCsvData(csvRowMap, ServingTable)
+            val rawFoodKey = csvRowMap[foodKeyCol.sqlName]
+                ?: throw CsvException("Food $foodKeyCol was null for row: $csvRowMap")
             val s = Serving.factory.construct(servingData, ObjectSource.IMPORT)
-            // TODO move next line to be run immediately before saving
-            s.setFkParentKey(ServingTable.FOOD_ID, foodKeyCol, foodKey)
-            add(s)
+            val foodKey = requireNotNull(foodKeyCol.type.fromRawString(rawFoodKey))
+            add(s to foodKey)
         }
     }
 }
@@ -229,7 +227,7 @@ fun <J: Any> buildServings(
 
 // foods maps from index name to food object. Food object must have nutrition data attached
 @Throws(SqlException::class)
-fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>, foodKeyCol: Column<Food, J>): Map<J, Food> {
+fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>): Pair<Map<J, EntityId>, Map<J, Food>> {
     // collect all the index names to be imported, and check if they're already in the DB.
     val conflictingFoods = findUniqueColumnConflicts(db, foods)
     val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
@@ -243,19 +241,34 @@ fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>, foodKeyCol:
     because FoodPortions are stored using the food ID... Maybe we should switch to using index name.
      */
 
-    // get out the nutrition data
-    val nvObjects = foodsToSave.flatMap { (_, food) ->
-        food.nutrientData.values.onEach {
-            // link it to the food so that the DB can create the correct foreign key entries
-            it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, foodKeyCol, food)
+    val newConnectionOpened = db.openConnection(getGeneratedKeys = true)
+    db.beginTransaction()
+
+    val foodIds = saveObjectsReturningIds(db, foodsToSave.values, ObjectSource.IMPORT)
+    // TODO ensure that .keys and .values order is the same for the map (it should be)
+    val keyToId = foodsToSave.keys.withIndex().associate { (index, key) -> key to foodIds[index] }
+
+    val completedNutrientValues = buildList {
+        for ((key, food) in foodsToSave) {
+            val id = keyToId.getValue(key)
+            for (nv in food.nutrientData.values) {
+                // link it to the food so that the DB can create the correct foreign key entries
+                val completedData = nv.dataFullCopy().apply {
+                    put(FoodNutrientValueTable.FOOD_ID, id)
+                }
+                add(FoodNutrientValue.factory.construct(completedData, ObjectSource.IMPORT))
+            }
         }
     }
+    saveObjects(db, completedNutrientValues, ObjectSource.IMPORT)
 
-    saveObjects(db, foodsToSave.values, ObjectSource.IMPORT)
-    val completedNv = completeForeignKeys(db, nvObjects, FoodNutrientValueTable.FOOD_ID)
-    saveObjects(db, completedNv, ObjectSource.IMPORT)
+    db.endTransaction()
 
-    return conflictingFoods
+    if (newConnectionOpened) {
+        db.closeConnection()
+    }
+
+    return keyToId to conflictingFoods
 }
 
 @Throws(SqlException::class, TypeCastException::class)
@@ -280,14 +293,21 @@ fun <J: Any> importServings(
     db: SqlDatabase,
     servingCsv: String,
     foodKeyCol: Column<Food, J>,
+    foodKeyToId: Map<J, EntityId>,
     skipExisting: Boolean,
     ignoreKeys: Set<J> = emptySet(),
 ): Map<Long, Serving> {
-    val csvServings = buildServings(servingCsv, foodKeyCol)
+    val csvServings = buildServingsWithFoodKeys(servingCsv, foodKeyCol)
     val nonExcludedServings = csvServings.filterNot {
-        ignoreKeys.contains(it.getFkParentKey(ServingTable.FOOD_ID)[foodKeyCol])
+        ignoreKeys.contains(it.second)
     }
-    val completedServings = completeForeignKeys(db, nonExcludedServings, ServingTable.FOOD_ID)
+    val completedServings = nonExcludedServings.map { (serving, foodKey) ->
+        val foodId = requireNotNull(foodKeyToId[foodKey]) { "no food ID for key $foodKey" }
+        val completedData = serving.dataFullCopy().apply {
+            put(ServingTable.FOOD_ID, foodId)
+        }
+        Serving.factory.construct(completedData, ObjectSource.IMPORT)
+    }
     val servingsToSave: List<Serving>
     val matchedDuplicateServings: Map<Long, Serving>
     if (skipExisting) {
@@ -335,13 +355,17 @@ fun importRecipes(
 ) {
     val ingredientsByRecipe = makeIngredients(db, ingredientCsv)
     val csvRecipes = buildCompositeFoodObjectTree(recipeCsv, FoodTable.INDEX_NAME, ingredientsByRecipe)
-    
-    saveImportedFoods(db, csvRecipes, FoodTable.INDEX_NAME)
 
-    // add all the ingredients for non-duplicated recipes to one big list, then save them all
-    val allIngredients = ingredientsByRecipe.flatMap { it.value }
+    val (indexNameToId, _) = saveImportedFoods(db, csvRecipes)
 
-    val completedIngredients = completeForeignKeys(db, allIngredients, IngredientTable.PARENT_FOOD_ID)
+    val completedIngredients = ingredientsByRecipe.mapValues { (recipeIndexName, ingredients) ->
+        val id = indexNameToId.getValue(recipeIndexName)
+        ingredients.map {
+            val completedData = it.dataFullCopy().apply { put(IngredientTable.PARENT_FOOD_ID, id) }
+            Ingredient.factory.construct(completedData, ObjectSource.IMPORT)
+        }
+    }.flatMap { it.value }
+
     saveObjects(db, completedIngredients, ObjectSource.IMPORT)
 }
 

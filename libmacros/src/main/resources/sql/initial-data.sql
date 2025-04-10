@@ -44,6 +44,7 @@ INSERT INTO Nutrient (id, name, unit_types, inbuilt) VALUES
     , (28, 'mannitol', 1, 1)
     , (29, 'sorbitol', 1, 1)
     , (30, 'xylitol', 1, 1)
+    , (31, 'polydextrose', 1, 1)
     ;
 
 

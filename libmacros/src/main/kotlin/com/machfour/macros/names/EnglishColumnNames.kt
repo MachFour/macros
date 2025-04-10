@@ -62,6 +62,7 @@ object EnglishColumnNames: ColumnStrings, NutrientStrings {
         MANNITOL to "Mannitol",
         SORBITOL to "Sorbitol",
         XYLITOL to "Xylitol",
+        POLYDEXTROSE to "Polydextrose"
     )
 
     // TODO put ALLLLLLLLLLL columns in here

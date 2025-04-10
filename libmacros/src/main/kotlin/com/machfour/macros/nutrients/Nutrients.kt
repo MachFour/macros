@@ -50,6 +50,7 @@ val MALTITOL             = makeInbuiltNutrient(27, MALTITOL_NAME, UnitType.MASS)
 val MANNITOL             = makeInbuiltNutrient(28, MANNITOL_NAME, UnitType.MASS)
 val SORBITOL             = makeInbuiltNutrient(29, SORBITOL_NAME, UnitType.MASS)
 val XYLITOL              = makeInbuiltNutrient(30, XYLITOL_NAME, UnitType.MASS)
+val POLYDEXTROSE         = makeInbuiltNutrient(31, POLYDEXTROSE_NAME, UnitType.MASS)
 
 private val inbuiltNutrients = listOf(
     QUANTITY,
@@ -83,6 +84,7 @@ private val inbuiltNutrients = listOf(
     MANNITOL,
     SORBITOL,
     XYLITOL,
+    POLYDEXTROSE,
 )
 
 

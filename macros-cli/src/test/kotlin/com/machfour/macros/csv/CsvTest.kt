@@ -1,61 +1,44 @@
 package com.machfour.macros.csv
 
 import com.machfour.macros.cli.CliConfig
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.linux.LinuxConfig
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.linux.LinuxDatabase.Companion.deleteIfExists
 import com.machfour.macros.linux.LinuxDatabase.Companion.getInstance
-import com.machfour.macros.queries.clearTable
-import com.machfour.macros.queries.deleteAllIngredients
 import com.machfour.macros.queries.getAllRawObjects
-import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.validation.SchemaViolation
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
+import kotlin.test.*
+
+const val TEST_WRITE_DIR = "/home/max/devel/macros/test"
 
 class CsvTest {
-    companion object {
-        lateinit var db: LinuxDatabase
+    private lateinit var db: LinuxDatabase
 
-        // TODO make test config
-        val config: CliConfig = LinuxConfig()
-        const val TEST_DB_LOCATION = "/home/max/devel/macros/test.sqlite"
-        const val REAL_DB_LOCATION = "/home/max/devel/macros/macros.sqlite"
-        const val TEST_WRITE_DIR = "/home/max/devel/macros/test"
+    // TODO make test config
+    private val config: CliConfig = LinuxConfig()
 
-        @JvmStatic
-        @BeforeAll
-        fun initDb() {
-            try {
-                db = getInstance(TEST_DB_LOCATION)
-                deleteIfExists(TEST_DB_LOCATION)
-                db.initDb(config.sqlConfig)
-            } catch (e: SqlException) {
-                e.printStackTrace()
-                Assertions.fail("Database initialisation threw SQL exception")
-            }
+    @BeforeTest
+    fun init() {
+        db = getInstance("").apply {
+            openConnection(getGeneratedKeys = true)
+            initDb(config.sqlConfig)
         }
-
     }
 
-    @BeforeEach
-    fun clearDb() {
-        deleteAllIngredients(db)
-        clearTable(db, ServingTable)
-        clearTable(db, FoodNutrientValueTable)
-        clearTable(db, FoodTable)
+    @AfterTest
+    fun deInit() {
+        db.closeConnection()
     }
+
 
     @Test
     fun testCsvReadFoods() {
@@ -63,32 +46,32 @@ class CsvTest {
         try {
             FileReader(config.foodCsvPath).use {
                 csvFoods = buildFoodObjectTree(it.readText(), FoodTable.INDEX_NAME)
-                Assertions.assertNotEquals(0, csvFoods.size, "CSV read in zero foods!")
+                assertNotEquals(0, csvFoods.size, "CSV read in zero foods!")
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown: $e")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown: $e")
         }
     }
 
     @Test
     fun testCsvReadServings() {
-        var csvServings: List<Serving>
+        var csvServings: List<Pair<Serving, String>>
         try {
             FileReader(config.servingCsvPath).use {
-                csvServings = buildServings(it.readText(), FoodTable.INDEX_NAME)
-                Assertions.assertNotEquals(0, csvServings.size, "CSV read in zero servings!")
+                csvServings = buildServingsWithFoodKeys(it.readText(), FoodTable.INDEX_NAME)
+                assertNotEquals(0, csvServings.size, "CSV read in zero servings!")
                 println(csvServings[0])
             }
         } catch (e: CsvException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         }
     }
 
@@ -97,17 +80,17 @@ class CsvTest {
         try {
             FileReader(config.foodCsvPath).use {
                 val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
-                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+                saveImportedFoods(db, csvFoods)
             }
         } catch (e: SqlException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: CsvException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         }
     }
 
@@ -115,25 +98,27 @@ class CsvTest {
     fun testCsvSaveServings() {
         try {
             // save foods first
+            val indexNameToId: Map<String, EntityId>
             FileReader(config.foodCsvPath).use {
                 val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
-                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+                val (foodKeyToId, _) = saveImportedFoods(db, csvFoods)
+                indexNameToId = foodKeyToId
             }
             FileReader(config.servingCsvPath).use {
-                importServings(db, it.readText(), FoodTable.INDEX_NAME, false)
+                importServings(db, it.readText(), FoodTable.INDEX_NAME, indexNameToId, false)
             }
         } catch (e: SqlException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: CsvException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: SchemaViolation) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         }
     }
 
@@ -146,10 +131,10 @@ class CsvTest {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail("IOException was thrown")
+            fail("IOException was thrown")
         } catch (e2: SqlException) {
             e2.printStackTrace()
-            Assertions.fail("Database save threw SQL exception")
+            fail("Database save threw SQL exception")
         }
     }
 
@@ -162,10 +147,10 @@ class CsvTest {
             }
         } catch (e: SqlException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         }
     }
 
@@ -175,7 +160,7 @@ class CsvTest {
         try {
             FileReader(config.foodCsvPath).use {
                 val csvFoods = readFoodData(it.readText(), FoodTable.INDEX_NAME)
-                saveImportedFoods(db, csvFoods, FoodTable.INDEX_NAME)
+                saveImportedFoods(db, csvFoods)
             }
             FileReader(config.recipeCsvPath).use { recipeCsv ->
                 FileReader(config.ingredientsCsvPath).use { ingredientCsv ->
@@ -184,13 +169,13 @@ class CsvTest {
             }
         } catch (e: SqlException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: IOException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         } catch (e: TypeCastException) {
             e.printStackTrace()
-            Assertions.fail("Exception was thrown")
+            fail("Exception was thrown")
         }
     }
 }

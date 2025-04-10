@@ -8,7 +8,7 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.machfour.macros.cli.utils.displayLength
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
@@ -19,7 +19,6 @@ import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.nutrients.AllNutrients
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.NumNutrients
-import com.machfour.macros.queries.completeForeignKeys
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.queries.saveObjects
 import com.machfour.macros.schema.FoodNutrientValueTable
@@ -174,7 +173,7 @@ class FoodEditor(
         currentAction = Action.entries[nextActionOrdinal]
     }
 
-    private fun <M : MacrosEntity<M>, J: Any> getErrorMessage(b: MacrosBuilder<M>, col: Column<M, J>): String? {
+    private fun <M : MacrosEntityImpl<M>, J: Any> getErrorMessage(b: MacrosBuilder<M>, col: Column<M, J>): String? {
         val errors = b.getErrors(col)
         return if (errors.isNotEmpty()) {
             // just display first error
@@ -473,7 +472,7 @@ class FoodEditor(
 
     // returns end index
     @Throws(IOException::class)
-    private fun <M : MacrosEntity<M>> printColumns(columns: Collection<Column<M, *>>, builder: MacrosBuilder<M>, startCol: Int): Int {
+    private fun <M : MacrosEntityImpl<M>> printColumns(columns: Collection<Column<M, *>>, builder: MacrosBuilder<M>, startCol: Int): Int {
         var columnIndex = startCol
         for (col in columns) {
             terminalRowForColumnIndex[columnIndex] = terminalRow
@@ -571,22 +570,26 @@ class FoodEditor(
             val f = foodBuilder.build()
             try {
                 try {
-                    val nutrientValues = nutrientData.values.onEach {
-                        // link the food to the nutrient values
-                        it.setFkParentKey(FoodNutrientValueTable.FOOD_ID, FoodTable.INDEX_NAME, f)
-                    }
-
                     // gotta do it in one go
                     db.openConnection()
                     db.beginTransaction()
-                    saveObject(db, f)
 
-                    // get the food ID into the FOOD_ID field of the NutrientValues
-                    val completedNValues = completeForeignKeys(db, nutrientValues, FoodNutrientValueTable.FOOD_ID)
+                    val id = saveObject(db, f)
 
-                    saveObjects(db, completedNValues, ObjectSource.USER_NEW)
+                    // add ID to nutrient values
+                    val completedNutrientValues = nutrientData.values.map {
+                        it.dataFullCopy().run {
+                            put(FoodNutrientValueTable.FOOD_ID, id)
+                            FoodNutrientValue.factory.construct(this, ObjectSource.USER_NEW)
+                        }
+                    }
+
+                    saveObjects(db, completedNutrientValues, ObjectSource.USER_NEW)
                     db.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
+                } catch (e: SqlException) {
+                    db.rollbackTransaction()
+                    throw e
                 } finally {
                     // TODO if exception is thrown here after an exception thrown
                     // in the above try block, the one here will hide the previous.

@@ -1,5 +1,6 @@
 package com.machfour.macros.core
 
+import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
@@ -34,10 +35,10 @@ private fun checkIdPresence(source: ObjectSource, hasId: Boolean): Boolean {
 abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
     final override val data: RowData<M>,
     final override val source: ObjectSource
-) : MacrosEntity<M>, FkEntity<M> {
+) : MacrosEntity<M> {
 
     abstract override val table: Table<M>
-    abstract override val factory: Factory<M>
+    abstract val factory: Factory<M>
 
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
@@ -53,7 +54,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         }
     }
     override fun toString(): String {
-        return "${table.name} id=${id}, objSrc=${source}, data=${data}"
+        return "${table.sqlName} id=${id}, objSrc=${source}, data=${data}"
     }
 
     final override val id: EntityId
@@ -66,7 +67,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         get() = data[table.modifyTimeColumn]!!
 
     final override val hasId: Boolean
-        get() = super<FkEntity>.hasId
+        get() = (id != NO_ID)
 
     override fun hashCode() = data.hashCode()
 
@@ -103,40 +104,6 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         }
     }
 
-    // FkEntity methods
-
-
-    // TODO only really need to map to the Natural key value,
-    // but there's no convenient way of enforcing the type relationship except by wrapping it in a RowData
-    private val fkParentKeyDataM = HashMap<Column.Fk<M, *, *>, RowData<*>>()
-
-    override val fkParentKeyData: Map<Column.Fk<M, *, *>, RowData<*>>
-        get() = fkParentKeyDataM
-
-    // NOTE FOR FUTURE REFERENCE: wildcard capture helpers only work if NO OTHER ARGUMENT
-    // shares the same parameter as the wildcard being captured.
-    override fun <N : MacrosEntity<N>, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, parent: N) {
-        val parentNaturalKeyData : J = parent.getData(parentKeyCol)
-                ?: throw RuntimeException("Parent natural key data was null")
-        setFkParentKey(fkCol, parentKeyCol, parentNaturalKeyData)
-    }
-
-    // ... or when only the relevant column data is available, but then it's only limited to single-column secondary keys
-    override fun <N, J: Any> setFkParentKey(fkCol: Column.Fk<M, *, N>, parentKeyCol: Column<N, J>, data: J) {
-        require(parentKeyCol.isUnique)
-        val parentSecondaryKey = RowData(fkCol.parentTable, listOf(parentKeyCol))
-            .apply { put(parentKeyCol, data) }
-        fkParentKeyDataM[fkCol] = parentSecondaryKey
-    }
-
-    override fun <N> getFkParentKey(fkCol: Column.Fk<M, *, N>): RowData<N> {
-        // Generics ensure that the table types match
-        @Suppress("UNCHECKED_CAST")
-        return requireNotNull(fkParentKeyData[fkCol] as RowData<N>) {
-            "FK parent key missing for $fkCol"
-        }
-    }
-    
     // this also works for import (without IDs) because both columns are NO_ID
     protected fun <M : MacrosEntity<M>, J: Any, N : MacrosEntity<N>> foreignKeyMatches(
         childObj: MacrosEntity<M>,

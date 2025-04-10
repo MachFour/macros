@@ -1,37 +1,37 @@
 package com.machfour.macros.ingredients
 
 import com.machfour.macros.cli.utils.printNutrientData
+import com.machfour.macros.csv.readFoodData
+import com.machfour.macros.csv.saveImportedFoods
 import com.machfour.macros.linux.LinuxDatabase
-import com.machfour.macros.queries.clearTable
-import com.machfour.macros.queries.deleteAllCompositeFoods
-import com.machfour.macros.queries.deleteAllIngredients
+import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlException
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import java.io.FileReader
+import kotlin.test.*
+
+private const val TEST_CSV_DIR = "/home/max/devel/macros/test/test-csv"
+private const val TEST_FOOD_CSV = "$TEST_CSV_DIR/foods.csv"
 
 class IngredientsTest {
-    companion object {
-        private const val DB_LOCATION = "/home/max/devel/macros/test/test-ingredients.sqlite"
-        private lateinit var db: LinuxDatabase
+    private lateinit var db: LinuxDatabase
 
-        @BeforeAll
-        @JvmStatic
-        fun initDb() {
-            db = LinuxDatabase.getInstance(DB_LOCATION)
-            try {
-                deleteAllIngredients(db)
-                deleteAllCompositeFoods(db)
-            } catch (e: SqlException) {
-                println("Could not delete existing composite foods and/or clear ingredients table!")
-                fail<Any>(e)
-            }
-
+    @BeforeTest
+    fun init() {
+        db = LinuxDatabase.getInstance("").apply {
+            openConnection(getGeneratedKeys = true)
+            initDb(LinuxSqlConfig)
         }
+
+        val csvFoods = FileReader(TEST_FOOD_CSV).use {
+            readFoodData(it.readText(), FoodTable.INDEX_NAME)
+        }
+        saveImportedFoods(db, csvFoods)
+    }
+
+    @AfterTest
+    fun deInit() {
+        db.closeConnection()
     }
 
     @Test
@@ -49,8 +49,7 @@ class IngredientsTest {
             assertEquals(1, recipes.size)
             recipes.firstOrNull()
         } catch (e: SqlException) {
-            fail<Any>("SQL exception processing composite food spec: $e")
-            null
+            fail("SQL exception processing composite food spec: $e")
         }
 
         checkNotNull(recipe)
@@ -61,25 +60,4 @@ class IngredientsTest {
         val rescaled = recipe.nutrientData.rescale100()
         printNutrientData(rescaled, false)
     }
-
-
-    @BeforeEach
-    fun setUp() {
-    }
-
-    private fun clearFoodTable() {
-        try {
-            clearTable(db, FoodTable)
-        } catch (e: SqlException) {
-            e.printStackTrace()
-            fail<Any>("Deleting all foods threw SQL exception")
-        }
-
-    }
-
-
-    @AfterEach
-    fun tearDown() {
-    }
-
 }

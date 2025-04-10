@@ -1,9 +1,10 @@
 package com.machfour.macros.formatting
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class StringFormattingTest {
+
     @Test
     fun testDoubleToStringWithTrailingZeros() {
         assertEquals("0.0", 0.0.toString(1, withTrailingZeros = true))

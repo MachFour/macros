@@ -32,6 +32,7 @@ const val MALTITOL_NAME = "maltitol"
 const val MANNITOL_NAME = "mannitol"
 const val SORBITOL_NAME = "sorbitol"
 const val XYLITOL_NAME = "xylitol"
+const val POLYDEXTROSE_NAME = "polydextrose"
 
 
 const val QUANTITY_UNIT_NAME = "quantity_unit"

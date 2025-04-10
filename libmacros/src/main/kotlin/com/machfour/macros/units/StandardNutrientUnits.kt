@@ -36,6 +36,7 @@ private val standardUnitMap = mapOf(
     MANNITOL to GRAMS,
     SORBITOL to GRAMS,
     XYLITOL to GRAMS,
+    POLYDEXTROSE to GRAMS,
 )
 
 // standard metric units, using milligrams where appropriate

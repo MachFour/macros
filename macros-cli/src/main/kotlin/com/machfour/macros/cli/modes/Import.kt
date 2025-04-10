@@ -123,7 +123,8 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 }
 
                 val csvFoods = FileReader(foodCsvFile).use { readFoodData(it.readText(), foodKeyCol) }
-                saveImportedFoods(db, csvFoods, foodKeyCol).also {
+                val (foodKeyToId, conflictingFoods) = saveImportedFoods(db, csvFoods)
+                conflictingFoods.let {
                     if (it.isNotEmpty()) {
                         println("Note: the following ${it.size} duplicate foods were not imported")
                         it.forEach { (_, food) -> println(food.indexName) }
@@ -136,7 +137,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println("Importing servings from $servingCsvFile")
                 val duplicatedServings: Map<Long, Serving>
                 FileReader(servingCsvFile).use { reader ->
-                    duplicatedServings = importServings(db, reader.readText(), foodKeyCol, true)
+                    duplicatedServings = importServings(db, reader.readText(), foodKeyCol, foodKeyToId, true)
                 }
                 println("Saved servings")
                 println("Note: skipped ${duplicatedServings.size} duplicated servings")

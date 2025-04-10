@@ -33,9 +33,6 @@ dependencies {
 
     // testing
     testImplementation(libs.kotlin.test)
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 tasks.withType<Copy> {

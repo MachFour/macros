@@ -13,7 +13,8 @@ private val TRIG_SQL_NAMES = listOf(
 
 private val SQL_DIR = joinFilePath(PROJECT_DIR, "libmacros/src/main/resources/sql")
 
-class LinuxSqlConfig: SqlConfig {
+object LinuxSqlConfig: SqlConfig {
+
     override val initSqlName = INIT_SQL_NAME
     override val trigSqlNames = TRIG_SQL_NAMES
     override val dataSqlName = DATA_SQL_NAME

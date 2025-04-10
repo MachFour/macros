@@ -142,11 +142,11 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
      * Passthrough fuunctions
      */
 
-    override fun foodSearch(keywords: List<String>, matchAll: Boolean, minRelevance: SearchRelevance): Set<Long> {
-        return foodSearch(database, keywords, matchAll, minRelevance)
+    override fun foodSearch(keywords: List<String>, matchAll: Boolean, maxResults: Int, minRelevance: SearchRelevance): Set<Long> {
+        return foodSearch(database, keywords, matchAll, maxResults, minRelevance)
     }
 
-    override fun foodSearch(keyword: String, minRelevance: SearchRelevance): Set<Long> {
+    override fun foodSearch(keyword: String, maxResults: Int, minRelevance: SearchRelevance): Set<Long> {
         return foodSearch(database, keyword)
     }
 

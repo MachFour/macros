@@ -20,11 +20,16 @@ interface MacrosDataSource {
     fun foodSearch(
         keywords: List<String>,
         matchAll: Boolean = true,
-        minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
+        maxResults: Int = -1,
+        minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN,
     ): Set<Long>
 
     @Throws(SqlException::class)
-    fun foodSearch(keyword: String, minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN): Set<Long>
+    fun foodSearch(
+        keyword: String,
+        maxResults: Int = -1,
+        minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN,
+    ): Set<Long>
 
     @Throws(SqlException::class)
     fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long>

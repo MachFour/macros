@@ -7,6 +7,8 @@ import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
+import kotlin.math.max
+import kotlin.math.min
 
 // excluding index name
 private val foodSearchCols = listOf(
@@ -33,11 +35,12 @@ fun foodSearch(
     db: SqlDatabase,
     keywords: List<String>,
     matchAll: Boolean = true,
+    maxResults: Int = 1,
     minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
 ): Set<Long> {
     // map will be empty if keywords is empty
     return keywords
-        .map { foodSearch(db, it, minRelevance) }
+        .map { foodSearch(db, it, maxResults, minRelevance) }
         .let { if (matchAll) it.intersectAll() else it.unionAll() }
 }
 
@@ -54,6 +57,7 @@ fun foodSearch(
 fun foodSearch(
     db: SqlDatabase,
     keyword: String,
+    maxResults: Int = -1,
     minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN
 ): Set<Long> {
     if (keyword.isEmpty()) {
@@ -71,19 +75,17 @@ fun foodSearch(
         else -> "$foodType IN (${relevantFoodTypes.joinToString(", ") { "'$it'" }})"
     }
 
-    val relevanceFilter = "$searchRelevance IS NOT NULL AND $searchRelevance >= ${minRelevance.value} " +
-            "OR $searchRelevance IS NULL AND $foodTypeFilter"
-
     val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
-        andWhere(relevanceFilter)
+        andWhere( "$searchRelevance IS NOT NULL AND $searchRelevance >= ${minRelevance.value} " +
+                    "OR $searchRelevance IS NULL AND $foodTypeFilter"
+        )
     }
 
-
-    return buildSet {
+    val duplicatedResults = buildList {
         // add exact matches on index name
-        addAll(exactStringSearch(db, indexName, keyword, queryOptions).toSet())
+        addAll(exactStringSearch(db, indexName, keyword, queryOptions))
         // add exact matches on any other column
-        addAll(exactStringSearch(db, foodSearchCols, keyword, queryOptions).toSet())
+        addAll(exactStringSearch(db, foodSearchCols, keyword, queryOptions))
 
         if (keyword.length <= 2) {
             // just match prefix of index name
@@ -98,6 +100,13 @@ fun foodSearch(
         if (keyword.length >= 4) {
             // This may return a large number of results
             addAll(substringSearch(db, foodSearchCols, keyword, queryOptions))
+        }
+    }
+
+    val resultsSize = min(duplicatedResults.size, max(0, maxResults))
+    return buildSet(resultsSize) {
+        for (i in 0 until resultsSize) {
+            add(duplicatedResults[i])
         }
     }
 }

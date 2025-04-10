@@ -14,17 +14,17 @@ import com.machfour.macros.sql.generator.SelectQuery
 fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOptions: SelectQuery.Builder<M>.() -> Unit): Map<J, M> {
     require(keyColumn.isUnique) { "Key column must be unique" }
 
-    val t = keyColumn.table
-    val query = AllColumnSelect.build(t, queryOptions)
+    val table = keyColumn.table
+    val query = AllColumnSelect.build(table, queryOptions)
 
     val objects = if (query.isOrdered) LinkedHashMap<J, M>() else HashMap<J, M>()
 
     val resultData = db.selectAllColumns(query)
     for (objectData in resultData) {
         val key = objectData[keyColumn]
-        checkNotNull(key) { "found null key in $t" }
+        checkNotNull(key) { "found null key in $table" }
         check(!objects.containsKey(key)) { "Key $key already in returned objects map!" }
-        objects[key] = t.construct(objectData, ObjectSource.DATABASE)
+        objects[key] = table.construct(objectData, ObjectSource.DATABASE)
     }
     return objects
 }

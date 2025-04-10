@@ -10,7 +10,6 @@ internal open class ColumnImpl<M, J: Any> private constructor(
     private val defaultValue: () -> J?,
     override val isUserEditable: Boolean,
     override val isNullable: Boolean,
-    override val isInSecondaryKey: Boolean,
     override val isUnique: Boolean
 ) : Column<M, J> {
 
@@ -31,11 +30,10 @@ internal open class ColumnImpl<M, J: Any> private constructor(
         defaultValue: () -> J?,
         editable: Boolean,
         nullable: Boolean,
-        inSecondaryKey: Boolean,
         unique: Boolean,
         override val parentColumn: Column<N, J>,
         override val parentTable: Table<N>
-    ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, inSecondaryKey, unique), Column.Fk<M, J, N> {
+    ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, unique), Column.Fk<M, J, N> {
 
         override fun toString(): String {
             return super.toString() + " (-> " + parentTable.sqlName + "." + parentColumn.sqlName + ")"
@@ -45,7 +43,6 @@ internal open class ColumnImpl<M, J: Any> private constructor(
     internal class Builder<J: Any>(private val name: String, private val type: SqlType<J>): Column.Builder<J> {
         private var editable: Boolean = true
         private var nullable: Boolean = true
-        private var inSecondaryKey: Boolean = false
         private var unique: Boolean = false
         private var defaultValue: () -> J? = { null }
 
@@ -53,7 +50,7 @@ internal open class ColumnImpl<M, J: Any> private constructor(
 
         override fun notNull() = apply { nullable = false }
 
-        override fun inSecondaryKey() = apply { inSecondaryKey = true }
+        override fun inSecondaryKey() = this
 
         override fun unique() = apply { unique = true }
 
@@ -62,12 +59,12 @@ internal open class ColumnImpl<M, J: Any> private constructor(
         override fun default(getValue: () -> J?) = apply { defaultValue = getValue }
 
         private fun <M> build(): ColumnImpl<M, J> {
-            return ColumnImpl(name, type, defaultValue, editable, nullable, inSecondaryKey, unique)
+            return ColumnImpl(name, type, defaultValue, editable, nullable, unique)
         }
 
         private fun <M, N> buildFk(parent: Column<N, J>, parentTable: Table<N>): Fk<M, J, N> {
             // not sure why the constructor call needs type parameters here...
-            return Fk(name, type, defaultValue, editable, nullable, inSecondaryKey, unique, parent, parentTable)
+            return Fk(name, type, defaultValue, editable, nullable, unique, parent, parentTable)
         }
 
         private fun <M> addToListAndSetIndex(newlyCreated: ColumnImpl<M, J>, columns: MutableList<Column<M, out Any>>) {

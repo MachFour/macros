@@ -18,7 +18,7 @@ interface Column<M, J: Any> : ColumnExpr<M, J> {
     val sqlName: String
     val defaultData: J?
 
-    // overriden ColumnExpr fields
+    // overridden ColumnExpr fields
     override val type: SqlType<J>
     override val table: Table<M>
     override val sql: String
@@ -32,11 +32,6 @@ interface Column<M, J: Any> : ColumnExpr<M, J> {
 
     // whether the column is allowed to be saved into the DB as null
     val isNullable: Boolean
-
-    // whether the column can be used as part of an alternative key to identify a row
-    // NOTE there can also be other columns in the table needed to form the full secondary key.
-    // Also, not all tables may have a secondary key.
-    val isInSecondaryKey: Boolean
 
     // is SQL UNIQUE column
     val isUnique: Boolean

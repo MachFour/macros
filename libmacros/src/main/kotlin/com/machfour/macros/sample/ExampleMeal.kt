@@ -2,7 +2,6 @@ package com.machfour.macros.sample
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.makeDateStamp
-import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
@@ -10,6 +9,7 @@ import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
+import com.machfour.macros.sql.RowData
 
 val exampleFoodPortion by lazy { generateFp(exampleFood2, 50.0) }
 
@@ -28,14 +28,14 @@ fun generateFp(
     id: Long = MacrosEntity.NO_ID,
     mealId: Long = MacrosEntity.NO_ID,
 ) : FoodPortion {
-    val fp = MacrosBuilder(FoodPortionTable).run {
-        setField(FoodPortionTable.ID, id)
-        setField(FoodPortionTable.MEAL_ID, mealId)
-        setField(FoodPortionTable.FOOD_ID, food.id) // who knows what food this is haha
-        setField(FoodPortionTable.QUANTITY, quantity)
-        setField(FoodPortionTable.QUANTITY_UNIT, "g")
-        setField(FoodPortionTable.NOTES, "This is an example food portion")
-        build(ObjectSource.TEST)
+    val fp = RowData(FoodPortionTable).run {
+        put(FoodPortionTable.ID, id)
+        put(FoodPortionTable.MEAL_ID, mealId)
+        put(FoodPortionTable.FOOD_ID, food.id) // who knows what food this is haha
+        put(FoodPortionTable.QUANTITY, quantity)
+        put(FoodPortionTable.QUANTITY_UNIT, "g")
+        put(FoodPortionTable.NOTES, "This is an example food portion")
+        FoodPortion.factory.construct(this, ObjectSource.TEST)
     }
 
     fp.initFoodAndNd(food)
@@ -43,12 +43,12 @@ fun generateFp(
 }
 
 fun generateMeal(id: Long, day: DateStamp, foodPortions: List<FoodPortion>): Meal {
-    val meal = MacrosBuilder(MealTable).run {
-        setField(MealTable.ID, id)
-        setField(MealTable.DAY, day)
-        setField(MealTable.NAME, "Example meal $id")
-        setField(MealTable.NOTES, "Notable notes")
-        build(ObjectSource.TEST)
+    val meal = RowData(MealTable).run {
+        put(MealTable.ID, id)
+        put(MealTable.DAY, day)
+        put(MealTable.NAME, "Example meal $id")
+        put(MealTable.NOTES, "Notable notes")
+        Meal.factory.construct(this, ObjectSource.TEST)
     }
 
     foodPortions.forEach { meal.addFoodPortion(it) }

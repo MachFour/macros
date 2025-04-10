@@ -1,7 +1,7 @@
 package com.machfour.macros.objects
 
-import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
@@ -11,6 +11,7 @@ import com.machfour.macros.schema.FoodPortionTable.FOOD_ID
 import com.machfour.macros.schema.FoodPortionTable.MEAL_ID
 import com.machfour.macros.schema.FoodPortionTable.QUANTITY
 import com.machfour.macros.schema.FoodPortionTable.QUANTITY_UNIT
+import com.machfour.macros.sql.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES
@@ -30,17 +31,18 @@ class NutrientDataTest {
             val fp1: FoodPortion
             val fp2: FoodPortion
             val fp3: FoodPortion
-            with (MacrosBuilder(FoodPortionTable)) {
-                setField(FOOD_ID, f.id)
-                setField(MEAL_ID, MacrosEntity.NO_ID)
-                setField(QUANTITY, 100.0)
-                setField(QUANTITY_UNIT, GRAMS.abbr)
-                fp1 = build()
-                setField(QUANTITY_UNIT, MILLILITRES.abbr)
-                fp2 = build()
-                setField(QUANTITY, 100000.0)
-                setField(QUANTITY_UNIT, MILLIGRAMS.abbr)
-                fp3 = build()
+            val factory = FoodPortion.factory
+            with (RowData(FoodPortionTable)) {
+                put(FOOD_ID, f.id)
+                put(MEAL_ID, MacrosEntity.NO_ID)
+                put(QUANTITY, 100.0)
+                put(QUANTITY_UNIT, GRAMS.abbr)
+                fp1 = factory.construct(this, ObjectSource.TEST)
+                put(QUANTITY_UNIT, MILLILITRES.abbr)
+                fp2 = factory.construct(this, ObjectSource.TEST)
+                put(QUANTITY, 100000.0)
+                put(QUANTITY_UNIT, MILLIGRAMS.abbr)
+                fp3 = factory.construct(this, ObjectSource.TEST)
             }
 
             fp1.initFoodAndNd(f)

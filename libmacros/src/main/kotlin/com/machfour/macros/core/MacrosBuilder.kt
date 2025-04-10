@@ -15,10 +15,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     private val validator: MacrosValidator<M> = tableValidator(table),
     fromInstance: M?
 ) {
-    //fun interface ValueChangeListener<J> {
-    //    fun onValueChanged(newValue: J?, errors: List<ValidationError>)
-    //}
-
     constructor(
         table: Table<M>, validator: MacrosValidator<M> = tableValidator(table)
     ) : this(table, validator, null)
@@ -96,20 +92,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
     fun hasUnsavedData(): Boolean {
         return editInstance == null || originalData != draftData
     }
-
-    //fun <J> setValueChangeListener(col: Column<M, J>, listener: ValueChangeListener<J>) {
-    //    listeners[col] = listener
-    //}
-
-    //private fun <J> getListener(col: Column<M, J>): ValueChangeListener<J>? {
-    //    return if (!listeners.containsKey(col)) null else listeners[col] as ValueChangeListener<J>
-    //}
-
-    //private fun <J> fireValueChangeListener(col: Column<M, J>) {
-    //    val newValue = get(col)
-    //    val errors = getErrorsInternal(col)
-    //    getListener(col)?.onValueChanged(newValue, errors)
-    //}
 
     // when setting null values, wasTypeMismatch differentiates between null as a value and null
     // as an error value during a setFromString
@@ -248,10 +230,6 @@ class MacrosBuilder<M : MacrosEntity<M>> private constructor(
 
     fun invalidFieldNames(displayStrings: DisplayStrings): List<String> {
         return invalidFields.map { displayStrings.getFullName(it) }
-    }
-
-    fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
-        return invalidFieldNames(displayStrings).joinToString(separator = ", ")
     }
 
 }

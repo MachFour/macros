@@ -24,9 +24,9 @@ private val servingId = foodQuantityServingIdCol(columns)
 private val nutrientMaxVersion = foodQuantityNutrientMaxVersionCol(columns)
 
 private val mealId =
-    builder("meal_id", Types.ID).notEditable().notNull().buildFkFor(MealTable, MealTable.ID, columns)
+    builder("meal_id", Types.ID).notEditable().notNull().buildFkFor(MealTable.ID, columns)
 private val recipeMaxVersion =
-    builder("recipe_max_version", Types.INTEGER).notEditable().notNull().defaultsTo(1).buildFor(columns)
+    builder("recipe_max_version", Types.INTEGER).notEditable().notNull().default { 1 }.buildFor(columns)
 
 // needs to come after FoodTable, ServingTable, MealTable
 object FoodPortionTable: TableImpl<FoodPortion>(tableName, Factories.foodPortion, columns) {

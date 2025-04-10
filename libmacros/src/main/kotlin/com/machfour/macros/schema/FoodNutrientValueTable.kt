@@ -26,12 +26,12 @@ private val constraintSpec = nutrientValueConstraintColumn(columns)
 
 // might have NO_ID value if it's not being stored in the database (i.e. computed value)
 private val foodId =
-    builder("food_id", Types.ID).notNull().notEditable().defaultsTo(MacrosEntity.NO_ID)
-        .buildFkFor(FoodTable, FoodTable.ID, columns)
+    builder("food_id", Types.ID).notNull().notEditable().default { MacrosEntity.NO_ID }
+        .buildFkFor(FoodTable.ID, columns)
 private val version =
-    builder("version", Types.INTEGER).notNull().defaultsTo(1).buildFor(columns)
+    builder("version", Types.INTEGER).notNull().default { 1 }.buildFor(columns)
 
-object FoodNutrientValueTable: TableImpl<FoodNutrientValue>(tableName, Factories.foodNutrientValue, columns) {
+object FoodNutrientValueTable : TableImpl<FoodNutrientValue>(tableName, Factories.foodNutrientValue, columns) {
     val ID: Column<FoodNutrientValue, Long>
         get() = id
     val CREATE_TIME: Column<FoodNutrientValue, Long>

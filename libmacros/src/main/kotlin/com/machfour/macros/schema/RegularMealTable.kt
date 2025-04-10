@@ -18,7 +18,7 @@ private val name =
     builder("name", Types.TEXT).notNull().buildFor(columns)
 private val mealId =
     builder("meal_id", Types.ID).notEditable().notNull().unique()
-        .buildFkFor(MealTable, MealTable.ID, columns)
+        .buildFkFor(MealTable.ID, columns)
 
 object RegularMealTable: TableImpl<RegularMeal>(tableName, RegularMeal.factory, columns) {
     val ID: Column<RegularMeal, Long>

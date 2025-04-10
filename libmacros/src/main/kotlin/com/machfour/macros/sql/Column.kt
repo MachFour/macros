@@ -7,12 +7,9 @@ import com.machfour.macros.sql.generator.ColumnExpr
  * Created by max on 4/11/17.
  */
 interface Column<M, J: Any> : ColumnExpr<M, J> {
-    /*
-     * Describes one column referencing another. N is the parent table type
-     */
+    // Describes one column referencing another. N is the parent table type
     interface Fk<M, J: Any, N> : Column<M, J> {
         val parentColumn: Column<N, J>
-        val parentTable: Table<N>
     }
 
     val sqlName: String
@@ -43,14 +40,11 @@ interface Column<M, J: Any> : ColumnExpr<M, J> {
 
         fun unique(): Builder<J>
 
-        fun defaultsTo(value: J?): Builder<J>
-
         fun default(getValue: () -> J?): Builder<J>
 
         fun <M> buildFor(tableColumns: MutableList<Column<M, out Any>>): Column<M, J>
 
         fun <M, N> buildFkFor(
-            parentTable: Table<N>,
             parentCol: Column<N, J>,
             tableColumns: MutableList<Column<M, out Any>>
         ): Fk<M, J, N>

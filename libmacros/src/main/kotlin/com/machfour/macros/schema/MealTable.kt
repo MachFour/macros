@@ -27,12 +27,12 @@ private val day =
 private val startTime =
     builder("start_time", Types.TIMESTAMP).notNull().default { currentEpochSeconds() }.buildFor(columns)
 private val duration =
-    builder("duration", Types.INTEGER).notNull().defaultsTo(0).buildFor(columns)
+    builder("duration", Types.INTEGER).notNull().default { 0 }.buildFor(columns)
 private val goalId =
-    builder("goal_id", Types.ID).defaultsTo(null).notEditable().unique()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
+    builder("goal_id", Types.ID).default { null }.notEditable().unique()
+        .buildFkFor(NutrientGoalTable.ID, columns)
 
-object MealTable: TableImpl<Meal>(tableName, Factories.meal, columns) {
+object MealTable : TableImpl<Meal>(tableName, Factories.meal, columns) {
     val ID: Column<Meal, Long>
         get() = id
     val CREATE_TIME: Column<Meal, Long>

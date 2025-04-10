@@ -25,7 +25,7 @@ private val constraintSpec = nutrientValueConstraintColumn(columns)
 
 private val goalId =
     builder("goal_id", Types.ID).notEditable().notNull()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
+        .buildFkFor(NutrientGoalTable.ID, columns)
 
 object NutrientGoalValueTable: TableImpl<NutrientGoalValue>(tableName, Factories.nutrientGoalValue, columns) {
     val ID: Column<NutrientGoalValue, Long>

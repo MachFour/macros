@@ -32,11 +32,10 @@ internal open class ColumnImpl<M, J: Any> private constructor(
         nullable: Boolean,
         unique: Boolean,
         override val parentColumn: Column<N, J>,
-        override val parentTable: Table<N>
     ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, unique), Column.Fk<M, J, N> {
 
         override fun toString(): String {
-            return super.toString() + " (-> " + parentTable.sqlName + "." + parentColumn.sqlName + ")"
+            return super.toString() + " (-> " + parentColumn.table.sqlName + "." + parentColumn.sqlName + ")"
         }
     }
 
@@ -52,17 +51,14 @@ internal open class ColumnImpl<M, J: Any> private constructor(
 
         override fun unique() = apply { unique = true }
 
-        override fun defaultsTo(value: J?) = apply { defaultValue = { value } }
-
         override fun default(getValue: () -> J?) = apply { defaultValue = getValue }
 
         private fun <M> build(): ColumnImpl<M, J> {
             return ColumnImpl(name, type, defaultValue, editable, nullable, unique)
         }
 
-        private fun <M, N> buildFk(parent: Column<N, J>, parentTable: Table<N>): Fk<M, J, N> {
-            // not sure why the constructor call needs type parameters here...
-            return Fk(name, type, defaultValue, editable, nullable, unique, parent, parentTable)
+        private fun <M, N> buildFk(parent: Column<N, J>): Fk<M, J, N> {
+            return Fk(name, type, defaultValue, editable, nullable, unique, parent)
         }
 
         private fun <M> addToListAndSetIndex(newlyCreated: ColumnImpl<M, J>, columns: MutableList<Column<M, out Any>>) {
@@ -73,18 +69,18 @@ internal open class ColumnImpl<M, J: Any> private constructor(
         // sets index
         override fun <M> buildFor(tableColumns: MutableList<Column<M, out Any>>): ColumnImpl<M, J> {
             val builtCol: ColumnImpl<M, J> = build()
-            addToListAndSetIndex(builtCol, tableColumns)
-            return builtCol
+            return builtCol.also {
+                addToListAndSetIndex(it, tableColumns)
+            }
         }
 
         override fun <M, N> buildFkFor(
-            parentTable: Table<N>,
             parentCol: Column<N, J>,
             tableColumns: MutableList<Column<M, out Any>>
         ): Fk<M, J, N> {
-            val builtCol = buildFk<M, N>(parentCol, parentTable)
-            addToListAndSetIndex(builtCol, tableColumns)
-            return builtCol
+            return buildFk<M, N>(parentCol).also {
+                addToListAndSetIndex(it, tableColumns)
+            }
         }
     }
 }

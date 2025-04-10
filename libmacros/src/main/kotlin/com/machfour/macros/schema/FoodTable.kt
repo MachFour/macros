@@ -28,11 +28,11 @@ private val variety =
 private val extraDesc =
     builder("extra_desc", Types.TEXT).buildFor(columns)
 private val category =
-    builder("category", Types.TEXT).buildFkFor(FoodCategoryTable, FoodCategoryTable.NAME, columns)
+    builder("category", Types.TEXT).buildFkFor(FoodCategoryTable.NAME, columns)
 private val notes =
     notesColumnBuildAndAdd(columns)
 private val foodType =
-    builder("food_type", Types.TEXT).notEditable().notNull().defaultsTo(FoodType.PRIMARY.niceName).buildFor(columns)
+    builder("food_type", Types.TEXT).notEditable().notNull().default { FoodType.PRIMARY.niceName }.buildFor(columns)
 private val usdaIndex =
     builder("usda_index", Types.INTEGER).notEditable().unique().buildFor(columns)
 private val nuttabIndex =

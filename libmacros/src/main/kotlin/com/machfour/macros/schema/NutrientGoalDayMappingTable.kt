@@ -19,7 +19,7 @@ private val day =
     builder("day", Types.DATESTAMP).notNull().buildFor(columns)
 private val goalId =
     builder("goal_id", Types.ID).notNull().notEditable().unique()
-        .buildFkFor(NutrientGoalTable, NutrientGoalTable.ID, columns)
+        .buildFkFor(NutrientGoalTable.ID, columns)
 
 object NutrientGoalDayMappingTable: TableImpl<NutrientGoalDayMapping>(tableName, NutrientGoalDayMapping.factory, columns) {
     val ID: Column<NutrientGoalDayMapping, Long>

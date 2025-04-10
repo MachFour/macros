@@ -15,7 +15,7 @@ private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
 private val name = builder("name", Types.TEXT).notNull().unique().buildFor(columns)
 private val unitTypes = builder("unit_types", Types.INTEGER).notNull().buildFor(columns)
-private val inbuilt = builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(columns)
+private val inbuilt = builder("inbuilt", Types.BOOLEAN).notNull().default { false }.buildFor(columns)
 
 object NutrientTable : TableImpl<Nutrient>(tableName, Factories.nutrient, columns) {
     val ID: Column<Nutrient, Long>

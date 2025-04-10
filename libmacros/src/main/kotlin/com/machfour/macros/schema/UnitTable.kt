@@ -24,11 +24,11 @@ private val abbreviation =
 private val metricEquivalent =
     builder("metric_equivalent", Types.REAL).notNull().buildFor(columns)
 private val inbuilt =
-    builder("inbuilt", Types.BOOLEAN).notNull().defaultsTo(false).buildFor(columns)
+    builder("inbuilt", Types.BOOLEAN).notNull().default { false }.buildFor(columns)
 
 // Unit.factory() causes initialisation of Unit, which depends on this class.
 // So the columns are initialised as a side effect of calling that function.
-object UnitTable: TableImpl<Unit>(tableName, Factories.unit, columns) {
+object UnitTable : TableImpl<Unit>(tableName, Factories.unit, columns) {
     val ID: Column<Unit, Long>
         get() = id
     val CREATE_TIME: Column<Unit, Long>

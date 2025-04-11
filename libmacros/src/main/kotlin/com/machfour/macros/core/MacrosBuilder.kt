@@ -42,19 +42,11 @@ class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val tab
     private var originalData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
     private val draftData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
 
-    private val validationErrors =
-        HashMap<Column<M, *>, MutableList<ValidationError>>(
-            table.columns.size,
-            1f
-        ).also {
-            // init with empty lists
-            for (col in table.columns) {
-                it[col] = ArrayList()
-            }
+    private val validationErrors = HashMap<Column<M, *>, MutableList<ValidationError>>(table.columns.size).apply {
+        for (col in table.columns) {
+            this[col] = ArrayList()
         }
-
-    // value change listeners
-    //private val listeners: MutableMap<Column<M, *>, ValueChangeListener<*>> = HashMap()
+    }
 
     init {
         settableColumns.addAll(table.columns)

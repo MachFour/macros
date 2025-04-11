@@ -180,7 +180,6 @@ class FoodEditor(
             when (errors[0]) {
                 ValidationError.NON_NULL -> " ** Cannot be empty"
                 ValidationError.TYPE_MISMATCH -> " ** Must be of type '" + col.type + "'"
-                else -> " ** Error : " + errors[0].toString()
             }
         } else {
             null

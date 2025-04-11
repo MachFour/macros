@@ -214,4 +214,7 @@ class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val tab
         return invalidFields.map { displayStrings.getFullName(it) }
     }
 
+    fun invalidFieldNamesString(displayStrings: DisplayStrings): String {
+        return invalidFieldNames(displayStrings).joinToString(separator = ", ")
+    }
 }

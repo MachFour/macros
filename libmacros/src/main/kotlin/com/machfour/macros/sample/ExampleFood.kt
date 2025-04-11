@@ -41,7 +41,7 @@ private fun initExampleFood1(): Food {
     data.put(VARIETY, "really good with a really long variety name just to see what happens")
     data.put(NAME, "food")
     data.put(NOTES, "notes")
-    data.put(CATEGORY, "dairy")
+    data.put(CATEGORY, "uncategorised")
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     data.put(USDA_INDEX, null)
     data.put(NUTTAB_INDEX, null)

@@ -15,9 +15,8 @@ enum class FoodType(val niceName: String, val baseSearchRelevance: SearchRelevan
     @SerialName("usda")
     USDA("usda", SearchRelevance.INBUILT),
     @SerialName("nuttab")
-    NUTTAB("nuttab", SearchRelevance.INBUILT),
-    @SerialName("special")
-    SPECIAL("special", SearchRelevance.INBUILT);
+    NUTTAB("nuttab", SearchRelevance.INBUILT)
+    ;
 
     override fun toString(): String {
         return niceName
@@ -30,7 +29,6 @@ enum class FoodType(val niceName: String, val baseSearchRelevance: SearchRelevan
                 "composite" -> COMPOSITE
                 "usda" -> USDA
                 "nuttab" -> NUTTAB
-                "special" -> SPECIAL
                 else -> null
             }
         }

@@ -2,14 +2,14 @@ package com.machfour.macros.units
 
 enum class UnitType(val id: Int, val niceName: String) {
     NONE(0, "none"),
-    MASS(1, "grams"),
+    MASS(1, "mass"),
     VOLUME(2, "volume"),
     ENERGY(4, "energy"),
     DENSITY(8, "density"),
     ;
 
     // returns true if the given flags match this UnitType's id
-    fun matchedByFlags(flags: Int): Boolean {
+    internal fun matchedByFlags(flags: Int): Boolean {
         return (id and flags) != 0
     }
 
@@ -27,6 +27,10 @@ enum class UnitType(val id: Int, val niceName: String) {
 
         fun asFlags(types: Array<out UnitType>): Int {
             return types.sumOf { it.id }
+        }
+
+        fun Set<UnitType>.toFlags(): Int {
+            return asFlags(toTypedArray())
         }
     }
 }

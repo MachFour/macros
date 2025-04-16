@@ -7,7 +7,6 @@ import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.SelectQuery
-import kotlin.math.max
 import kotlin.math.min
 
 // excluding index name
@@ -103,7 +102,8 @@ fun foodSearch(
         }
     }
 
-    val resultsSize = min(duplicatedResults.size, max(0, maxResults))
+    val resultsSize = if (maxResults >= 0) min(maxResults, duplicatedResults.size) else duplicatedResults.size
+
     return buildSet(resultsSize) {
         for (i in 0 until resultsSize) {
             add(duplicatedResults[i])

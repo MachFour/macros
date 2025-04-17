@@ -11,10 +11,10 @@ import kotlin.math.min
 
 // excluding index name
 private val foodSearchCols = listOf(
-    FoodTable.NAME
-    , FoodTable.VARIETY
-    , FoodTable.BRAND
-    , FoodTable.EXTRA_DESC
+    FoodTable.NAME,
+    FoodTable.VARIETY,
+    FoodTable.BRAND,
+    FoodTable.EXTRA_DESC,
 )
 
 private fun <E> Iterable<Set<E>>.unionAll(): Set<E> {
@@ -75,38 +75,41 @@ fun foodSearch(
     }
 
     val queryOptions: SelectQuery.Builder<Food>.() -> Unit = {
-        andWhere( "$searchRelevance IS NOT NULL AND $searchRelevance >= ${minRelevance.value} " +
+        andWhere("$searchRelevance IS NOT NULL AND $searchRelevance >= ${minRelevance.value} " +
                     "OR $searchRelevance IS NULL AND $foodTypeFilter"
         )
     }
 
     val duplicatedResults = buildList {
         // add exact matches on index name
-        addAll(exactStringSearch(db, indexName, keyword, queryOptions))
+        addAll(exactStringSearch(db, FoodTable, indexName, keyword, queryOptions))
         // add exact matches on any other column
-        addAll(exactStringSearch(db, foodSearchCols, keyword, queryOptions))
+        addAll(exactStringSearch(db, FoodTable, foodSearchCols, keyword, queryOptions))
 
         if (keyword.length <= 2) {
             // just match prefix of index name
-            addAll(prefixSearch(db, indexName, keyword, queryOptions))
-            addAll(prefixSearch(db, foodSearchCols, keyword, queryOptions))
+            addAll(prefixSearch(db, FoodTable, indexName, keyword, queryOptions))
+            addAll(prefixSearch(db, FoodTable, foodSearchCols, keyword, queryOptions))
         } else {
             // match any column prefix
-            addAll(prefixSearch(db, foodSearchCols, keyword, queryOptions))
+            addAll(prefixSearch(db, FoodTable, foodSearchCols, keyword, queryOptions))
             // match anywhere in index name
-            addAll(substringSearch(db, indexName, keyword, queryOptions))
+            addAll(substringSearch(db, FoodTable, indexName, keyword, queryOptions))
         }
         if (keyword.length >= 4) {
             // This may return a large number of results
-            addAll(substringSearch(db, foodSearchCols, keyword, queryOptions))
+            addAll(substringSearch(db, FoodTable, foodSearchCols, keyword, queryOptions))
         }
     }
 
     val resultsSize = if (maxResults >= 0) min(maxResults, duplicatedResults.size) else duplicatedResults.size
 
-    return buildSet(resultsSize) {
-        for (i in 0 until resultsSize) {
-            add(duplicatedResults[i])
+    return buildSet {
+        for (result in duplicatedResults) {
+            if (size >= resultsSize) {
+                break
+            }
+            add(result)
         }
     }
 }
@@ -272,7 +275,6 @@ private fun applyServingsToRawFoods(foodMap: Map<Long, Food>, servingMap: Map<Lo
     for (s in servingMap.values) {
         // this query should never fail, due to database constraints
         val f = foodMap.getValue(s.foodId)
-        s.initFood(f)
         f.addServing(s)
     }
 }

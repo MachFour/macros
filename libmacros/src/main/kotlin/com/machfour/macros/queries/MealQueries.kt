@@ -91,8 +91,8 @@ private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, fo
 
 /* The getXXXBy(Id|Key) functions construct objects for all necessary entities that match the query,
  * as well as all other entities referenced by them.
- * For example, getMealsForDay constructs all of the MealTable objects for one particular day,
- * along with their FoodPortions, their Foods, and all of the Servings of those Foods.
+ * For example, getMealsForDay constructs all the MealTable objects for one particular day,
+ * along with their FoodPortions, their Foods, and all the Servings of those Foods.
  * It's probably worth caching the results of these!
  */
 @Throws(SqlException::class)

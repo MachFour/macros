@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
@@ -72,7 +73,9 @@ fun <M, J: Any> getRawObjectsWithKeys(
 
     return if (preserveKeyOrder) {
         // match order of ids in input
-        keys.intersect(unorderedObjects.keys).associateWith { unorderedObjects.getValue(it) }
+        return buildMap(unorderedObjects.size) {
+            keys.associateNotNullWithTo(this) { unorderedObjects[it] }
+        }
     } else {
         unorderedObjects
     }
@@ -80,22 +83,11 @@ fun <M, J: Any> getRawObjectsWithKeys(
 
 
 @Throws(SqlException::class)
-@Deprecated("Use other function", ReplaceWith("getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol)"))
 fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
-    parentObjectMap: Map<Long, N>,
+    parentIds: Collection<EntityId>,
     childTable: Table<M>,
-    fkCol: Column.Fk<M, Long, N>
-): Map<Long, M> {
-    return getRawObjectsForParentFk(db, parentObjectMap.keys, childTable, fkCol)
-}
-
-@Throws(SqlException::class)
-fun <M, N> getRawObjectsForParentFk(
-    db: SqlDatabase,
-    parentIds: Collection<Long>,
-    childTable: Table<M>,
-    fkCol: Column.Fk<M, Long, N>
+    fkCol: Column.Fk<M, EntityId, N>
 ): Map<Long, M> {
     if (parentIds.isEmpty()) {
         return emptyMap()

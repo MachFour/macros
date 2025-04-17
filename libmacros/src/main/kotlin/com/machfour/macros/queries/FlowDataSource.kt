@@ -5,8 +5,6 @@ import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
-import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
@@ -60,13 +58,14 @@ class FlowDataSource(
         return foodsFlow.map { it[id] }
     }
 
+
     @Throws(SqlException::class)
+    // order always preserved
     override fun getFoods(ids: Collection<Long>, preserveOrder: Boolean): Flow<Map<Long, Food>> {
         val missingIds = foods.missingIdsFrom(ids)
         refreshFoods(missingIds)
 
-        val idSet = ids.toHashSet()
-        return foodsFlow.map { foods -> foods.filterKeys { idSet.contains(it) } }
+        return foodsFlow.map { foods -> ids.associateNotNullWith { foods[it] } }
     }
 
     @Throws(SqlException::class)
@@ -127,7 +126,7 @@ class FlowDataSource(
 
     // Refreshes the given foods in the cache, as well as meals containing those foods
     @Throws(SqlException::class)
-    private fun refreshFoods(ids: Collection<Long>) {
+    private fun refreshFoods(ids: Collection<EntityId>) {
         if (pauseRefreshes) {
             foodRefreshQueue.addAll(ids)
         } else {
@@ -141,6 +140,14 @@ class FlowDataSource(
 
             refreshMealsContainingFoods(ids)
         }
+    }
+
+    private fun refreshFood(id: EntityId) {
+        refreshFoods(listOf(id))
+    }
+
+    private fun refreshMeal(id: EntityId) {
+        refreshMeals(listOf(id))
     }
 
     @Throws(SqlException::class)
@@ -219,9 +226,9 @@ class FlowDataSource(
             is Food ->  { allFoodsNeedsRefresh = true }
             is Meal ->  { refreshDay(obj.day) }
 
-            is FoodNutrientValue -> markCacheStale(obj.foodId, FoodTable)
-            is FoodPortion -> markCacheStale(obj.mealId, MealTable)
-            is Serving -> markCacheStale(obj.foodId, FoodTable)
+            is FoodNutrientValue -> refreshFood(obj.foodId)
+            is FoodPortion -> refreshMeal(obj.mealId)
+            is Serving -> refreshFood(obj.foodId)
         }
     }
 
@@ -230,36 +237,24 @@ class FlowDataSource(
     }
 
     private fun afterNutrientsSaved(foodId: EntityId) {
-        markCacheStale(foodId, FoodTable)
+        refreshFood(foodId)
     }
 
-    private fun <M : MacrosEntity<M>> afterDbEdit(obj: M) {
+    private fun <M : MacrosEntity> afterDbEdit(obj: M) {
         when (obj) {
-            is Food -> markCacheStale(obj.id, FoodTable)
-            is Meal -> markCacheStale(obj.id, MealTable)
+            is Food -> refreshFood(obj.id)
+            is Meal -> refreshMeal(obj.id)
 
-            is FoodNutrientValue -> markCacheStale(obj.foodId, FoodTable)
+            is FoodNutrientValue -> refreshFood(obj.foodId)
             is FoodPortion -> {
                 // if FP was moved between meals, make sure to refresh the old meal
                 cachedMealForFpId(obj.id)?.let {
-                    oldMeal -> markCacheStale(oldMeal.id, MealTable)
+                    oldMeal -> refreshMeal(oldMeal.id)
                 }
 
-                markCacheStale(obj.mealId, MealTable)
+                refreshMeal(obj.mealId)
             }
-            is Serving -> markCacheStale(obj.foodId, FoodTable)
-        }
-    }
-
-    private fun <M : MacrosEntity<M>> markCacheStale(id: Long, cacheType: Table<M>) {
-        val idList = listOf(id)
-        when (cacheType) {
-            is FoodTable -> {
-                refreshFoods(idList)
-            }
-            is MealTable -> {
-                refreshMeals(idList)
-            }
+            is Serving -> refreshFood(obj.foodId)
         }
     }
 }

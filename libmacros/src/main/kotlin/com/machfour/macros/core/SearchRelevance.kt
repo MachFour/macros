@@ -1,7 +1,8 @@
 package com.machfour.macros.core
 
 // Search relevance can take any integer value; these are some preset ones
-class SearchRelevance private constructor(val value: Int): Comparable<SearchRelevance> {
+@JvmInline
+value class SearchRelevance private constructor(val value: Int): Comparable<SearchRelevance> {
     companion object {
         val EVERYTHING = SearchRelevance(Int.MIN_VALUE)
         val HIDDEN = SearchRelevance(-200)

@@ -25,7 +25,7 @@ object NutrientTable : TableImpl<Nutrient>(tableName, Factories.nutrient, column
     val MODIFY_TIME: Column<Nutrient, Long>
         get() = modifyTime
     val NAME: Column<Nutrient, String>
-        get() = com.machfour.macros.schema.name
+        get() = name
     val UNIT_TYPES: Column<Nutrient, Int>
         get() = unitTypes
     val INBUILT: Column<Nutrient, Boolean>

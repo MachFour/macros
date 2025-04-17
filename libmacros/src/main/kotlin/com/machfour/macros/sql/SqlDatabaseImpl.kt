@@ -2,6 +2,7 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
+import com.machfour.macros.sql.rowdata.RowData
 
 abstract class SqlDatabaseImpl : SqlDatabase {
     // caller-managed connection, useful to reduce number of calls to DB

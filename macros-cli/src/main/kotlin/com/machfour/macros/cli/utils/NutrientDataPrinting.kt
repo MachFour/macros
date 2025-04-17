@@ -8,7 +8,7 @@ import com.machfour.macros.names.NutrientStrings
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.units.LegacyNutrientUnits
 
-fun printNutrientData(foodNutrientData: FoodNutrientData, verbose: Boolean) {
+fun printNutrientData(foodNutrientData: NutrientData<*>, verbose: Boolean) {
     val string = formatNutrientData(
         data = foodNutrientData,
         displayStrings = DefaultDisplayStrings,
@@ -21,7 +21,7 @@ fun printNutrientData(foodNutrientData: FoodNutrientData, verbose: Boolean) {
 }
 
 fun printEnergyProportions(
-    foodNutrientData: FoodNutrientData,
+    foodNutrientData: NutrientData<*>,
     verbose: Boolean,
     colNames: NutrientStrings = EnglishColumnNames
 ) {

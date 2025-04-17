@@ -20,6 +20,7 @@ import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.unitWithAbbr
 import com.machfour.macros.validation.SchemaViolation
@@ -49,7 +50,7 @@ private fun extractCsvNutrientData(csvRow: Map<String, String?>): List<RowData<F
     val data = ArrayList<RowData<FoodNutrientValue>>()
 
     for (nutrient in AllNutrients) {
-        val valueString = csvRow[nutrient.csvName]
+        val valueString = csvRow[nutrient.name]
         // we skip adding the nutrient if it's not present in the CSV
         if (valueString.isNullOrBlank()) {
             continue
@@ -244,23 +245,23 @@ fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>): Pair<Map<J
     val newConnectionOpened = db.openConnection(getGeneratedKeys = true)
     db.beginTransaction()
 
-    val foodIds = saveObjectsReturningIds(db, foodsToSave.values, ObjectSource.IMPORT)
+    val foodIds = saveObjectsReturningIds(db, FoodTable, foodsToSave.values, ObjectSource.IMPORT)
     // TODO ensure that .keys and .values order is the same for the map (it should be)
     val keyToId = foodsToSave.keys.withIndex().associate { (index, key) -> key to foodIds[index] }
 
     val completedNutrientValues = buildList {
         for ((key, food) in foodsToSave) {
             val id = keyToId.getValue(key)
-            for (nv in food.nutrientData.values) {
+            for ((_, nv) in food.nutrientData.nutrientValues()) {
                 // link it to the food so that the DB can create the correct foreign key entries
-                val completedData = nv.dataFullCopy().apply {
+                val completedData = nv.toRowData().apply {
                     put(FoodNutrientValueTable.FOOD_ID, id)
                 }
                 add(FoodNutrientValue.factory.construct(completedData, ObjectSource.IMPORT))
             }
         }
     }
-    saveObjects(db, completedNutrientValues, ObjectSource.IMPORT)
+    saveObjects(db, FoodNutrientValueTable, completedNutrientValues, ObjectSource.IMPORT)
 
     db.endTransaction()
 
@@ -303,7 +304,7 @@ fun <J: Any> importServings(
     }
     val completedServings = nonExcludedServings.map { (serving, foodKey) ->
         val foodId = requireNotNull(foodKeyToId[foodKey]) { "no food ID for key $foodKey" }
-        val completedData = serving.dataFullCopy().apply {
+        val completedData = serving.toRowData().apply {
             put(ServingTable.FOOD_ID, foodId)
         }
         Serving.factory.construct(completedData, ObjectSource.IMPORT)
@@ -329,7 +330,7 @@ fun <J: Any> importServings(
 
             for (s in newServingsWithId) {
                 // see if name and quantity match
-                val existingServingMatch = existingServingsByName[s.name]?.firstOrNull { it.quantity == s.quantity }
+                val existingServingMatch = existingServingsByName[s.name]?.firstOrNull { it.amount == s.amount }
                 if (existingServingMatch == null) {
                     servingsToSave.add(s)
                 } else {
@@ -342,7 +343,7 @@ fun <J: Any> importServings(
         servingsToSave = completedServings
         matchedDuplicateServings = emptyMap()
     }
-    saveObjects(db, servingsToSave, ObjectSource.IMPORT)
+    saveObjects(db, ServingTable, servingsToSave, ObjectSource.IMPORT)
     return matchedDuplicateServings
 
 }
@@ -361,12 +362,12 @@ fun importRecipes(
     val completedIngredients = ingredientsByRecipe.mapValues { (recipeIndexName, ingredients) ->
         val id = indexNameToId.getValue(recipeIndexName)
         ingredients.map {
-            val completedData = it.dataFullCopy().apply { put(IngredientTable.PARENT_FOOD_ID, id) }
+            val completedData = it.toRowData().apply { put(IngredientTable.PARENT_FOOD_ID, id) }
             Ingredient.factory.construct(completedData, ObjectSource.IMPORT)
         }
     }.flatMap { it.value }
 
-    saveObjects(db, completedIngredients, ObjectSource.IMPORT)
+    saveObjects(db, IngredientTable, completedIngredients, ObjectSource.IMPORT)
 }
 
 // Groups a collection of items into a map of lists using the given key function,

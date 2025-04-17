@@ -1,5 +1,6 @@
 package com.machfour.macros.nutrients
 
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.units.GRAMS
@@ -31,10 +32,10 @@ val energyProportionNutrients = setOf(
 
 val totalEnergyNutrients = listOf(PROTEIN, FAT, CARBOHYDRATE, FIBRE)
 
-fun NutrientData.makeEnergyProportionsMap(
+fun BasicNutrientData<*>.makeEnergyProportionsMap(
     calculationUnit: Unit = KILOJOULES,
-    energyComponentsMap: Map<Nutrient, Double> = makeEnergyComponentsMap(calculationUnit),
-) : Map<Nutrient, Double> {
+    energyComponentsMap: Map<INutrient, Double> = makeEnergyComponentsMap(calculationUnit),
+): Map<INutrient, Double> {
     // XXX DECISION: ignore the actual energy value of the nutritionData, just use the sum
     val totalEnergy = calculateMacroEnergy(energyComponentsMap)
 
@@ -49,7 +50,7 @@ fun NutrientData.makeEnergyProportionsMap(
 }
 
 // energy from each individual macronutrient
-fun NutrientData.makeEnergyComponentsMap(unit: Unit = KILOJOULES): Map<Nutrient, Double> {
+fun BasicNutrientData<*>.makeEnergyComponentsMap(unit: Unit = KILOJOULES): Map<INutrient, Double> {
     require(unit.type == UnitType.ENERGY) { "Invalid energy unit" }
     require(unit.metricEquivalent != 0.0) { "Unit cannot have zero metric equivalent" }
     val g = GRAMS
@@ -72,7 +73,7 @@ fun NutrientData.makeEnergyComponentsMap(unit: Unit = KILOJOULES): Map<Nutrient,
         .coerceAtLeast(sugar + starch)
 
     // preserve iteration order
-    val kjMap = mapOf(
+    val kjMap: Map<INutrient, Double> = mapOf(
         PROTEIN to protein,
         FAT to fat,
         SATURATED_FAT to satFat,
@@ -96,7 +97,7 @@ fun NutrientData.makeEnergyComponentsMap(unit: Unit = KILOJOULES): Map<Nutrient,
 // if both are present and target amount is nonzero.
 // If data value is missing, returns zero.
 // If target value is missing or zero, returns null.
-fun NutrientData.getProportionOfTarget(target: NutrientData, n: Nutrient): Double? {
+fun BasicNutrientData<*>.getProportionOfTarget(target: BasicNutrientData<*>, n: Nutrient): Double? {
     val unit = getUnit(n, StandardNutrientUnits)
     return when (val targetValue = target.amountOf(n, unit)) {
         null, 0.0 -> null
@@ -107,7 +108,7 @@ fun NutrientData.getProportionOfTarget(target: NutrientData, n: Nutrient): Doubl
 
 
 // total energy predicted by macronutrient contents, rather than actual energy value
-fun calculateMacroEnergy(energyComponentsMap: Map<Nutrient, Double>): Double {
+fun calculateMacroEnergy(energyComponentsMap: Map<INutrient, Double>): Double {
     return totalEnergyNutrients.sumOf { energyComponentsMap.getValue(it) }
 }
 
@@ -117,41 +118,52 @@ private const val ALCOHOL_DENSITY = 0.789 // g/mL
 // Converts this value into the given unit, if possible.
 // Density is only used when converting quantity (usually in the context of a single Food)
 // An exception is thrown if the conversion is not possible
-fun convertUnit(n: Nutrient, value: Double, oldUnit: Unit, newUnit: Unit, density: Double? = null): Double {
-    if (oldUnit == newUnit) {
-        return value
-    }
+fun convertNutrient(n: INutrient, value: Double, oldUnit: Unit, newUnit: Unit): Double {
+    require (n !== QUANTITY) { "use convertQuantity() for quantity conversions"}
 
-    require(n.compatibleWith(newUnit)) { "cannot convert: $n is incompatible with $newUnit" }
-
-    val conversionRatio = oldUnit.metricEquivalent / newUnit.metricEquivalent
-
-    if (oldUnit.type === newUnit.type) {
-        return value * conversionRatio
-    }
-
-    // Can involve density to convert nutrients which support liquid units
-    // currently this is only QUANTITY, where density depends on the food,
-    // as well as alcohol and water which have (assumed) fixed densities.
-    // Water is trivial as the density is assumed to be 1 g/mL.
-    // Conversion of alcohol quantities between liquid and solid units uses
-    // a fixed density of 0.789 g/mL.
-    val effectiveDensity: Double = when(n) {
-        QUANTITY -> {
-            requireNotNull(density) { "Density required to convert quantity across mass and volume units" }
-            density
-        }
+    // Can involve density to convert nutrients which support liquid units.
+    // Currently, alcohol and water are the only such nutrients, and they have
+    // assumed fixed densities.
+    // Water density is assumed to be 1 g/mL, while alcohol is 0.789 g/mL.
+    val density: Double = when(n) {
         WATER -> WATER_DENSITY
         ALCOHOL -> ALCOHOL_DENSITY
         else -> 1.0 // not considered for other units
     }
 
+    return convertUnit(n, value, oldUnit, newUnit, density)
+}
+
+// Converts this quantity into the given unit, if possible.
+// Density is required if converting between mass and volume units.
+// An exception is thrown if the conversion is not possible
+fun convertQuantity(amount: Double, oldUnit: Unit, newUnit: Unit, density: Double? = null): Double {
+    return convertUnit(QUANTITY, amount, oldUnit, newUnit, density)
+}
+
+
+private fun convertUnit(nutrient: INutrient, amount: Double, oldUnit: Unit, newUnit: Unit, density: Double? = null): Double {
+    if (oldUnit == newUnit) {
+        return amount
+    }
+
+    require(nutrient.compatibleWith(newUnit)) { "cannot convert: $newUnit is incompatible with ${nutrient.name}" }
+
+    val conversionRatio = oldUnit.metricEquivalent / newUnit.metricEquivalent
+
+    if (oldUnit.type === newUnit.type) {
+        return amount * conversionRatio
+    }
+
+    requireNotNull(density) { "Density required to convert quantity across mass and volume units" }
+    require(density != 0.0) { "Density cannot be zero" }
+
     return if (!oldUnit.isVolumeMeasurement && newUnit.isVolumeMeasurement) {
         // solid units to liquid units
-        value * conversionRatio / effectiveDensity
+        amount * conversionRatio / density
     } else if (oldUnit.isVolumeMeasurement && !newUnit.isVolumeMeasurement) {
         // liquid units to solid units
-        return value * conversionRatio * effectiveDensity
+        return amount * conversionRatio * density
     } else {
         error { "Units are of different type but neither one is volume" }
     }

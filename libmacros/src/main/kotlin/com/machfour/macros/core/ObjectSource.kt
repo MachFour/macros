@@ -53,7 +53,7 @@ enum class ObjectSource(private val niceName: String) {
     DB_EDIT("edit"),
 
     /*
-     * Describes when objects are combined together, e.g. nutrition data objects.
+     * Describes when objects are combined, e.g. nutrition data objects.
      * These objects shouldn't be saved in the DB, as obviously they can be computed from what is in there.
      * ID: no
      * MOD: yes
@@ -74,6 +74,8 @@ enum class ObjectSource(private val niceName: String) {
     // For testing; application code skips foreign key/ID match assertions for these objects.
     TEST("test"),
 
+    // created from JSON deserialisation with default argument
+    JSON("json"),
     ;
 
     override fun toString(): String {

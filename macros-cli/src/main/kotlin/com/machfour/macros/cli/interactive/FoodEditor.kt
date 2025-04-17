@@ -577,13 +577,13 @@ class FoodEditor(
 
                     // add ID to nutrient values
                     val completedNutrientValues = nutrientData.values.map {
-                        it.dataFullCopy().run {
+                        it.toRowData().run {
                             put(FoodNutrientValueTable.FOOD_ID, id)
                             FoodNutrientValue.factory.construct(this, ObjectSource.USER_NEW)
                         }
                     }
 
-                    saveObjects(db, completedNutrientValues, ObjectSource.USER_NEW)
+                    saveObjects(db, FoodNutrientValueTable, completedNutrientValues, ObjectSource.USER_NEW)
                     db.endTransaction()
                     setStatus("Successfully saved food and nutrition data")
                 } catch (e: SqlException) {

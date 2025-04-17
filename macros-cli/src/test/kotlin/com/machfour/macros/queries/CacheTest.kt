@@ -12,8 +12,8 @@ import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.GRAMS
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -102,14 +102,14 @@ class CacheTest {
         val uncachedFood = runBlocking { dataSource.getFood(1).first() }
         assertNotNull(uncachedFood)
 
-        val alteredFood = uncachedFood.dataFullCopy().run {
+        val alteredFood = uncachedFood.toRowData().run {
             put(FoodTable.NAME, "Edited food")
             put(FoodTable.INDEX_NAME, "food2")
             Food.factory.construct(this, ObjectSource.DB_EDIT)
         }
 
         val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
-        dataSource.saveObject(alteredFood)
+        dataSource.saveObject(FoodTable, alteredFood)
         val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
         check(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
     }
@@ -123,7 +123,7 @@ class CacheTest {
         val mealsBeforeAdding = runBlocking { mealsForDay.first() }
         assertEquals(1, mealsBeforeAdding.size)
 
-        dataSource.saveObject(testMeal)
+        dataSource.saveObject(MealTable, testMeal)
 
         val mealsAfterAdding = runBlocking { mealsForDay.first() }
         assertEquals(2, mealsAfterAdding.size)

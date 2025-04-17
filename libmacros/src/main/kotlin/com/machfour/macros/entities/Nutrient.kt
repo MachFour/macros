@@ -5,12 +5,14 @@ import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.NutrientTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.UnitType
 
-class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSource)
-    : MacrosEntityImpl<Nutrient>(data, source) {
+typealias Nutrient = NutrientImpl
+
+class NutrientImpl internal constructor(data: RowData<Nutrient>, source: ObjectSource)
+    : MacrosEntityImpl<Nutrient>(data, source), INutrient {
 
     companion object {
         // Factory has to be initialised first before table is referenced.
@@ -26,15 +28,29 @@ class Nutrient internal constructor(data: RowData<Nutrient>, source: ObjectSourc
     override val table: Table<Nutrient>
         get() = NutrientTable
 
-    val csvName: String = this.data[NutrientTable.NAME]!!
-    val isInbuilt: Boolean = this.data[NutrientTable.INBUILT]!!
+    override val name = this.data[NutrientTable.NAME]!!
 
-    private val unitFlags: Int = this.data[NutrientTable.UNIT_TYPES]!!
-    private val unitTypes: Set<UnitType> = UnitType.fromFlags(unitFlags)
+    override val isInbuilt: Boolean = this.data[NutrientTable.INBUILT]!!
 
-    fun compatibleWith(unit: Unit): Boolean {
-        return unit.type.matchedByFlags(unitFlags)
+    private val unitFlags: Int
+        get() = this.data[NutrientTable.UNIT_TYPES]!!
+
+    override val unitTypes: Set<UnitType> = UnitType.fromFlags(unitFlags)
+
+    override fun compatibleWith(unit: Unit): Boolean {
+        return unit.type in unitTypes
     }
 
-    override fun toString() = "$csvName (types: $unitTypes)"
+    override fun toString(): String {
+        return nutrientToString(this)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return nutrientEquals(this, other)
+    }
+
+    override fun hashCode(): Int {
+        return nutrientHashCode(this)
+    }
+
 }

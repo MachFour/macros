@@ -3,13 +3,23 @@ package com.machfour.macros.entities
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.NutrientData
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.IngredientTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
+
+typealias CompositeFood = CompositeFoodImpl
 
 // don't need hashcode override since equals implies super.equals true, so hashcode will match
 @Suppress("EqualsOrHashCode")
-class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
+class CompositeFoodImpl private constructor(dataMap: RowData<Food>, objectSource: ObjectSource) : Food(dataMap, objectSource) {
+
+    companion object {
+        internal fun new(dataMap: RowData<Food>, objectSource: ObjectSource) : CompositeFoodImpl {
+            require(FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
+            return CompositeFoodImpl(dataMap, objectSource)
+        }
+    }
 
     // cached sum of ingredients' nutrition data, combined with any overriding data belonging to this food
     private var ingredientNutrientData = FoodNutrientData()
@@ -17,10 +27,6 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
     private val mutableIngredients = ArrayList<Ingredient>()
 
     private var ingredientsNutrientDataNeedsUpdate = false
-
-    init {
-        check(FoodType.fromString(dataMap[FoodTable.FOOD_TYPE]!!) == FoodType.COMPOSITE)
-    }
 
     // add overriding nutrient value
     override fun addNutrientValue(nv: FoodNutrientValue) {
@@ -43,7 +49,7 @@ class CompositeFood internal constructor(dataMap: RowData<Food>, objectSource: O
       (e.g dry ingredients absorbing moisture).
       So really, it probably doesn't make sense to propagate the combined ingredients density value
      */
-    override val nutrientData: FoodNutrientData
+    override val nutrientData: NutrientData<FoodNutrientValue>
         get() {
         // cache mutable property value
 

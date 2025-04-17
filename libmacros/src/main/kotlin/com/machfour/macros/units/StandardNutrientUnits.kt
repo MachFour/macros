@@ -1,6 +1,6 @@
 package com.machfour.macros.units
 
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.*
 
@@ -41,7 +41,7 @@ private val standardUnitMap = mapOf(
 
 // standard metric units, using milligrams where appropriate
 object StandardNutrientUnits: NutrientUnits {
-    override operator fun get(n: Nutrient) : Unit {
+    override operator fun get(n: INutrient) : Unit {
         return standardUnitMap[n]
             ?: unitsCompatibleWith(n).firstOrNull()
             ?: throw IllegalArgumentException("Nutrient $n has no compatible units")

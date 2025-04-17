@@ -5,14 +5,16 @@ import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.PortionMeasurement
 import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.nutrients.IQuantity
 import com.machfour.macros.nutrients.QUANTITY
+import com.machfour.macros.nutrients.Quantity
 import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.unitWithAbbr
 
 class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectSource) :
-    MacrosEntityImpl<Serving>(data, objectSource), PortionMeasurement {
+    MacrosEntityImpl<Serving>(data, objectSource), IServing, PortionMeasurement {
 
     companion object {
         // factory has to come before table if it's an instance variable
@@ -20,33 +22,47 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
             get() = Factories.serving
     }
 
+    override val name: String
+        get() = data[ServingTable.NAME]!!
+
+    // Measurement functions
+    override val amount
+        get() = quantity.amount
+
     val qtyUnitAbbr: String
         get() = data[ServingTable.QUANTITY_UNIT]!!
 
-    val qtyUnit = unitWithAbbr(qtyUnitAbbr)
+    override val unit = unitWithAbbr(qtyUnitAbbr)
+
+    override val isVolumeMeasurement
+        get() = unit.isVolumeMeasurement
+
 
     init {
-        check(QUANTITY.compatibleWith(qtyUnit)) { "Invalid unit $qtyUnit for nutrient $QUANTITY" }
+        check(QUANTITY.compatibleWith(unit)) { "Invalid quantity unit $unit" }
     }
-
-    lateinit var food: Food
-        private set
 
     override val factory: Factory<Serving>
         get() = Companion.factory
     override val table: Table<Serving>
         get() = ServingTable
 
-    val foodId: Long
+    override fun toRowData(): RowData<Serving> {
+        return super<MacrosEntityImpl>.toRowData()
+    }
+
+    override val foodId: Long
         get() = data[ServingTable.FOOD_ID]!!
 
-    val quantity: Double
-        get() = data[ServingTable.QUANTITY]!!
+    override val quantity: IQuantity = Quantity(
+        amount = data[ServingTable.QUANTITY]!!,
+        unit = unit,
+    )
 
-    val isDefault: Boolean
+    override val isDefault: Boolean
         get() = data[ServingTable.IS_DEFAULT]!!
 
-    val notes: String?
+    override val notes: String?
         get() = data[ServingTable.NOTES]
 
     override fun equals(other: Any?): Boolean {
@@ -56,23 +72,5 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
     override fun hashCode(): Int {
         return super.hashCode()
     }
-
-    fun initFood(f: Food) {
-        check(foreignKeyMatches(this, ServingTable.FOOD_ID, f))
-        food = f
-    }
-
-    override val name: String
-        get() = data[ServingTable.NAME]!!
-
-
-    // Measurement functions
-    override val unitMultiplier = quantity
-
-    override val baseUnit
-        get() = qtyUnit
-
-    override val isVolumeMeasurement
-        get() = qtyUnit.isVolumeMeasurement
 
 }

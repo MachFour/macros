@@ -1,10 +1,10 @@
 package com.machfour.macros.units
 
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.UnitTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 
 private fun makeInbuiltUnit(id: Long, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
     return RowData(UnitTable).run {
@@ -113,6 +113,6 @@ fun unitWithId(id: Long): Unit {
     return requireNotNull(unitWithIdOrNull(id)) { "No unit found with id $id" }
 }
 
-fun unitsCompatibleWith(n: Nutrient): Set<Unit> {
+fun unitsCompatibleWith(n: INutrient): Set<Unit> {
     return idMap.filterValues { n.compatibleWith(it) }.values.toSet()
 }

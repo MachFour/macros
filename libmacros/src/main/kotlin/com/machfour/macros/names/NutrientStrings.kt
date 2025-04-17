@@ -1,9 +1,9 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 
 interface NutrientStrings {
-    fun getFullName(n: Nutrient): String
-    fun getDisplayName(n: Nutrient): String
-    fun getAbbreviatedName(n: Nutrient): String = getDisplayName(n)
+    fun getFullName(n: INutrient): String
+    fun getDisplayName(n: INutrient): String
+    fun getAbbreviatedName(n: INutrient): String = getDisplayName(n)
 }

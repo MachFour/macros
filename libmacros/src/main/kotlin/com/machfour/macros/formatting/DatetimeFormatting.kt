@@ -12,10 +12,10 @@ import java.time.format.FormatStyle
 import java.time.temporal.ChronoField
 import kotlin.time.Duration.Companion.nanoseconds
 
-val MacrosEntity<*>.createInstant: Instant
+val MacrosEntity.createInstant: Instant
     get() = Instant.fromEpochSeconds(createTime)
 
-val MacrosEntity<*>.modifyInstant: Instant
+val MacrosEntity.modifyInstant: Instant
     get() = Instant.fromEpochSeconds(modifyTime)
 
 val Meal.startTimeInstant: Instant

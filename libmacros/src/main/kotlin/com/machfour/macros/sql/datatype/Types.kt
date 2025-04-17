@@ -2,6 +2,7 @@ package com.machfour.macros.sql.datatype
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.iso8601StringDateStamp
+import com.machfour.macros.core.EntityId
 import kotlin.reflect.KClass
 
 // basic types corresponding roughly to database types
@@ -9,7 +10,7 @@ import kotlin.reflect.KClass
 class Types {
     companion object {
         val BOOLEAN = Bool()
-        val NULLBOOLEAN = NullBool()
+        val NULL_BOOLEAN = NullBool()
         val ID = Id()
         val INTEGER = Integer()
         val LONG = LongInteger()
@@ -123,16 +124,16 @@ class Types {
         }
     }
 
-    class Id internal constructor(): SqlTypeImpl<Long>() {
+    class Id internal constructor(): SqlTypeImpl<EntityId>() {
         override fun toString(): String = "id"
 
         @Throws(TypeCastException::class)
-        override fun fromNonEmptyString(data: String): Long = stringToLong(data)
+        override fun fromNonEmptyString(data: String): EntityId = stringToLong(data)
 
         @Throws(TypeCastException::class)
-        override fun fromRawNotNull(data: Any): Long = objectToLong(data)
+        override fun fromRawNotNull(data: Any): EntityId = objectToLong(data)
 
-        override fun kotlinClass(): KClass<Long> = Long::class
+        override fun kotlinClass(): KClass<EntityId> = EntityId::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER
     }

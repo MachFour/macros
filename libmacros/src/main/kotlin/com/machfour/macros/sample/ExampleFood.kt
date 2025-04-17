@@ -20,7 +20,7 @@ import com.machfour.macros.schema.FoodTable.NOTES
 import com.machfour.macros.schema.FoodTable.NUTTAB_INDEX
 import com.machfour.macros.schema.FoodTable.USDA_INDEX
 import com.machfour.macros.schema.FoodTable.VARIETY
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.*
 
 // Food with no nutrition data
@@ -28,7 +28,7 @@ val exampleFood1: Food by lazy {
     initExampleFood1()
 }
 
-// Food with nutrition data that has nonunit density
+// Food with nutrition data that has non-unit density
 val exampleFood2: Food by lazy {
     initExampleFood2()
 }

@@ -36,7 +36,7 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: String): List<M
 
 // Adds the content of the CSV data to the table. Any conflicts in IDs will cause the operation to fail
 @Throws(SqlException::class, CsvParseException::class, TypeCastException::class)
-fun <M : MacrosEntity<M>> SqlDatabase.restoreTable(t: Table<M>, csvData: String) {
+fun <M : MacrosEntity> SqlDatabase.restoreTable(t: Table<M>, csvData: String) {
     val objects = buildObjectsForRestore(t, csvData)
-    saveObjects(this, objects, ObjectSource.RESTORE)
+    saveObjects(this, t, objects, ObjectSource.RESTORE)
 }

@@ -7,37 +7,39 @@ val apple = JsonFood(
     extraDescription = null,
     indexName = "apple-pink",
     notes = null,
-    category = "fruit and vegetables",
+    categoryName = "fruit and vegetables",
     usdaIndex = null,
     nuttabIndex = "06D10433",
     dataSource = "NUTTAB",
     dataNotes = null,
     density = null,
-    relevanceOffset = 0,
+    relevanceOffsetValue = 0,
     servings = listOf(
         JsonServing(
             name = "small",
-            quantity = JsonQuantity(value = 80.0, unit = "g"),
+            quantity = JsonQuantity(amount = 80.0, unitAbbr = "g"),
             isDefault = false,
             notes = "about the size of a mandarin",
         ),
         JsonServing(
             name = "large",
-            quantity = JsonQuantity(value = 120.0, unit = "g"),
+            quantity = JsonQuantity(amount = 120.0, unitAbbr = "g"),
             isDefault = false,
             notes = "about the size of a tennis ball",
         )
     ),
-    nutrients = mapOf(
-        "quantity" to JsonQuantity(value = 100.0, unit = "g"),
-        "energy" to JsonQuantity(value = 247.0, unit = "kJ"),
-        "protein" to JsonQuantity(value = 0.3, unit = "g"),
-        "fat" to JsonQuantity(value = 0.4, unit = "g"),
-        "saturated_fat" to JsonQuantity(value = 0.0, unit = "g"),
-        "carbohydrate" to JsonQuantity(value = 12.4, unit = "g"),
-        "sugar" to JsonQuantity(value = 11.9, unit = "g"),
-        "fibre" to JsonQuantity(value = 2.4, unit = "g"),
-        "sodium" to JsonQuantity(value = 0.0, unit = "mg"),
+    nutrientData = JsonNutrientData(
+        perQuantity = JsonQuantity(amount = 100.0, unitAbbr = "g"),
+        nutrients = setOf(
+            JsonNutrientValue(nutrientName = "energy", amount = 247.0, unitAbbr = "kJ"),
+            JsonNutrientValue(nutrientName = "protein", amount = 0.3, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "fat", amount = 0.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "saturated_fat", amount = 0.0, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "carbohydrate", amount = 12.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "sugar", amount = 11.9, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "fibre", amount = 2.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "sodium", amount = 0.0, unitAbbr = "mg"),
+        )
     )
 )
 
@@ -54,34 +56,27 @@ val appleJSON = """
         "servings": [
             {
                 "name": "small",
-                "quantity": { "value": 80.0, "unit": "g" },
+                "quantity": { "amount": 80.0, "unit": "g" },
                 "notes": "about the size of a mandarin"
             },
             {
                 "name": "large",
-                "quantity": { "value": 120.0, "unit": "g" },
+                "quantity": { "amount": 120.0, "unit": "g" },
                 "notes": "about the size of a tennis ball"
             }
         ],
-        "nutrients": {
-            "quantity": { 
-                "value": 100.0, 
-                "unit": "g"
-            },
-            "energy": {
-                "value": 247.0,
-                "unit": "kJ"
-            },
-            "protein": {
-                "value": 0.3,
-                "unit": "g"
-            },
-            "fat": { "value": 0.4, "unit": "g" },
-            "saturated_fat": { "value": 0.0, "unit": "g" },
-            "carbohydrate": { "value": 12.4, "unit": "g" },
-            "sugar": { "value": 11.9, "unit": "g" },
-            "fibre": { "value": 2.4, "unit": "g" },
-            "sodium": { "value": 0.0, "unit": "mg" }
+        "nutrient_data": {
+            "per_quantity": { "amount": 100.0, "unit": "g" },
+            "nutrients": [
+                { "nutrient": "energy", "amount": 247.0, "unit": "kJ" },
+                { "nutrient": "protein", "amount": 0.3, "unit": "g" },
+                { "nutrient": "fat",  "amount": 0.4, "unit": "g" },
+                { "nutrient": "saturated_fat", "amount": 0.0, "unit": "g" },
+                { "nutrient": "carbohydrate", "amount": 12.4, "unit": "g" },
+                { "nutrient": "sugar", "amount": 11.9, "unit": "g" },
+                { "nutrient": "fibre", "amount": 2.4, "unit": "g" },
+                { "nutrient": "sodium", "amount": 0.0, "unit": "mg" }
+            ]
         }
     }
 """.trimIndent()
@@ -96,43 +91,45 @@ val carrotCakes = JsonFood(
     extraDescription = null,
     indexName = "noshu-carrot-cakes",
     notes = "sugar free",
-    category = "desserts",
+    categoryName = "desserts",
     usdaIndex = null,
     nuttabIndex = null,
     dataSource = "Label",
     dataNotes = "sugar alcohol is sum of all the individual sugar alcohols",
     density = null,
-    relevanceOffset = 0,
+    relevanceOffsetValue = 0,
     servings = listOf(
         JsonServing(
             name = "slice",
-            quantity = JsonQuantity(value = 75.0, unit = "g"),
+            quantity = JsonQuantity(amount = 75.0, unitAbbr = "g"),
             isDefault = true,
             notes = null,
         )
     ),
-    nutrients = mapOf(
-        "quantity" to JsonQuantity(
+    nutrientData = JsonNutrientData(
+        perQuantity = JsonQuantity(
             id = -100,
             created = 0,
             modified = 0,
-            value = 100.0,
-            unit = "g",
+            amount = 100.0,
+            unitAbbr = "g",
             constraintSpec = 0,
         ),
-        "energy" to JsonQuantity(value = 1262.0, unit = "kJ"),
-        "protein" to JsonQuantity(value = 3.0, unit = "g"),
-        "fat" to JsonQuantity(value = 18.4, unit = "g"),
-        "saturated_fat" to JsonQuantity(value = 5.9, unit = "g"),
-        "carbohydrate" to JsonQuantity(value = 14.4, unit = "g"),
-        "sugar" to JsonQuantity(value = 3.8, unit = "g"),
-        "fibre" to JsonQuantity(value = 19.4, unit = "g"),
-        "sodium" to JsonQuantity(value = 284.0, unit = "mg"),
-        "sugar_alcohol" to JsonQuantity(value = 19.3, unit = "g"),
-        "xylitol" to JsonQuantity(value = 7.4, unit = "g"),
-        "erythritol" to JsonQuantity(value = 6.7, unit = "g"),
-        "glycerol" to JsonQuantity(value = 5.2, unit = "g"),
-        "polydextrose" to JsonQuantity(value = 6.7, unit = "g"),
+        nutrients = setOf(
+            JsonNutrientValue(nutrientName = "energy", amount = 1262.0, unitAbbr = "kJ"),
+            JsonNutrientValue(nutrientName = "protein", amount = 3.0, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "fat", amount = 18.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "saturated_fat", amount = 5.9, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "carbohydrate", amount = 14.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "sugar", amount = 3.8, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "fibre", amount = 19.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "sodium", amount = 284.0, unitAbbr = "mg"),
+            JsonNutrientValue(nutrientName = "sugar_alcohol", amount = 19.3, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "xylitol", amount = 7.4, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "erythritol", amount = 6.7, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "glycerol", amount = 5.2, unitAbbr = "g"),
+            JsonNutrientValue(nutrientName = "polydextrose", amount = 6.7, unitAbbr = "g"),
+        ),
     )
 )
 
@@ -151,67 +148,27 @@ val carrotCakesJSON = """
         "servings": [
             {
                 "name": "slice",
-                "quantity": { "value": 75.0, "unit": "g" },
+                "quantity": { "amount": 75.0, "unit": "g" },
                 "is_default": true
             }
         ],
-        "nutrients": {
-            "quantity": {
-                "value": 100.0,
-                "unit": "g"
-            },
-            "energy": {
-                "value": 1262.0,
-                "unit": "kJ"
-            },
-            "protein": {
-                "value": 3.0,
-                "unit": "g"
-            },
-            "fat": {
-                "value": 18.4,
-                "unit": "g"
-            },
-            "saturated_fat": {
-                "value": 5.9,
-                "unit": "g"
-            },
-            "carbohydrate": {
-                "value": 14.4,
-                "unit": "g"
-            },
-            "sugar": {
-                "value": 3.8,
-                "unit": "g"
-            },
-            "sugar_alcohol": {
-                "value": 19.3,
-                "unit": "g"
-            },
-            "sodium": {
-                "value": 284.0,
-                "unit": "mg"
-            },
-            "fibre": {
-                "value": 19.4,
-                "unit": "g"
-            },
-            "xylitol": {
-                "value": 7.4,
-                "unit": "g"
-            },
-            "erythritol": {
-                "value": 6.7,
-                "unit": "g"
-            },
-            "glycerol": {
-                "value": 5.2,
-                "unit": "g"
-            },
-            "polydextrose": {
-                "value": 6.7,
-                "unit": "g"
-            }
+        "nutrient_data": {
+            "per_quantity": { "amount": 100.0, "unit": "g" },
+            "nutrients": [
+                { "nutrient": "energy", "amount": 1262.0, "unit": "kJ" },
+                { "nutrient": "protein", "amount": 3.0, "unit": "g" },
+                { "nutrient": "fat", "amount": 18.4, "unit": "g" },
+                { "nutrient": "saturated_fat", "amount": 5.9, "unit": "g" },
+                { "nutrient": "carbohydrate", "amount": 14.4, "unit": "g" },
+                { "nutrient": "sugar", "amount": 3.8, "unit": "g" },
+                { "nutrient": "sugar_alcohol", "amount": 19.3, "unit": "g" },
+                { "nutrient": "sodium", "amount": 284.0, "unit": "mg" },
+                { "nutrient": "fibre", "amount": 19.4, "unit": "g" },
+                { "nutrient": "xylitol", "amount": 7.4, "unit": "g" },
+                { "nutrient": "erythritol", "amount": 6.7, "unit": "g" },
+                { "nutrient": "glycerol", "amount": 5.2, "unit": "g" },
+                { "nutrient": "polydextrose", "amount": 6.7, "unit": "g" }
+            ]
         }
     }
 """.trimIndent()

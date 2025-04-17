@@ -1,7 +1,8 @@
 package com.machfour.macros.core
 
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 
-fun interface Factory<M> {
+interface Factory<M> {
     fun construct(data: RowData<M>, source: ObjectSource): M
+    fun deconstruct(obj: M): RowData<M>
 }

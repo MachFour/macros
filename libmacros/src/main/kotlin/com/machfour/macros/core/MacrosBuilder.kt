@@ -2,9 +2,9 @@ package com.machfour.macros.core
 
 import com.machfour.macros.names.DisplayStrings
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.validation.ValidationError
 import com.machfour.macros.validation.validateNonNull
 
@@ -19,7 +19,7 @@ class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val tab
         set(value) {
             field = value
             if (value != null) {
-                originalData = value.dataFullCopy()
+                originalData = value.toRowData()
             }
             // if this setter is called during init {}, we can skip this call
             if (finishedInit) {
@@ -39,8 +39,8 @@ class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val tab
      * (barring a change in validation rules) have all its entries valid.
      * If creating a new object, editInstance is null.
      */
-    private var originalData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
-    private val draftData: RowData<M> = editInstance?.dataFullCopy() ?: RowData(table)
+    private var originalData: RowData<M> = editInstance?.toRowData() ?: RowData(table)
+    private val draftData: RowData<M> = editInstance?.toRowData() ?: RowData(table)
 
     private val validationErrors = HashMap<Column<M, *>, MutableList<ValidationError>>(table.columns.size).apply {
         for (col in table.columns) {

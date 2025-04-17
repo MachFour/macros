@@ -11,10 +11,10 @@ import java.time.format.FormatStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 
-val MacrosEntity<*>.createInstant: Instant
+val MacrosEntity.createInstant: Instant
     get() = Instant.ofEpochSecond(createTime)
 
-val MacrosEntity<*>.modifyInstant: Instant
+val MacrosEntity.modifyInstant: Instant
     get() = Instant.ofEpochSecond(modifyTime)
 
 val Meal.startTimeInstant: Instant

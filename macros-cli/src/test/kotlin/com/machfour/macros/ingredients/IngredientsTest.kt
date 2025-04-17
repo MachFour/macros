@@ -57,7 +57,7 @@ class IngredientsTest {
         printNutrientData(recipe.nutrientData, false)
         println()
         println("Nutrition data per 100g")
-        val rescaled = recipe.nutrientData.rescale100()
+        val rescaled = recipe.nutrientData.rescale100g()
         printNutrientData(rescaled, false)
     }
 }

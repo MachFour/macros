@@ -4,8 +4,8 @@ import com.machfour.macros.core.Factory
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.NutrientGoalValueTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 class NutrientGoalValue internal constructor(
     data: RowData<NutrientGoalValue>,

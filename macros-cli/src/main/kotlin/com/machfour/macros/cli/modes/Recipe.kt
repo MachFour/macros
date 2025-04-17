@@ -61,15 +61,16 @@ class Recipe(config: CliConfig): CommandImpl(config) {
             println("Nutrition Information:")
             println()
             val nd = cf.nutrientData
-            val unit = nd.qtyUnitAbbr
+            val qty = nd.perQuantity
+            val unit = qty.unit
             // if entered not per 100g, print both original amount and per 100 g
-            if (nd.quantity != 100.0) {
-                println("Per ${nd.quantity.toString(0)}$unit:")
+            if (qty.amount != 100.0) {
+                println("Per ${qty.amount.toString(0)}$unit:")
                 printNutrientData(nd, false)
                 println()
             }
-            println("Per 100$unit:")
-            printNutrientData(nd.rescale100(), false)
+            println("Per 100${unit.abbr}:")
+            printNutrientData(nd.rescale(100.0, unit), false)
             println()
             println("================================================")
             println()

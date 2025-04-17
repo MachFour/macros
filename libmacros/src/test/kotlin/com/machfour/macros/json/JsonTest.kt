@@ -5,15 +5,14 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
-
 class JsonTest {
 
     @Test
     fun testSerialize() {
         val prettyJSON = Json { prettyPrint = true }
 
-        val expected = serializedTestFoods.map { Json.parseToJsonElement(it) }
-        val actual = deserializedTestFoods.map { prettyJSON.encodeToJsonElement(it) }
+        val expected = serializedTestFoods.map { Json.parseToJsonElement(it).normalize() }
+        val actual = deserializedTestFoods.map { prettyJSON.encodeToJsonElement(it).normalize() }
 
         assertContentEquals(expected, actual)
     }

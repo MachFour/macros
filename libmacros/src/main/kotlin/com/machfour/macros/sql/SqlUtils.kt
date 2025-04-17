@@ -1,6 +1,6 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.MacrosSqlEntity
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr
@@ -90,7 +90,7 @@ fun <M, J: Any> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>
     return "UPDATE ${t.sqlName} SET $columnPlaceholders $whereString"
 }
 
-fun <M : MacrosEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
+fun <M : MacrosSqlEntity<M>> makeIdMap(objects: Collection<M>): Map<Long, M> {
     return buildMap {
         objects.forEach {
             require(!containsKey(it.id)) { "Objects have shared id (${it.id}): $it, ${this[it.id]}" }

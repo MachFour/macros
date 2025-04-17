@@ -9,8 +9,8 @@ import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 // don't need hashcode override since equals implies super.equals true, so hashcode will match
 @Suppress("EqualsOrHashCode")
@@ -25,7 +25,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
             get() = Factories.meal
     }
 
-    val foodPortionsMutable = ArrayList<FoodPortion>()
+    private val foodPortionsMutable = ArrayList<FoodPortion>()
 
     val foodPortions: List<FoodPortion>
         get() = foodPortionsMutable

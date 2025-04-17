@@ -7,11 +7,11 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.IngredientTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: ObjectSource
-) : FoodQuantity<Ingredient>(
+) : FoodQuantityImpl<Ingredient, FoodNutrientValue> (
     data,
     objectSource,
     IngredientTable.FOOD_ID,
@@ -20,7 +20,7 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
     IngredientTable.QUANTITY_UNIT,
     IngredientTable.NOTES,
     IngredientTable.NUTRIENT_MAX_VERSION,
-) {
+), IFoodQuantity<FoodNutrientValue> {
 
     companion object {
         val factory: Factory<Ingredient>

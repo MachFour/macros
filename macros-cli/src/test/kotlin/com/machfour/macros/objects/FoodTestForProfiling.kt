@@ -8,8 +8,8 @@ import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
 import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.RowData
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.fail
@@ -56,7 +56,7 @@ class FoodTestForProfiling {
             }
         }
         try {
-            insertObjects(db, lotsOfFoods, true)
+            insertObjects(db, FoodTable, lotsOfFoods, true)
         } catch (e: SqlException) {
             fail(e.message)
         }

@@ -1,20 +1,20 @@
-package com.machfour.macros.sql
+package com.machfour.macros.sql.rowdata
 
+import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
 
 // Class which maps columns to their data values in instances of Macros objects
 class RowData<M> private constructor(
     // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
-    // Internally, since all of the columns are known at compile time, we can just assign an index to each one
+    // Internally, since all the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
     val table: Table<M>,
     val columns: Set<Column<M, *>>,
-    private val enforceNonNull: Boolean, // TODO remove (unused?)
     existing: RowData<M>?,
 ) {
 
-    constructor(t: Table<M>, cols: Collection<Column<M, *>> = t.columns, enforceNonNull: Boolean = false)
-            : this(t, cols.toSet(), enforceNonNull, null)
+    constructor(t: Table<M>, cols: Collection<Column<M, *>> = t.columns): this(t, cols.toSet(), null)
 
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
     // hold columns of any index, up to the number of columns in the table minus 1.
@@ -116,12 +116,12 @@ class RowData<M> private constructor(
     }
 
     fun copy(): RowData<M> {
-        return RowData(table, columns, enforceNonNull, this)
+        return RowData(table, columns, this)
     }
 
     fun copy(whichCols: Collection<Column<M, *>>): RowData<M> {
         checkHasColumns(whichCols)
-        return RowData(table, whichCols.toSet(), enforceNonNull,this)
+        return RowData(table, whichCols.toSet(),this)
     }
 
     private fun assertHasColumn(col: Column<M, *>) {
@@ -136,9 +136,7 @@ class RowData<M> private constructor(
     operator fun <J: Any> get(col: Column<M, J>): J? {
         assertHasColumn(col)
         val value = col.type.cast(data[col.index])
-        if (enforceNonNull) {
-            check(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
-        }
+        //check(col.isNullable || value != null) { "null data retrieved from not-nullable column" }
         return value
     }
 

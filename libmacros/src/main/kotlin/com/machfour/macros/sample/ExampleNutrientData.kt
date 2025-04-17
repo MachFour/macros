@@ -5,7 +5,7 @@ import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.schema.NutrientGoalTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.CALORIES
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES

@@ -2,16 +2,18 @@ package com.machfour.macros.objects
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.NutrientData
 import com.machfour.macros.sample.exampleFood2
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodPortionTable.FOOD_ID
 import com.machfour.macros.schema.FoodPortionTable.MEAL_ID
 import com.machfour.macros.schema.FoodPortionTable.QUANTITY
 import com.machfour.macros.schema.FoodPortionTable.QUANTITY_UNIT
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
 import com.machfour.macros.units.MILLILITRES
@@ -23,9 +25,9 @@ class NutrientDataTest {
     companion object {
 
         private val f = exampleFood2
-        private val nd1: FoodNutrientData // grams
-        private val nd2: FoodNutrientData // ml
-        private val nd3: FoodNutrientData // mg
+        private val nd1: NutrientData<FoodNutrientValue> // grams
+        private val nd2: NutrientData<FoodNutrientValue> // ml
+        private val nd3: NutrientData<FoodNutrientValue> // mg
 
         init {
             val fp1: FoodPortion
@@ -37,12 +39,12 @@ class NutrientDataTest {
                 put(MEAL_ID, MacrosEntity.NO_ID)
                 put(QUANTITY, 100.0)
                 put(QUANTITY_UNIT, GRAMS.abbr)
-                fp1 = factory.construct(this, ObjectSource.TEST)
+                fp1 = factory.construct(this.copy(), ObjectSource.TEST)
                 put(QUANTITY_UNIT, MILLILITRES.abbr)
-                fp2 = factory.construct(this, ObjectSource.TEST)
+                fp2 = factory.construct(this.copy(), ObjectSource.TEST)
                 put(QUANTITY, 100000.0)
                 put(QUANTITY_UNIT, MILLIGRAMS.abbr)
-                fp3 = factory.construct(this, ObjectSource.TEST)
+                fp3 = factory.construct(this.copy(), ObjectSource.TEST)
             }
 
             fp1.initFoodAndNd(f)

@@ -175,8 +175,8 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
-        val numDeleted = deleteObjects(database, objects)
+    override fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int {
+        val numDeleted = deleteObjects(database, table, objects)
         for (obj in objects) {
             afterDbEdit(obj)
         }
@@ -189,8 +189,8 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int {
-        val numSaved = saveObjects(database, objects, source)
+    override fun <M : MacrosEntity> saveObjects(table: Table<M>, objects: Collection<M>, source: ObjectSource): Int {
+        val numSaved = saveObjects(database, table, objects, source)
         // TODO copied from WriteQueries
         // problem: don't know id after saving here (it was NO_ID)
         when (source) {
@@ -202,8 +202,12 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity<M>> saveObjectsReturningIds(objects: Collection<M>, source: ObjectSource): List<EntityId> {
-        val ids = saveObjectsReturningIds(database, objects, source)
+    override fun <M : MacrosEntity> saveObjectsReturningIds(
+        table: Table<M>,
+        objects: Collection<M>,
+        source: ObjectSource
+    ): List<EntityId> {
+        val ids = saveObjectsReturningIds(database, table, objects, source)
         // TODO copied from WriteQueries
         // problem: don't know id after saving here (it was NO_ID)
         // --> but now we do!!
@@ -220,7 +224,7 @@ class FlowDataSource(
         afterNutrientsSaved(foodId)
     }
 
-    private fun <M : MacrosEntity<M>> afterDbInsert(obj: M) {
+    private fun <M : MacrosEntity> afterDbInsert(obj: M) {
         // problem: don't know id after saving here (it was NO_ID)
         when (obj) {
             is Food ->  { allFoodsNeedsRefresh = true }

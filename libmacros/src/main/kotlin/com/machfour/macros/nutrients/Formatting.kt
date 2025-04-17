@@ -1,6 +1,6 @@
 package com.machfour.macros.nutrients
 
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.formatting.fmt
 import com.machfour.macros.formatting.toString
@@ -9,8 +9,8 @@ import com.machfour.macros.units.NutrientUnits
 
 // chooses unit based on what's in the FoodNutrientData object, or allows override
 fun formatNutrientValue(
-    data: NutrientData,
-    nutrient: Nutrient,
+    data: BasicNutrientData<*>,
+    nutrient: INutrient,
     units: NutrientUnits,
     preferDataUnit: Boolean = false,
     withDp: Boolean = false,
@@ -26,8 +26,8 @@ fun formatNutrientValue(
 }
 
 fun formatNutrientValue(
-    data: NutrientData,
-    nutrient: Nutrient,
+    data: BasicNutrientData<*>,
+    nutrient: INutrient,
     unit: Unit,
     withDp: Boolean = false,
     defaultValue: Double = 0.0,
@@ -51,10 +51,10 @@ val defaultNutrientsToPrint = listOf(
 )
 
 fun formatNutrientData(
-    data: NutrientData,
+    data: BasicNutrientData<*>,
     displayStrings: DisplayStrings,
     nutrientUnits: NutrientUnits,
-    nutrients: Collection<Nutrient> = defaultNutrientsToPrint,
+    nutrients: Collection<INutrient> = defaultNutrientsToPrint,
     preferDataUnits: Boolean = false,
     withDp: Boolean = false,
     monoSpaceAligned: Boolean = false,
@@ -83,7 +83,7 @@ fun formatNutrientData(
                 append("$colName: $value $unitStr")
             }
             //append("$colName: $value $unitStr")
-            if (!data.hasCompleteData(n)) {
+            if (data.hasIncompleteData(n)) {
                 // mark incomplete
                 append(" (*)")
             }

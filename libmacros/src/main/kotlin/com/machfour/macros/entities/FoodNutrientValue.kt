@@ -5,8 +5,8 @@ import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.FoodNutrientValueTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 
 class FoodNutrientValue internal constructor(
@@ -28,7 +28,7 @@ class FoodNutrientValue internal constructor(
             get() = Factories.foodNutrientValue
 
         // makes an object without ID or food
-        fun makeComputedValue(value: Double, nutrient: Nutrient, unit: Unit): FoodNutrientValue {
+        fun makeComputedValue(value: Double, nutrient: INutrient, unit: Unit): FoodNutrientValue {
             return factory.construct(RowData(FoodNutrientValueTable).apply {
                 //put(NutrientValueTable.ID, id ?: MacrosEntity.NO_ID)
                 //put(NutrientValueTable.FOOD_ID, food?.id ?: MacrosEntity.NO_ID)
@@ -51,35 +51,16 @@ class FoodNutrientValue internal constructor(
     val foodId: Long
         get() = data[FoodNutrientValueTable.FOOD_ID]!!
 
-    var food: Food? = null
-        private set
-
     val version: Int
         get() = this.data[FoodNutrientValueTable.VERSION]!!
 
-
-    // should only be called by Food class when this object is added to it
-    internal fun setFood(f: Food) {
-        check(food == null) { "Food already set" }
-        check(foreignKeyMatches(this, FoodNutrientValueTable.FOOD_ID, f)) { "Food ID does not match" }
-        food = f
-    }
 
     override fun toString(): String {
         return "$value ${unit.abbr}"
     }
 
-    fun rescale(ratio: Double): FoodNutrientValue {
+    fun scale(ratio: Double): FoodNutrientValue {
         return makeComputedValue(value * ratio, nutrient, unit)
     }
 
-    // if the food associated with this NutrientValue has a density, it will be used instead of the given one
-    fun convert(newUnit: Unit, densityIfNoFood: Double? = null): FoodNutrientValue {
-        return makeComputedValue(convertValueTo(newUnit, densityIfNoFood), nutrient, newUnit)
-    }
-
-    // Food's density will be used if present. If food does not have a density, it can be specified here.
-    override fun convertValueTo(newUnit: Unit, density: Double?): Double {
-        return super.convertValueTo(newUnit, food?.density ?: density)
-    }
 }

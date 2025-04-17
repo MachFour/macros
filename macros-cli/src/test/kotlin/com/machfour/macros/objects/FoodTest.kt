@@ -10,8 +10,8 @@ import com.machfour.macros.queries.getFoodById
 import com.machfour.macros.queries.insertObjects
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.RowData
 import org.sqlite.SQLiteException
 import kotlin.test.*
 
@@ -94,7 +94,7 @@ class FoodTest {
             lotsOfFoods.add(modifiedIndexName)
         }
         try {
-            assertEquals(10000, insertObjects(db, lotsOfFoods, true))
+            assertEquals(10000, insertObjects(db, FoodTable, lotsOfFoods, true))
         } catch (e: SQLiteException) {
             e.printStackTrace()
             fail("DB save threw SQLite exception with result code: " + e.resultCode)
@@ -112,7 +112,7 @@ class FoodTest {
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(1, saveObject(db, f))
+            assertEquals(50L, saveObject(db, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -123,7 +123,7 @@ class FoodTest {
         modifiedData2.put(FoodTable.NAME, "newName")
         val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
-            assertEquals(1, saveObject(db, f1))
+            assertEquals(50, saveObject(db, f1))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -137,7 +137,7 @@ class FoodTest {
         modifiedData.put(FoodTable.ID, 500L)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
-            assertEquals(1, saveObject(db, f))
+            assertEquals(500L, saveObject(db, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")

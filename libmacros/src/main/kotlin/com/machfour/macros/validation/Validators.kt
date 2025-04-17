@@ -1,7 +1,7 @@
 package com.machfour.macros.validation
 
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 
 typealias ErrorMap<M> = Map<Column<M, *>, List<ValidationError>>
 

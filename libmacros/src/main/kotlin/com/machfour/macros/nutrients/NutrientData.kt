@@ -1,25 +1,30 @@
 package com.machfour.macros.nutrients
 
-import com.machfour.macros.entities.Nutrient
-import com.machfour.macros.entities.Unit
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.NutrientUnits
 
-interface NutrientData {
+// Nutrient data that can be used in linear combinations, i.e. sums and scaling by constant factors.
+interface NutrientData<E: INutrientValue>: BasicNutrientData<E> {
 
-    // Average density of food, if this NutrientData corresponds to a food
-    // and its density is known, otherwise null. If not null, the value
-    // allows conversion between liquid and solid quantity units.
-    val foodDensity: Double?
-    fun getUnit(n: Nutrient): Unit?
-    fun getUnit(n: Nutrient, defaultUnits: NutrientUnits): Unit
-
-    fun amountOf(n: Nutrient, unit: Unit? = null): Double?
-    fun amountOf(n: Nutrient, unit: Unit? = null, defaultValue: Double): Double {
-        return amountOf(n, unit) ?: defaultValue
+    fun rescale(newQuantity: IQuantity): NutrientData<E> {
+        return rescale(newQuantity.amount, newQuantity.unit)
     }
 
-    fun hasNutrient(n: Nutrient): Boolean
-    fun hasCompleteData(n: Nutrient): Boolean
+    fun rescale(amount: Double, unit: com.machfour.macros.entities.Unit): NutrientData<E>
 
-    fun getEnergyProportion(n: Nutrient) : Double
+    fun rescale100g(): NutrientData<E> {
+        return rescale(Quantity(amount = 100.0, unit = GRAMS))
+    }
+
+    fun withDefaultUnits(
+        defaultUnits: NutrientUnits = LegacyNutrientUnits,
+        includingQuantity: Boolean = false,
+        density: Double? = null
+    ): NutrientData<E>
+
+    // Use data from the another NutrientObject object to complete missing values from this one
+    // Any mismatches are ignored; this object's data is preferred in all cases
+    // Nothing is mutated; a new NutrientData object is returned with data copies
+    fun fillMissingData(other: BasicNutrientData<E>): NutrientData<E>
 }

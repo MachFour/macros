@@ -4,7 +4,7 @@ import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.TableImpl
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodCategory
-import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.entities.FoodImpl
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
 
@@ -46,7 +46,7 @@ private val density =
 private val searchRelevance =
     builder("search_relevance", Types.INTEGER).notEditable().buildFor(columns)
 
-object FoodTable: TableImpl<Food>(tableName, Factories.food, columns) {
+object FoodTable : TableImpl<Food>(tableName, FoodImpl.factory, columns) {
     val ID: Column<Food, Long>
         get() = id
     val CREATE_TIME: Column<Food, Long>

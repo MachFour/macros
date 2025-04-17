@@ -2,6 +2,7 @@ package com.machfour.macros.sql
 
 import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
+import com.machfour.macros.sql.rowdata.RowData
 import java.sql.SQLException
 
 interface SqlDatabase {

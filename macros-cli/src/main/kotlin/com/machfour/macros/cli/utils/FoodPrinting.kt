@@ -27,7 +27,7 @@ fun printFoodSummary(f: Food) {
     val dateFormat = LOCALIZED_DATETIME_MEDIUM
     println("Name:          ${f.longName}")
     println("Notes:         ${f.notes ?: ""}")
-    println("Category:      ${f.foodCategory}")
+    println("Category:      ${f.category}")
     println()
     println("Type:          ${f.foodType}")
     println("Created on:    ${dateFormat.format(f.createInstant)}")
@@ -48,7 +48,8 @@ fun printFood(f: Food, verbose: Boolean) {
      * Nutrition data
      */
     val nd = f.nutrientData
-    val unit = nd.qtyUnitAbbr
+    val qty = nd.perQuantity
+    val unit = qty.unit
     val dataSource = f.dataSource ?: (if (f.foodType === FoodType.COMPOSITE) "recipe" else "unknown")
     println("Nutrition data (source: $dataSource)")
     println()
@@ -60,13 +61,13 @@ fun printFood(f: Food, verbose: Boolean) {
     }
 
     // if entered not per 100g, print both original amount and per 100 g
-    if (nd.quantity != 100.0) {
-        println("Per ${nd.quantity.toString(0)}$unit:")
+    if (qty.amount != 100.0) {
+        println("Per ${qty.amount.toString(0)}${unit.abbr}:")
         printNutrientData(nd, verbose)
         println()
     }
-    println("Per 100$unit:")
-    printNutrientData(nd.rescale100(), verbose)
+    println("Per 100${unit.abbr}:")
+    printNutrientData(nd.rescale(100.0, unit), verbose)
     println()
 
     /*
@@ -80,7 +81,7 @@ fun printFood(f: Food, verbose: Boolean) {
     val servings = f.servings
     if (servings.isNotEmpty()) {
         for (s in servings) {
-            println(" - ${s.name}: ${s.quantity.toString(1)}${s.qtyUnitAbbr}")
+            println(" - ${s.name}: ${s.amount.toString(1)}${s.qtyUnitAbbr}")
         }
     } else {
         println("(No servings recorded)")

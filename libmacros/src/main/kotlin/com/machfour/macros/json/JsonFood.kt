@@ -1,23 +1,16 @@
 package com.machfour.macros.json
 
-import com.machfour.macros.core.EntityId
-import com.machfour.macros.core.Instant
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.entities.Food
-import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.core.*
+import com.machfour.macros.entities.*
 import com.machfour.macros.foodname.FoodDescription
 import com.machfour.macros.foodname.indexNamePrototype
-import com.machfour.macros.nutrients.nutrientWithNameOrNull
+import com.machfour.macros.json.JsonNutrientValue.Companion.toJsonNutrientValue
+import com.machfour.macros.nutrients.BasicNutrientData
+import com.machfour.macros.nutrients.QUANTITY
 import com.machfour.macros.schema.FoodNutrientValueTable
-import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.RowData
-import com.machfour.macros.units.unitWithAbbrOrNull
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.machfour.macros.sql.rowdata.RowData
+import com.machfour.macros.sql.rowdata.servingToRowData
+import kotlinx.serialization.*
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -25,6 +18,9 @@ data class JsonFood(
     override val id: EntityId = MacrosEntity.NO_ID,
     override val created: Instant = 0,
     override val modified: Instant = 0,
+
+    @Transient
+    override val source: ObjectSource = ObjectSource.JSON,
 
     // The basic name of the food, e.g. 'apple', 'chicken breast', 'chocolate bar'. It should be
     // a short but descriptive name as when screen space is limited, this is the only field shown.
@@ -53,13 +49,14 @@ data class JsonFood(
     // shown in the detailed information screen for this specific food.
     override val notes: String? = null,
 
-    val category: String? = null,
+    @SerialName("category")
+    override val categoryName: String,
 
     @SerialName("usda_index")
-    val usdaIndex: Int? = null,
+    override val usdaIndex: Int? = null,
 
     @SerialName("nuttab_index")
-    val nuttabIndex: String? = null,
+    override val nuttabIndex: String? = null,
 
     // Source of the nutrition data, e.g. "Label", "Website", "Calculated"
     @SerialName("data_source")
@@ -69,24 +66,43 @@ data class JsonFood(
     @SerialName("data_notes")
     override val dataNotes: String? = null,
 
-    val density: Double? = null,
+    override val density: Double? = null,
+
+    @SerialName("food_type")
+    override val foodType: FoodType = FoodType.PRIMARY,
 
     // Allows setting a 'relevance score' for the food, e.g. to rank it higher in search
     // results and predictions. This can be added to other offsets from e.g. food type or category.
     @SerialName("relevance_offset")
-    val relevanceOffset: Int = 0,
+    override val relevanceOffsetValue: Int = 0,
 
     // A set is used so that unordered comparisons can be done
-    val servings: List<JsonServing> = emptyList(),
-    val nutrients: Map<String, JsonQuantity> = emptyMap(),
+    override val servings: List<JsonServing> = emptyList(),
+    @SerialName("nutrient_data")
+    override val nutrientData: JsonNutrientData,
     val ingredients: List<JsonIngredient> = emptyList(),
-): JsonEntity(), FoodDescription {
+): JsonEntity(), IFood<JsonNutrientValue>, FoodDescription {
     companion object {
         private val Food.jsonServings: List<JsonServing>
             get() = servings.map { JsonServing(it) }
 
-        private val Food.jsonNutrientValues: Map<String, JsonQuantity>
-            get() = nutrientData.values.associateBy({ it.nutrient.csvName }) { JsonQuantity(it) }
+        private fun BasicNutrientData<FoodNutrientValue>.jsonNutrientData(): JsonNutrientData {
+            val incompleteDataNutrients = HashSet<INutrient>()
+            val nutrients = buildSet {
+                for ((n, nv) in nutrientValues()) {
+                    add(nv.toJsonNutrientValue())
+                    if (hasIncompleteData(n)) {
+                        incompleteDataNutrients.add(n)
+                    }
+                }
+            }
+            return JsonNutrientData(
+                perQuantity = JsonQuantity(perQuantity),
+                foodDensity = foodDensity,
+                nutrients = nutrients,
+                incompleteData = incompleteDataNutrients
+            )
+        }
     }
 
     constructor(f: Food): this(
@@ -99,70 +115,59 @@ data class JsonFood(
         extraDescription = f.extraDesc,
         indexName = f.indexName,
         notes = f.notes,
-        category = f.categoryName,
-        usdaIndex = f.usdaIndex,
-        nuttabIndex = f.nuttabIndex,
+        categoryName = f.categoryName,
         dataSource = f.dataSource,
         dataNotes = f.dataNotes,
         density = f.density,
-        relevanceOffset = f.relevanceOffset.value,
+        foodType = f.foodType,
+        usdaIndex = f.usdaIndex,
+        nuttabIndex = f.nuttabIndex,
+        relevanceOffsetValue = f.relevanceOffset.value,
         servings = f.jsonServings,
-        nutrients = f.jsonNutrientValues,
+        nutrientData = f.nutrientData.jsonNutrientData(),
     )
+
+    override val createTime: Instant
+        get() = created
+
+    override val modifyTime: Instant
+        get() = modified
 
     override val extraDesc: String?
         get() = extraDescription
 
-    fun toRowData() = RowData(FoodTable).apply {
-        put(FoodTable.ID, id)
-        put(FoodTable.CREATE_TIME, created)
-        put(FoodTable.MODIFY_TIME, modified)
-        put(FoodTable.INDEX_NAME, indexName)
-        put(FoodTable.BRAND, brand)
-        put(FoodTable.VARIETY, variety)
-        put(FoodTable.EXTRA_DESC, extraDescription)
-        put(FoodTable.NAME, basicName)
-        put(FoodTable.NOTES, notes)
-        put(FoodTable.USDA_INDEX, usdaIndex)
-        put(FoodTable.NUTTAB_INDEX, nuttabIndex)
-        put(FoodTable.DATA_SOURCE, dataSource)
-        put(FoodTable.DATA_NOTES, dataNotes)
-        put(FoodTable.DENSITY, density)
-        put(FoodTable.SEARCH_RELEVANCE, relevanceOffset)
-        put(FoodTable.CATEGORY, category)
-    }
+    @Transient
+    override lateinit var category: FoodCategory
 
-    fun getServingData() = servings.mapNotNull {
-        // if unit invalid, skip this entry
-        val unit = unitWithAbbrOrNull(it.quantity.unit) ?: return@mapNotNull null
-        RowData(ServingTable).apply {
-            put(ServingTable.ID, MacrosEntity.NO_ID)
-            put(ServingTable.CREATE_TIME, created)
-            put(ServingTable.MODIFY_TIME, modified)
-            put(ServingTable.FOOD_ID, id)
-            put(ServingTable.QUANTITY, it.quantity.value)
-            put(ServingTable.QUANTITY_UNIT, unit.abbr)
-            put(ServingTable.IS_DEFAULT, it.isDefault)
-            put(ServingTable.NAME, it.name)
-            put(ServingTable.NOTES, it.notes)
+    fun getServingData() = servings.map { servingToRowData(it) }
+
+    override val relevanceOffset: SearchRelevance
+        get() = SearchRelevance.fromValue(relevanceOffsetValue)
+
+    override val searchRelevance: SearchRelevance
+        get() = foodType.baseSearchRelevance + relevanceOffset
+
+    fun getNutrientValueData(): Map<INutrient, RowData<FoodNutrientValue>> {
+        val rowDataTemplate = RowData(FoodNutrientValueTable).apply {
+            put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)
+            put(FoodNutrientValueTable.CREATE_TIME, created)
+            put(FoodNutrientValueTable.MODIFY_TIME, modified)
+            put(FoodNutrientValueTable.FOOD_ID, id)
         }
-    }
-
-    fun getNutrientValueData(): Map<Nutrient, RowData<FoodNutrientValue>> {
         return buildMap {
-            for ((name, quantity) in nutrients) {
+            this[QUANTITY] = rowDataTemplate.copy().apply {
+                put(FoodNutrientValueTable.VALUE, quantity.amount)
+                put(FoodNutrientValueTable.UNIT_ID, quantity.unit.id)
+                put(FoodNutrientValueTable.NUTRIENT_ID, QUANTITY.id)
+                put(FoodNutrientValueTable.CONSTRAINT_SPEC, quantity.constraintSpec)
+            }
+            for (value in nutrientData.nutrients) {
                 // if nutrient or unit are invalid, skip this entry
-                val nutrient = nutrientWithNameOrNull(name) ?: continue
-                val unit = unitWithAbbrOrNull(quantity.unit) ?: continue
-                this[nutrient] = RowData(FoodNutrientValueTable).apply {
-                    put(FoodNutrientValueTable.ID, MacrosEntity.NO_ID)
-                    put(FoodNutrientValueTable.CREATE_TIME, created)
-                    put(FoodNutrientValueTable.MODIFY_TIME, modified)
-                    put(FoodNutrientValueTable.VALUE, quantity.value)
-                    put(FoodNutrientValueTable.UNIT_ID, unit.id)
-                    put(FoodNutrientValueTable.NUTRIENT_ID, nutrient.id)
-                    put(FoodNutrientValueTable.FOOD_ID, id)
-                    put(FoodNutrientValueTable.CONSTRAINT_SPEC, quantity.constraintSpec)
+                this[value.nutrient] = rowDataTemplate.copy().apply {
+                    put(FoodNutrientValueTable.VALUE, value.amount)
+                    put(FoodNutrientValueTable.UNIT_ID, value.unit.id)
+                    put(FoodNutrientValueTable.NUTRIENT_ID, value.nutrient.id)
+                    put(FoodNutrientValueTable.CONSTRAINT_SPEC, value.constraintSpec)
                 }
             }
         }

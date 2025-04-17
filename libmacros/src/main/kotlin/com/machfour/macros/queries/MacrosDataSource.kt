@@ -8,6 +8,7 @@ import com.machfour.macros.core.SearchRelevance
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.Table
 import kotlinx.coroutines.flow.Flow
 
 // Implements a higher level query interface than the database
@@ -100,20 +101,20 @@ interface MacrosDataSource {
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
     @Throws(SqlException::class)
-    fun <M: MacrosEntity<M>> saveObject(o: M): Int {
-        return saveObjects(listOf(o), o.source)
+    fun <M: MacrosEntity> saveObject(table: Table<M>, o: M): Int {
+        return saveObjects(table, listOf(o), o.source)
     }
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity<M>> saveObjects(objects: Collection<M>, source: ObjectSource): Int
+    fun <M : MacrosEntity> saveObjects(table: Table<M>, objects: Collection<M>, source: ObjectSource): Int
 
     @Throws(SqlException::class)
-    fun <M: MacrosEntity<M>> saveObjectReturningId(o: M): EntityId {
-        return saveObjectsReturningIds(listOf(o), o.source).first()
+    fun <M: MacrosEntity> saveObjectReturningId(table: Table<M>, o: M): EntityId {
+        return saveObjectsReturningIds(table, listOf(o), o.source).first()
     }
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity<M>> saveObjectsReturningIds(objects: Collection<M>, source: ObjectSource): List<EntityId>
+    fun <M : MacrosEntity> saveObjectsReturningIds(table: Table<M>, objects: Collection<M>, source: ObjectSource): List<EntityId>
 
     // The following two methods are made redundant because of saveObjects()
 
@@ -127,13 +128,13 @@ interface MacrosDataSource {
     // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity<M>> deleteObject(o: M): Int {
-        return deleteObjects(listOf(o))
+    fun <M : MacrosEntity> deleteObject(table: Table<M>, o: M): Int {
+        return deleteObjects(table, listOf(o))
     }
 
     // TODO make this the general one
     @Throws(SqlException::class)
-    fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int
+    fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int
 
     @Throws(SqlException::class)
     fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>)

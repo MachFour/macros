@@ -9,8 +9,8 @@ import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.nutrients.GenericNutrientData
 import com.machfour.macros.schema.NutrientGoalTable
 import com.machfour.macros.schema.NutrientGoalValueTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 
 class NutrientGoal internal constructor(
@@ -54,7 +54,7 @@ class NutrientGoal internal constructor(
         return name
     }
 
-    val targets = GenericNutrientData<NutrientGoalValue>(dataCompleteIfNotNull = true)
+    val targets = object: GenericNutrientData<NutrientGoalValue>() { }
 
     // make value without ID or nutrition goal object
     fun addComputedValue(nutrient: Nutrient, value: Double, unit: Unit) {

@@ -1,6 +1,6 @@
 package com.machfour.macros.names
 
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.Column
@@ -94,15 +94,15 @@ object EnglishColumnNames: ColumnStrings, NutrientStrings {
         return getFullName(col)
     }
 
-    override fun getFullName(n: Nutrient): String {
+    override fun getFullName(n: INutrient): String {
         return nutrientNames[n] ?: TODO("Name for $n not yet added, sorry!")
     }
 
-    override fun getDisplayName(n: Nutrient): String {
+    override fun getDisplayName(n: INutrient): String {
         return longerNutrientNames[n] ?: getFullName(n)
     }
 
-    override fun getAbbreviatedName(n: Nutrient): String {
+    override fun getAbbreviatedName(n: INutrient): String {
         return briefNutrientNames[n] ?: getDisplayName(n)
     }
 

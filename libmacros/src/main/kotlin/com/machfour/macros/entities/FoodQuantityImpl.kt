@@ -1,15 +1,18 @@
 package com.machfour.macros.entities
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.formatting.toString
 import com.machfour.macros.formatting.toStringWithRounding
-import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.INutrientValue
+import com.machfour.macros.nutrients.NutrientData
+import com.machfour.macros.nutrients.Quantity
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.unitWithAbbr
 
-abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
+abstract class FoodQuantityImpl<M : FoodQuantityImpl<M, E>, E: INutrientValue> protected constructor(
     data: RowData<M>,
     objectSource: ObjectSource,
     private val foodIdCol: Column.Fk<M, Long, Food>,
@@ -18,55 +21,49 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
     /* private val */ quantityUnitCol: Column<M, String>,
     private val notesCol: Column<M, String>,
     private val maxNutrientVersionCol: Column<M, Int>
-) : MacrosEntityImpl<M>(data, objectSource) {
+) : MacrosEntityImpl<M>(data, objectSource), IFoodQuantity<E> {
 
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.
      */
-    lateinit var food: Food
-        private set
-    lateinit var nutrientData: FoodNutrientData
-        private set
+    override lateinit var food: IFood<E>
 
-    val qtyUnit = unitWithAbbr(data[quantityUnitCol]!!)
+    override lateinit var nutrientData: NutrientData<E>
+
+    override val qtyUnit = unitWithAbbr(data[quantityUnitCol]!!)
 
     // this is the only thing that may remain null after all initialisation is complete
-    var serving: Serving? = null
-        private set
+    override var serving: Serving? = null
 
-    val foodId: Long
+    override val foodId: Long
         get() = data[foodIdCol]!!
 
-    val servingId: Long?
+    override val servingId: EntityId?
         get() = data[servingIdCol]
 
-    val quantity: Double
+    override val quantity: Double
         get() = data[quantityCol]!!
 
-    val maxNutrientVersion: Int
+    override val maxNutrientVersion: Int
         get() = data[maxNutrientVersionCol]!!
 
-    val notes: String?
+    override val notes: String?
         get() = data[notesCol]
 
-    fun prettyFormat(withNotes: Boolean): String {
+   fun prettyFormat(withNotes: Boolean): String {
         return buildString {
-            append("${food.mediumName}, ${this@FoodQuantity.quantity.toString(1)}${qtyUnit.abbr}")
+            append("${food.mediumName}, ${this@FoodQuantityImpl.quantity.toString(1)}${qtyUnit.abbr}")
             servingString?.let { append(" ($it)") }
             notes?.takeIf { withNotes && it.isNotEmpty() }?.let { append(" [$it]") }
         }
     }
 
-    fun initFoodAndNd(f: Food) {
-        check(foreignKeyMatches(this, foodIdCol, f))
-        food = f
-        nutrientData = f.nutrientData.let {
-            if (it.qtyUnit != qtyUnit) {
-                it.withQuantityUnit(qtyUnit, f.density, allowDefaultDensity = true)
-            } else {
-                it
-            }
-        }.rescale(quantity)
+    fun initFoodAndNd(f: IFood<E>) {
+        if (f is Food) {
+            check(foreignKeyMatches(this, foodIdCol, f as Food))
+            food = f
+            nutrientData = (f as IFood<E>).nutrientData.rescale(Quantity(amount = quantity, unit = qtyUnit))
+        }
     }
 
     // for use during construction
@@ -76,7 +73,7 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
         serving = s
     }
 
-    val servingString: String?
+    override val servingString: String?
         get() {
             val s = serving
             return if (s != null) "$servingCountString ${s.name}" else null
@@ -84,14 +81,13 @@ abstract class FoodQuantity<M : FoodQuantity<M>> protected constructor(
 
     // returns a string containing the serving count. If the serving count is close to an integer,
     // it is formatted as an integer.
-    private val servingCountString: String
-        // test if can round
-        get() = servingCount.toStringWithRounding()
+    private val servingCountString: String?
+        get() = servingCount?.toStringWithRounding()
 
-    val servingCount: Double
+    override val servingCount: Double?
         get() {
             val s = serving
-            return if (s != null) quantity / s.quantity else 0.0
+            return if (s != null) quantity / s.amount else 0.0
         }
 
 }

@@ -1,11 +1,12 @@
 package com.machfour.macros.csv
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.nutrients.AllNutrients
+import com.machfour.macros.nutrients.BasicNutrientData
 import com.machfour.macros.nutrients.ENERGY
-import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.queries.getFoodsByType
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
@@ -45,7 +46,7 @@ private val servingColumnsForExport by lazy {
     ServingTable.columns.filterNot { it in servingColumnsToExclude }
 }
 
-private val nutrientDataColumnNames = listOf("quantity_unit", "energy_unit") + AllNutrients.map { it.csvName }
+private val nutrientDataColumnNames = listOf("quantity_unit", "energy_unit") + AllNutrients.map { it.name }
 
 
 private fun prepareFoodDataForExport(f: Food): Map<String, String> {
@@ -56,20 +57,20 @@ private fun prepareFoodDataForExport(f: Food): Map<String, String> {
 }
 
 
-private fun prepareNutrientDataForExport(nd: FoodNutrientData): Map<String, String> {
+private fun prepareNutrientDataForExport(nd: BasicNutrientData<*>): Map<String, String> {
     return buildMap {
-        put("quantity_unit", nd.qtyUnitAbbr)
+        put("quantity_unit", nd.perQuantity.unit.abbr)
         put("energy_unit", nd.getUnit(ENERGY, StandardNutrientUnits).abbr)
         AllNutrients.forEach {
-            put(it.csvName, Types.REAL.toRawString(nd[it]?.value))
+            put(it.name, Types.REAL.toRawString(nd.amountOf(it)))
         }
         // TODO constraint spec
     }
 }
 
-private fun <J: Any> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food, J>): Map<String, String> {
+private fun <J: Any> prepareServingDataForExport(s: Serving, foodKeyCol: Column<Food, J>, foodIdToKey: Map<EntityId, J>): Map<String, String> {
     return buildMap {
-        put(foodKeyCol.sqlName, s.food.data.getAsRawString(foodKeyCol))
+        put(foodKeyCol.sqlName, foodKeyCol.type.toRawString(foodIdToKey.getValue(s.foodId)))
         // null data gets mapped to empty string
         servingColumnsForExport.forEach { col -> put(col.sqlName, s.data.getAsRawString(col)) }
     }
@@ -105,23 +106,27 @@ fun <J: Any> exportServings(
     foodKeyCol: Column<Food, J>,
     ignoreFoodIds: Set<Long>,
 ): String {
+    require(foodKeyCol.isUnique && !foodKeyCol.isNullable) { "food key col ($foodKeyCol) must be unique and not nullable" }
 
     // list of (food, serving) for each serving of a primary food
-    val servingsForExport = getFoodsForExport(db)
+    val foodsForExport = getFoodsForExport(db)
         .filterNot { ignoreFoodIds.contains(it.key) }
-        .flatMap { (_, food) -> food.servings }
 
-    val dataForExport = servingsForExport.map { prepareServingDataForExport(it, foodKeyCol) }
+    val foodIdToKey = foodsForExport.mapValues { it.value.getData(foodKeyCol)!! }
 
     val header = servingColumnsForExport.map { it.sqlName }
 
     val rows = buildList {
         add(header)
-        dataForExport.forEach { add(header.map { column -> it[column] ?: "" }) }
+        for (f in foodsForExport.values) {
+            for (s in f.servings) {
+                val data = prepareServingDataForExport(s, foodKeyCol, foodIdToKey)
+                add(header.map { data[it] ?: "" })
+            }
+        }
     }
 
     return getCsvWriter().write(rows)
-
 }
 
 @Throws(SqlException::class)

@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.core.MacrosSqlEntity
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
@@ -10,37 +11,41 @@ import com.machfour.macros.sql.generator.*
 @Throws(SqlException::class)
 fun <M> prefixSearch(
     db: SqlDatabase,
+    table: Table<M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
 ): List<Long> {
-    return stringSearch(db, cols, keyword, globBefore = false, globAfter = true, extraOptions = extraOptions)
+    return stringSearch(db, table, cols, keyword, globBefore = false, globAfter = true, extraOptions = extraOptions)
 }
 
 @Throws(SqlException::class)
 fun <M> substringSearch(
     db: SqlDatabase,
+    table: Table<M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
 ): List<Long> {
-    return stringSearch(db, cols, keyword, globBefore = true, globAfter = true, extraOptions = extraOptions)
+    return stringSearch(db, table, cols, keyword, globBefore = true, globAfter = true, extraOptions = extraOptions)
 }
 
 @Throws(SqlException::class)
 fun <M> exactStringSearch(
     db: SqlDatabase,
+    table: Table<M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
 ): List<Long> {
-    return stringSearch(db, cols, keyword, globBefore = false, globAfter = false, extraOptions = extraOptions)
+    return stringSearch(db, table, cols, keyword, globBefore = false, globAfter = false, extraOptions = extraOptions)
 }
 
 // Returns empty list if either keyword is blank or cols is empty
 @Throws(SqlException::class)
 fun <M> stringSearch(
     db: SqlDatabase,
+    table: Table<M>,
     cols: List<Column<M, String>>,
     keyword: String,
     globBefore: Boolean,
@@ -50,11 +55,10 @@ fun <M> stringSearch(
     if (keyword.isEmpty() || cols.isEmpty()) {
         return emptyList()
     }
-    val idColumn = cols.first().table.idColumn
 
     val keywordGlob = (if (globBefore) "%" else "") + keyword + if (globAfter) "%" else ""
     val keywordCopies = List(cols.size) { keywordGlob }
-    val query = SingleColumnSelect.build(idColumn) {
+    val query = SingleColumnSelect.build(table.idColumn) {
         whereLike(cols, keywordCopies)
         extraOptions()
     }
@@ -108,7 +112,7 @@ fun <M, I: Any> selectNonNullColumn(
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
+fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {
         where(idCol, id)
@@ -117,7 +121,7 @@ fun <M : MacrosEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: 
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
     val idCol = table.idColumn
     val existingIds = selectNonNullColumn(db, idCol) {
         where(idCol, queryIds)
@@ -172,7 +176,7 @@ fun <M, I: Any, J: Any> selectColumnMap(
 }
 
 @Throws(SqlException::class)
-fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
+fun <K, M: MacrosEntityImpl<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
     objectMap: Map<K, M>
 ): Map<K, M> {
@@ -189,7 +193,7 @@ fun <K, M: MacrosEntity<M>> findUniqueColumnConflicts(
 
 // helper/wildcard capture
 @Throws(SqlException::class)
-private fun <K, M: MacrosEntity<M>, J: Any> findConflictingUniqueColumnValues(
+private fun <K, M: MacrosSqlEntity<M>, J: Any> findConflictingUniqueColumnValues(
     ds: SqlDatabase,
     objectMap: Map<K, M>,
     uniqueCol: Column<M, J>

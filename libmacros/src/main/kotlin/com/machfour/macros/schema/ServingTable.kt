@@ -26,7 +26,7 @@ private val quantity =
 private val quantityUnit =
     builder("quantity_unit", Types.TEXT).notNull().buildFkFor(UnitTable.ABBREVIATION, columns)
 private val isDefault =
-    builder("is_default", Types.NULLBOOLEAN).notNull().default { false }.buildFor(columns)
+    builder("is_default", Types.NULL_BOOLEAN).notNull().default { false }.buildFor(columns)
 private val foodId =
     builder("food_id", Types.ID).notEditable().notNull().default { MacrosEntity.NO_ID }
         .buildFkFor(FoodTable.ID, columns)
@@ -39,7 +39,7 @@ object ServingTable : TableImpl<Serving>(tableName, Factories.serving, columns) 
     val MODIFY_TIME: Column<Serving, Long>
         get() = modifyTime
     val NAME: Column<Serving, String>
-        get() = com.machfour.macros.schema.name
+        get() = name
     val NOTES: Column<Serving, String>
         get() = notes
     val QUANTITY: Column<Serving, Double>

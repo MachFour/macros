@@ -10,9 +10,9 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.queries.getFoodsByIndexName
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.unitWithAbbrOrNull
 
 class FileParser {
@@ -89,9 +89,9 @@ class FileParser {
             }
 
             val (quantity, unit) = if (serving != null) {
-                Pair(fps.servingCount * serving.quantity, serving.qtyUnit)
+                Pair(fps.servingCount * serving.amount, serving.unit)
             } else {
-                Pair(fps.quantity, fps.unit ?: f.nutrientData.qtyUnit)
+                Pair(fps.quantity, fps.unit ?: f.nutrientData.perQuantity.unit)
             }
 
             val fp = RowData(FoodPortionTable).run {

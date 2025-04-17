@@ -11,8 +11,10 @@ import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getMealById
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.FoodPortionTable
+import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.removeMetadata
 
 
 private fun addPortion(toEdit: Meal, db: SqlDatabase) {
@@ -40,7 +42,7 @@ private fun deleteMeal(toDelete: Meal, db: SqlDatabase) {
     print("Are you sure? [y/N] ")
     if ((cliGetChar() == 'y') or (cliGetChar() == 'Y')) {
         try {
-            deleteObject(db, toDelete)
+            deleteObject(db, MealTable, toDelete)
         } catch (e: SqlException) {
             println("Error deleting meal: " + e.message)
         }
@@ -59,7 +61,7 @@ private fun deleteFoodPortion(toEdit: Meal, ds: SqlDatabase) {
         return
     }
     try {
-        deleteObject(ds, portions[n])
+        deleteObject(ds, FoodPortionTable, portions[n])
     } catch (e3: SqlException) {
         println("Error deleting the food portion: " + e3.message)
         return
@@ -87,7 +89,8 @@ private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
     }
 
     try {
-        val newData = portions[n].dataCopyWithoutMetadata()
+        val newData = portions[n].toRowData()
+        newData.removeMetadata()
         newData.put(FoodPortionTable.QUANTITY, newQty)
         saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
     } catch (e3: SqlException) {

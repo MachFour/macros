@@ -5,8 +5,8 @@ import com.machfour.macros.schema.ID_COLUMN_NAME
 import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.ColumnImpl
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 abstract class TableImpl<M>(
     final override val sqlName: String,
@@ -45,5 +45,9 @@ abstract class TableImpl<M>(
 
     override fun construct(data: RowData<M>, source: ObjectSource): M {
         return factory.construct(data, source)
+    }
+
+    override fun deconstruct(obj: M): RowData<M> {
+        return factory.deconstruct(obj)
     }
 }

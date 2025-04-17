@@ -1,9 +1,9 @@
 package com.machfour.macros.insulin
 
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
+import com.machfour.macros.nutrients.BasicNutrientData
 import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FAT
-import com.machfour.macros.nutrients.FoodNutrientData
 import com.machfour.macros.nutrients.PROTEIN
 import com.machfour.macros.units.GRAMS
 
@@ -47,7 +47,7 @@ interface BolusCalculator {
      will have all values set to null except the totals.
     */
     fun insulinFor(
-        amounts: Map<Nutrient, Double>,
+        amounts: Map<INutrient, Double>,
         precision: Int = -1,
     ): InsulinAmounts {
         return insulinFor(
@@ -61,7 +61,7 @@ interface BolusCalculator {
     // Same as above except values are extracted from the given FoodNutrientData,
     // converting to grams if necessary.
     fun insulinFor(
-        nd: FoodNutrientData,
+        nd: BasicNutrientData<*>,
         precision: Int = -1
     ): InsulinAmounts {
         return insulinFor(

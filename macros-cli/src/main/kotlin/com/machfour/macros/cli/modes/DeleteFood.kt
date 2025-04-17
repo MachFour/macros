@@ -8,6 +8,7 @@ import com.machfour.macros.cli.utils.printlnErr
 import com.machfour.macros.entities.Food
 import com.machfour.macros.queries.deleteObject
 import com.machfour.macros.queries.getFoodsByIndexName
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.sql.SqlException
 
 
@@ -71,7 +72,7 @@ class DeleteFood(config: CliConfig) : CommandImpl(config) {
                 db.beginTransaction()
                 for (f in foodsToDelete) {
                     // XXX will ON DELETE CASCADE just do what we want here?
-                    deleteObject(db, f)
+                    deleteObject(db, FoodTable, f)
                     println("Deleted " + f.indexName)
                 }
                 db.endTransaction()

@@ -2,13 +2,13 @@ package com.machfour.macros.csv
 
 import com.machfour.ksv.CsvConfig
 import com.machfour.ksv.CsvWriter
-import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.MacrosSqlEntity
 import com.machfour.macros.queries.getAllRawObjects
 import com.machfour.macros.schema.*
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 // don't edit keyset!
 private fun <M> prepareDataForBackup(data: RowData<M>): Map<String, String> {
@@ -22,7 +22,7 @@ private fun <M> prepareDataForBackup(data: RowData<M>): Map<String, String> {
 
 internal fun getCsvWriter() = CsvWriter(CsvConfig.DEFAULT)
 
-fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, objects: Collection<M>): String {
+fun <M : MacrosSqlEntity<M>> writeObjectsToCsv(table: Table<M>, objects: Collection<M>): String {
     val header = table.columnsByName.keys.toList()
 
     val rows = buildList {
@@ -37,7 +37,7 @@ fun <M : MacrosEntity<M>> writeObjectsToCsv(table: Table<M>, objects: Collection
 }
 
 // listed in dependency order (later tables have foreign keys referring to previous ones)
-internal val csvZipBackupTables: List<Table<out MacrosEntity<*>>> = listOf(
+internal val csvZipBackupTables: List<Table<out MacrosSqlEntity<*>>> = listOf(
     UnitTable,
     NutrientTable,
     FoodTable,
@@ -55,7 +55,7 @@ internal val <M> Table<M>.backupName: String
     get() = "$sqlName.csv"
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {
+fun <M : MacrosSqlEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {
     val rawObjectMap = getAllRawObjects(this, t)
     val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
     return writeObjectsToCsv(t, allRawObjects)

@@ -8,6 +8,7 @@ import com.machfour.macros.schema.AllTables
 import com.machfour.macros.sql.*
 import com.machfour.macros.sql.datatype.TypeCastException
 import com.machfour.macros.sql.generator.*
+import com.machfour.macros.sql.rowdata.RowData
 import java.io.File
 import java.io.FileReader
 import java.io.IOException

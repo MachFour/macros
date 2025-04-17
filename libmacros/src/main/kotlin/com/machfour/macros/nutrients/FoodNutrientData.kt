@@ -4,7 +4,11 @@ package com.machfour.macros.nutrients
 
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.FoodNutrientValue.Companion.makeComputedValue
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.Quantity.Companion.NullQuantity
+import com.machfour.macros.nutrients.Quantity.Companion.toQuantity
+import com.machfour.macros.sql.rowdata.removeMetadata
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.LegacyNutrientUnits
 import com.machfour.macros.units.NutrientUnits
@@ -12,52 +16,41 @@ import com.machfour.macros.units.UnitType
 
 // class storing nutrition data for a food or meal
 
+// TODO make immutable
 class FoodNutrientData(
-    dataCompleteIfNotNull: Boolean = true,
     private val density: Double? = null,
-): GenericNutrientData<FoodNutrientValue>(dataCompleteIfNotNull) {
+): GenericNutrientData<FoodNutrientValue>(), NutrientData<FoodNutrientValue> {
     companion object {
-        // lazy because otherwise having it here messes up static initialisation
-        val dummyQuantity by lazy {
-            FoodNutrientValue.makeComputedValue(0.0, QUANTITY, GRAMS)
-        }
-
         // Sums each nutrition component
         // converts to default unit for each nutrient
         // Quantity is converted to mass using density provided, or using a default guess of 1
-        fun sum(items: List<NutrientData>) : FoodNutrientData {
-            val sumData = FoodNutrientData(dataCompleteIfNotNull = false)
+        fun sum(items: List<BasicNutrientData<*>>): FoodNutrientData {
+            val sumData = FoodNutrientData()
 
             // treat quantity first
-            var sumQuantity = 0.0
+            var totalAmountGrams = 0.0
             var densityGuessed = false
             //var unnormalisedDensity = 0.0
             for (data in items) {
-                val qtyUnit = data.getUnit(QUANTITY)
-                val quantity = if (qtyUnit != null && qtyUnit.type == UnitType.VOLUME) {
-                    val volumeQty = data.amountOf(QUANTITY, qtyUnit, 0.0)
-                    val density = data.foodDensity ?: run {
-                        densityGuessed = true
-                        1.0
+                val quantity = data.perQuantity
+                val amountGrams = when (quantity.unit.type == UnitType.MASS) {
+                    true -> quantity.amount
+                    else -> {
+                        val density = data.foodDensity ?: 1.0
+                        densityGuessed = (densityGuessed || data.foodDensity == null)
+                        convertQuantity(quantity.amount, quantity.unit, GRAMS, density)
                     }
-                    convertUnit(QUANTITY, volumeQty, qtyUnit, GRAMS, density)
-                } else {
-                    data.amountOf(QUANTITY, GRAMS, 0.0)
                 }
-                sumQuantity += quantity
+                totalAmountGrams += amountGrams
                 // gradually calculate overall density via weighted sum of densities
                 //unnormalisedDensity += density * quantity
             }
 
-            sumData.quantityObjInternal = FoodNutrientValue.makeComputedValue(
-                sumQuantity,
-                QUANTITY,
-                GRAMS
-            )
-            sumData.markCompleteData(QUANTITY, !densityGuessed)
+            sumData.perQuantityInternal = Quantity(amount = totalAmountGrams, unit = GRAMS)
+            sumData.markIncompleteData(QUANTITY, densityGuessed)
 
             for (n in AllNutrientsExceptQuantity) {
-                var completeData = true
+                var incompleteData = false
                 var existsData = false
                 var sumValue = 0.0
                 val unit = LegacyNutrientUnits[n]
@@ -66,39 +59,39 @@ class FoodNutrientData(
                         sumValue += it
                         existsData = true
                     }
-                    if (!data.hasCompleteData(n)) {
-                        completeData = false
+                    if (data.hasIncompleteData(n)) {
+                        incompleteData = true
                     }
                 }
 
                 if (existsData) {
-                    sumData[n] = FoodNutrientValue.makeComputedValue(sumValue, n, unit)
-                    sumData.markCompleteData(n, completeData)
+                    sumData[n] = makeComputedValue(sumValue, n, unit)
+                    sumData.markIncompleteData(n, incompleteData)
                 }
+
 
             }
             return sumData
         }
     }
-    val quantityObj: FoodNutrientValue
-        get() = quantityObjInternal
+    override val perQuantity: Quantity
+        get() = perQuantityInternal.toQuantity()
 
     // using null coalescing means that hasData(QUANTITY) will still return false
-    private var quantityObjInternal: FoodNutrientValue
-        get() = this[QUANTITY] ?: dummyQuantity
+    private var perQuantityInternal: Quantity
+        get() = this[QUANTITY]?.toQuantity() ?: NullQuantity
         private set(value) {
-            this[QUANTITY] = value
+            this[QUANTITY] = makeComputedValue(value.amount, QUANTITY, value.unit)
         }
 
     val qtyUnit: Unit
-        get() = quantityObj.unit
+        get() = perQuantity.unit
 
-    val quantity: Double
-        get() = quantityObj.value
+    val qtyAmount: Double
+        get() = perQuantity.amount
 
     val qtyUnitAbbr: String
-        get() = quantityObj.unit.abbr
-
+        get() = perQuantity.unit.abbr
 
     override val foodDensity: Double?
         get() = density
@@ -108,39 +101,42 @@ class FoodNutrientData(
     }
 
     override fun toString(): String {
-        val str = StringBuilder("NutrientData [")
-        for (n in AllNutrients) {
-            str.append("$n : ${get(n)}, ")
-        }
-        str.append("]")
-        return str.toString()
+        return nutrientDataToString(this)
     }
 
     // creates a mutable copy
-    override fun copy() : FoodNutrientData {
-        return FoodNutrientData(dataCompleteIfNotNull, density).also { copy ->
+    fun copy() : FoodNutrientData {
+        return FoodNutrientData(density).also { copy ->
             for (i in data.indices) {
                 copy.data[i] = data[i]
-                copy.isDataComplete[i] = isDataComplete[i]
+                copy.isDataIncomplete[i] = isDataIncomplete[i]
             }
         }
     }
 
     // calculations
 
+    override fun rescale(amount: Double, unit: Unit): NutrientData<FoodNutrientValue> {
+        return if (unit == qtyUnit) {
+            rescale(amount)
+        } else {
+            withQuantityUnit(unit, foodDensity, allowDefaultDensity = true).rescale(amount)
+        }
+    }
+
     fun rescale100() : FoodNutrientData = rescale(100.0)
 
-    fun rescale(newQuantity: Double) : FoodNutrientData {
-        val conversionRatio = newQuantity / quantityObj.value
+    private fun rescale(newQuantity: Double) : FoodNutrientData {
+        val conversionRatio = if (qtyAmount == 0.0) Double.NaN else newQuantity / qtyAmount
 
-        val newData = FoodNutrientData(dataCompleteIfNotNull = true, density = density)
-        // completeData is false by default so we can just skip the iteration for null nutrients
-        for (n in AllNutrients) {
-            this[n]?.let {
-                newData[n] = it.rescale(conversionRatio)
+        return FoodNutrientData(density = density).also { data ->
+            // completeData is false by default so we can just skip the iteration for null nutrients
+            for (n in AllNutrients) {
+                this[n]?.let {
+                    data[n] = it.scale(conversionRatio)
+                }
             }
         }
-        return newData
     }
 
     /* ** OLD comment kept here for historical purposes **
@@ -170,7 +166,7 @@ class FoodNutrientData(
      *    This only works for mass units, not when the quantity unit is in ml
      */
 
-    fun withQuantityUnit(newUnit: Unit, density: Double? = null, allowDefaultDensity: Boolean = false) : FoodNutrientData {
+    private fun withQuantityUnit(newUnit: Unit, density: Double? = null, allowDefaultDensity: Boolean = false) : FoodNutrientData {
         val densityConversionNeeded = qtyUnit.type !== newUnit.type
         if (!allowDefaultDensity) {
             assert (!(densityConversionNeeded && density == null)) {
@@ -180,16 +176,18 @@ class FoodNutrientData(
         val fallbackDensity = (if (allowDefaultDensity) 1.0 else null)
 
         return copy().also {
-            it.quantityObjInternal = quantityObj.convert(newUnit, density ?: fallbackDensity)
-            it.markCompleteData(QUANTITY, densityConversionNeeded && density == null)
+            val newAmount = it.perQuantity.convertAmountTo(newUnit, density ?: fallbackDensity)
+            it.perQuantityInternal = Quantity(amount = newAmount, unit = newUnit)
+            it.markIncompleteData(QUANTITY, densityConversionNeeded && density == null)
         }
     }
 
-    fun withDefaultUnits(
-        defaultUnits: NutrientUnits = LegacyNutrientUnits,
-        includingQuantity: Boolean = false,
-        density: Double? = null
+    override fun withDefaultUnits(
+        defaultUnits: NutrientUnits,
+        includingQuantity: Boolean,
+        density: Double?,
     ) : FoodNutrientData {
+        // TODO construct all at once
         val convertedData = if (includingQuantity) {
             withQuantityUnit(defaultUnits[QUANTITY], density, false)
         } else {
@@ -197,8 +195,9 @@ class FoodNutrientData(
         }
         for (nv in valuesExcludingQuantity) {
             val n = nv.nutrient
-            convertedData[n] = nv.convert(defaultUnits[n])
-            convertedData.markCompleteData(n, hasCompleteData(n))
+            val convertedValue = nv.convertValueTo(defaultUnits[n])
+            convertedData[n] = makeComputedValue(convertedValue, n, defaultUnits[n])
+            convertedData.markIncompleteData(n, hasIncompleteData(n))
         }
         return convertedData
     }
@@ -206,27 +205,26 @@ class FoodNutrientData(
     // Use data from the another NutrientObject object to complete missing values from this one
     // Any mismatches are ignored; this object's data is preferred in all cases
     // Nothing is mutated; a new NutrientData object is returned with data copies
-    fun fillMissingData(other: FoodNutrientData): FoodNutrientData {
-        //check(one.nutrients == other.nutrients) { "Mismatch in nutrients"}
-        val result = FoodNutrientData(dataCompleteIfNotNull = false)
+    override fun fillMissingData(other: BasicNutrientData<FoodNutrientValue>): FoodNutrientData {
+        val result = FoodNutrientData()
 
         for (n in AllNutrients) {
-            // note: hasCompleteData is a stricter condition than hasData:
-            // hasCompleteData can be false even if there is a non-null value for that column, when the
+            // note: hasIncompleteData is a stricter condition than hasData:
+            // hasIncompleteData can be true even if there is a non-null value for that column, when the
             // nData object was produced by summation and there was at least one food with missing data.
             // for this purpose, we'll only replace the primary data if it was null
 
             val thisValue = this[n]
-            val otherValue = other[n]
+            val otherValue = other.getValueOrNull(n)
 
             val resultValue = (thisValue ?: otherValue)?.cloneWithoutMetadata()
-            val resultIsDataComplete = when (thisValue) {
-                null -> other.hasCompleteData(n)
-                else -> this.hasCompleteData(n)
+            val resultIsDataIncomplete = when (thisValue) {
+                null -> other.hasIncompleteData(n)
+                else -> this.hasIncompleteData(n)
             }
 
             result[n] = resultValue
-            result.markCompleteData(n, resultIsDataComplete)
+            result.markIncompleteData(n, resultIsDataIncomplete)
         }
         return result
     }
@@ -234,7 +232,7 @@ class FoodNutrientData(
 }
 
 private fun FoodNutrientValue.cloneWithoutMetadata(): FoodNutrientValue {
-    return factory.construct(dataCopyWithoutMetadata(), ObjectSource.COMPUTED)
+    return factory.construct(toRowData().removeMetadata(), ObjectSource.COMPUTED)
 }
 
 

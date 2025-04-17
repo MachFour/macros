@@ -9,7 +9,7 @@ import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
 
 val exampleFoodPortion by lazy { generateFp(exampleFood2, 50.0) }
 

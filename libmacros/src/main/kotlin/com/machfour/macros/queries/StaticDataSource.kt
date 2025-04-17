@@ -10,6 +10,7 @@ import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.Table
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -74,22 +75,24 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return getCommonQuantities(database, foodId, limit)
     }
 
-    override fun <M : MacrosEntity<M>> deleteObjects(objects: Collection<M>): Int {
-        return deleteObjects(database, objects)
+    override fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int {
+        return deleteObjects(database, table, objects)
     }
 
-    override fun <M : MacrosEntity<M>> saveObjects(
+    override fun <M : MacrosEntity> saveObjects(
+        table: Table<M>,
         objects: Collection<M>,
         source: ObjectSource
     ): Int {
-        return saveObjects(database, objects, source)
+        return saveObjects(database, table, objects, source)
     }
 
-    override fun <M : MacrosEntity<M>> saveObjectsReturningIds(
+    override fun <M : MacrosEntity> saveObjectsReturningIds(
+        table: Table<M>,
         objects: Collection<M>,
         source: ObjectSource
     ): List<EntityId> {
-        return saveObjectsReturningIds(database, objects, source)
+        return saveObjectsReturningIds(database, table, objects, source)
     }
 
     override fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>) {
@@ -97,7 +100,7 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
 
         // add Food ID to data maps
         val completedInsertObjects = insertObjects.map {
-            val data = it.dataFullCopy()
+            val data = it.toRowData()
             data.put(FoodNutrientValueTable.FOOD_ID, foodId)
             FoodNutrientValue.factory.construct(data, ObjectSource.USER_NEW)
         }
@@ -107,8 +110,8 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
             openedNewConnection = database.openConnection()
             database.beginTransaction()
 
-            saveObjects(completedInsertObjects, ObjectSource.USER_NEW)
-            saveObjects(updateObjects, ObjectSource.DB_EDIT)
+            saveObjects(FoodNutrientValueTable, completedInsertObjects, ObjectSource.USER_NEW)
+            saveObjects(FoodNutrientValueTable, updateObjects, ObjectSource.DB_EDIT)
             database.endTransaction()
         } catch (e: SqlException) {
             database.rollbackTransaction()

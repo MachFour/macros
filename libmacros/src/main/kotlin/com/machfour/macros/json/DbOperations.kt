@@ -1,7 +1,6 @@
 package com.machfour.macros.json
 
 import com.machfour.macros.core.Instant
-import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
@@ -10,10 +9,12 @@ import com.machfour.macros.queries.findUniqueColumnConflicts
 import com.machfour.macros.queries.saveObjects
 import com.machfour.macros.queries.saveObjectsReturningIds
 import com.machfour.macros.schema.FoodNutrientValueTable
+import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.RowData
-import com.machfour.macros.sql.SqlDatabase
-import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.*
+import com.machfour.macros.sql.rowdata.RowData
+import com.machfour.macros.sql.rowdata.foodToRowData
+import com.machfour.macros.sql.rowdata.servingToRowData
 import kotlinx.datetime.Clock
 
 // Note: for import, JSON ID, create time and modify time fields are ignored.
@@ -40,7 +41,7 @@ fun saveJsonFoods(
     overrideModifyTime: Instant? = null,
 ): Map<String, JsonFood> {
     val rawFoodsToImport = jsonFoods.associate { jsonFood ->
-        val data = jsonFood.toRowData().apply {
+        val data = foodToRowData(jsonFood).apply {
             tweakTimes(overrideCreateTime, overrideModifyTime)
         }
         jsonFood.indexName to Food.factory.construct(data, ObjectSource.IMPORT)
@@ -58,16 +59,18 @@ fun saveJsonFoods(
 
     val newConnection = db.openConnection(getGeneratedKeys = true)
     db.beginTransaction()
-    val foodIds = saveObjectsReturningIds(db, foodsToSave, ObjectSource.IMPORT)
+    val foodIds = saveObjectsReturningIds(db, FoodTable, foodsToSave, ObjectSource.IMPORT)
     val indexNameToId = foodsToSave.withIndex()
         .associate { (index, food) -> food.indexName to foodIds[index] }
 
     for (jf in jsonFoods) {
         val savedId = indexNameToId[jf.indexName] ?: continue
 
-        val servingData = jf.getServingData().onEach { data ->
-            data.put(ServingTable.FOOD_ID, savedId)
-            data.tweakTimes(overrideCreateTime, overrideModifyTime)
+        val servingData = jf.servings.map { s ->
+            servingToRowData(s).also {
+                it.put(ServingTable.FOOD_ID, savedId)
+                it.tweakTimes(overrideCreateTime, overrideModifyTime)
+            }
         }
 
         if (servingData.size != jf.servings.size) {
@@ -81,7 +84,7 @@ fun saveJsonFoods(
             data.tweakTimes(overrideCreateTime, overrideModifyTime)
         }
 
-        if (nutrientValueData.size != jf.nutrients.size) {
+        if (nutrientValueData.size != jf.nutrientData.nutrients.size) {
             // some nutrients were invalid
             invalidFoods.add(jf)
             continue
@@ -96,8 +99,8 @@ fun saveJsonFoods(
         }
     }
 
-    saveObjects(db, nutrientValues, ObjectSource.IMPORT)
-    saveObjects(db, servings, ObjectSource.IMPORT)
+    saveObjects(db, FoodNutrientValueTable, nutrientValues, ObjectSource.IMPORT)
+    saveObjects(db, ServingTable, servings, ObjectSource.IMPORT)
 
     db.endTransaction()
     if (newConnection) {
@@ -117,7 +120,7 @@ fun saveJsonFoods(
     }
 }
 
-private fun <M: MacrosEntity<M>> RowData<M>.tweakTimes(
+private fun <M> RowData<M>.tweakTimes(
     overrideCreateTime: Instant? = null,
     overrideModifyTime: Instant? = null,
 ) {

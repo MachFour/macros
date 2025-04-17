@@ -43,7 +43,7 @@ private fun printRow(row: List<String>, widths: List<Int>, rightAlign: List<Bool
     println()
 }
 
-private fun nutritionDataToRow(name: String, nd: FoodNutrientData, qty: Double, unit: Unit, verbose: Boolean): List<String> {
+private fun nutritionDataToRow(name: String, nd: NutrientData<*>, qty: Double, unit: Unit, verbose: Boolean): List<String> {
     val nutrientColumns = if (verbose) verboseTableCols else conciseTableCols
     val nutrientWidth = if (verbose) longDataWidth else shortDataWidth
 
@@ -123,7 +123,7 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     val totalName = "Total for ${meal.name}"
     val totalNd = meal.nutrientTotal()
     // for total data, just use the quantity and unit from the sum
-    val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.quantity, totalNd.qtyUnit, verbose)
+    val totalRow = nutritionDataToRow(totalName, totalNd, totalNd.qtyAmount, totalNd.qtyUnit, verbose)
     printRow(totalRow, rowWidths, rightAlign)
 }
 

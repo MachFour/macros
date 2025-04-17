@@ -2,13 +2,14 @@ package com.machfour.macros.json
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.entities.FoodNutrientValue
-import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.*
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.RowData
+import com.machfour.macros.sql.rowdata.foodToRowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.KILOJOULES
 import com.machfour.macros.units.MILLIGRAMS
@@ -20,7 +21,7 @@ class JsonFoodTest {
 
     @Test
     fun toRowData() {
-        val actual = apple.toRowData()
+        val actual = foodToRowData(apple)
         assertEquals(MacrosEntity.NO_ID, actual[FoodTable.ID])
         assertEquals(0, actual[FoodTable.CREATE_TIME])
         assertEquals(0, actual[FoodTable.MODIFY_TIME])
@@ -66,13 +67,20 @@ class JsonFoodTest {
         assertEquals("about the size of a tennis ball", actual1[ServingTable.NOTES])
     }
 
-    private fun checkNutrientValue(
-        allData: Map<Nutrient, RowData<FoodNutrientValue>>,
-        nutrient: Nutrient,
-        quantity: Double,
+    private fun checkQuantity(
+        food: JsonFood,
+        amount: Double,
         unit: Unit
     ) {
-        val data = allData[nutrient]
+    }
+
+    private fun checkNutrientValue(
+        nutrientValues: Map<INutrient, RowData<FoodNutrientValue>>,
+        nutrient: INutrient,
+        amount: Double,
+        unit: Unit
+    ) {
+        val data = nutrientValues[nutrient]
         assertNotNull(data)
         assertEquals(MacrosEntity.NO_ID, data[FoodNutrientValueTable.ID])
         assertEquals(0, data[FoodNutrientValueTable.CREATE_TIME])
@@ -81,23 +89,21 @@ class JsonFoodTest {
         assertEquals(MacrosEntity.NO_ID, data[FoodNutrientValueTable.FOOD_ID])
         assertEquals(nutrient.id, data[FoodNutrientValueTable.NUTRIENT_ID])
         assertEquals(unit.id, data[FoodNutrientValueTable.UNIT_ID])
-        assertEquals(quantity, data[FoodNutrientValueTable.VALUE])
-
-
+        assertEquals(amount, data[FoodNutrientValueTable.VALUE])
     }
 
     @Test
     fun getNutrientValueData() {
-        val actual = apple.getNutrientValueData()
-        checkNutrientValue(actual, QUANTITY, 100.0, GRAMS)
-        checkNutrientValue(actual, ENERGY, 247.0, KILOJOULES)
-        checkNutrientValue(actual, PROTEIN, 0.3, GRAMS)
-        checkNutrientValue(actual, FAT, 0.4, GRAMS)
-        checkNutrientValue(actual, SATURATED_FAT, 0.0, GRAMS)
-        checkNutrientValue(actual, CARBOHYDRATE, 12.4, GRAMS)
-        checkNutrientValue(actual, SUGAR, 11.9, GRAMS)
-        checkNutrientValue(actual, FIBRE, 2.4, GRAMS)
-        checkNutrientValue(actual, SODIUM, 0.0, MILLIGRAMS)
+        val data = apple.getNutrientValueData()
+        checkNutrientValue(data, QUANTITY,100.0, GRAMS)
+        checkNutrientValue(data, ENERGY, 247.0, KILOJOULES)
+        checkNutrientValue(data, PROTEIN, 0.3, GRAMS)
+        checkNutrientValue(data, FAT, 0.4, GRAMS)
+        checkNutrientValue(data, SATURATED_FAT, 0.0, GRAMS)
+        checkNutrientValue(data, CARBOHYDRATE, 12.4, GRAMS)
+        checkNutrientValue(data, SUGAR, 11.9, GRAMS)
+        checkNutrientValue(data, FIBRE, 2.4, GRAMS)
+        checkNutrientValue(data, SODIUM, 0.0, MILLIGRAMS)
 
     }
 }

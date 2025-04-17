@@ -2,8 +2,8 @@ package com.machfour.macros.core
 
 import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.validation.SchemaViolation
 import com.machfour.macros.validation.validateNonNull
 
@@ -11,15 +11,16 @@ import com.machfour.macros.validation.validateNonNull
 // see ObjectSource class for more documentation
 private fun checkIdPresence(source: ObjectSource, hasId: Boolean): Boolean {
     when (source) {
+        ObjectSource.COMPUTED,
         ObjectSource.IMPORT,
-        ObjectSource.USER_NEW,
-        ObjectSource.COMPUTED -> {
+        ObjectSource.JSON,
+        ObjectSource.USER_NEW, -> {
             return !hasId // object should not have an ID
         }
-        ObjectSource.DB_EDIT,
-        ObjectSource.RESTORE,
         ObjectSource.DATABASE,
-        ObjectSource.INBUILT -> {
+        ObjectSource.DB_EDIT,
+        ObjectSource.INBUILT,
+        ObjectSource.RESTORE, -> {
             return hasId // object should have an ID
         }
         ObjectSource.TEST -> {
@@ -32,10 +33,10 @@ private fun checkIdPresence(source: ObjectSource, hasId: Boolean): Boolean {
 /**
  * parent class for all Macros persistable objects
  */
-abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
+abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
     final override val data: RowData<M>,
     final override val source: ObjectSource
-) : MacrosEntity<M> {
+) : MacrosSqlEntity<M> {
 
     abstract override val table: Table<M>
     abstract val factory: Factory<M>
@@ -75,7 +76,7 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return (other is MacrosEntityImpl<*> && this.data == other.data) //&& isFromDb == ((MacrosEntity) o).isFromDb
     }
 
-    fun equalsWithoutMetadata(o: MacrosEntity<M>): Boolean {
+    fun equalsWithoutMetadata(o: MacrosSqlEntity<M>): Boolean {
         val columnsToCheck: MutableList<Column<M, *>> = ArrayList(table.columns)
         columnsToCheck.remove(table.idColumn)
         columnsToCheck.remove(table.createTimeColumn)
@@ -91,23 +92,15 @@ abstract class MacrosEntityImpl<M : MacrosEntity<M>> protected constructor(
         return data.hasValue(col)
     }
 
-    override fun dataCopyWithoutMetadata(): RowData<M> {
-        return data.copy().apply {
-            put(table.idColumn, NO_ID)
-            put(table.createTimeColumn, 0L)
-            put(table.modifyTimeColumn, 0L)
-        }
-    }
-
-    override fun dataFullCopy(): RowData<M> {
+    override fun toRowData(): RowData<M> {
         return data.copy()
     }
 
     // this also works for import (without IDs) because both columns are NO_ID
-    protected fun <M : MacrosEntity<M>, J: Any, N : MacrosEntity<N>> foreignKeyMatches(
-        childObj: MacrosEntity<M>,
+    protected fun <M : MacrosSqlEntity<M>, J: Any, N : MacrosSqlEntity<N>> foreignKeyMatches(
+        childObj: MacrosSqlEntity<M>,
         childCol: Column.Fk<M, J, N>,
-        parentObj: MacrosEntity<N>
+        parentObj: MacrosSqlEntity<N>
     ): Boolean {
         val parentCol = childCol.parentColumn
         if (parentCol == parentObj.table.idColumn && parentObj.source == ObjectSource.TEST) {

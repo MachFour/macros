@@ -1,30 +1,57 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.*
-import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.foodname.FoodDescription
+import com.machfour.macros.foodname.indexNamePrototype
 import com.machfour.macros.nutrients.FoodNutrientData
+import com.machfour.macros.nutrients.NutrientData
 import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
+import com.machfour.macros.sql.rowdata.foodToRowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLILITRES
 import com.machfour.macros.units.UnitType
 
+typealias Food = FoodImpl
+
 // don't need hashcode override since equals implies super.equals true, so hashcode will match
 @Suppress("EqualsOrHashCode")
-open class Food internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource):
-        MacrosEntityImpl<Food>(dataMap, objectSource), FoodDescription {
+open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: ObjectSource):
+    MacrosEntityImpl<Food>(dataMap, objectSource), IFood<FoodNutrientValue>, FoodDescription {
 
     companion object {
-        // Dynamically create either a Food or CompositeFood depending on the datamap passsed in.
+        // Dynamically create either a Food or CompositeFood depending on foodType in dataMap.
         // Hooray for preferring static constructors over new!!!
-        val factory: Factory<Food>
-            get() = Factories.food
+        val factory: Factory<Food> by lazy {
+            object: Factory<Food> {
+                override fun construct(data: RowData<Food>, source: ObjectSource): Food {
+                    // index name completion
+                    if (data[FoodTable.INDEX_NAME] == null) {
+                        val name = data[FoodTable.NAME] ?: "food"
+                        val brand = data[FoodTable.BRAND]
+                        val variety = data[FoodTable.VARIETY]
+                        val extraDesc = data[FoodTable.EXTRA_DESC]
+                        data.put(FoodTable.INDEX_NAME, indexNamePrototype(name, brand, variety, extraDesc))
+                    }
 
-        fun processFoodType(rowData: RowData<Food>): FoodType {
+                    data.makeImmutable()
+
+                    return when (FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)) {
+                        FoodType.COMPOSITE -> CompositeFoodImpl.new(data, source)
+                        else -> FoodImpl(data, source)
+                    }
+                }
+
+                override fun deconstruct(obj: Food): RowData<Food> {
+                    return foodToRowData(obj)
+                }
+            }
+        }
+
+        fun processFoodType(rowData: RowData<FoodImpl>): FoodType {
             val foodTypeString = rowData[FoodTable.FOOD_TYPE]
             requireNotNull(foodTypeString) { "Null food type string for rowData: $rowData" }
             val foodType = FoodType.fromString(foodTypeString)
@@ -35,29 +62,32 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
 
     private val servingsInternal: MutableList<Serving> = ArrayList()
 
-    val servings: List<Serving>
+    override val servings: List<Serving>
         get() = servingsInternal
 
     var defaultServing: Serving? = null
         private set
 
     // TODO check nutrient data is initialised
-    open val nutrientData: FoodNutrientData = FoodNutrientData(density = this.density)
+    override val nutrientData: NutrientData<FoodNutrientValue>
+        get() = foodNutrientData
+    private val foodNutrientData = FoodNutrientData(density = density)
 
-    val foodType: FoodType = processFoodType(dataMap)
+    override val foodType: FoodType = processFoodType(dataMap)
 
-    lateinit var foodCategory: FoodCategory
-        private set
+    override lateinit var category: FoodCategory
 
     open fun addNutrientValue(nv: FoodNutrientValue) {
-        // TODO check ID matches
-        nv.setFood(this)
-        nutrientData[nv.nutrient] = nv
+        foodNutrientData[nv.nutrient] = nv
     }
 
     fun setFoodCategory(c: FoodCategory) {
-        check(!this::foodCategory.isInitialized && foreignKeyMatches(this, FoodTable.CATEGORY, c))
-        foodCategory = c
+        check(!this::category.isInitialized && foreignKeyMatches(this, FoodTable.CATEGORY, c))
+        category = c
+    }
+
+    override fun toRowData(): RowData<Food> {
+        return super<MacrosEntityImpl>.toRowData()
     }
 
     override val table: Table<Food>
@@ -89,7 +119,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     }
 
     val naturalUnit: Unit
-        get() = nutrientData.qtyUnit
+        get() = nutrientData.perQuantity.unit
 
     val validUnits: List<Unit>
         get() {
@@ -112,10 +142,10 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
             return validUnits + servings
         }
 
-    val usdaIndex: Int?
+    override val usdaIndex: Int?
         get() = data[FoodTable.USDA_INDEX]
 
-    val nuttabIndex: String?
+    override val nuttabIndex: String?
         get() = data[FoodTable.NUTTAB_INDEX]
 
     override val dataSource: String?
@@ -127,7 +157,7 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     override fun hasDescriptionData(col: Column<Food, String>) = hasData(col)
     override fun getDescriptionData(col: Column<Food, String>) = getData(col)
 
-    val density: Double?
+    final override val density: Double?
         get() = data[FoodTable.DENSITY]
 
     // don't need to override hashcode since equality implies hashcodes equal but not the converse
@@ -156,23 +186,20 @@ open class Food internal constructor(dataMap: RowData<Food>, objectSource: Objec
     override val indexName: String
         get() = data[FoodTable.INDEX_NAME]!!
 
-    val categoryName: String
+    override val categoryName: String
         get() = data[FoodTable.CATEGORY]!!
 
-    val relevanceOffset: SearchRelevance
-        get() = SearchRelevance.fromValue(data[FoodTable.SEARCH_RELEVANCE])
-    val searchRelevance: SearchRelevance
-        get() = foodType.baseSearchRelevance + relevanceOffset
-
+    override val relevanceOffsetValue: Int?
+        get() = data[FoodTable.SEARCH_RELEVANCE]
 
     // Returns the most recent time out of
     // - food (table) modify time
     // - any servings modify time
     // - nutrient value modify time
     // Ensure servings and nutrient values are added first!
-    val userModifyTime: Long by lazy {
+    override val descendentModifyTime: Instant by lazy {
         val servingModifyTime = servings.maxOfOrNull { it.modifyTime } ?: 0
-        val nutrientValueModifyTime = nutrientData.values.maxOfOrNull { it.modifyTime } ?: 0
+        val nutrientValueModifyTime = foodNutrientData.values.maxOfOrNull { it.modifyTime } ?: 0
         maxOf(modifyTime, maxOf(servingModifyTime, nutrientValueModifyTime))
     }
 }

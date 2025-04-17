@@ -84,7 +84,6 @@ private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, fo
             checkNotNull(serving) { "Serving specified by FoodPortion not found in its food!" }
             fp.initServing(serving)
         }
-        fp.initMeal(meal)
         meal.addFoodPortion(fp)
     }
 }

@@ -7,9 +7,9 @@ import com.machfour.macros.queries.getMealForDayWithName
 import com.machfour.macros.queries.getMealsForDay
 import com.machfour.macros.queries.saveObject
 import com.machfour.macros.schema.MealTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
+import com.machfour.macros.sql.rowdata.RowData
 
 /*
  * Stores information for a meal being input (specified) via text fields,

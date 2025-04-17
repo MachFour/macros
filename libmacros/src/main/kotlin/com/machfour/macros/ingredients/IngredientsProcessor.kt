@@ -159,7 +159,7 @@ private fun saveCompositeFood(cf: CompositeFood, db: SqlDatabase) {
         // Now we can edit the ingredients to have the ID
         val newIngredients = addCompositeFoodId(cf.ingredients, id)
         // here we go!
-        insertObjects(db, newIngredients, false)
+        insertObjects(db, IngredientTable, newIngredients, false)
 
         // TODO nutrition data object to go along with it, if quantity is known
         //MacrosBuilder<NutrientData> nData = new MacrosBuilder<>(NutrientDataTable);

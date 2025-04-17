@@ -6,13 +6,10 @@ import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.PortionMeasurement
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.UnitTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.UnitType
 
-/*
- * Units for measuring quantities of food (only). Not for nutrition measurements.
- */
 class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
     : MacrosEntityImpl<Unit>(data, source), PortionMeasurement {
     companion object {
@@ -28,8 +25,6 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
     override val table: Table<Unit>
         get() = UnitTable
 
-    // values are cached here instead of using get() because there aren't many units but they're used a lot
-
     override val name: String = data[UnitTable.NAME]!!
 
     val abbr: String = data[UnitTable.ABBREVIATION]!!
@@ -38,11 +33,11 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
     val isInbuilt = data[UnitTable.INBUILT]!!
 
     // Measurement interface - for interop with Servings
-    override val unitMultiplier = 1.0
-    override val baseUnit = this
+    override val amount = 1.0
+    override val unit = this
     override val isVolumeMeasurement = type === UnitType.VOLUME
 
-    private val string = "$name (${abbr})" // [${type.name.firstOrNull() ?: "?"}]"
+    private val string = "$name (${abbr})"
     override fun toString(): String = string
 
 

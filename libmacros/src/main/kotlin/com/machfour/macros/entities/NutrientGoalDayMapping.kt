@@ -6,8 +6,8 @@ import com.machfour.macros.core.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.auxiliary.Factories
 import com.machfour.macros.schema.NutrientGoalDayMappingTable
-import com.machfour.macros.sql.RowData
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.rowdata.RowData
 
 
 class NutrientGoalDayMapping internal constructor(

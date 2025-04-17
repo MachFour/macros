@@ -1,13 +1,10 @@
 package com.machfour.macros.entities.auxiliary
 
 import com.machfour.macros.core.Factory
-import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.*
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.foodname.indexNamePrototype
-import com.machfour.macros.schema.FoodTable
-import com.machfour.macros.sql.RowData
+import com.machfour.macros.sql.rowdata.*
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues
@@ -17,53 +14,44 @@ import com.machfour.macros.sql.RowData
 
 object Factories {
 
-    val food: Factory<Food> = Factory { data, objectSource ->
-        // index name completion
-        if (data[FoodTable.INDEX_NAME] == null) {
-            val name = data[FoodTable.NAME]?: "food"
-            val brand = data[FoodTable.BRAND]
-            val variety = data[FoodTable.VARIETY]
-            val extraDesc = data[FoodTable.EXTRA_DESC]
-            data.put(FoodTable.INDEX_NAME, indexNamePrototype(name, brand, variety, extraDesc))
-        }
+    private fun <M> defaultFactory(
+        construct: (RowData<M>, ObjectSource) -> M,
+        deconstruct: (M) -> RowData<M>,
+    ) : Factory<M> {
+        return object: Factory<M> {
+            override fun construct(data: RowData<M>, source: ObjectSource): M {
+                data.makeImmutable()
+                return construct(data, source)
+            }
 
-        data.makeImmutable()
-
-        when (FoodType.fromString(data[FoodTable.FOOD_TYPE]!!)) {
-            FoodType.COMPOSITE -> CompositeFood(data, objectSource)
-            else -> Food(data, objectSource)
+            override fun deconstruct(obj: M): RowData<M> {
+                return deconstruct(obj)
+            }
         }
     }
 
-    private fun <M> defaultFactory(constructor: (RowData<M>, ObjectSource) -> M) : Factory<M> {
-        return Factory { data, objectSource ->
-            data.makeImmutable()
-            constructor(data, objectSource)
-        }
-    }
+    val attributeMapping = defaultFactory(::AttrMapping) { TODO() }
 
-    val attributeMapping = defaultFactory(::AttrMapping)
+    val foodCategory = defaultFactory(::FoodCategory) { TODO() }
 
-    val foodCategory = defaultFactory(::FoodCategory)
+    val serving = defaultFactory(::Serving) { servingToRowData(it) }
 
-    val serving = defaultFactory(::Serving)
+    val meal = defaultFactory(::Meal) { mealToRowData(it) }
 
-    val meal = defaultFactory(::Meal)
+    val foodPortion = defaultFactory(::FoodPortion) { foodPortionToRowData(it) }
 
-    val foodPortion = defaultFactory(::FoodPortion)
+    val ingredient = defaultFactory(::Ingredient) { ingredientToRowData(it) }
 
-    val ingredient = defaultFactory(::Ingredient)
+    val foodNutrientValue = defaultFactory(::FoodNutrientValue) { foodNutrientValueToRowData(it) }
 
-    val foodNutrientValue = defaultFactory(::FoodNutrientValue)
+    val nutrientGoal = defaultFactory(::NutrientGoal) { TODO() }
 
-    val nutrientGoal = defaultFactory(::NutrientGoal)
+    val nutrientGoalDayMapping = defaultFactory(::NutrientGoalDayMapping) { TODO() }
 
-    val nutrientGoalDayMapping = defaultFactory(::NutrientGoalDayMapping)
+    val nutrientGoalValue = defaultFactory(::NutrientGoalValue) { TODO() }
 
-    val nutrientGoalValue = defaultFactory(::NutrientGoalValue)
+    val nutrient = defaultFactory(::Nutrient) { nutrientToRowData(it) }
 
-    val nutrient = defaultFactory(::Nutrient)
-
-    val unit = defaultFactory(::Unit)
+    val unit = defaultFactory(::Unit) { TODO() }
 
 }

@@ -3,10 +3,10 @@ package com.machfour.macros.schema
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.currentDateStamp
 import com.machfour.datestamp.currentEpochSeconds
-import com.machfour.macros.core.TableImpl
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.NutrientGoal
-import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
 

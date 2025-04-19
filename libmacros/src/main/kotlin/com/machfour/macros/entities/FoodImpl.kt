@@ -9,6 +9,8 @@ import com.machfour.macros.schema.FoodTable
 import com.machfour.macros.schema.ServingTable
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Factory
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.sql.rowdata.foodToRowData
 import com.machfour.macros.units.GRAMS

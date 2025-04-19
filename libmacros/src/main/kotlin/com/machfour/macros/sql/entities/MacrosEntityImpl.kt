@@ -1,6 +1,9 @@
-package com.machfour.macros.core
+package com.machfour.macros.sql.entities
 
+import com.machfour.macros.core.EntityId
+import com.machfour.macros.core.Instant
 import com.machfour.macros.core.MacrosEntity.Companion.NO_ID
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.rowdata.RowData
@@ -44,14 +47,15 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
 
-        validateNonNull(data).takeIf { it.isNotEmpty() }?.let {
-            throw SchemaViolation(it)
+        validateNonNull(data).also {
+            if (it.isNotEmpty()) {
+                throw SchemaViolation(it)
+            }
         }
 
-        require(checkIdPresence(source, hasId)) {
-            if (hasId) { "Object should not have ID:\n" }
-            else { "Object should have ID:\n" } + data
 
+        require(checkIdPresence(source, hasId)) {
+            "RowData should ${(if (hasId) "not " else "")}have ID:\n$data"
         }
     }
     override fun toString(): String {

@@ -1,10 +1,25 @@
-package com.machfour.macros.entities.auxiliary
+package com.machfour.macros.sql.entities
 
-import com.machfour.macros.core.Factory
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.entities.*
+import com.machfour.macros.entities.AttrMapping
+import com.machfour.macros.entities.FoodCategory
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.Ingredient
+import com.machfour.macros.entities.Meal
+import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.NutrientGoal
+import com.machfour.macros.entities.NutrientGoalDayMapping
+import com.machfour.macros.entities.NutrientGoalValue
+import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.rowdata.*
+import com.machfour.macros.sql.rowdata.RowData
+import com.machfour.macros.sql.rowdata.foodNutrientValueToRowData
+import com.machfour.macros.sql.rowdata.foodPortionToRowData
+import com.machfour.macros.sql.rowdata.ingredientToRowData
+import com.machfour.macros.sql.rowdata.mealToRowData
+import com.machfour.macros.sql.rowdata.nutrientToRowData
+import com.machfour.macros.sql.rowdata.servingToRowData
 
 // Contains factories for the different objects
 // They're here because putting them in the same file as the object causes static initialisation order issues

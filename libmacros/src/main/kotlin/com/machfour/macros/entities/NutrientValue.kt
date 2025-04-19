@@ -1,7 +1,7 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosEntityImpl
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.nutrients.nutrientWithId

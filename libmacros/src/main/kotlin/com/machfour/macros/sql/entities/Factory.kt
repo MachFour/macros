@@ -1,5 +1,6 @@
-package com.machfour.macros.core
+package com.machfour.macros.sql.entities
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.sql.rowdata.RowData
 
 interface Factory<M> {

@@ -2,7 +2,7 @@ package com.machfour.macros.csv
 
 import com.machfour.ksv.CsvConfig
 import com.machfour.ksv.CsvWriter
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.queries.getAllRawObjects
 import com.machfour.macros.schema.*
 import com.machfour.macros.sql.SqlDatabase
@@ -57,6 +57,5 @@ internal val <M> Table<M>.backupName: String
 @Throws(SqlException::class)
 fun <M : MacrosSqlEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {
     val rawObjectMap = getAllRawObjects(this, t)
-    val allRawObjects: List<M> = ArrayList(rawObjectMap.values)
-    return writeObjectsToCsv(t, allRawObjects)
+    return writeObjectsToCsv(t, rawObjectMap.values)
 }

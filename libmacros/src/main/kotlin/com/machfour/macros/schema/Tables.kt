@@ -1,6 +1,6 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.Table
 
 // Just a list of all tables, in a separate file to avoid static initialisation order issues

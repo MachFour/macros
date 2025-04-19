@@ -1,6 +1,6 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.core.TableImpl
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.AttrMapping
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodAttribute

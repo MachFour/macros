@@ -1,6 +1,6 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
 import com.machfour.macros.sql.generator.ColumnExpr

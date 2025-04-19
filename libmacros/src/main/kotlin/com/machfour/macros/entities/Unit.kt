@@ -1,10 +1,10 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.Factory
-import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.sql.entities.Factory
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.PortionMeasurement
-import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.schema.UnitTable
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.rowdata.RowData

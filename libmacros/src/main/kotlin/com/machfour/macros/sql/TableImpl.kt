@@ -1,11 +1,10 @@
-package com.machfour.macros.core
+package com.machfour.macros.sql
 
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.schema.CREATE_TIME_COLUMN_NAME
 import com.machfour.macros.schema.ID_COLUMN_NAME
 import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
-import com.machfour.macros.sql.Column
-import com.machfour.macros.sql.ColumnImpl
-import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.rowdata.RowData
 
 abstract class TableImpl<M>(

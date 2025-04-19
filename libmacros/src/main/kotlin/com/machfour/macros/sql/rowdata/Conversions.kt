@@ -1,7 +1,7 @@
 package com.machfour.macros.sql.rowdata
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.entities.*
 import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.schema.*

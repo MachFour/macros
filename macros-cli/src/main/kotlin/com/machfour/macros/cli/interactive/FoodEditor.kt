@@ -8,7 +8,7 @@ import com.googlecode.lanterna.screen.Screen
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory
 import com.machfour.macros.cli.utils.displayLength
 import com.machfour.macros.core.MacrosBuilder
-import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue

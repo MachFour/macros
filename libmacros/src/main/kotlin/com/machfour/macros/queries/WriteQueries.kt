@@ -9,6 +9,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.generator.SimpleDelete
 
 // These queries modify stuff so to preserve the cache layer, their use is restricted to in-module

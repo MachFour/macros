@@ -1,7 +1,7 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.EntityId
-import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.formatting.toString
 import com.machfour.macros.formatting.toStringWithRounding

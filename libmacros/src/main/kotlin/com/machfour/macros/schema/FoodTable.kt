@@ -1,7 +1,7 @@
 package com.machfour.macros.schema
 
 import com.machfour.macros.core.FoodType
-import com.machfour.macros.core.TableImpl
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.entities.FoodImpl

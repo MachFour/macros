@@ -1,5 +1,6 @@
-package com.machfour.macros.core
+package com.machfour.macros.sql.entities
 
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.rowdata.RowData

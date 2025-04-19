@@ -1,12 +1,12 @@
 package com.machfour.macros.schema
 
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.TableImpl
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.entities.auxiliary.Factories
+import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
 

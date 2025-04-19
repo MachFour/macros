@@ -1,7 +1,7 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.core.Factory
-import com.machfour.macros.core.MacrosEntityImpl
+import com.machfour.macros.sql.entities.Factory
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.schema.FoodAttributeTable
 import com.machfour.macros.sql.Table

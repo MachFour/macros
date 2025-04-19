@@ -1,7 +1,7 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.MacrosEntityImpl
-import com.machfour.macros.core.MacrosSqlEntity
+import com.machfour.macros.sql.entities.MacrosEntityImpl
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException

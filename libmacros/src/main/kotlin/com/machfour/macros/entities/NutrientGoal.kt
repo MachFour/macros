@@ -35,11 +35,9 @@ class NutrientGoal internal constructor(
 
     }
 
-    override val factory: Factory<NutrientGoal>
-        get() = Companion.factory
-
-    override val table: Table<NutrientGoal>
-        get() = Companion.table
+    override fun getTable(): Table<NutrientGoal> {
+        return Companion.table
+    }
 
     val name: String
         get() = data[NutrientGoalTable.NAME]!!

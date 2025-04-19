@@ -30,11 +30,9 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
     val foodPortions: List<FoodPortion>
         get() = foodPortionsMutable
 
-    override val factory: Factory<Meal>
-        get() = Companion.factory
-
-    override val table: Table<Meal>
-        get() = MealTable
+    override fun getTable(): Table<Meal> {
+        return MealTable
+    }
 
     fun nutrientTotal(): FoodNutrientData {
         val allNutrientData = foodPortions.map { it.nutrientData }

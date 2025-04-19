@@ -22,11 +22,9 @@ class NutrientImpl internal constructor(data: RowData<Nutrient>, source: ObjectS
 
     }
 
-    override val factory: Factory<Nutrient>
-        get() = Companion.factory
-
-    override val table: Table<Nutrient>
-        get() = NutrientTable
+    override fun getTable(): Table<Nutrient> {
+        return NutrientTable
+    }
 
     override val name = this.data[NutrientTable.NAME]!!
 

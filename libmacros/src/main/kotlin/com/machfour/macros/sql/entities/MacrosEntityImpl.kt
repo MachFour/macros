@@ -41,8 +41,7 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
     final override val source: ObjectSource
 ) : MacrosSqlEntity<M> {
 
-    abstract override val table: Table<M>
-    abstract val factory: Factory<M>
+    protected abstract fun getTable(): Table<M>
 
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
@@ -53,23 +52,22 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
             }
         }
 
-
         require(checkIdPresence(source, hasId)) {
             "RowData should ${(if (hasId) "not " else "")}have ID:\n$data"
         }
     }
     override fun toString(): String {
-        return "${table.sqlName} id=${id}, objSrc=${source}, data=${data}"
+        return "${getTable().sqlName} id=${id}, objSrc=${source}, data=${data}"
     }
 
     final override val id: EntityId
-        get() = data[table.idColumn]!!
+        get() = data[getTable().idColumn]!!
 
     final override val createTime: Instant
-        get() = data[table.createTimeColumn]!!
+        get() = data[getTable().createTimeColumn]!!
 
     final override val modifyTime: Instant
-        get() = data[table.modifyTimeColumn]!!
+        get() = data[getTable().modifyTimeColumn]!!
 
     final override val hasId: Boolean
         get() = (id != NO_ID)
@@ -81,10 +79,10 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
     }
 
     fun equalsWithoutMetadata(o: MacrosSqlEntity<M>): Boolean {
-        val columnsToCheck: MutableList<Column<M, *>> = ArrayList(table.columns)
-        columnsToCheck.remove(table.idColumn)
-        columnsToCheck.remove(table.createTimeColumn)
-        columnsToCheck.remove(table.modifyTimeColumn)
+        val columnsToCheck: MutableList<Column<M, *>> = ArrayList(getTable().columns)
+        columnsToCheck.remove(getTable().idColumn)
+        columnsToCheck.remove(getTable().createTimeColumn)
+        columnsToCheck.remove(getTable().modifyTimeColumn)
         return RowData.columnsAreEqual(this.data, o.data, columnsToCheck)
     }
 
@@ -101,13 +99,13 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
     }
 
     // this also works for import (without IDs) because both columns are NO_ID
-    protected fun <M : MacrosSqlEntity<M>, J: Any, N : MacrosSqlEntity<N>> foreignKeyMatches(
-        childObj: MacrosSqlEntity<M>,
+    protected fun <M : MacrosEntityImpl<M>, J: Any, N : MacrosEntityImpl<N>> foreignKeyMatches(
+        childObj: MacrosEntityImpl<M>,
         childCol: Column.Fk<M, J, N>,
-        parentObj: MacrosSqlEntity<N>
+        parentObj: MacrosEntityImpl<N>
     ): Boolean {
         val parentCol = childCol.parentColumn
-        if (parentCol == parentObj.table.idColumn && parentObj.source == ObjectSource.TEST) {
+        if (parentCol == parentObj.getTable().idColumn && parentObj.source == ObjectSource.TEST) {
             // disable ID check for TEST objects
             return true
         }

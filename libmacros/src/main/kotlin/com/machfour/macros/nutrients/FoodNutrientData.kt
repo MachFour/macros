@@ -8,6 +8,7 @@ import com.machfour.macros.entities.FoodNutrientValue.Companion.makeComputedValu
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.nutrients.Quantity.Companion.NullQuantity
 import com.machfour.macros.nutrients.Quantity.Companion.toQuantity
+import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.rowdata.removeMetadata
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.LegacyNutrientUnits
@@ -232,7 +233,7 @@ class FoodNutrientData(
 }
 
 private fun FoodNutrientValue.cloneWithoutMetadata(): FoodNutrientValue {
-    return factory.construct(toRowData().removeMetadata(), ObjectSource.COMPUTED)
+    return FoodNutrientValueTable.construct(toRowData().removeMetadata(), ObjectSource.COMPUTED)
 }
 
 

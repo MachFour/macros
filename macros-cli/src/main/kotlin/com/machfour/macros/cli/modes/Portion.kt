@@ -14,6 +14,7 @@ import com.machfour.macros.parsing.FoodPortionSpec
 import com.machfour.macros.parsing.MealSpec
 import com.machfour.macros.queries.getFoodByIndexName
 import com.machfour.macros.queries.saveObject
+import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 
@@ -46,7 +47,7 @@ fun List<FoodPortionSpec>.processAndAddTo(meal: Meal, db: SqlDatabase): Int {
     try {
         meal.foodPortions
             .filter { it.source != ObjectSource.DATABASE }
-            .forEach { saveObject(db, it) }
+            .forEach { saveObject(db, FoodPortionTable, it) }
     } catch (e: SqlException) {
         printlnErr("Error saving food portion. Reason: " + e.message)
         return 1

@@ -21,11 +21,9 @@ class NutrientGoalDayMapping internal constructor(
 
     }
 
-    override val factory: Factory<NutrientGoalDayMapping>
-        get() = Companion.factory
-
-    override val table: Table<NutrientGoalDayMapping>
-        get() = NutrientGoalDayMappingTable
+    override fun getTable(): Table<NutrientGoalDayMapping> {
+        return NutrientGoalDayMappingTable
+    }
 
     val day: DateStamp
         get() = data[NutrientGoalDayMappingTable.DAY]!!

@@ -9,6 +9,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.generator.SimpleDelete
 
@@ -25,17 +26,17 @@ import com.machfour.macros.sql.generator.SimpleDelete
 // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> insertObjects(db: SqlDatabase, table: Table<M>, objects: Collection<M>, useDataIds: Boolean): Int {
+fun <M : MacrosEntity> insertObjects(db: SqlDatabase, table: Factory<M>, objects: Collection<M>, useDataIds: Boolean): Int {
     return db.insertRows(objects.map { table.deconstruct(it) }, useDataIds)
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> insertObjectsReturningIds(db: SqlDatabase, table: Table<M>, objects: Collection<M>, useDataIds: Boolean): List<EntityId> {
+fun <M : MacrosEntity> insertObjectsReturningIds(db: SqlDatabase, table: Factory<M>, objects: Collection<M>, useDataIds: Boolean): List<EntityId> {
     return db.insertRowsReturningIds(objects.map { table.deconstruct(it) }, useDataIds)
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> updateObjects(db: SqlDatabase, table: Table<M>, objects: Collection<M>): Int {
+fun <M : MacrosEntity> updateObjects(db: SqlDatabase, table: Factory<M>, objects: Collection<M>): Int {
     return db.updateRows(objects.map { table.deconstruct(it) })
 }
 
@@ -61,14 +62,14 @@ private fun <M : MacrosEntity> deleteObjectsById(
 
 // returns number of objects saved correctly (i.e. 0 or 1)
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> saveObject(db: SqlDatabase, o: M): EntityId {
-    return saveObjectsReturningIds(db, o.table, listOf(o), o.source).first()
+fun <M : MacrosSqlEntity<M>> saveObject(db: SqlDatabase, table: Factory<M>, o: M): EntityId {
+    return saveObjectsReturningIds(db, table, listOf(o), o.source).first()
 }
 
 @Throws(SqlException::class)
 fun <M : MacrosEntity> saveObjectsReturningIds(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Factory<M>,
     objects: Collection<M>,
     objectSource: ObjectSource
     ): List<EntityId> {

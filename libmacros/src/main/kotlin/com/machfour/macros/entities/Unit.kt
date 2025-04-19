@@ -19,11 +19,9 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
 
     }
 
-    override val factory: Factory<Unit>
-        get() = Companion.factory
-
-    override val table: Table<Unit>
-        get() = UnitTable
+    override fun getTable(): Table<Unit> {
+        return UnitTable
+    }
 
     override val name: String = data[UnitTable.NAME]!!
 

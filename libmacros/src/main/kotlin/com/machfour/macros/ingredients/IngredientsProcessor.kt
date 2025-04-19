@@ -138,7 +138,7 @@ fun createCompositeFoods(
 private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: Long): List<Ingredient> {
     val ingredientsWithId: MutableList<Ingredient> = ArrayList(newIngredients.size)
     for (i in newIngredients) {
-        val builder = MacrosBuilder(i)
+        val builder = MacrosBuilder(IngredientTable, i)
         builder.setField(IngredientTable.PARENT_FOOD_ID, id)
         ingredientsWithId.add(builder.build())
     }
@@ -154,7 +154,7 @@ private fun saveCompositeFood(cf: CompositeFood, db: SqlDatabase) {
         db.beginTransaction()
 
         // First save the food and then retrieve it from the database, to get the ID
-        val id = saveObject(db, cf)
+        val id = saveObject(db, FoodTable,cf)
 
         // Now we can edit the ingredients to have the ID
         val newIngredients = addCompositeFoodId(cf.ingredients, id)

@@ -41,12 +41,9 @@ class FoodNutrientValue internal constructor(
     }
 
 
-    override val factory: Factory<FoodNutrientValue>
-        get() = Companion.factory
-
-    override val table: Table<FoodNutrientValue>
-        get() = FoodNutrientValueTable
-
+    override fun getTable(): Table<FoodNutrientValue> {
+        return FoodNutrientValueTable
+    }
 
     val foodId: Long
         get() = data[FoodNutrientValueTable.FOOD_ID]!!

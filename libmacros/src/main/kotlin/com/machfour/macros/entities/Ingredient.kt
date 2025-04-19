@@ -30,11 +30,9 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
             get() = IngredientTable
     }
 
-    override val table: Table<Ingredient>
-        get() = Companion.table
-    override val factory: Factory<Ingredient>
-        get() = Companion.factory
-
+    override fun getTable(): Table<Ingredient> {
+        return IngredientTable
+    }
 
     /* These are not set on construction, but are only settable once: "pseudo-immutable".
      * This makes it easier to create the objects from the DB.

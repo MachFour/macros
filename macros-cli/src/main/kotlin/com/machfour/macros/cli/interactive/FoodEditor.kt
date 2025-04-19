@@ -573,7 +573,7 @@ class FoodEditor(
                     db.openConnection()
                     db.beginTransaction()
 
-                    val id = saveObject(db, f)
+                    val id = saveObject(db, FoodTable,f)
 
                     // add ID to nutrient values
                     val completedNutrientValues = nutrientData.values.map {

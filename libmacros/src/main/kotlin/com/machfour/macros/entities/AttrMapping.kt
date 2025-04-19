@@ -17,10 +17,8 @@ class AttrMapping internal constructor(data: RowData<AttrMapping>, objectSource:
 
     }
 
-    override val factory: Factory<AttrMapping>
-        get() = Companion.factory
-
-    override val table: Table<AttrMapping>
-        get() = AttrMappingTable
+    override fun getTable(): Table<AttrMapping> {
+        return AttrMappingTable
+    }
 
 }

@@ -48,7 +48,7 @@ fun saveJsonFoods(
     }
 
     // collect all the index names to be imported, and check if they're already in the DB.
-    val conflictingFoods = findUniqueColumnConflicts(db, rawFoodsToImport)
+    val conflictingFoods = findUniqueColumnConflicts(db, FoodTable,rawFoodsToImport)
     val foodsToSave = rawFoodsToImport.values.filterNot { conflictingFoods.contains(it.indexName) }
 
     val invalidFoods = ArrayList<JsonFood>()

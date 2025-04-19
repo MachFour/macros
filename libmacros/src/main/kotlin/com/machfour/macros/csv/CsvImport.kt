@@ -230,7 +230,7 @@ fun <J: Any> buildServingsWithFoodKeys(
 @Throws(SqlException::class)
 fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>): Pair<Map<J, EntityId>, Map<J, Food>> {
     // collect all the index names to be imported, and check if they're already in the DB.
-    val conflictingFoods = findUniqueColumnConflicts(db, foods)
+    val conflictingFoods = findUniqueColumnConflicts(db, FoodTable, foods)
     val foodsToSave = foods.filterNot { conflictingFoods.contains(it.key) }
     /*
     if (allowOverwrite) {

@@ -42,10 +42,9 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
         check(QUANTITY.compatibleWith(unit)) { "Invalid quantity unit $unit" }
     }
 
-    override val factory: Factory<Serving>
-        get() = Companion.factory
-    override val table: Table<Serving>
-        get() = ServingTable
+    override fun getTable(): Table<Serving> {
+        return ServingTable
+    }
 
     override fun toRowData(): RowData<Serving> {
         return super<MacrosEntityImpl>.toRowData()

@@ -19,10 +19,7 @@ class RegularMeal(data: RowData<RegularMeal>, objectSource: ObjectSource) : Macr
         }
     }
 
-    override val factory: Factory<RegularMeal>
-        get() = Companion.factory
-
-    override val table: Table<RegularMeal>
-        get() = RegularMealTable
-
+    override fun getTable(): Table<RegularMeal> {
+        return RegularMealTable
+    }
 }

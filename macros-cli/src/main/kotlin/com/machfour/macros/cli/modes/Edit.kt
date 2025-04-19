@@ -92,7 +92,7 @@ private fun editFoodPortion(m: Meal, ds: SqlDatabase) {
         val newData = portions[n].toRowData()
         newData.removeMetadata()
         newData.put(FoodPortionTable.QUANTITY, newQty)
-        saveObject(ds, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
+        saveObject(ds, FoodPortionTable, FoodPortion.factory.construct(newData, ObjectSource.DB_EDIT))
     } catch (e3: SqlException) {
         println("Error modifying the food portion: " + e3.message)
         return

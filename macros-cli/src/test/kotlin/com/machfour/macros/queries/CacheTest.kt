@@ -70,9 +70,9 @@ class CacheTest {
 
         try {
             println("Saving objects")
-            saveObject(db, testFood)
-            saveObject(db, testMeal)
-            saveObject(db, testFoodPortion)
+            saveObject(db, FoodTable,testFood)
+            saveObject(db, MealTable,testMeal)
+            saveObject(db, FoodPortionTable, testFoodPortion)
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("Saving objects threw SQL exception")

@@ -178,10 +178,9 @@ fun <M, I: Any, J: Any> selectColumnMap(
 @Throws(SqlException::class)
 fun <K, M: MacrosEntityImpl<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
+    table: Table<M>,
     objectMap: Map<K, M>
 ): Map<K, M> {
-    val table = objectMap.entries.firstOrNull()?.value?.table ?: return emptyMap()
-
     return buildMap {
         for (col in table.columns.filter { it.isUnique }) {
             val problemValues = findConflictingUniqueColumnValues(db, objectMap, col)

@@ -5,10 +5,8 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.rowdata.RowData
 
-// Represents objects built using RowData/Table structure
+// Represents objects built using RowData structure
 interface MacrosSqlEntity<M: MacrosSqlEntity<M>>: MacrosEntity {
-    val table: Table<M>
-
     val data: RowData<M>
 
     // returns full copy of row data

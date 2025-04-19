@@ -14,11 +14,9 @@ class FoodCategory(data: RowData<FoodCategory>, objectSource: ObjectSource) : Ma
             get() = Factories.foodCategory
     }
 
-    override val factory: Factory<FoodCategory>
-        get() = Companion.factory
-
-    override val table: Table<FoodCategory>
-        get() = FoodCategoryTable
+    override fun getTable(): Table<FoodCategory> {
+        return FoodCategoryTable
+    }
 
     val name: String
         get() = data[FoodCategoryTable.NAME]!!

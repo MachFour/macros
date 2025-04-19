@@ -22,10 +22,8 @@ class FoodAttribute private constructor(data: RowData<FoodAttribute>, objectSour
         }
     }
 
-    override val factory: Factory<FoodAttribute>
-        get() = Companion.factory
-    override val table: Table<FoodAttribute>
-        get() = FoodAttributeTable
-
+    override fun getTable(): Table<FoodAttribute> {
+        return FoodAttributeTable
+    }
 
 }

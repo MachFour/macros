@@ -92,11 +92,9 @@ open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: O
         return super<MacrosEntityImpl>.toRowData()
     }
 
-    override val table: Table<Food>
-        get() = FoodTable
-
-    override val factory: Factory<Food>
-        get() = Companion.factory
+    override fun getTable(): Table<Food> {
+        return FoodTable
+    }
 
     fun addServing(s: Serving) {
         check(!servingsInternal.contains(s) && foreignKeyMatches(s, ServingTable.FOOD_ID, this))

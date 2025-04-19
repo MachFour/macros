@@ -57,7 +57,7 @@ class FoodTest {
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(50L, saveObject(db, f))
+            assertEquals(50L, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -75,7 +75,7 @@ class FoodTest {
     @Test
     fun saveFoodNotFromDb() {
         try {
-            assertEquals(1, saveObject(db, testFood))
+            assertEquals(1, saveObject(db, FoodTable,testFood))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -112,7 +112,7 @@ class FoodTest {
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(50L, saveObject(db, f))
+            assertEquals(50L, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -123,7 +123,7 @@ class FoodTest {
         modifiedData2.put(FoodTable.NAME, "newName")
         val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
-            assertEquals(50, saveObject(db, f1))
+            assertEquals(50, saveObject(db, FoodTable, f1))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -137,7 +137,7 @@ class FoodTest {
         modifiedData.put(FoodTable.ID, 500L)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
-            assertEquals(500L, saveObject(db, f))
+            assertEquals(500L, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")

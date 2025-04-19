@@ -28,10 +28,9 @@ class FoodPortion internal constructor(
 
     }
 
-    override val table: Table<FoodPortion>
-        get() = FoodPortionTable
-    override val factory: Factory<FoodPortion>
-        get() = Companion.factory
+    override fun getTable(): Table<FoodPortion> {
+        return FoodPortionTable
+    }
 
 
     override val mealId: EntityId

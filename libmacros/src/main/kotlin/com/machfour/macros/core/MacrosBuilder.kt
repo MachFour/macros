@@ -10,9 +10,7 @@ import com.machfour.macros.validation.ValidationError
 import com.machfour.macros.validation.validateNonNull
 
 
-class MacrosBuilder<M : MacrosEntityImpl<M>> private constructor(private val table: Table<M>, fromInstance: M?) {
-    constructor(table: Table<M>) : this(table, null)
-    constructor(fromInstance: M) : this(fromInstance.table, fromInstance)
+class MacrosBuilder<M : MacrosEntityImpl<M>>(private val table: Table<M>, fromInstance: M? = null) {
 
     var finishedInit = false
 

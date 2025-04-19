@@ -25,7 +25,7 @@ class Export(config: CliConfig): CommandImpl(config) {
         )
     }
 
-    private fun getExportCsvName(table: Table<*>) = "${table.sqlName}-${currentTimeString()}.csv"
+    private fun getExportCsvName(table: Table<*, *>) = "${table.sqlName}-${currentTimeString()}.csv"
 
     override fun doAction(args: List<String>): Int {
         if (args.contains("--help")) {

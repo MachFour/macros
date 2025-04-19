@@ -11,18 +11,18 @@ class FoodAttribute private constructor(data: RowData<FoodAttribute>, objectSour
     : MacrosEntityImpl<FoodAttribute>(data, objectSource) {
 
     companion object {
-        val factory: Factory<FoodAttribute> = object : Factory<FoodAttribute> {
+        val factory: Factory<FoodAttribute, FoodAttribute> = object : Factory<FoodAttribute, FoodAttribute> {
             override fun construct(data: RowData<FoodAttribute>, source: ObjectSource): FoodAttribute {
                 return FoodAttribute(data, source)
             }
 
             override fun deconstruct(obj: FoodAttribute): RowData<FoodAttribute> {
-                TODO("Not yet implemented")
+                return obj.data
             }
         }
     }
 
-    override fun getTable(): Table<FoodAttribute> {
+    override fun getTable(): Table<*, FoodAttribute> {
         return FoodAttributeTable
     }
 

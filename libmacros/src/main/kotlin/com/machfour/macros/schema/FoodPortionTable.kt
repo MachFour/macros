@@ -29,7 +29,7 @@ private val recipeMaxVersion =
     builder("recipe_max_version", Types.INTEGER).notEditable().notNull().default { 1 }.buildFor(columns)
 
 // needs to come after FoodTable, ServingTable, MealTable
-object FoodPortionTable: TableImpl<FoodPortion>(tableName, Factories.foodPortion, columns) {
+object FoodPortionTable: TableImpl<IFoodPortion<*>, FoodPortion>(tableName, Factories.foodPortion, columns) {
     val ID: Column<FoodPortion, Long>
         get() = id
     val CREATE_TIME: Column<FoodPortion, Long>

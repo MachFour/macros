@@ -75,21 +75,21 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return getCommonQuantities(database, foodId, limit)
     }
 
-    override fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int {
+    override fun <I: MacrosEntity, M: I> deleteObjects(table: Table<I, M>, objects: Collection<I>): Int {
         return deleteObjects(database, table, objects)
     }
 
-    override fun <M : MacrosEntity> saveObjects(
-        table: Table<M>,
-        objects: Collection<M>,
+    override fun <I : MacrosEntity, M: I> saveObjects(
+        table: Table<I, M>,
+        objects: Collection<I>,
         source: ObjectSource
     ): Int {
         return saveObjects(database, table, objects, source)
     }
 
-    override fun <M : MacrosEntity> saveObjectsReturningIds(
-        table: Table<M>,
-        objects: Collection<M>,
+    override fun <I: MacrosEntity, M: I> saveObjectsReturningIds(
+        table: Table<I, M>,
+        objects: Collection<I>,
         source: ObjectSource
     ): List<EntityId> {
         return saveObjectsReturningIds(database, table, objects, source)

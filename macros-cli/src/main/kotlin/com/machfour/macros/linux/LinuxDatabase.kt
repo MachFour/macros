@@ -77,7 +77,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             }
         }
 
-        private fun <M> ResultSet.toRowData(table: Table<M>, cols: List<Column<M, *>> = table.columns): RowData<M> {
+        private fun <M> ResultSet.toRowData(table: Table<*, M>, cols: List<Column<M, *>> = table.columns): RowData<M> {
             val data = RowData(table, cols)
             for (col in cols) {
                 val rawValue = getObject(col.sqlName)

@@ -1,5 +1,6 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.schema.CREATE_TIME_COLUMN_NAME
 import com.machfour.macros.schema.ID_COLUMN_NAME
@@ -7,11 +8,11 @@ import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
 import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.rowdata.RowData
 
-abstract class TableImpl<M>(
+abstract class TableImpl<I: MacrosEntity, M: I>(
     final override val sqlName: String,
-    private val factory: Factory<M>,
+    private val factory: Factory<I, M>,
     cols: List<Column<M, out Any>>
-) : Table<M> {
+) : Table<I, M>, Factory<I, M> by factory {
     final override val columns: List<Column<M, out Any>> = cols
 
     // TODO make these better
@@ -42,11 +43,4 @@ abstract class TableImpl<M>(
         }
     }
 
-    override fun construct(data: RowData<M>, source: ObjectSource): M {
-        return factory.construct(data, source)
-    }
-
-    override fun deconstruct(obj: M): RowData<M> {
-        return factory.deconstruct(obj)
-    }
 }

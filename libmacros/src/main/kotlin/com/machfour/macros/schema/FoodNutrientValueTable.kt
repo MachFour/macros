@@ -6,6 +6,7 @@ import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
@@ -31,7 +32,7 @@ private val foodId =
 private val version =
     builder("version", Types.INTEGER).notNull().default { 1 }.buildFor(columns)
 
-object FoodNutrientValueTable : TableImpl<FoodNutrientValue>(tableName, Factories.foodNutrientValue, columns) {
+object FoodNutrientValueTable : TableImpl<INutrientValue, FoodNutrientValue>(tableName, Factories.foodNutrientValue, columns) {
     val ID: Column<FoodNutrientValue, Long>
         get() = id
     val CREATE_TIME: Column<FoodNutrientValue, Long>

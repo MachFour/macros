@@ -16,7 +16,7 @@ private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
 private val name = builder("name", Types.TEXT).notNull().buildFor(columns)
 
-object NutrientGoalTable: TableImpl<NutrientGoal>(tableName, Factories.nutrientGoal, columns) {
+object NutrientGoalTable: TableImpl<NutrientGoal, NutrientGoal>(tableName, Factories.nutrientGoal, columns) {
     val ID: Column<NutrientGoal, Long>
         get() = id
     val CREATE_TIME: Column<NutrientGoal, Long>

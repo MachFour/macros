@@ -101,20 +101,20 @@ interface MacrosDataSource {
     // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
     @Throws(SqlException::class)
-    fun <M: MacrosEntity> saveObject(table: Table<M>, o: M): Int {
+    fun <I: MacrosEntity, M: I> saveObject(table: Table<I, M>, o: I): Int {
         return saveObjects(table, listOf(o), o.source)
     }
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity> saveObjects(table: Table<M>, objects: Collection<M>, source: ObjectSource): Int
+    fun <I: MacrosEntity, M: I> saveObjects(table: Table<I, M>, objects: Collection<I>, source: ObjectSource): Int
 
     @Throws(SqlException::class)
-    fun <M: MacrosEntity> saveObjectReturningId(table: Table<M>, o: M): EntityId {
+    fun <I: MacrosEntity, M: I> saveObjectReturningId(table: Table<I, M>, o: I): EntityId {
         return saveObjectsReturningIds(table, listOf(o), o.source).first()
     }
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity> saveObjectsReturningIds(table: Table<M>, objects: Collection<M>, source: ObjectSource): List<EntityId>
+    fun <I: MacrosEntity, M: I> saveObjectsReturningIds(table: Table<I, M>, objects: Collection<I>, source: ObjectSource): List<EntityId>
 
     // The following two methods are made redundant because of saveObjects()
 
@@ -128,13 +128,13 @@ interface MacrosDataSource {
     // NB: not (yet) possible to return the ID of the saved object with SQLite JDBC
 
     @Throws(SqlException::class)
-    fun <M : MacrosEntity> deleteObject(table: Table<M>, o: M): Int {
+    fun <I: MacrosEntity, M: I> deleteObject(table: Table<I, M>, o: I): Int {
         return deleteObjects(table, listOf(o))
     }
 
     // TODO make this the general one
     @Throws(SqlException::class)
-    fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int
+    fun <I: MacrosEntity, M: I> deleteObjects(table: Table<I, M>, objects: Collection<I>): Int
 
     @Throws(SqlException::class)
     fun saveNutrientsToFood(foodId: EntityId, nutrients: List<FoodNutrientValue>)

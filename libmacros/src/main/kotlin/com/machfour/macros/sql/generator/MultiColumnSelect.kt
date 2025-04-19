@@ -9,7 +9,7 @@ class MultiColumnSelect<M> private constructor(
 
     companion object {
         fun <M> build(
-            table: Table<M>,
+            table: Table<*, M>,
             orderedColumns: Collection<Column<M, *>>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ) : MultiColumnSelect<M> {

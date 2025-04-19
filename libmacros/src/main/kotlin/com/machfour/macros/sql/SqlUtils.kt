@@ -77,13 +77,13 @@ internal fun <M> makeSqlWhereLikeString(
 }
 
 // columns must be a subset of table.columns()
-fun <M> sqlInsertTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>): String {
+fun <M> sqlInsertTemplate(t: Table<*, M>, orderedColumns: List<Column<M, *>>): String {
     val placeholders = makeInsertPlaceholders(orderedColumns)
     val columnSql = orderedColumns.joinToString(separator = ", ") { it.sqlName }
     return "INSERT INTO ${t.sqlName} ($columnSql) VALUES ($placeholders)"
 }
 
-fun <M, J: Any> sqlUpdateTemplate(t: Table<M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
+fun <M, J: Any> sqlUpdateTemplate(t: Table<*, M>, orderedColumns: List<Column<M, *>>, keyCol: Column<M, J>): String {
     val columnPlaceholders = makeSqlUpdatePlaceholders(orderedColumns)
     val whereString = makeSqlWhereString(keyCol, 1)
     // TODO dynamic placeholders
@@ -154,7 +154,7 @@ fun createSqlStatements(
 
 // Returns triggers that update the create and modify times of the given table.
 // Columns are determined using the Schema object so ensure it is updated.
-fun <M> createInitTimestampTriggers(t: Table<M>): List<String> {
+fun <M> createInitTimestampTriggers(t: Table<*, M>): List<String> {
     val table = t.sqlName
     val createTime = t.createTimeColumn.sqlName
     val modifyTime = t.modifyTimeColumn.sqlName

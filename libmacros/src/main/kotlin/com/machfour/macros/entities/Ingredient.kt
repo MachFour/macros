@@ -23,14 +23,12 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
 ), IFoodQuantity<FoodNutrientValue> {
 
     companion object {
-        val factory: Factory<Ingredient>
+        val factory: Factory<Ingredient, Ingredient>
             get() = Factories.ingredient
 
-        val table: Table<Ingredient>
-            get() = IngredientTable
     }
 
-    override fun getTable(): Table<Ingredient> {
+    override fun getTable(): Table<*, Ingredient> {
         return IngredientTable
     }
 

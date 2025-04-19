@@ -31,7 +31,7 @@ fun <M, J: Any> getRawObjects(db: SqlDatabase, keyColumn: Column<M, J>, queryOpt
 }
 
 @Throws(SqlException::class)
-fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = t.idColumn): Map<Long, M> {
+fun <M> getAllRawObjects(db: SqlDatabase, t: Table<*, M>, orderBy: Column<M, *>? = t.idColumn): Map<EntityId, M> {
     return getRawObjects(db, t.idColumn) {
         if (orderBy != null) {
             orderBy(orderBy)
@@ -42,7 +42,7 @@ fun <M> getAllRawObjects(db: SqlDatabase, t: Table<M>, orderBy: Column<M, *>? = 
 @Throws(SqlException::class)
 fun <M> getRawObjectsWithIds(
     db: SqlDatabase,
-    t: Table<M>,
+    t: Table<*, M>,
     ids: Collection<Long>,
     preserveIdOrder: Boolean = false,
     // if the number of keys exceeds this number, the query will be iterated
@@ -86,7 +86,7 @@ fun <M, J: Any> getRawObjectsWithKeys(
 fun <M, N> getRawObjectsForParentFk(
     db: SqlDatabase,
     parentIds: Collection<EntityId>,
-    childTable: Table<M>,
+    childTable: Table<*, M>,
     fkCol: Column.Fk<M, EntityId, N>
 ): Map<Long, M> {
     if (parentIds.isEmpty()) {

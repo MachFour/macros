@@ -23,12 +23,12 @@ class FoodPortion internal constructor(
 ), IFoodPortion<FoodNutrientValue> {
 
     companion object {
-        val factory: Factory<FoodPortion>
+        val factory: Factory<*, FoodPortion>
             get() = Factories.foodPortion
 
     }
 
-    override fun getTable(): Table<FoodPortion> {
+    override fun getTable(): Table<*, FoodPortion> {
         return FoodPortionTable
     }
 

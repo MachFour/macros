@@ -8,7 +8,7 @@ class SimpleDelete<M> private constructor(
 
     companion object {
         fun <M> build(
-            table: Table<M>,
+            table: Table<*, M>,
             statementOptions: DeleteStatement.Builder<M>.() -> Unit
         ): SimpleDelete<M> {
             val statement = DeleteStatementImpl.Builder(table).run {

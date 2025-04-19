@@ -36,12 +36,12 @@ private fun checkIdPresence(source: ObjectSource, hasId: Boolean): Boolean {
 /**
  * parent class for all Macros persistable objects
  */
-abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
+abstract class MacrosEntityImpl<M: MacrosSqlEntity<M>> protected constructor(
     final override val data: RowData<M>,
     final override val source: ObjectSource
 ) : MacrosSqlEntity<M> {
 
-    protected abstract fun getTable(): Table<M>
+    protected abstract fun getTable(): Table<*, M>
 
     init {
         require(data.isImmutable) { "MacrosEntity must be constructed with immutable RowData" }
@@ -57,7 +57,7 @@ abstract class MacrosEntityImpl<M : MacrosSqlEntity<M>> protected constructor(
         }
     }
     override fun toString(): String {
-        return "${getTable().sqlName} id=${id}, objSrc=${source}, data=${data}"
+        return "${javaClass.simpleName}<${getTable().sqlName}> id=${id}, objSrc=${source}, data=${data}"
     }
 
     final override val id: EntityId

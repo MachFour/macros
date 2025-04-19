@@ -10,7 +10,7 @@ class SingleColumnUpdate<M, J: Any> private constructor(
 
     companion object {
         fun <M, J: Any> build(
-            table: Table<M>,
+            table: Table<*, M>,
             updateColumn: Column<M, J>,
             statementOptions: UpdateStatement.Builder<M>.() -> Unit
         ) : SingleColumnUpdate<M, J> {

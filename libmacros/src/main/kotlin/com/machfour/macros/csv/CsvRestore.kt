@@ -8,10 +8,11 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.datatype.TypeCastException
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 
 // Method for reading CSV files that directly correspond to a table
 @Throws(CsvParseException::class, TypeCastException::class)
-private fun <M> buildObjectsForRestore(table: Table<M>, csvData: String): List<M> {
+private fun <M> buildObjectsForRestore(table: Table<*, M>, csvData: String): List<M> {
 
     val csvRows = getCsvParser().parse(csvData)
     val header = csvRows.firstOrNull()
@@ -36,7 +37,7 @@ private fun <M> buildObjectsForRestore(table: Table<M>, csvData: String): List<M
 
 // Adds the content of the CSV data to the table. Any conflicts in IDs will cause the operation to fail
 @Throws(SqlException::class, CsvParseException::class, TypeCastException::class)
-fun <M : MacrosEntity> SqlDatabase.restoreTable(t: Table<M>, csvData: String) {
+fun <I: MacrosEntity, M : I> SqlDatabase.restoreTable(t: Table<I, M>, csvData: String) {
     val objects = buildObjectsForRestore(t, csvData)
     saveObjects(this, t, objects, ObjectSource.RESTORE)
 }

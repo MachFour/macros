@@ -9,8 +9,8 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Deconstructor
 import com.machfour.macros.sql.entities.Factory
-import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.generator.SimpleDelete
 
 // These queries modify stuff so to preserve the cache layer, their use is restricted to in-module
@@ -26,64 +26,64 @@ import com.machfour.macros.sql.generator.SimpleDelete
 // except for deleting a bunch of foodPortions from one meal, or servings from a food
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> insertObjects(db: SqlDatabase, table: Factory<M>, objects: Collection<M>, useDataIds: Boolean): Int {
-    return db.insertRows(objects.map { table.deconstruct(it) }, useDataIds)
+fun <I: MacrosEntity, M: I> insertObjects(db: SqlDatabase, d: Factory<I, M>, objects: Collection<I>, useDataIds: Boolean): Int {
+    return db.insertRows(objects.map { d.deconstruct(it) }, useDataIds)
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> insertObjectsReturningIds(db: SqlDatabase, table: Factory<M>, objects: Collection<M>, useDataIds: Boolean): List<EntityId> {
-    return db.insertRowsReturningIds(objects.map { table.deconstruct(it) }, useDataIds)
+fun <I : MacrosEntity, M: I> insertObjectsReturningIds(db: SqlDatabase, d: Factory<I, M>, objects: Collection<I>, useDataIds: Boolean): List<EntityId> {
+    return db.insertRowsReturningIds(objects.map { d.deconstruct(it) }, useDataIds)
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> updateObjects(db: SqlDatabase, table: Factory<M>, objects: Collection<M>): Int {
-    return db.updateRows(objects.map { table.deconstruct(it) })
+fun <I: MacrosEntity, M : I> updateObjects(db: SqlDatabase, d: Factory<I, M>, objects: Collection<I>): Int {
+    return db.updateRows(objects.map { d.deconstruct(it) })
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> deleteObject(db: SqlDatabase, table: Table<M>, o: M): Int {
-    return deleteById(db, table, o.id)
+fun <I: MacrosEntity, M: I> deleteObject(db: SqlDatabase, t: Table<I, M>, o: I): Int {
+    return deleteById(db, t, o.id)
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> deleteObjects(db: SqlDatabase, table: Table<M>, objects: Collection<M>): Int {
-    return deleteObjectsById(db, table, objects.map { it.id })
+fun <I: MacrosEntity, M: I> deleteObjects(db: SqlDatabase, t: Table<I, M>, objects: Collection<I>): Int {
+    return deleteObjectsById(db, t, objects.map { it.id })
 }
 
 // deletes objects with the given ID from
 @Throws(SqlException::class)
 private fun <M : MacrosEntity> deleteObjectsById(
     db: SqlDatabase,
-    table: Table<M>,
-    ids: Collection<Long>
+    t: Table<*, M>,
+    ids: Collection<EntityId>
 ): Int {
-    return deleteWhere(db, table, table.idColumn, ids)
+    return deleteWhere(db, t, t.idColumn, ids)
 }
 
 // returns number of objects saved correctly (i.e. 0 or 1)
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> saveObject(db: SqlDatabase, table: Factory<M>, o: M): EntityId {
-    return saveObjectsReturningIds(db, table, listOf(o), o.source).first()
+fun <I: MacrosEntity, M : I> saveObject(db: SqlDatabase, d: Factory<I, M>, o: M): EntityId {
+    return saveObjectsReturningIds(db, d, listOf(o), o.source).first()
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosEntity> saveObjectsReturningIds(
+fun <I: MacrosEntity, M: I> saveObjectsReturningIds(
     db: SqlDatabase,
-    table: Factory<M>,
-    objects: Collection<M>,
+    d: Factory<I, M>,
+    objects: Collection<I>,
     objectSource: ObjectSource
     ): List<EntityId> {
     return when (objectSource) {
         ObjectSource.DATABASE -> error { "Saving unmodified database object" }
         ObjectSource.DB_EDIT -> {
-            updateObjects(db, table, objects)
+            updateObjects(db, d, objects)
             objects.map { it.id }
         }
-        ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjectsReturningIds(db, table, objects, false)
+        ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjectsReturningIds(db, d, objects, false)
         // TODO switch on whether they have IDs
-        ObjectSource.JSON -> insertObjectsReturningIds(db, table, objects, false)
+        ObjectSource.JSON -> insertObjectsReturningIds(db, d, objects, false)
         // will have ID. Assume database has been cleared?
-        ObjectSource.RESTORE -> insertObjectsReturningIds(db, table, objects, true)
+        ObjectSource.RESTORE -> insertObjectsReturningIds(db, d, objects, true)
         ObjectSource.COMPUTED -> error { "Saving a computed object" }
         ObjectSource.TEST -> error { "Saving a test object" }
         ObjectSource.INBUILT -> error { "Saving an inbuilt object" }
@@ -92,20 +92,20 @@ fun <M : MacrosEntity> saveObjectsReturningIds(
 
 // TODO pull these functions up to DataSource level
 @Throws(SqlException::class)
-fun <M : MacrosEntity> saveObjects(
+fun <I : MacrosEntity, M: I> saveObjects(
     db: SqlDatabase,
-    table: Table<M>,
-    objects: Collection<M>,
+    d: Factory<I, M>,
+    objects: Collection<I>,
     objectSource: ObjectSource
 ): Int {
     return when (objectSource) {
         ObjectSource.DATABASE -> error { "Saving unmodified database object" }
-        ObjectSource.DB_EDIT -> updateObjects(db, table, objects)
-        ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(db, table, objects, false)
+        ObjectSource.DB_EDIT -> updateObjects(db, d, objects)
+        ObjectSource.IMPORT, ObjectSource.USER_NEW -> insertObjects(db, d, objects, false)
         // TODO switch on whether they have IDs
-        ObjectSource.JSON -> insertObjects(db, table, objects, false)
+        ObjectSource.JSON -> insertObjects(db, d, objects, false)
         // will have ID. Assume database has been cleared?
-        ObjectSource.RESTORE -> insertObjects(db, table, objects, true)
+        ObjectSource.RESTORE -> insertObjects(db, d, objects, true)
         ObjectSource.COMPUTED -> error { "Saving a computed object" }
         ObjectSource.TEST -> error { "Saving a test object" }
         ObjectSource.INBUILT -> error { "Saving an inbuilt object" }
@@ -136,7 +136,7 @@ fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: In
 }
 
 @Throws(SqlException::class)
-private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
+private fun <M> deleteById(db: SqlDatabase, t: Table<*, M>, id: Long): Int {
     return db.deleteFromTable(SimpleDelete.build(t) { where(t.idColumn, id) })
 }
 
@@ -146,7 +146,7 @@ private fun <M> deleteById(db: SqlDatabase, t: Table<M>, id: Long): Int {
 @Throws(SqlException::class)
 fun <M, J: Any> deleteWhere(
     db: SqlDatabase,
-    t: Table<M>,
+    t: Table<*, M>,
     whereColumn: Column<M, J>,
     whereValues: Collection<J>
 ): Int {
@@ -159,7 +159,7 @@ fun <M, J: Any> deleteWhere(
 @Throws(SqlException::class)
 fun <M, J: Any> deleteByNullStatus(
     db: SqlDatabase,
-    t: Table<M>,
+    t: Table<*, M>,
     whereColumn: Column<M, J>,
     negate: Boolean
 ): Int {
@@ -185,6 +185,6 @@ fun deleteAllFoodPortions(db: SqlDatabase) {
 
 
 @Throws(SqlException::class)
-fun <M> clearTable(db: SqlDatabase, t: Table<M>): Int {
+fun <M> clearTable(db: SqlDatabase, t: Table<*, M>): Int {
     return db.deleteFromTable(SimpleDelete.build(t) {})
 }

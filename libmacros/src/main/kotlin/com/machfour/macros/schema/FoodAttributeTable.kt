@@ -15,7 +15,7 @@ private val createTime = createTimeColumnBuildFor(columns)
 private val modifyTime = modifyTimeColumnBuildFor(columns)
 private val name = builder("name", Types.TEXT).notNull().unique().buildFor(columns)
 
-object FoodAttributeTable: TableImpl<FoodAttribute>(tableName, FoodAttribute.factory, columns) {
+object FoodAttributeTable: TableImpl<FoodAttribute, FoodAttribute>(tableName, FoodAttribute.factory, columns) {
     val ID: Column<FoodAttribute, Long>
         get() = id
     val CREATE_TIME: Column<FoodAttribute, Long>

@@ -4,7 +4,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 
 internal class SelectQueryImpl<M> private constructor(
-    table: Table<M>,
+    table: Table<*, M>,
     override val columns: List<Column<M, *>>,
     override val whereExpression: SqlWhereExpr<M, *>,
     private val fromSuffix: String?,
@@ -54,7 +54,7 @@ internal class SelectQueryImpl<M> private constructor(
     }
 
     internal class Builder<M>(
-        table: Table<M>,
+        table: Table<*, M>,
         val columns: List<Column<M, *>>
     ): SqlStatementImpl.Builder<M>(table), SelectQuery.Builder<M> {
         private var distinct: Boolean = false

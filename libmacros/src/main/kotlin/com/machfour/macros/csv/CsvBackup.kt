@@ -22,7 +22,7 @@ private fun <M> prepareDataForBackup(data: RowData<M>): Map<String, String> {
 
 internal fun getCsvWriter() = CsvWriter(CsvConfig.DEFAULT)
 
-fun <M : MacrosSqlEntity<M>> writeObjectsToCsv(table: Table<M>, objects: Collection<M>): String {
+fun <M: MacrosSqlEntity<M>> writeObjectsToCsv(table: Table<*, M>, objects: Collection<M>): String {
     val header = table.columnsByName.keys.toList()
 
     val rows = buildList {
@@ -37,7 +37,7 @@ fun <M : MacrosSqlEntity<M>> writeObjectsToCsv(table: Table<M>, objects: Collect
 }
 
 // listed in dependency order (later tables have foreign keys referring to previous ones)
-internal val csvZipBackupTables: List<Table<out MacrosSqlEntity<*>>> = listOf(
+internal val csvZipBackupTables: List<Table<*, out MacrosSqlEntity<*>>> = listOf(
     UnitTable,
     NutrientTable,
     FoodTable,
@@ -51,11 +51,11 @@ internal val csvZipBackupTables: List<Table<out MacrosSqlEntity<*>>> = listOf(
 internal const val zipEntryComment = "MacrosDBBackup"
 
 // returns app specific data directory
-internal val <M> Table<M>.backupName: String
+internal val <M> Table<*, M>.backupName: String
     get() = "$sqlName.csv"
 
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> SqlDatabase.exportTableToCsv(t: Table<M>): String {
+fun <M: MacrosSqlEntity<M>> SqlDatabase.exportTableToCsv(t: Table<*, M>): String {
     val rawObjectMap = getAllRawObjects(this, t)
     return writeObjectsToCsv(t, rawObjectMap.values)
 }

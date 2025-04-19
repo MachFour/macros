@@ -3,6 +3,7 @@ package com.machfour.macros.schema
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.IServing
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.sql.entities.Factories
@@ -31,7 +32,7 @@ private val foodId =
     builder("food_id", Types.ID).notEditable().notNull().default { MacrosEntity.NO_ID }
         .buildFkFor(FoodTable.ID, columns)
 
-object ServingTable : TableImpl<Serving>(tableName, Factories.serving, columns) {
+object ServingTable : TableImpl<IServing, Serving>(tableName, Factories.serving, columns) {
     val ID: Column<Serving, Long>
         get() = id
     val CREATE_TIME: Column<Serving, Long>

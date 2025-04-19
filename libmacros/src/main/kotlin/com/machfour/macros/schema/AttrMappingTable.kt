@@ -23,7 +23,7 @@ private val attribute_id =
     builder("attribute_id", Types.ID).notEditable().notNull()
         .buildFkFor(FoodAttributeTable.ID, columns)
 
-object AttrMappingTable : TableImpl<AttrMapping>(tableName, AttrMapping.factory, columns) {
+object AttrMappingTable : TableImpl<AttrMapping, AttrMapping>(tableName, AttrMapping.factory, columns) {
     val ID: Column<AttrMapping, Long>
         get() = id
     val CREATE_TIME: Column<AttrMapping, Long>

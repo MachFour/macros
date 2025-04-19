@@ -12,12 +12,12 @@ class AttrMapping internal constructor(data: RowData<AttrMapping>, objectSource:
     : MacrosEntityImpl<AttrMapping>(data, objectSource) {
 
     companion object {
-        val factory: Factory<AttrMapping>
+        val factory: Factory<AttrMapping, AttrMapping>
             get() = Factories.attributeMapping
 
     }
 
-    override fun getTable(): Table<AttrMapping> {
+    override fun getTable(): Table<*, AttrMapping> {
         return AttrMappingTable
     }
 

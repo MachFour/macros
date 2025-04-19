@@ -48,7 +48,7 @@ interface SqlDatabase {
     fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SqlException::class)
-    fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int
+    fun <M, J: Any> updateColumn(t: Table<*, M>, update: SingleColumnUpdate<M, J>): Int
 
     @Throws(SqlException::class)
     fun <M> insertRows(data: Collection<RowData<M>>, withId: Boolean): Int

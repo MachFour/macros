@@ -10,11 +10,11 @@ import com.machfour.macros.sql.rowdata.RowData
 
 class FoodCategory(data: RowData<FoodCategory>, objectSource: ObjectSource) : MacrosEntityImpl<FoodCategory>(data, objectSource) {
     companion object {
-        val factory: Factory<FoodCategory>
+        val factory: Factory<FoodCategory, FoodCategory>
             get() = Factories.foodCategory
     }
 
-    override fun getTable(): Table<FoodCategory> {
+    override fun getTable(): Table<*, FoodCategory> {
         return FoodCategoryTable
     }
 

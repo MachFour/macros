@@ -14,7 +14,7 @@ internal open class ColumnImpl<M, J: Any> private constructor(
 ) : Column<M, J> {
 
     // These are set later, when added to Table
-    override lateinit var table: Table<M>
+    override lateinit var table: Table<*, M>
     // can't use lateinit on primitive types
     override var index by Delegates.notNull<Int>()
 

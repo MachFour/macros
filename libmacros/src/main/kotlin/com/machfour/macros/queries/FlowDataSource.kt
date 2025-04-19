@@ -175,7 +175,7 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity> deleteObjects(table: Table<M>, objects: Collection<M>): Int {
+    override fun <I: MacrosEntity, M: I> deleteObjects(table: Table<I, M>, objects: Collection<I>): Int {
         val numDeleted = deleteObjects(database, table, objects)
         for (obj in objects) {
             afterDbEdit(obj)
@@ -189,7 +189,7 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity> saveObjects(table: Table<M>, objects: Collection<M>, source: ObjectSource): Int {
+    override fun <I: MacrosEntity, M: I> saveObjects(table: Table<I, M>, objects: Collection<I>, source: ObjectSource): Int {
         val numSaved = saveObjects(database, table, objects, source)
         // TODO copied from WriteQueries
         // problem: don't know id after saving here (it was NO_ID)
@@ -202,9 +202,9 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    override fun <M : MacrosEntity> saveObjectsReturningIds(
-        table: Table<M>,
-        objects: Collection<M>,
+    override fun <I: MacrosEntity, M: I> saveObjectsReturningIds(
+        table: Table<I, M>,
+        objects: Collection<I>,
         source: ObjectSource
     ): List<EntityId> {
         val ids = saveObjectsReturningIds(database, table, objects, source)

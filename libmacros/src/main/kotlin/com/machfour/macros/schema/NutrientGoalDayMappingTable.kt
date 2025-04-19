@@ -21,7 +21,7 @@ private val goalId =
     builder("goal_id", Types.ID).notNull().notEditable().unique()
         .buildFkFor(NutrientGoalTable.ID, columns)
 
-object NutrientGoalDayMappingTable: TableImpl<NutrientGoalDayMapping>(tableName, NutrientGoalDayMapping.factory, columns) {
+object NutrientGoalDayMappingTable: TableImpl<NutrientGoalDayMapping, NutrientGoalDayMapping>(tableName, NutrientGoalDayMapping.factory, columns) {
     val ID: Column<NutrientGoalDayMapping, Long>
         get() = id
     val CREATE_TIME: Column<NutrientGoalDayMapping, Long>

@@ -27,8 +27,8 @@ open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: O
     companion object {
         // Dynamically create either a Food or CompositeFood depending on foodType in dataMap.
         // Hooray for preferring static constructors over new!!!
-        val factory: Factory<Food> by lazy {
-            object: Factory<Food> {
+        val factory: Factory<IFood<*>, Food> by lazy {
+            object: Factory<IFood<*>, Food> {
                 override fun construct(data: RowData<Food>, source: ObjectSource): Food {
                     // index name completion
                     if (data[FoodTable.INDEX_NAME] == null) {
@@ -47,7 +47,7 @@ open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: O
                     }
                 }
 
-                override fun deconstruct(obj: Food): RowData<Food> {
+                override fun deconstruct(obj: IFood<*>): RowData<Food> {
                     return foodToRowData(obj)
                 }
             }
@@ -92,7 +92,7 @@ open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: O
         return super<MacrosEntityImpl>.toRowData()
     }
 
-    override fun getTable(): Table<Food> {
+    override fun getTable(): Table<*, Food> {
         return FoodTable
     }
 

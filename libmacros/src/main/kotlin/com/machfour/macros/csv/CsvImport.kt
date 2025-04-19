@@ -27,7 +27,7 @@ import com.machfour.macros.validation.SchemaViolation
 
 // don't edit csvRow keyset!
 @Throws(TypeCastException::class)
-internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<M>): RowData<M> {
+internal fun <M> extractCsvData(csvRow: Map<String, String?>, table: Table<*, M>): RowData<M> {
     val relevantCols = table.columnsByName.filter { csvRow.keys.contains(it.key) }
     return RowData(table).apply {
         var extractedSomething = false
@@ -245,7 +245,7 @@ fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>): Pair<Map<J
     val newConnectionOpened = db.openConnection(getGeneratedKeys = true)
     db.beginTransaction()
 
-    val foodIds = saveObjectsReturningIds(db, FoodTable, foodsToSave.values, ObjectSource.IMPORT)
+    val foodIds = saveObjectsReturningIds(db, Food.factory, foodsToSave.values, ObjectSource.IMPORT)
     // TODO ensure that .keys and .values order is the same for the map (it should be)
     val keyToId = foodsToSave.keys.withIndex().associate { (index, key) -> key to foodIds[index] }
 
@@ -261,7 +261,7 @@ fun <J: Any> saveImportedFoods(db: SqlDatabase, foods: Map<J, Food>): Pair<Map<J
             }
         }
     }
-    saveObjects(db, FoodNutrientValueTable, completedNutrientValues, ObjectSource.IMPORT)
+    saveObjects(db, FoodNutrientValue.factory, completedNutrientValues, ObjectSource.IMPORT)
 
     db.endTransaction()
 
@@ -343,7 +343,7 @@ fun <J: Any> importServings(
         servingsToSave = completedServings
         matchedDuplicateServings = emptyMap()
     }
-    saveObjects(db, ServingTable, servingsToSave, ObjectSource.IMPORT)
+    saveObjects(db, Serving.factory, servingsToSave, ObjectSource.IMPORT)
     return matchedDuplicateServings
 
 }
@@ -367,7 +367,7 @@ fun importRecipes(
         }
     }.flatMap { it.value }
 
-    saveObjects(db, IngredientTable, completedIngredients, ObjectSource.IMPORT)
+    saveObjects(db, Ingredient.factory, completedIngredients, ObjectSource.IMPORT)
 }
 
 // Groups a collection of items into a map of lists using the given key function,

@@ -59,7 +59,7 @@ fun saveJsonFoods(
 
     val newConnection = db.openConnection(getGeneratedKeys = true)
     db.beginTransaction()
-    val foodIds = saveObjectsReturningIds(db, FoodTable, foodsToSave, ObjectSource.IMPORT)
+    val foodIds = saveObjectsReturningIds(db, Food.factory, foodsToSave, ObjectSource.IMPORT)
     val indexNameToId = foodsToSave.withIndex()
         .associate { (index, food) -> food.indexName to foodIds[index] }
 
@@ -99,8 +99,8 @@ fun saveJsonFoods(
         }
     }
 
-    saveObjects(db, FoodNutrientValueTable, nutrientValues, ObjectSource.IMPORT)
-    saveObjects(db, ServingTable, servings, ObjectSource.IMPORT)
+    saveObjects(db, FoodNutrientValue.factory, nutrientValues, ObjectSource.IMPORT)
+    saveObjects(db, Serving.factory, servings, ObjectSource.IMPORT)
 
     db.endTransaction()
     if (newConnection) {

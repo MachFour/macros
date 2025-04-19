@@ -49,7 +49,7 @@ class MealSpec(val name: String?, val day: DateStamp?, error: String? = null) {
             Meal.factory.construct(this, ObjectSource.USER_NEW)
         }
 
-        saveObject(ds, MealTable,newMeal)
+        saveObject(ds, Meal.factory,newMeal)
         // get it back again, so that it has an ID and stuff
         val newlySavedMeal = getMealForDayWithName(ds, day, name)
         check(newlySavedMeal != null) { "Couldn't find newly saved meal in day $day" }

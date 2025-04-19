@@ -32,7 +32,7 @@ private val parentFoodId =
 
 
 // needs to come after FoodTable, ServingTable, MealTable
-object IngredientTable : TableImpl<Ingredient>(tableName, Factories.ingredient, columns) {
+object IngredientTable : TableImpl<Ingredient, Ingredient>(tableName, Factories.ingredient, columns) {
     val ID: Column<Ingredient, Long>
         get() = id
     val CREATE_TIME: Column<Ingredient, Long>

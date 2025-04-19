@@ -21,7 +21,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
         }
 
         // factory before table
-        val factory: Factory<Meal>
+        val factory: Factory<Meal, Meal>
             get() = Factories.meal
     }
 
@@ -30,7 +30,7 @@ class Meal internal constructor(data: RowData<Meal>, source: ObjectSource) : Mac
     val foodPortions: List<FoodPortion>
         get() = foodPortionsMutable
 
-    override fun getTable(): Table<Meal> {
+    override fun getTable(): Table<*, Meal> {
         return MealTable
     }
 

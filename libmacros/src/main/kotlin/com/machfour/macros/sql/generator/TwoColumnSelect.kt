@@ -11,7 +11,7 @@ class TwoColumnSelect<M, I: Any, J: Any> private constructor(
 
     companion object {
         fun <M, I: Any, J: Any> build(
-            table: Table<M>,
+            table: Table<*, M>,
             column1: Column<M, I>,
             column2: Column<M, J>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit

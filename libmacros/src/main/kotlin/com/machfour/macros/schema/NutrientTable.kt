@@ -1,5 +1,6 @@
 package com.machfour.macros.schema
 
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.sql.entities.Factories
@@ -17,7 +18,7 @@ private val name = builder("name", Types.TEXT).notNull().unique().buildFor(colum
 private val unitTypes = builder("unit_types", Types.INTEGER).notNull().buildFor(columns)
 private val inbuilt = builder("inbuilt", Types.BOOLEAN).notNull().default { false }.buildFor(columns)
 
-object NutrientTable : TableImpl<Nutrient>(tableName, Factories.nutrient, columns) {
+object NutrientTable : TableImpl<INutrient, Nutrient>(tableName, Factories.nutrient, columns) {
     val ID: Column<Nutrient, Long>
         get() = id
     val CREATE_TIME: Column<Nutrient, Long>

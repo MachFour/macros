@@ -6,7 +6,7 @@ import com.machfour.macros.sql.Table
 const val DEFAULT_ITERATE_THRESHOLD = 200
 
 sealed interface SqlStatement<M> {
-    val table: Table<M>
+    val table: Table<*, M>
     val mode: SqlQueryMode
 
     val whereExpression: SqlWhereExpr<M, *> // XXX needed for Android binding but should remove

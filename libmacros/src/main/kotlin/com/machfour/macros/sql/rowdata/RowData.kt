@@ -9,12 +9,12 @@ class RowData<M> private constructor(
     // Caller (other constructors in this class) must ensure: existing.hasColumns(cols)
     // Internally, since all the columns are known at compile time, we can just assign an index to each one
     // and store the values in a list according to that index.
-    val table: Table<M>,
+    val table: Table<*, M>,
     val columns: Set<Column<M, *>>,
     existing: RowData<M>?,
 ) {
 
-    constructor(t: Table<M>, cols: Collection<Column<M, *>> = t.columns): this(t, cols.toSet(), null)
+    constructor(t: Table<*, M>, cols: Collection<Column<M, *>> = t.columns): this(t, cols.toSet(), null)
 
     // in order to have an arbitrary set of table columns used, we need to have an arraylist big enough to
     // hold columns of any index, up to the number of columns in the table minus 1.

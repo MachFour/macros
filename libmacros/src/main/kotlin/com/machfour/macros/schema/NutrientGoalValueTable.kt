@@ -5,6 +5,7 @@ import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.entities.NutrientGoal
 import com.machfour.macros.entities.NutrientGoalValue
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.datatype.Types
@@ -27,7 +28,7 @@ private val goalId =
     builder("goal_id", Types.ID).notEditable().notNull()
         .buildFkFor(NutrientGoalTable.ID, columns)
 
-object NutrientGoalValueTable: TableImpl<NutrientGoalValue>(tableName, Factories.nutrientGoalValue, columns) {
+object NutrientGoalValueTable: TableImpl<INutrientValue, NutrientGoalValue>(tableName, Factories.nutrientGoalValue, columns) {
     val ID: Column<NutrientGoalValue, Long>
         get() = id
     val CREATE_TIME: Column<NutrientGoalValue, Long>

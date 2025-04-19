@@ -4,7 +4,7 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.Table
 
 abstract class SqlStatementImpl<M>(
-    override val table: Table<M>,
+    override val table: Table<*, M>,
     override val mode: SqlQueryMode,
 ): SqlStatement<M> {
 
@@ -22,7 +22,7 @@ abstract class SqlStatementImpl<M>(
 
     abstract override fun toSql(): String
 
-    abstract class Builder<M>(protected val table: Table<M>): SqlStatement.Builder<M> {
+    abstract class Builder<M>(protected val table: Table<*, M>): SqlStatement.Builder<M> {
         protected var whereExpression: SqlWhereExpr<M, *> = SqlWhereExpr.whereAny()
 
         override fun <J: Any> where(whereColumnExpr: ColumnExpr<M, J>, whereValue: J) {

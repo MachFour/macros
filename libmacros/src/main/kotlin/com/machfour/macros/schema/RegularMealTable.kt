@@ -20,7 +20,7 @@ private val mealId =
     builder("meal_id", Types.ID).notEditable().notNull().unique()
         .buildFkFor(MealTable.ID, columns)
 
-object RegularMealTable: TableImpl<RegularMeal>(tableName, RegularMeal.factory, columns) {
+object RegularMealTable: TableImpl<RegularMeal, RegularMeal>(tableName, RegularMeal.factory, columns) {
     val ID: Column<RegularMeal, Long>
         get() = id
     val CREATE_TIME: Column<RegularMeal, Long>

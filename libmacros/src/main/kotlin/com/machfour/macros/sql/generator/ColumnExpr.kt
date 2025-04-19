@@ -13,6 +13,6 @@ import com.machfour.macros.sql.datatype.SqlType
  */
 interface ColumnExpr<M, J: Any> {
     val sql: String
-    val table: Table<M>
+    val table: Table<*, M>
     val type: SqlType<J>
 }

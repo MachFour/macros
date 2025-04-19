@@ -14,12 +14,12 @@ class Unit internal constructor(data: RowData<Unit>, source: ObjectSource)
     : MacrosEntityImpl<Unit>(data, source), PortionMeasurement {
     companion object {
         // factory before table
-        val factory: Factory<Unit>
+        val factory: Factory<*, Unit>
             get() = Factories.unit
 
     }
 
-    override fun getTable(): Table<Unit> {
+    override fun getTable(): Table<*, Unit> {
         return UnitTable
     }
 

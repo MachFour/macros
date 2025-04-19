@@ -28,7 +28,7 @@ private val inbuilt =
 
 // Unit.factory() causes initialisation of Unit, which depends on this class.
 // So the columns are initialised as a side effect of calling that function.
-object UnitTable : TableImpl<Unit>(tableName, Factories.unit, columns) {
+object UnitTable : TableImpl<Unit, Unit>(tableName, Factories.unit, columns) {
     val ID: Column<Unit, Long>
         get() = id
     val CREATE_TIME: Column<Unit, Long>

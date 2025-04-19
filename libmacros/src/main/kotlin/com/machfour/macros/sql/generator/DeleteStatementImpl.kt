@@ -3,7 +3,7 @@ package com.machfour.macros.sql.generator
 import com.machfour.macros.sql.Table
 
 internal class DeleteStatementImpl<M> private constructor(
-    table: Table<M>,
+    table: Table<*, M>,
     override val whereExpression: SqlWhereExpr<M, *>
 ): SqlStatementImpl<M>(table, SqlQueryMode.DELETE), DeleteStatement<M> {
     override fun toSql(): String {
@@ -17,7 +17,7 @@ internal class DeleteStatementImpl<M> private constructor(
         }
     }
 
-    internal class Builder<M>(table: Table<M>)
+    internal class Builder<M>(table: Table<*, M>)
         : SqlStatementImpl.Builder<M>(table), DeleteStatement.Builder<M> {
 
         fun buildQuery() = DeleteStatementImpl(table, whereExpression)

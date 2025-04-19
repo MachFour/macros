@@ -63,7 +63,7 @@ abstract class SqlDatabaseImpl : SqlDatabase {
     abstract override fun <M> deleteFromTable(delete: SimpleDelete<M>): Int
 
     @Throws(SqlException::class)
-    override fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+    override fun <M, J: Any> updateColumn(t: Table<*, M>, update: SingleColumnUpdate<M, J>): Int {
         TODO("Not yet implemented")
     }
 }

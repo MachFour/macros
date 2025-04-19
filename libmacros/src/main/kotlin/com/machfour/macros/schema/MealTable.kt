@@ -32,7 +32,7 @@ private val goalId =
     builder("goal_id", Types.ID).default { null }.notEditable().unique()
         .buildFkFor(NutrientGoalTable.ID, columns)
 
-object MealTable : TableImpl<Meal>(tableName, Factories.meal, columns) {
+object MealTable : TableImpl<Meal, Meal>(tableName, Factories.meal, columns) {
     val ID: Column<Meal, Long>
         get() = id
     val CREATE_TIME: Column<Meal, Long>

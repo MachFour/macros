@@ -16,12 +16,12 @@ class NutrientGoalDayMapping internal constructor(
 ) : MacrosEntityImpl<NutrientGoalDayMapping>(data, objectSource) {
 
     companion object {
-        val factory: Factory<NutrientGoalDayMapping>
+        val factory: Factory<NutrientGoalDayMapping, NutrientGoalDayMapping>
             get() = Factories.nutrientGoalDayMapping
 
     }
 
-    override fun getTable(): Table<NutrientGoalDayMapping> {
+    override fun getTable(): Table<*, NutrientGoalDayMapping> {
         return NutrientGoalDayMappingTable
     }
 

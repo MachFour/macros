@@ -9,17 +9,18 @@ import com.machfour.macros.sql.rowdata.RowData
 
 class RegularMeal(data: RowData<RegularMeal>, objectSource: ObjectSource) : MacrosEntityImpl<RegularMeal>(data, objectSource) {
     companion object {
-        val factory: Factory<RegularMeal> = object: Factory<RegularMeal> {
+        val factory: Factory<RegularMeal, RegularMeal> = object: Factory<RegularMeal, RegularMeal> {
             override fun construct(data: RowData<RegularMeal>, source: ObjectSource): RegularMeal {
                  return RegularMeal(data, source)
             }
+
             override fun deconstruct(obj: RegularMeal): RowData<RegularMeal> {
-                TODO()
+                return obj.data
             }
         }
     }
 
-    override fun getTable(): Table<RegularMeal> {
+    override fun getTable(): Table<*, RegularMeal> {
         return RegularMealTable
     }
 }

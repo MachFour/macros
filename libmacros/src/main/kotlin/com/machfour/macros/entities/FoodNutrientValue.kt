@@ -3,6 +3,7 @@ package com.machfour.macros.entities
 import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.Table
@@ -24,7 +25,7 @@ class FoodNutrientValue internal constructor(
     companion object {
         // Factory has to be initialised first before table is referenced.
         // This is a problem only if the factory is cached as an instance variable
-        val factory: Factory<FoodNutrientValue>
+        val factory: Factory<INutrientValue, FoodNutrientValue>
             get() = Factories.foodNutrientValue
 
         // makes an object without ID or food
@@ -41,7 +42,7 @@ class FoodNutrientValue internal constructor(
     }
 
 
-    override fun getTable(): Table<FoodNutrientValue> {
+    override fun getTable(): Table<*, FoodNutrientValue> {
         return FoodNutrientValueTable
     }
 

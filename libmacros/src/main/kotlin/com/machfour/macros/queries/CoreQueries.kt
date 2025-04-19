@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.Column
@@ -11,7 +12,7 @@ import com.machfour.macros.sql.generator.*
 @Throws(SqlException::class)
 fun <M> prefixSearch(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Table<*, M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
@@ -22,7 +23,7 @@ fun <M> prefixSearch(
 @Throws(SqlException::class)
 fun <M> substringSearch(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Table<*, M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
@@ -33,7 +34,7 @@ fun <M> substringSearch(
 @Throws(SqlException::class)
 fun <M> exactStringSearch(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Table<*, M>,
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
@@ -45,7 +46,7 @@ fun <M> exactStringSearch(
 @Throws(SqlException::class)
 fun <M> stringSearch(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Table<*, M>,
     cols: List<Column<M, String>>,
     keyword: String,
     globBefore: Boolean,
@@ -112,7 +113,7 @@ fun <M, I: Any> selectNonNullColumn(
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, id: Long): Boolean {
+fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<*, M>, id: Long): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {
         where(idCol, id)
@@ -121,7 +122,7 @@ fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<M>, i
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<*, M>, queryIds: Collection<Long>): Map<Long, Boolean> {
     val idCol = table.idColumn
     val existingIds = selectNonNullColumn(db, idCol) {
         where(idCol, queryIds)
@@ -131,7 +132,7 @@ fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<M>, q
 }
 
 @Throws(SqlException::class)
-fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<*, M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
     return if (keys.isNotEmpty()) {
         // The resulting map is unordered
         selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }
@@ -145,7 +146,7 @@ fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<M>, keyCol: Column<M, J
 @Throws(SqlException::class)
 fun <M, I: Any, J: Any> selectColumnMap(
     db: SqlDatabase,
-    t: Table<M>,
+    t: Table<*, M>,
     keyColumn: Column<M, I>,
     valueColumn: Column<M, J>,
     keys: Collection<I>,
@@ -178,7 +179,7 @@ fun <M, I: Any, J: Any> selectColumnMap(
 @Throws(SqlException::class)
 fun <K, M: MacrosEntityImpl<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
-    table: Table<M>,
+    table: Table<*, M>,
     objectMap: Map<K, M>
 ): Map<K, M> {
     return buildMap {

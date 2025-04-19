@@ -17,7 +17,7 @@ interface Column<M, J: Any> : ColumnExpr<M, J> {
 
     // overridden ColumnExpr fields
     override val type: SqlType<J>
-    override val table: Table<M>
+    override val table: Table<*, M>
     override val sql: String
         get() = sqlName
 

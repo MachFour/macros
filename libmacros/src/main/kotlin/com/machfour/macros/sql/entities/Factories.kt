@@ -1,10 +1,14 @@
 package com.machfour.macros.sql.entities
 
+import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.AttrMapping
 import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.FoodPortion
+import com.machfour.macros.entities.IFoodPortion
+import com.machfour.macros.entities.INutrient
+import com.machfour.macros.entities.IServing
 import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.Nutrient
@@ -13,6 +17,7 @@ import com.machfour.macros.entities.NutrientGoalDayMapping
 import com.machfour.macros.entities.NutrientGoalValue
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.sql.rowdata.foodNutrientValueToRowData
 import com.machfour.macros.sql.rowdata.foodPortionToRowData
@@ -29,44 +34,55 @@ import com.machfour.macros.sql.rowdata.servingToRowData
 
 object Factories {
 
-    private fun <M> defaultFactory(
+    private fun <I: MacrosEntity, M: I> defaultFactory(
         construct: (RowData<M>, ObjectSource) -> M,
-        deconstruct: (M) -> RowData<M>,
-    ) : Factory<M> {
-        return object: Factory<M> {
+        deconstruct: (I) -> RowData<M>
+    ) : Factory<I, M> {
+        return object: Factory<I, M> {
             override fun construct(data: RowData<M>, source: ObjectSource): M {
                 data.makeImmutable()
                 return construct(data, source)
             }
 
-            override fun deconstruct(obj: M): RowData<M> {
+            override fun deconstruct(obj: I): RowData<M> {
                 return deconstruct(obj)
             }
         }
     }
 
-    val attributeMapping = defaultFactory(::AttrMapping) { TODO() }
+    val attributeMapping: Factory<AttrMapping, AttrMapping>
+        = defaultFactory(::AttrMapping) { it.data }
 
-    val foodCategory = defaultFactory(::FoodCategory) { TODO() }
+    val foodCategory: Factory<FoodCategory, FoodCategory>
+        = defaultFactory(::FoodCategory) { it.data }
 
-    val serving = defaultFactory(::Serving) { servingToRowData(it) }
+    val serving: Factory<IServing, Serving>
+        = defaultFactory(::Serving) { servingToRowData(it) }
 
-    val meal = defaultFactory(::Meal) { mealToRowData(it) }
+    val meal: Factory<Meal, Meal>
+        = defaultFactory(::Meal) { mealToRowData(it) }
 
-    val foodPortion = defaultFactory(::FoodPortion) { foodPortionToRowData(it) }
+    val foodPortion: Factory<IFoodPortion<*>, FoodPortion>
+        = defaultFactory(::FoodPortion) { foodPortionToRowData(it) }
 
-    val ingredient = defaultFactory(::Ingredient) { ingredientToRowData(it) }
+    val ingredient: Factory<Ingredient, Ingredient>
+        = defaultFactory(::Ingredient) { ingredientToRowData(it) }
 
-    val foodNutrientValue = defaultFactory(::FoodNutrientValue) { foodNutrientValueToRowData(it) }
+    val foodNutrientValue: Factory<INutrientValue, FoodNutrientValue>
+        = defaultFactory(::FoodNutrientValue) { foodNutrientValueToRowData(it) }
 
-    val nutrientGoal = defaultFactory(::NutrientGoal) { TODO() }
+    val nutrientGoal: Factory<NutrientGoal, NutrientGoal>
+        = defaultFactory(::NutrientGoal) { it.data }
 
-    val nutrientGoalDayMapping = defaultFactory(::NutrientGoalDayMapping) { TODO() }
+    val nutrientGoalDayMapping: Factory<NutrientGoalDayMapping, NutrientGoalDayMapping>
+        = defaultFactory(::NutrientGoalDayMapping) { it.data }
 
-    val nutrientGoalValue = defaultFactory(::NutrientGoalValue) { TODO() }
+    val nutrientGoalValue: Factory<INutrientValue, NutrientGoalValue>
+        = defaultFactory(::NutrientGoalValue) { TODO() }
 
-    val nutrient = defaultFactory(::Nutrient) { nutrientToRowData(it) }
+    val nutrient: Factory<INutrient, Nutrient>
+        = defaultFactory(::Nutrient) { nutrientToRowData(it) }
 
-    val unit = defaultFactory(::Unit) { TODO() }
-
+    val unit: Factory<Unit, Unit>
+        = defaultFactory(::Unit) { it.data }
 }

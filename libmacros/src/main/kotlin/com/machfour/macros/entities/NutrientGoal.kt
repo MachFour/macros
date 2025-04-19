@@ -19,14 +19,11 @@ class NutrientGoal internal constructor(
 ): MacrosEntityImpl<NutrientGoal>(data, objectSource) {
 
     companion object {
-        val factory: Factory<NutrientGoal>
+        val factory: Factory<*, NutrientGoal>
             get() = Factories.nutrientGoal
 
-        val table: Table<NutrientGoal>
-            get() = NutrientGoalTable
-
         fun makeComputedObject(name: String): NutrientGoal {
-            val data = RowData(table).apply {
+            val data = RowData(NutrientGoalTable).apply {
                 put(NutrientGoalTable.ID, MacrosEntity.NO_ID)
                 put(NutrientGoalTable.NAME, name)
             }
@@ -35,8 +32,8 @@ class NutrientGoal internal constructor(
 
     }
 
-    override fun getTable(): Table<NutrientGoal> {
-        return Companion.table
+    override fun getTable(): Table<*, NutrientGoal> {
+        return NutrientGoalTable
     }
 
     val name: String

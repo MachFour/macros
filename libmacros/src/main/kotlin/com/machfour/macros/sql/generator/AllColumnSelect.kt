@@ -8,7 +8,7 @@ class AllColumnSelect<M> private constructor(
 
     companion object {
         fun <M> build(
-            table: Table<M>,
+            table: Table<*, M>,
             queryOptions: SelectQuery.Builder<M>.() -> Unit
         ): AllColumnSelect<M> {
             val query = SelectQueryImpl.Builder(table, emptyList()).run {

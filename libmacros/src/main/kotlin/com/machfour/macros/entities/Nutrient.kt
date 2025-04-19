@@ -17,12 +17,12 @@ class NutrientImpl internal constructor(data: RowData<Nutrient>, source: ObjectS
     companion object {
         // Factory has to be initialised first before table is referenced.
         // This is a problem only if the factory is cached as an instance variable
-        val factory: Factory<Nutrient>
+        val factory: Factory<*, Nutrient>
             get() = Factories.nutrient
 
     }
 
-    override fun getTable(): Table<Nutrient> {
+    override fun getTable(): Table<*, Nutrient> {
         return NutrientTable
     }
 

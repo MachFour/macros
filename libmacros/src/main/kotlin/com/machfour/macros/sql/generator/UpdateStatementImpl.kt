@@ -5,7 +5,7 @@ import com.machfour.macros.sql.Table
 import com.machfour.macros.sql.makeSqlUpdatePlaceholders
 
 internal class UpdateStatementImpl<M> private constructor(
-    table: Table<M>,
+    table: Table<*, M>,
     override val columns: List<Column<M, *>>,
     override val whereExpression: SqlWhereExpr<M, *>
 ): SqlStatementImpl<M>(table, SqlQueryMode.UPDATE), UpdateStatement<M> {
@@ -21,7 +21,7 @@ internal class UpdateStatementImpl<M> private constructor(
         }
     }
 
-    internal class Builder<M>(table: Table<M>, val columns: List<Column<M, *>>)
+    internal class Builder<M>(table: Table<*, M>, val columns: List<Column<M, *>>)
         : SqlStatementImpl.Builder<M>(table), UpdateStatement.Builder<M> {
 
         fun buildQuery() = UpdateStatementImpl(table, columns, whereExpression)

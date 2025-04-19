@@ -50,7 +50,7 @@ class NullDatabase private constructor(): SqlDatabase {
         return 0
     }
 
-    override fun <M, J: Any> updateColumn(t: Table<M>, update: SingleColumnUpdate<M, J>): Int {
+    override fun <M, J: Any> updateColumn(t: Table<*, M>, update: SingleColumnUpdate<M, J>): Int {
         return 0
     }
 

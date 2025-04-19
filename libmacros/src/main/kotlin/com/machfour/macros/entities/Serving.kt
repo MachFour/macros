@@ -18,7 +18,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
 
     companion object {
         // factory has to come before table if it's an instance variable
-        val factory: Factory<Serving>
+        val factory: Factory<IServing, Serving>
             get() = Factories.serving
     }
 
@@ -42,7 +42,7 @@ class Serving internal constructor(data: RowData<Serving>, objectSource: ObjectS
         check(QUANTITY.compatibleWith(unit)) { "Invalid quantity unit $unit" }
     }
 
-    override fun getTable(): Table<Serving> {
+    override fun getTable(): Table<*, Serving> {
         return ServingTable
     }
 

@@ -24,7 +24,5 @@ interface SelectQuery<M>: SqlStatement<M> {
 
         fun limit(limit: Int, offset: Int? = null)
 
-        @Deprecated("Avoid using raw suffix")
-        fun rawSuffix(sql: String)
     }
 }

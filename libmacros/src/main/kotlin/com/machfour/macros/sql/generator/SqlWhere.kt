@@ -61,11 +61,11 @@ class SqlWhereExpr<M, J: Any> private constructor(
         }
 
         // TODO clean up this interface (see note at top)
-        // " WHERE (likeColumn[0] LIKE ?) <Conjuction> (likeColumn[1] LIKE ?) <Conjunction> ..."
+        // " WHERE (likeColumn[0] LIKE ?) <Conjunction> (likeColumn[1] LIKE ?) <Conjunction> ..."
         fun <M> whereLike(
             likeColumns: Collection<Column<M, String>>,
             whereLikeValues: Collection<String>,
-            conjunction: Conjuction = Conjuction.OR
+            conjunction: Conjunction = Conjunction.OR
         ): SqlWhereExpr<M, String> {
             return SqlWhereExpr(
                 whereColumnType = Types.TEXT,
@@ -75,7 +75,7 @@ class SqlWhereExpr<M, J: Any> private constructor(
         }
     }
 
-    fun alsoWhere(conjunction: Conjuction, sql: String) {
+    fun alsoWhere(conjunction: Conjunction, sql: String) {
         check(whereClause.isNotBlank()) { "Where clause is blank; use a primary condition instead"}
         suffix = " $conjunction ($sql)"
     }

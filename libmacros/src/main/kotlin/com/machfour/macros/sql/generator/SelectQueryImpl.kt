@@ -101,11 +101,6 @@ internal class SelectQueryImpl<M> private constructor(
             this.offset = offset
         }
 
-        @Deprecated("Avoid using raw suffix")
-        override fun rawSuffix(sql: String) {
-            suffix = sql
-        }
-
         fun buildQuery(): SelectQueryImpl<M> {
             return SelectQueryImpl(
                 table = table,

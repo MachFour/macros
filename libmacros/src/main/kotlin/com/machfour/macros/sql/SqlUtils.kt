@@ -1,10 +1,10 @@
 package com.machfour.macros.sql
 
-import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.datatype.SqlType
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.generator.ColumnExpr
-import com.machfour.macros.sql.generator.Conjuction
+import com.machfour.macros.sql.generator.Conjunction
 
 // usually, an SQL placeholder is just a question mark. But, for example a DateStamp
 // needs to be entered as DATE('date_string'), so that logic is implemented here
@@ -64,7 +64,7 @@ internal fun makeSqlWhereString(whereColumnExpr: ColumnExpr<*, *>, nValues: Int)
 // " WHERE ((likeColumn[0] LIKE likeValue[0]) OR (likeColumn[1] LIKE likeValue[1]) OR ...)"
 internal fun <M> makeSqlWhereLikeString(
     likeCols: Collection<Column<M, String>>,
-    conjunction: Conjuction = Conjuction.OR,
+    conjunction: Conjunction = Conjunction.OR,
 ): String {
     return when (likeCols.size) {
         0 -> ""

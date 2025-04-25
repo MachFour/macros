@@ -121,7 +121,6 @@ fun getAllFoodCategories(db: SqlDatabase): Map<String, FoodCategory> {
     return categoriesById.mapKeys { it.value.name }
 }
 
-
 @Throws(SqlException::class)
 fun getFoodByIndexName(db: SqlDatabase, indexName: String): Food? {
     val resultFood = getFoodsByIndexName(db, listOf(indexName))

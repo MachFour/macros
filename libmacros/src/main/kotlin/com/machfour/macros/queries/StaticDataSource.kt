@@ -22,56 +22,56 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return flowOf(getAllFoodCategories(database))
     }
 
-    override fun getFood(id: Long): Flow<Food?> {
+    override fun getFood(id: EntityId): Flow<Food?> {
         return flowOf(getFoodById(database, id))
     }
 
-    override fun getFoods(ids: Collection<Long>, preserveOrder: Boolean): Flow<Map<Long, Food>> {
+    override fun getFoods(ids: Collection<EntityId>, preserveOrder: Boolean): Flow<Map<EntityId, Food>> {
         return flowOf(getFoodsById(database, ids, preserveOrder))
     }
 
-    override fun getAllFoods(): Flow<Map<Long, Food>> {
+    override fun getAllFoods(): Flow<Map<EntityId, Food>> {
         return flowOf(getAllFoodsMap(database))
     }
 
-    override fun getMeal(id: Long): Flow<Meal?> {
+    override fun getMeal(id: EntityId): Flow<Meal?> {
         return flowOf(getMealById(database, id))
     }
 
-    override fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>> {
+    override fun getMeals(ids: Collection<EntityId>): Flow<Map<EntityId, Meal>> {
         return flowOf(getMealsById(database, ids))
     }
 
-    override fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>> {
+    override fun getMealsForDay(day: DateStamp): Flow<Map<EntityId, Meal>> {
         return flowOf(getMealsForDay(database, day))
     }
 
-    override fun getFoodIdByIndexName(indexName: String): Long? {
+    override fun getFoodIdByIndexName(indexName: String): EntityId? {
         return getFoodIdByIndexName(database, indexName)
     }
 
-    override fun getParentFoodIdsContainingFoodIds(foodIds: List<Long>): List<Long> {
+    override fun getParentFoodIdsContainingFoodIds(foodIds: List<EntityId>): List<EntityId> {
         return getParentFoodIdsContainingFoodIds(database, foodIds)
     }
 
-    override fun getMealIdsForDay(day: DateStamp): List<Long> {
+    override fun getMealIdsForDay(day: DateStamp): List<EntityId> {
         return getMealIdsForDay(database, day)
     }
 
-    override fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long> {
+    override fun getMealIdsForFoodIds(foodIds: Collection<EntityId>): List<EntityId> {
         return getMealIdsForFoodIds(database, foodIds)
     }
 
-    override fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<Long>): List<Long> {
+    override fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<EntityId>): List<EntityId> {
         return getMealIdsForFoodPortionIds(database, foodPortionIds)
     }
 
 
-    override fun getDaysForMealIds(mealIds: Collection<Long>): List<DateStamp> {
+    override fun getDaysForMealIds(mealIds: Collection<EntityId>): List<DateStamp> {
         return getDaysForMealIds(database, mealIds)
     }
 
-    override fun getCommonQuantities(foodId: Long, limit: Int): List<Triple<Double, Unit, String?>> {
+    override fun getCommonQuantities(foodId: EntityId, limit: Int): List<Triple<Double, Unit, String?>> {
         return getCommonQuantities(database, foodId, limit)
     }
 
@@ -145,19 +145,19 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
      * Passthrough fuunctions
      */
 
-    override fun foodSearch(keywords: List<String>, matchAll: Boolean, maxResults: Int, minRelevance: SearchRelevance): Set<Long> {
+    override fun foodSearch(keywords: List<String>, matchAll: Boolean, maxResults: Int, minRelevance: SearchRelevance): Set<EntityId> {
         return foodSearch(database, keywords, matchAll, maxResults, minRelevance)
     }
 
-    override fun foodSearch(keyword: String, maxResults: Int, minRelevance: SearchRelevance): Set<Long> {
+    override fun foodSearch(keyword: String, maxResults: Int, minRelevance: SearchRelevance): Set<EntityId> {
         return foodSearch(database, keyword)
     }
 
-    override fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long> {
+    override fun recentFoodIds(howMany: Int, distinct: Boolean): List<EntityId> {
         return recentFoodIds(database, howMany, distinct)
     }
 
-    override fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<Long> {
+    override fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<EntityId> {
         return recentMealIds(database, howMany, nameFilter)
     }
 }

@@ -12,6 +12,6 @@ enum class OrderByNullPrecedence(val sql: String) {
     NULLS_FIRST("NULLS FIRST"), NULLS_LAST("NULLS LAST")
 }
 
-enum class Conjuction(val sql: String) {
+enum class Conjunction(val sql: String) {
     AND("AND"), OR("OR")
 }

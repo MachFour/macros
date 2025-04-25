@@ -23,38 +23,38 @@ interface MacrosDataSource {
         matchAll: Boolean = true,
         maxResults: Int = -1,
         minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN,
-    ): Set<Long>
+    ): Set<EntityId>
 
     @Throws(SqlException::class)
     fun foodSearch(
         keyword: String,
         maxResults: Int = -1,
         minRelevance: SearchRelevance = SearchRelevance.EXCLUDE_HIDDEN,
-    ): Set<Long>
+    ): Set<EntityId>
 
     @Throws(SqlException::class)
-    fun recentFoodIds(howMany: Int, distinct: Boolean): List<Long>
+    fun recentFoodIds(howMany: Int, distinct: Boolean): List<EntityId>
 
     @Throws(SqlException::class)
-    fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<Long>
+    fun recentMealIds(howMany: Int, nameFilter: Collection<String>): List<EntityId>
 
     /*
      * Single-shot functions, just pass through to static queries
      */
     @Throws(SqlException::class)
-    fun getFoodIdByIndexName(indexName: String): Long?
+    fun getFoodIdByIndexName(indexName: String): EntityId?
 
     @Throws(SqlException::class)
-    fun getMealIdsForDay(day: DateStamp): List<Long>
+    fun getMealIdsForDay(day: DateStamp): List<EntityId>
 
     @Throws(SqlException::class)
-    fun getDaysForMealIds(mealIds: Collection<Long>): List<DateStamp>
+    fun getDaysForMealIds(mealIds: Collection<EntityId>): List<DateStamp>
 
     @Throws(SqlException::class)
-    fun getMealIdsForFoodIds(foodIds: Collection<Long>): List<Long>
+    fun getMealIdsForFoodIds(foodIds: Collection<EntityId>): List<EntityId>
 
     @Throws(SqlException::class)
-    fun getCommonQuantities(foodId: Long, limit: Int = -1): List<Triple<Double, Unit, String?>>
+    fun getCommonQuantities(foodId: EntityId, limit: Int = -1): List<Triple<Double, Unit, String?>>
 
     /*
      * Flow functions -- update cache
@@ -64,27 +64,27 @@ interface MacrosDataSource {
     fun getAllFoodCategories(): Flow<Map<String, FoodCategory>>
 
     @Throws(SqlException::class)
-    fun getFood(id: Long): Flow<Food?>
+    fun getFood(id: EntityId): Flow<Food?>
 
     @Throws(SqlException::class)
-    fun getFoods(ids: Collection<Long>, preserveOrder: Boolean = false): Flow<Map<Long, Food>>
+    fun getFoods(ids: Collection<EntityId>, preserveOrder: Boolean = false): Flow<Map<EntityId, Food>>
 
     @Throws(SqlException::class)
-    fun getAllFoods(): Flow<Map<Long, Food>>
+    fun getAllFoods(): Flow<Map<EntityId, Food>>
 
     @Throws(SqlException::class)
-    fun getParentFoodIdsContainingFoodIds(foodIds: List<Long>): List<Long>
+    fun getParentFoodIdsContainingFoodIds(foodIds: List<EntityId>): List<EntityId>
 
     @Throws(SqlException::class)
-    fun getMeal(id: Long): Flow<Meal?>
+    fun getMeal(id: EntityId): Flow<Meal?>
 
     @Throws(SqlException::class)
-    fun getMeals(ids: Collection<Long>): Flow<Map<Long, Meal>>
+    fun getMeals(ids: Collection<EntityId>): Flow<Map<EntityId, Meal>>
 
     @Throws(SqlException::class)
-    fun getMealsForDay(day: DateStamp): Flow<Map<Long, Meal>>
+    fun getMealsForDay(day: DateStamp): Flow<Map<EntityId, Meal>>
 
-    fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<Long>): List<Long>
+    fun getMealIdsForFoodPortionIds(foodPortionIds: Collection<EntityId>): List<EntityId>
 
     /*
      * The functions below mutate the database and require cache updates

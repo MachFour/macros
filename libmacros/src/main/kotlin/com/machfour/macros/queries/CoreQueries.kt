@@ -1,13 +1,14 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.entities.MacrosEntityImpl
-import com.machfour.macros.sql.entities.MacrosSqlEntity
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.generator.*
+import com.machfour.macros.sql.entities.MacrosSqlEntity
+import com.machfour.macros.sql.generator.MultiColumnSelect
+import com.machfour.macros.sql.generator.SelectQuery
+import com.machfour.macros.sql.generator.SingleColumnSelect
+import com.machfour.macros.sql.generator.TwoColumnSelect
 
 @Throws(SqlException::class)
 fun <M> prefixSearch(
@@ -177,7 +178,7 @@ fun <M, I: Any, J: Any> selectColumnMap(
 }
 
 @Throws(SqlException::class)
-fun <K, M: MacrosEntityImpl<M>> findUniqueColumnConflicts(
+fun <K, M: MacrosSqlEntity<M>> findUniqueColumnConflicts(
     db: SqlDatabase,
     table: Table<*, M>,
     objectMap: Map<K, M>

@@ -38,7 +38,7 @@ sealed interface SqlStatement<M> {
         fun whereLike(
             likeColumns: Collection<Column<M, String>>,
             whereLikeValues: Collection<String>,
-            conjunction: Conjuction = Conjuction.OR
+            conjunction: Conjunction = Conjunction.OR
         )
 
         // TODO XXX these are mad hacks

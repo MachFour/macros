@@ -42,16 +42,16 @@ abstract class SqlStatementImpl<M>(
         }
 
         override fun andWhere(expr: String) {
-            whereExpression.alsoWhere(Conjuction.AND, expr)
+            whereExpression.alsoWhere(Conjunction.AND, expr)
         }
         override fun orWhere(expr: String) {
-            whereExpression.alsoWhere(Conjuction.OR, expr)
+            whereExpression.alsoWhere(Conjunction.OR, expr)
         }
 
         override fun whereLike(
             likeColumns: Collection<Column<M, String>>,
             whereLikeValues: Collection<String>,
-            conjunction: Conjuction
+            conjunction: Conjunction
         ) {
             whereExpression = SqlWhereExpr.whereLike(likeColumns, whereLikeValues, conjunction)
         }

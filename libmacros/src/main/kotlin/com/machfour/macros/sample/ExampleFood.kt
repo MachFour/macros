@@ -33,6 +33,17 @@ val exampleFood2: Food by lazy {
     initExampleFood2()
 }
 
+val exampleFoodCategory by lazy {
+    makeExampleFoodCategory("uncategorised")
+}
+
+fun makeExampleFoodCategory(name: String): FoodCategory {
+    return RowData(FoodCategoryTable).run {
+        put(FoodCategoryTable.NAME, name)
+        FoodCategory.factory.construct(this, ObjectSource.TEST)
+    }
+}
+
 private fun initExampleFood1(): Food {
     val data = RowData(FoodTable)
     data.put(ID, 1L)
@@ -47,12 +58,7 @@ private fun initExampleFood1(): Food {
     data.put(NUTTAB_INDEX, null)
     val f = Food.factory.construct(data, ObjectSource.TEST)
 
-    val foodCategory = RowData(FoodCategoryTable).run {
-        put(FoodCategoryTable.NAME, "uncategorised")
-        FoodCategory.factory.construct(this, ObjectSource.TEST)
-    }
-
-    f.setFoodCategory(foodCategory)
+    f.setFoodCategory(exampleFoodCategory)
 
     val nutritionData = listOf(
         FoodNutrientValue.makeComputedValue(200.0, ENERGY, KILOJOULES),
@@ -92,10 +98,7 @@ private fun initExampleFood2(): Food {
     data.put(FOOD_TYPE, FoodType.PRIMARY.niceName)
     val f = Food.factory.construct(data, ObjectSource.TEST)
 
-    val foodCategory = RowData(FoodCategoryTable).run {
-        put(FoodCategoryTable.NAME, "oils")
-        FoodCategory.factory.construct(this, ObjectSource.TEST)
-    }
+    val foodCategory = makeExampleFoodCategory("oils")
     f.setFoodCategory(foodCategory)
 
     val nutritionData = listOf(

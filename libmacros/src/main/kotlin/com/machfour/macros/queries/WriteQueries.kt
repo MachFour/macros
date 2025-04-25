@@ -1,6 +1,9 @@
 package com.machfour.macros.queries
 
-import com.machfour.macros.core.*
+import com.machfour.macros.core.EntityId
+import com.machfour.macros.core.FoodType
+import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Food
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.FoodTable
@@ -9,7 +12,6 @@ import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.Table
-import com.machfour.macros.sql.entities.Deconstructor
 import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.generator.SimpleDelete
 
@@ -50,7 +52,8 @@ fun <I: MacrosEntity, M: I> deleteObjects(db: SqlDatabase, t: Table<I, M>, objec
     return deleteObjectsById(db, t, objects.map { it.id })
 }
 
-// deletes objects with the given ID from
+// Deletes objects with the given ID from the given table.
+// If ids is empty, does nothing and returns 0.
 @Throws(SqlException::class)
 private fun <M : MacrosEntity> deleteObjectsById(
     db: SqlDatabase,
@@ -141,8 +144,9 @@ private fun <M> deleteById(db: SqlDatabase, t: Table<*, M>, id: Long): Int {
 }
 
 
-// does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
+// Does DELETE FROM (t) WHERE (whereColumn) = (whereValue)
 // or DELETE FROM (t) WHERE (whereColumn) IN (whereValue1, whereValue2, ...)
+// If whereValues is empty, returns 0 and nothing is done.
 @Throws(SqlException::class)
 fun <M, J: Any> deleteWhere(
     db: SqlDatabase,
@@ -150,6 +154,9 @@ fun <M, J: Any> deleteWhere(
     whereColumn: Column<M, J>,
     whereValues: Collection<J>
 ): Int {
+    if (whereValues.isEmpty()) {
+        return 0
+    }
     return db.deleteFromTable(SimpleDelete.build(t) {
         where(whereColumn, whereValues)
     })

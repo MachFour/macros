@@ -3,7 +3,6 @@ package com.machfour.macros.sql
 import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.generator.*
 import com.machfour.macros.sql.rowdata.RowData
-import java.sql.SQLException
 
 interface SqlDatabase {
     // Used to create a persistent connection that lasts across calls to the DB.
@@ -20,7 +19,7 @@ interface SqlDatabase {
     @Throws(SqlException::class)
     fun beginTransaction()
 
-    @Throws(SQLException::class)
+    @Throws(SqlException::class)
     fun rollbackTransaction()
 
     @Throws(SqlException::class)

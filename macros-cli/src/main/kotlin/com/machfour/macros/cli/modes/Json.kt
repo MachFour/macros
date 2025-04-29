@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.json.*
 import com.machfour.macros.queries.StaticDataSource
 import com.machfour.macros.sql.SqlException
@@ -71,7 +72,7 @@ class Json(config: CliConfig): CommandImpl(config) {
 
         val dataSource = StaticDataSource(config.database)
         try {
-            var jsonFoods: Map<Long, JsonFood> = HashMap()
+            var jsonFoods: Map<EntityId, JsonFood> = HashMap()
             runBlocking {
                 dataSource.getAllFoods().collect {
                     jsonFoods = it.mapValues { (_, food) -> JsonFood(food) }

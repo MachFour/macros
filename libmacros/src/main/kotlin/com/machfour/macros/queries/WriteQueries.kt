@@ -139,7 +139,7 @@ fun setSearchRelevanceForFoodType(db: SqlDatabase, foodType: FoodType, value: In
 }
 
 @Throws(SqlException::class)
-private fun <M> deleteById(db: SqlDatabase, t: Table<*, M>, id: Long): Int {
+private fun <M> deleteById(db: SqlDatabase, t: Table<*, M>, id: EntityId): Int {
     return db.deleteFromTable(SimpleDelete.build(t) { where(t.idColumn, id) })
 }
 

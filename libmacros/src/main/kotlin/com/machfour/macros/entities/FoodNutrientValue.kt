@@ -1,12 +1,13 @@
 package com.machfour.macros.entities
 
-import com.machfour.macros.sql.entities.Factory
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.nutrients.INutrientValue
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Factories
+import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.rowdata.RowData
 
 
@@ -46,7 +47,7 @@ class FoodNutrientValue internal constructor(
         return FoodNutrientValueTable
     }
 
-    val foodId: Long
+    val foodId: EntityId
         get() = data[FoodNutrientValueTable.FOOD_ID]!!
 
     val version: Int

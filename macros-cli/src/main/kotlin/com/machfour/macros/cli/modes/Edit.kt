@@ -3,6 +3,7 @@ package com.machfour.macros.cli.modes
 import com.machfour.macros.cli.CliConfig
 import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.*
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -160,7 +161,7 @@ class Edit(config: CliConfig) : CommandImpl(config) {
         return startEditor(ds, toEdit!!.id)
     }
 
-    private fun startEditor(ds: SqlDatabase, mealId: Long): Int {
+    private fun startEditor(ds: SqlDatabase, mealId: EntityId): Int {
         val toEdit: Meal?
         try {
             toEdit = getMealById(ds, mealId)

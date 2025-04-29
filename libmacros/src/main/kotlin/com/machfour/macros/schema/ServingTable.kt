@@ -1,14 +1,15 @@
 package com.machfour.macros.schema
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.IServing
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.entities.Factories
 
 private const val tableName = "Serving"
 
@@ -33,7 +34,7 @@ private val foodId =
         .buildFkFor(FoodTable.ID, columns)
 
 object ServingTable : TableImpl<IServing, Serving>(tableName, Factories.serving, columns) {
-    val ID: Column<Serving, Long>
+    val ID: Column<Serving, EntityId>
         get() = id
     val CREATE_TIME: Column<Serving, Long>
         get() = createTime
@@ -47,7 +48,7 @@ object ServingTable : TableImpl<IServing, Serving>(tableName, Factories.serving,
         get() = quantity
     val IS_DEFAULT: Column<Serving, Boolean>
         get() = isDefault
-    val FOOD_ID: Column.Fk<Serving, Long, Food>
+    val FOOD_ID: Column.Fk<Serving, EntityId, Food>
         get() = foodId
     val QUANTITY_UNIT: Column.Fk<Serving, String, Unit>
         get() = quantityUnit

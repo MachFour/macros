@@ -5,6 +5,7 @@ import com.machfour.macros.cli.CommandImpl
 import com.machfour.macros.cli.utils.ArgParsingResult
 import com.machfour.macros.cli.utils.findArgumentFromFlag
 import com.machfour.macros.cli.utils.printlnErr
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.csv.*
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.queries.clearTable
@@ -135,7 +136,7 @@ class Import(config: CliConfig) : CommandImpl(config) {
                 println()
 
                 println("Importing servings from $servingCsvFile")
-                val duplicatedServings: Map<Long, Serving>
+                val duplicatedServings: Map<EntityId, Serving>
                 FileReader(servingCsvFile).use { reader ->
                     duplicatedServings = importServings(db, reader.readText(), foodKeyCol, foodKeyToId, true)
                 }

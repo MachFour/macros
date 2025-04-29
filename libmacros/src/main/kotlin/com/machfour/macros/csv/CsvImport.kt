@@ -297,7 +297,7 @@ fun <J: Any> importServings(
     foodKeyToId: Map<J, EntityId>,
     skipExisting: Boolean,
     ignoreKeys: Set<J> = emptySet(),
-): Map<Long, Serving> {
+): Map<EntityId, Serving> {
     val csvServings = buildServingsWithFoodKeys(servingCsv, foodKeyCol)
     val nonExcludedServings = csvServings.filterNot {
         ignoreKeys.contains(it.second)
@@ -310,7 +310,7 @@ fun <J: Any> importServings(
         Serving.factory.construct(completedData, ObjectSource.IMPORT)
     }
     val servingsToSave: List<Serving>
-    val matchedDuplicateServings: Map<Long, Serving>
+    val matchedDuplicateServings: Map<EntityId, Serving>
     if (skipExisting) {
         // non-duplicated servings
         val newServingsByFoodId = completedServings.multiAssociateBy { it.foodId }

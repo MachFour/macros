@@ -1,8 +1,6 @@
 package com.machfour.macros.objects
 
-import com.machfour.macros.core.FoodType
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.*
 import com.machfour.macros.entities.Food
 import com.machfour.macros.linux.LinuxDatabase
 import com.machfour.macros.linux.LinuxSqlConfig
@@ -53,18 +51,18 @@ class FoodTest {
     @Test
     fun getFoodFromDb() {
         val modifiedData = foodData.copy()
-        modifiedData.put(FoodTable.ID, 50L)
+        modifiedData.put(FoodTable.ID, 50.id)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(50L, saveObject(db, FoodTable, f))
+            assertEquals(50.id, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
         }
 
         try {
-            val f2 = getFoodById(db, 50L) ?: fail("Food not found in DB")
+            val f2 = getFoodById(db, 50.id) ?: fail("Food not found in DB")
             assert(f.equalsWithoutMetadata(f2)) { "Foods did not match in equals sense (ignoring metadata)" }
         } catch (e: SqlException) {
             e.printStackTrace()
@@ -75,7 +73,7 @@ class FoodTest {
     @Test
     fun saveFoodNotFromDb() {
         try {
-            assertEquals(1, saveObject(db, FoodTable,testFood))
+            assertEquals(1.id, saveObject(db, FoodTable,testFood))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -88,7 +86,7 @@ class FoodTest {
         val lotsOfFoods = ArrayList<Food>(10000)
         for (i in 0..9999) {
             val modifiedData = foodData.copy()
-            modifiedData.put(FoodTable.ID, i.toLong())
+            modifiedData.put(FoodTable.ID, EntityId(i.toLong()))
             modifiedData.put(FoodTable.INDEX_NAME, "food$i")
             val modifiedIndexName = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
             lotsOfFoods.add(modifiedIndexName)
@@ -108,11 +106,11 @@ class FoodTest {
     @Test
     fun saveFoodFromDb() {
         val modifiedData = foodData.copy()
-        modifiedData.put(FoodTable.ID, 50L)
+        modifiedData.put(FoodTable.ID, 50.id)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
             // first save with known ID
-            assertEquals(50L, saveObject(db, FoodTable, f))
+            assertEquals(50.id, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -123,7 +121,7 @@ class FoodTest {
         modifiedData2.put(FoodTable.NAME, "newName")
         val f1 = Food.factory.construct(modifiedData2, ObjectSource.DB_EDIT)
         try {
-            assertEquals(50, saveObject(db, FoodTable, f1))
+            assertEquals(50.id, saveObject(db, FoodTable, f1))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")
@@ -134,10 +132,10 @@ class FoodTest {
     @Test
     fun testSaveWithId() {
         val modifiedData = foodData.copy()
-        modifiedData.put(FoodTable.ID, 500L)
+        modifiedData.put(FoodTable.ID, 500.id)
         val f = Food.factory.construct(modifiedData, ObjectSource.RESTORE)
         try {
-            assertEquals(500L, saveObject(db, FoodTable, f))
+            assertEquals(500.id, saveObject(db, FoodTable, f))
         } catch (e: SqlException) {
             e.printStackTrace()
             fail("DB save threw exception")

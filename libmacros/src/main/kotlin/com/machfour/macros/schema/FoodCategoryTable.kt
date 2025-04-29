@@ -1,8 +1,9 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "FoodCategory"
@@ -16,7 +17,7 @@ private val modifyTime = modifyTimeColumnBuildFor(columns)
 private val name = builder("name", Types.TEXT).notNull().unique().buildFor(columns)
 
 object FoodCategoryTable: TableImpl<FoodCategory, FoodCategory>(tableName, FoodCategory.factory, columns) {
-    val ID: Column<FoodCategory, Long>
+    val ID: Column<FoodCategory, EntityId>
         get() = id
     val CREATE_TIME: Column<FoodCategory, Long>
         get() = createTime

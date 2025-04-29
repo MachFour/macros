@@ -2,6 +2,7 @@ package com.machfour.macros.sample
 
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.id
 import com.machfour.macros.entities.CompositeFood
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodNutrientValue
@@ -36,9 +37,9 @@ val exampleRecipe1: CompositeFood by lazy {
 
 private fun initIngredient1(): Ingredient {
     val i: Ingredient = Ingredient.factory.construct(RowData(IngredientTable).apply {
-        put(IngredientTable.ID, 1)
-        put(IngredientTable.FOOD_ID, 1)
-        put(IngredientTable.PARENT_FOOD_ID, 3)
+        put(IngredientTable.ID, 1.id)
+        put(IngredientTable.FOOD_ID, 1.id)
+        put(IngredientTable.PARENT_FOOD_ID, 3.id)
         put(IngredientTable.SERVING_ID, null) // TODO
         put(IngredientTable.QUANTITY, 100.0)
         put(IngredientTable.QUANTITY_UNIT, "g")
@@ -53,9 +54,9 @@ private fun initIngredient1(): Ingredient {
 
 private fun initIngredient2(): Ingredient {
     val i: Ingredient = Ingredient.factory.construct(RowData(IngredientTable).apply {
-        put(IngredientTable.ID, 2)
-        put(IngredientTable.FOOD_ID, 2)
-        put(IngredientTable.PARENT_FOOD_ID, 3)
+        put(IngredientTable.ID, 2.id)
+        put(IngredientTable.FOOD_ID, 2.id)
+        put(IngredientTable.PARENT_FOOD_ID, 3.id)
         put(IngredientTable.QUANTITY, 10.0)
         put(IngredientTable.QUANTITY_UNIT, "g")
         put(IngredientTable.NOTES, "notes i2")
@@ -68,7 +69,7 @@ private fun initIngredient2(): Ingredient {
 
 private fun initIngredientFood1(): Food {
     val f = Food.factory.construct(RowData(FoodTable).apply {
-        put(FoodTable.ID, 1L)
+        put(FoodTable.ID, 1.id)
         put(FoodTable.INDEX_NAME, "ingredient-1")
         put(FoodTable.BRAND, "brand 1")
         put(FoodTable.VARIETY, "variety 1")
@@ -101,7 +102,7 @@ private fun initIngredientFood1(): Food {
 
 private fun initIngredientFood2(): Food {
     val f = Food.factory.construct(RowData(FoodTable).apply {
-        put(FoodTable.ID, 2L)
+        put(FoodTable.ID, 2.id)
         put(FoodTable.INDEX_NAME, "ingredient-2")
         put(FoodTable.BRAND, "brand 2")
         put(FoodTable.VARIETY, "variety 2")
@@ -131,7 +132,7 @@ private fun initIngredientFood2(): Food {
 
 private fun initRecipe1(): CompositeFood {
     val cf = Food.factory.construct(RowData(FoodTable).apply {
-        put(FoodTable.ID, 3L)
+        put(FoodTable.ID, 3.id)
         put(FoodTable.INDEX_NAME, "recipe-1")
         put(FoodTable.VARIETY, "a variety")
         put(FoodTable.NAME, "recipe 1")

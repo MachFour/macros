@@ -1,6 +1,7 @@
 package com.machfour.macros.parsing
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.queries.getMealForDayWithName
@@ -72,7 +73,7 @@ class MealSpec(val name: String?, val day: DateStamp?, error: String? = null) {
         // no meal specified -> no meal exists
         // meal specified that exists -> use it
         // meal specified that does not exist -> create it
-        val mealsForDay: Map<Long, Meal>
+        val mealsForDay: Map<EntityId, Meal>
         try {
             mealsForDay = getMealsForDay(ds, day)
         } catch (e: SqlException) {

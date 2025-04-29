@@ -1,9 +1,10 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.RegularMeal
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "RegularMeal"
@@ -21,14 +22,14 @@ private val mealId =
         .buildFkFor(MealTable.ID, columns)
 
 object RegularMealTable: TableImpl<RegularMeal, RegularMeal>(tableName, RegularMeal.factory, columns) {
-    val ID: Column<RegularMeal, Long>
+    val ID: Column<RegularMeal, EntityId>
         get() = id
     val CREATE_TIME: Column<RegularMeal, Long>
         get() = createTime
     val MODIFY_TIME: Column<RegularMeal, Long>
         get() = modifyTime
     val NAME: Column<RegularMeal, String>
-        get() = com.machfour.macros.schema.name
-    val MEAL_ID: Column.Fk<RegularMeal, Long, Meal>
+        get() = name
+    val MEAL_ID: Column.Fk<RegularMeal, EntityId, Meal>
         get() = mealId
 }

@@ -1,6 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.datestamp.DateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -10,7 +11,7 @@ import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 
 @Throws(SqlException::class)
-fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<Long, Meal> {
+fun getMealsForDay(db: SqlDatabase, day: DateStamp): Map<EntityId, Meal> {
     val mealIds = getMealIdsForDay(db, day)
     return getMealsById(db, mealIds)
 }
@@ -23,7 +24,7 @@ fun getMealForDayWithName(db: SqlDatabase, day: DateStamp, name: String): Meal? 
 }
 
 @Throws(SqlException::class)
-fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
+fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<EntityId> {
     val ids = selectSingleColumn(db, MealTable.ID) {
         where(MealTable.DAY, listOf(day))
     }
@@ -31,7 +32,7 @@ fun getMealIdsForDay(db: SqlDatabase, day: DateStamp): List<Long> {
 }
 
 @Throws(SqlException::class)
-fun getMealById(db: SqlDatabase, id: Long): Meal? {
+fun getMealById(db: SqlDatabase, id: EntityId): Meal? {
     val resultMeals = getMealsById(db, listOf(id))
     return resultMeals.getOrDefault(id, null)
 }
@@ -59,7 +60,7 @@ fun getMealById(db: SqlDatabase, id: Long): Meal? {
 //}
 
 @Throws(SqlException::class)
-private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<Long, FoodPortion> {
+private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<EntityId, FoodPortion> {
     val fpIds = selectNonNullColumn(db, FoodPortionTable.ID) {
         where(FoodPortionTable.MEAL_ID, listOf(meal.id))
         distinct()
@@ -72,7 +73,7 @@ private fun getRawFoodPortionsForMeal(db: SqlDatabase, meal: Meal): Map<Long, Fo
 }
 
 @Throws(SqlException::class)
-private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, foodMap: Map<Long, Food>) {
+private fun processRawFoodPortions(meal: Meal, fpMap: Map<EntityId, FoodPortion>, foodMap: Map<EntityId, Food>) {
     // sort by create time - but if adding to existing meals, they are added to the end
     val fpList = fpMap.values.toList().sortedBy { it.createTime }
     for (fp in fpList) {
@@ -95,7 +96,7 @@ private fun processRawFoodPortions(meal: Meal, fpMap: Map<Long, FoodPortion>, fo
  * It's probably worth caching the results of these!
  */
 @Throws(SqlException::class)
-fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
+fun getMealsById(db: SqlDatabase, mealIds: Collection<EntityId>): Map<EntityId, Meal> {
     if (mealIds.isEmpty()) {
         return emptyMap()
     }
@@ -114,7 +115,7 @@ fun getMealsById(db: SqlDatabase, mealIds: Collection<Long>): Map<Long, Meal> {
 }
 
 @Throws(SqlException::class)
-private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List<Long> {
+private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<EntityId>): List<EntityId> {
     if (mealIds.isEmpty()) {
         return emptyList()
     }
@@ -127,7 +128,7 @@ private fun getFoodIdsForMeals(db: SqlDatabase, mealIds: Collection<Long>): List
 }
 
 @Throws(SqlException::class)
-fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long> {
+fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<EntityId>): List<EntityId> {
     if (foodIds.isEmpty()) {
         return emptyList()
     }
@@ -138,7 +139,7 @@ fun getMealIdsForFoodIds(db: SqlDatabase, foodIds: Collection<Long>): List<Long>
 }
 
 @Throws(SqlException::class)
-fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<Long>): List<Long> {
+fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<EntityId>): List<EntityId> {
     if (foodPortionIds.isEmpty()) {
         return emptyList()
     }
@@ -149,7 +150,7 @@ fun getMealIdsForFoodPortionIds(db: SqlDatabase, foodPortionIds: Collection<Long
 }
 
 @Throws(SqlException::class)
-fun getDaysForMealIds(db: SqlDatabase, mealIds: Collection<Long>): List<DateStamp> {
+fun getDaysForMealIds(db: SqlDatabase, mealIds: Collection<EntityId>): List<DateStamp> {
     if (mealIds.isEmpty()) {
         return emptyList()
     }

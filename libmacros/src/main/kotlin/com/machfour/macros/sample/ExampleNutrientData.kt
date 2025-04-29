@@ -1,5 +1,6 @@
 package com.machfour.macros.sample
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.NutrientGoal
@@ -35,7 +36,7 @@ val exampleFoodNd2 by lazy {
 private val exampleDayGoalRowData by lazy {
     RowData(NutrientGoalTable).apply {
         put(NutrientGoalTable.NAME, "Example nutrient goal")
-        put(NutrientGoalTable.ID, 1000L)
+        put(NutrientGoalTable.ID, EntityId(1000L))
     }
 }
 

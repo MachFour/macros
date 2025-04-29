@@ -3,6 +3,7 @@ package com.machfour.macros.ingredients
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonIOException
 import com.google.gson.reflect.TypeToken
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosBuilder
 import com.machfour.macros.entities.CompositeFood
@@ -52,7 +53,7 @@ fun deserialiseIngredientsJson(json: Reader?): Collection<CompositeFoodSpec> {
     }
 }
 
-private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredientMap: Map<String, Long>): Ingredient {
+private fun processIngredientSpec(spec: IngredientSpec, composite: Food, ingredientMap: Map<String, EntityId>): Ingredient {
     // get food from index name
     // get quantity
     // get quantity unit
@@ -84,7 +85,7 @@ private fun allIngredientIndexNames(allSpecs: Collection<CompositeFoodSpec>) = b
 
 // creates a composite food and ingredients objects from the given spec
 // NOTE that no IDs are ever created for the objects
-private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<String, Long>): CompositeFood {
+private fun processCompositeFoodSpec(spec: CompositeFoodSpec, indexNameMap: Map<String, EntityId>): CompositeFood {
     val builder = MacrosBuilder(FoodTable)
     builder.setField(FoodTable.INDEX_NAME, spec.indexName)
     builder.setField(FoodTable.NAME, spec.name)
@@ -135,7 +136,7 @@ fun createCompositeFoods(
     return results
 }
 
-private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: Long): List<Ingredient> {
+private fun addCompositeFoodId(newIngredients: List<Ingredient>, id: EntityId): List<Ingredient> {
     val ingredientsWithId: MutableList<Ingredient> = ArrayList(newIngredients.size)
     for (i in newIngredients) {
         val builder = MacrosBuilder(IngredientTable, i)

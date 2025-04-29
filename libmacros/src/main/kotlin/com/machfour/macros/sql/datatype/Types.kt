@@ -128,10 +128,18 @@ class Types {
         override fun toString(): String = "id"
 
         @Throws(TypeCastException::class)
-        override fun fromNonEmptyString(data: String): EntityId = stringToLong(data)
+        override fun fromNonEmptyString(data: String): EntityId = EntityId(stringToLong(data))
 
         @Throws(TypeCastException::class)
-        override fun fromRawNotNull(data: Any): EntityId = objectToLong(data)
+        override fun fromRawNotNull(data: Any): EntityId = EntityId(objectToLong(data))
+
+        override fun toRaw(data: EntityId?): Long? {
+            return data?.value
+        }
+
+        override fun toRawString(data: EntityId?): String {
+            return data?.value?.toString() ?: ""
+        }
 
         override fun kotlinClass(): KClass<EntityId> = EntityId::class
 

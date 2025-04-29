@@ -1,7 +1,9 @@
 package com.machfour.macros.sample
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.id
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.entities.FoodNutrientValue
@@ -46,7 +48,7 @@ fun makeExampleFoodCategory(name: String): FoodCategory {
 
 private fun initExampleFood1(): Food {
     val data = RowData(FoodTable)
-    data.put(ID, 1L)
+    data.put(ID, EntityId(1L))
     data.put(INDEX_NAME, "food1")
     data.put(BRAND, "Max's")
     data.put(VARIETY, "really good with a really long variety name just to see what happens")
@@ -86,7 +88,7 @@ private fun initExampleFood1(): Food {
 
 private fun initExampleFood2(): Food {
     val data = RowData(FoodTable)
-    data.put(ID, 2L)
+    data.put(ID, 2.id)
     data.put(INDEX_NAME, "generic-oil")
     data.put(VARIETY, "Super oily")
     data.put(EXTRA_DESC, "in a bottle")

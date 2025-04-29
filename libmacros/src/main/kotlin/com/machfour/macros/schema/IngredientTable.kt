@@ -1,13 +1,14 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.Ingredient
 import com.machfour.macros.entities.Serving
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.entities.Factories
 
 private const val tableName = "Ingredient"
 
@@ -33,7 +34,7 @@ private val parentFoodId =
 
 // needs to come after FoodTable, ServingTable, MealTable
 object IngredientTable : TableImpl<Ingredient, Ingredient>(tableName, Factories.ingredient, columns) {
-    val ID: Column<Ingredient, Long>
+    val ID: Column<Ingredient, EntityId>
         get() = id
     val CREATE_TIME: Column<Ingredient, Long>
         get() = createTime
@@ -44,16 +45,16 @@ object IngredientTable : TableImpl<Ingredient, Ingredient>(tableName, Factories.
         get() = quantity
     val QUANTITY_UNIT: Column.Fk<Ingredient, String, Unit>
         get() = quantityUnit
-    val FOOD_ID: Column.Fk<Ingredient, Long, Food>
+    val FOOD_ID: Column.Fk<Ingredient, EntityId, Food>
         get() = foodId
-    val SERVING_ID: Column.Fk<Ingredient, Long, Serving>
+    val SERVING_ID: Column.Fk<Ingredient, EntityId, Serving>
         get() = servingId
     val NOTES: Column<Ingredient, String>
         get() = notes
     val NUTRIENT_MAX_VERSION: Column<Ingredient, Int>
         get() = nutrientMaxVersion
 
-    val PARENT_FOOD_ID: Column.Fk<Ingredient, Long, Food>
+    val PARENT_FOOD_ID: Column.Fk<Ingredient, EntityId, Food>
         get() = parentFoodId
     val RECIPE_VERSION: Column<Ingredient, Int>
         get() = recipeVersion

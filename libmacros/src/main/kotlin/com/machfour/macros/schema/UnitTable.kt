@@ -1,10 +1,11 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Unit
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.entities.Factories
 
 private const val tableName = "Unit"
 
@@ -29,7 +30,7 @@ private val inbuilt =
 // Unit.factory() causes initialisation of Unit, which depends on this class.
 // So the columns are initialised as a side effect of calling that function.
 object UnitTable : TableImpl<Unit, Unit>(tableName, Factories.unit, columns) {
-    val ID: Column<Unit, Long>
+    val ID: Column<Unit, EntityId>
         get() = id
     val CREATE_TIME: Column<Unit, Long>
         get() = createTime
@@ -38,7 +39,7 @@ object UnitTable : TableImpl<Unit, Unit>(tableName, Factories.unit, columns) {
     val TYPE_ID: Column<Unit, Int>
         get() = typeId
     val NAME: Column<Unit, String>
-        get() = com.machfour.macros.schema.name
+        get() = name
     val ABBREVIATION: Column<Unit, String>
         get() = abbreviation
     val METRIC_EQUIVALENT: Column<Unit, Double>

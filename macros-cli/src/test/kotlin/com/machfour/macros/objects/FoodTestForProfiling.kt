@@ -1,5 +1,6 @@
 package com.machfour.macros.objects
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
@@ -48,7 +49,7 @@ class FoodTestForProfiling {
         val lotsOfFoods = ArrayList<Food>(1000)
         for (i in 0..999) {
             val modifiedData = foodData.copy().apply {
-                put(FoodTable.ID, i.toLong())
+                put(FoodTable.ID, EntityId(i.toLong()))
                 put(FoodTable.INDEX_NAME, "food$i")
             }
             Food.factory.construct(modifiedData, ObjectSource.RESTORE).also {

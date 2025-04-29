@@ -2,12 +2,13 @@
 
 package com.machfour.macros.entities
 
-import com.machfour.macros.sql.entities.Factory
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
 import com.machfour.macros.core.ObjectSource
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.schema.IngredientTable
 import com.machfour.macros.sql.Table
+import com.machfour.macros.sql.entities.Factories
+import com.machfour.macros.sql.entities.Factory
 import com.machfour.macros.sql.rowdata.RowData
 
 class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: ObjectSource
@@ -39,7 +40,7 @@ class Ingredient internal constructor(data: RowData<Ingredient>, objectSource: O
     lateinit var parentFood: Food
         private set
 
-    val parentFoodId: Long
+    val parentFoodId: EntityId
         get() = data[IngredientTable.PARENT_FOOD_ID]!!
 
 

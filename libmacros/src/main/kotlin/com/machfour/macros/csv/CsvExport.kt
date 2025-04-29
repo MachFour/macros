@@ -104,7 +104,7 @@ fun <J: Any> exportFoodData(
 fun <J: Any> exportServings(
     db: SqlDatabase,
     foodKeyCol: Column<Food, J>,
-    ignoreFoodIds: Set<Long>,
+    ignoreFoodIds: Set<EntityId>,
 ): String {
     require(foodKeyCol.isUnique && !foodKeyCol.isNullable) { "food key col ($foodKeyCol) must be unique and not nullable" }
 

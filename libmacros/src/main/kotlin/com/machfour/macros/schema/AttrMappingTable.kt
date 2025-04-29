@@ -1,10 +1,11 @@
 package com.machfour.macros.schema
 
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.AttrMapping
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodAttribute
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 
@@ -24,14 +25,14 @@ private val attribute_id =
         .buildFkFor(FoodAttributeTable.ID, columns)
 
 object AttrMappingTable : TableImpl<AttrMapping, AttrMapping>(tableName, AttrMapping.factory, columns) {
-    val ID: Column<AttrMapping, Long>
+    val ID: Column<AttrMapping, EntityId>
         get() = id
     val CREATE_TIME: Column<AttrMapping, Long>
         get() = create_time
     val MODIFY_TIME: Column<AttrMapping, Long>
         get() = modify_time
-    val FOOD_ID: Column.Fk<AttrMapping, Long, Food>
+    val FOOD_ID: Column.Fk<AttrMapping,  EntityId, Food>
         get() = food_id
-    val ATTRIBUTE_ID: Column.Fk<AttrMapping, Long, FoodAttribute>
+    val ATTRIBUTE_ID: Column.Fk<AttrMapping,  EntityId, FoodAttribute>
         get() = attribute_id
 }

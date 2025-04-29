@@ -10,7 +10,7 @@ import com.machfour.macros.units.KILOJOULES
 import com.machfour.macros.units.UnitType
 
 private val INutrient.index : Int
-    get() = id.toInt()
+    get() = id.value.toInt()
 
 
 // Class storing a set of nutrient values for any purpose.

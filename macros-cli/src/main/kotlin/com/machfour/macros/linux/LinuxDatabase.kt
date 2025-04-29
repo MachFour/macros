@@ -2,6 +2,7 @@ package com.machfour.macros.linux
 
 import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
+import com.machfour.macros.core.id
 import com.machfour.macros.jvm.readSqlStatements
 import com.machfour.macros.jvm.wrapAsNativeException
 import com.machfour.macros.schema.AllTables
@@ -357,9 +358,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                         bindData(s, row, columnsToInsert)
                         s.executeUpdate()
                         if (!useDataIds) {
-                            s.generatedKeys.processResultSet {
-                                returnedIds.add(it.getLong(1))
-                            }
+                            s.generatedKeys.processResultSet { returnedIds.add(it.getLong(1).id) }
                         } else {
                             returnedIds.add(row[table.idColumn] ?: MacrosEntity.NO_ID)
                         }
@@ -368,8 +367,11 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
                 }
             }
         } catch (e: java.sql.SQLException) {
-            val msg = "${e.message} thrown by insertRows() on table ${table.sqlName} and object data: $currentRow"
-            throw SqlException(msg, e.cause)
+            throw SqlException(
+                message = "${e.message} thrown by insertRowsReturningIds() on table $table and object data: $currentRow",
+                cause = e.cause,
+                code = e.errorCode
+            )
         } finally {
             closeIfNecessary(c)
         }
@@ -404,7 +406,7 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             withDisabledAutoCommit(c) {
                 c.prepareStatement(sqlUpdateTemplate(table, table.columns, table.idColumn)).use { p ->
                     for (row in data) {
-                        bindData(p, row, table.columns, row[table.idColumn])
+                        bindData(p, row, table.columns, row[table.idColumn]?.value)
                         saved += p.executeUpdate()
                         p.clearParameters()
                     }
@@ -414,6 +416,9 @@ class LinuxDatabase private constructor(dbFile: String) : SqlDatabaseImpl(), Sql
             throw e.wrapAsNativeException()
         } finally {
             closeIfNecessary(c)
+        }
+        if (saved != data.size) {
+            throw SqlException("Only saved $saved objects out of ${data.size}")
         }
         return saved
     }

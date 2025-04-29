@@ -1,12 +1,11 @@
 package com.machfour.macros.sql
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.schema.CREATE_TIME_COLUMN_NAME
 import com.machfour.macros.schema.ID_COLUMN_NAME
 import com.machfour.macros.schema.MODIFY_TIME_COLUMN_NAME
 import com.machfour.macros.sql.entities.Factory
-import com.machfour.macros.sql.rowdata.RowData
 
 abstract class TableImpl<I: MacrosEntity, M: I>(
     final override val sqlName: String,
@@ -17,7 +16,7 @@ abstract class TableImpl<I: MacrosEntity, M: I>(
 
     // TODO make these better
     @Suppress("UNCHECKED_CAST")
-    final override val idColumn: Column<M, Long> = cols[0] as Column<M, Long>
+    final override val idColumn: Column<M, EntityId> = cols[0] as Column<M, EntityId>
     @Suppress("UNCHECKED_CAST")
     final override val createTimeColumn: Column<M, Long> = cols[1] as Column<M, Long>
     @Suppress("UNCHECKED_CAST")

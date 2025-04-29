@@ -3,12 +3,13 @@ package com.machfour.macros.schema
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.currentDateStamp
 import com.machfour.datestamp.currentEpochSeconds
-import com.machfour.macros.sql.TableImpl
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.entities.Meal
 import com.machfour.macros.entities.NutrientGoal
-import com.machfour.macros.sql.entities.Factories
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
+import com.machfour.macros.sql.entities.Factories
 
 private const val tableName = "Meal"
 
@@ -33,14 +34,14 @@ private val goalId =
         .buildFkFor(NutrientGoalTable.ID, columns)
 
 object MealTable : TableImpl<Meal, Meal>(tableName, Factories.meal, columns) {
-    val ID: Column<Meal, Long>
+    val ID: Column<Meal, EntityId>
         get() = id
     val CREATE_TIME: Column<Meal, Long>
         get() = createTime
     val MODIFY_TIME: Column<Meal, Long>
         get() = modifyTime
     val NAME: Column<Meal, String>
-        get() = com.machfour.macros.schema.name
+        get() = name
     val DAY: Column<Meal, DateStamp>
         get() = day
     val START_TIME: Column<Meal, Long>
@@ -49,7 +50,7 @@ object MealTable : TableImpl<Meal, Meal>(tableName, Factories.meal, columns) {
         get() = duration
     val NOTES: Column<Meal, String>
         get() = notes
-    val GOAL_ID: Column.Fk<Meal, Long, NutrientGoal>
+    val GOAL_ID: Column.Fk<Meal, EntityId, NutrientGoal>
         get() = goalId
 
 }

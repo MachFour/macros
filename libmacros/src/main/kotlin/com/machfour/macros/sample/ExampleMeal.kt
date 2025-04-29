@@ -2,8 +2,10 @@ package com.machfour.macros.sample
 
 import com.machfour.datestamp.DateStamp
 import com.machfour.datestamp.makeDateStamp
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.id
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -16,7 +18,7 @@ val exampleFoodPortion by lazy { generateFp(exampleFood2, 50.0) }
 val exampleMeals: List<Meal> by lazy {
     val day = makeDateStamp(2020, 10, 28)
     List(5) {
-        val id = (it + 1).toLong()
+        val id = (it + 1).id
         val fps = List(it + 1) { generateFp(exampleFood2, 50.0, mealId = id) }
         generateMeal(id, day, fps)
     }
@@ -25,8 +27,8 @@ val exampleMeals: List<Meal> by lazy {
 fun generateFp(
     food: Food,
     quantity: Double,
-    id: Long = MacrosEntity.NO_ID,
-    mealId: Long = MacrosEntity.NO_ID,
+    id: EntityId = MacrosEntity.NO_ID,
+    mealId: EntityId = MacrosEntity.NO_ID,
 ) : FoodPortion {
     val fp = RowData(FoodPortionTable).run {
         put(FoodPortionTable.ID, id)
@@ -42,7 +44,7 @@ fun generateFp(
     return fp
 }
 
-fun generateMeal(id: Long, day: DateStamp, foodPortions: List<FoodPortion>): Meal {
+fun generateMeal(id: EntityId, day: DateStamp, foodPortions: List<FoodPortion>): Meal {
     val meal = RowData(MealTable).run {
         put(MealTable.ID, id)
         put(MealTable.DAY, day)

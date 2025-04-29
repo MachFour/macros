@@ -1,12 +1,13 @@
 package com.machfour.macros.schema
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.FoodType
-import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodCategory
 import com.machfour.macros.entities.FoodImpl
 import com.machfour.macros.entities.IFood
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.TableImpl
 import com.machfour.macros.sql.datatype.Types
 
 private const val tableName = "Food"
@@ -48,7 +49,7 @@ private val searchRelevance =
     builder("search_relevance", Types.INTEGER).notEditable().buildFor(columns)
 
 object FoodTable : TableImpl<IFood<*>, Food>(tableName, FoodImpl.factory, columns) {
-    val ID: Column<Food, Long>
+    val ID: Column<Food, EntityId>
         get() = id
     val CREATE_TIME: Column<Food, Long>
         get() = createTime

@@ -5,7 +5,7 @@ package com.machfour.macros.core
  */
 interface MacrosEntity {
     companion object {
-        const val NO_ID: Long = -100
+        val NO_ID = EntityId(-100)
     }
 
     val id: EntityId

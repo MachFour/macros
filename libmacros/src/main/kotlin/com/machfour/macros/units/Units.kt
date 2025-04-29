@@ -1,6 +1,8 @@
 package com.machfour.macros.units
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.id
 import com.machfour.macros.entities.INutrient
 import com.machfour.macros.entities.Unit
 import com.machfour.macros.schema.UnitTable
@@ -8,7 +10,7 @@ import com.machfour.macros.sql.rowdata.RowData
 
 private fun makeInbuiltUnit(id: Long, name: String, abbr: String, metricEquivalent: Double, unitType: UnitType): Unit {
     return RowData(UnitTable).run {
-        put(UnitTable.ID, id)
+        put(UnitTable.ID, id.id)
         put(UnitTable.NAME, name)
         put(UnitTable.ABBREVIATION, abbr)
         put(UnitTable.METRIC_EQUIVALENT, metricEquivalent)
@@ -93,7 +95,7 @@ private val inbuiltUnits = listOf(
 
 private val abbrMap: MutableMap<String, Unit> by lazy { inbuiltUnits.associateBy { it.abbr.toMapKey }.toMutableMap() }
 
-private val idMap: MutableMap<Long, Unit> by lazy { inbuiltUnits.associateBy { it.id }.toMutableMap() }
+private val idMap: MutableMap<EntityId, Unit> by lazy { inbuiltUnits.associateBy { it.id }.toMutableMap() }
 
 // this is lowercase so that CSV units can be lowercase
 private val String.toMapKey: String
@@ -102,14 +104,14 @@ private val String.toMapKey: String
 fun unitWithAbbrOrNull(abbr: String) = abbrMap[abbr.toMapKey]
 
 @Suppress("private")
-fun unitWithIdOrNull(id: Long) = idMap[id]
+fun unitWithIdOrNull(id: EntityId) = idMap[id]
 
 // case-insensitive
 fun unitWithAbbr(abbr: String): Unit {
     return requireNotNull(unitWithAbbrOrNull(abbr)) { "No unit found with abbreviation $abbr" }
 }
 
-fun unitWithId(id: Long): Unit {
+fun unitWithId(id: EntityId): Unit {
     return requireNotNull(unitWithIdOrNull(id)) { "No unit found with id $id" }
 }
 

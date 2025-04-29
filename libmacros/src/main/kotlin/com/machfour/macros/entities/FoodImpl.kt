@@ -110,7 +110,7 @@ open class FoodImpl internal constructor(dataMap: RowData<Food>, objectSource: O
         defaultServing = s
     }
 
-    fun getServingById(id: Long): Serving? {
+    fun getServingById(id: EntityId): Serving? {
         return servingsInternal.firstOrNull { it.id == id }
     }
 

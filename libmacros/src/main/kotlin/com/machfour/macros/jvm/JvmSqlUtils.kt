@@ -13,7 +13,7 @@ fun java.sql.SQLException.wrapAsNativeException(): SqlException {
         sqlState?.let { append("SQLState ($it) ") }
         append("vendor code (${errorCode})")
     }
-    return SqlException(message, cause)
+    return SqlException(message = message, cause = cause, code = errorCode)
 }
 
 fun IOException.wrapAsNativeException(): SqlException {

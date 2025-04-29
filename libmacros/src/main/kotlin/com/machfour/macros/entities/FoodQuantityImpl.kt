@@ -1,7 +1,6 @@
 package com.machfour.macros.entities
 
 import com.machfour.macros.core.EntityId
-import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.formatting.toString
 import com.machfour.macros.formatting.toStringWithRounding
@@ -9,14 +8,15 @@ import com.machfour.macros.nutrients.INutrientValue
 import com.machfour.macros.nutrients.NutrientData
 import com.machfour.macros.nutrients.Quantity
 import com.machfour.macros.sql.Column
+import com.machfour.macros.sql.entities.MacrosEntityImpl
 import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.unitWithAbbr
 
 abstract class FoodQuantityImpl<M : FoodQuantityImpl<M, E>, E: INutrientValue> protected constructor(
     data: RowData<M>,
     objectSource: ObjectSource,
-    private val foodIdCol: Column.Fk<M, Long, Food>,
-    private val servingIdCol: Column.Fk<M, Long, Serving>,
+    private val foodIdCol: Column.Fk<M, EntityId, Food>,
+    private val servingIdCol: Column.Fk<M, EntityId, Serving>,
     private val quantityCol: Column<M, Double>,
     /* private val */ quantityUnitCol: Column<M, String>,
     private val notesCol: Column<M, String>,
@@ -35,7 +35,7 @@ abstract class FoodQuantityImpl<M : FoodQuantityImpl<M, E>, E: INutrientValue> p
     // this is the only thing that may remain null after all initialisation is complete
     override var serving: Serving? = null
 
-    override val foodId: Long
+    override val foodId: EntityId
         get() = data[foodIdCol]!!
 
     override val servingId: EntityId?

@@ -1,4 +1,19 @@
 package com.machfour.macros.core
 
-typealias EntityId = Long
+import kotlinx.serialization.Serializable
+
+@JvmInline
+@Serializable
+value class EntityId(val value: Long) {
+    override fun toString(): String {
+        return "EntityId($value)"
+    }
+}
+
+val Int.id: EntityId
+    get() = EntityId(this.toLong())
+
+val Long.id: EntityId
+    get() = EntityId(this)
+
 typealias Instant = Long

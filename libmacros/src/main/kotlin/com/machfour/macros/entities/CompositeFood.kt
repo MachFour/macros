@@ -74,7 +74,7 @@ class CompositeFoodImpl private constructor(dataMap: RowData<Food>, objectSource
         mutableIngredients.add(i)
         // sort by ID ~> attempt to keep same order as entered by user or imported
         // note - this is essentially an insertion sort, pretty slow, but most foods shouldn't have too many ingredients
-        mutableIngredients.sortBy { it.id }
+        mutableIngredients.sortBy { it.id.value }
         ingredientsNutrientDataNeedsUpdate = true
     }
 

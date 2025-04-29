@@ -1,9 +1,7 @@
 package com.machfour.macros.queries
 
 import com.machfour.datestamp.makeDateStamp
-import com.machfour.macros.core.FoodType
-import com.machfour.macros.core.MacrosEntity
-import com.machfour.macros.core.ObjectSource
+import com.machfour.macros.core.*
 import com.machfour.macros.entities.Food
 import com.machfour.macros.entities.FoodPortion
 import com.machfour.macros.entities.Meal
@@ -24,6 +22,9 @@ class CacheTest {
     private lateinit var testFood: Food
     private lateinit var testFoodPortion: FoodPortion
     private lateinit var testMeal: Meal
+
+    private var testFoodId: EntityId = MacrosEntity.NO_ID
+    private var testMealId: EntityId = MacrosEntity.NO_ID
 
     @BeforeTest
     fun initDbAndObjects() {
@@ -55,8 +56,8 @@ class CacheTest {
             put(FoodPortionTable.ID, MacrosEntity.NO_ID)
             put(FoodPortionTable.CREATE_TIME, 0L)
             put(FoodPortionTable.MODIFY_TIME, 0L)
-            put(FoodPortionTable.FOOD_ID, 1L)
-            put(FoodPortionTable.MEAL_ID, 1L)
+            put(FoodPortionTable.FOOD_ID, 1.id)
+            put(FoodPortionTable.MEAL_ID, EntityId(1L))
             put(FoodPortionTable.QUANTITY, 100.0)
             put(FoodPortionTable.QUANTITY_UNIT, GRAMS.abbr)
             put(FoodPortionTable.NOTES, "food portion notes")
@@ -70,8 +71,13 @@ class CacheTest {
 
         try {
             println("Saving objects")
-            saveObject(db, FoodTable,testFood)
-            saveObject(db, MealTable,testMeal)
+
+            testFoodId = saveObject(db, FoodTable,testFood)
+            println("Test food ID: $testFoodId")
+
+            testMealId = saveObject(db, MealTable,testMeal)
+            println("Test meal ID: $testMealId")
+
             saveObject(db, FoodPortionTable, testFoodPortion)
         } catch (e: SqlException) {
             e.printStackTrace()
@@ -89,8 +95,8 @@ class CacheTest {
     @Test
     fun testBasicFood() {
         val dataSource = FlowDataSource(db)
-        val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
-        val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
+        val cachedFood1 = runBlocking { dataSource.getFood(1.id).first() }
+        val cachedFood2 = runBlocking { dataSource.getFood(1.id).first() }
         assertNotNull(cachedFood1)
 
         check(cachedFood1.identityHashCode() == cachedFood2.identityHashCode())
@@ -99,19 +105,19 @@ class CacheTest {
     @Test
     fun testBasicSaveEdits() {
         val dataSource = FlowDataSource(db)
-        val uncachedFood = runBlocking { dataSource.getFood(1).first() }
-        assertNotNull(uncachedFood)
+        val cachedFood1 = runBlocking { dataSource.getFood(1.id).first() }
+        assertNotNull(cachedFood1)
 
-        val alteredFood = uncachedFood.toRowData().run {
+        val alteredFood = cachedFood1.toRowData().run {
             put(FoodTable.NAME, "Edited food")
             put(FoodTable.INDEX_NAME, "food2")
             Food.factory.construct(this, ObjectSource.DB_EDIT)
         }
 
-        val cachedFood1 = runBlocking { dataSource.getFood(1).first() }
+        val cachedFood2 = runBlocking { dataSource.getFood(1.id).first() }
         dataSource.saveObject(FoodTable, alteredFood)
-        val cachedFood2 = runBlocking { dataSource.getFood(1).first() }
-        check(cachedFood1.identityHashCode() != cachedFood2.identityHashCode())
+        val cachedFood3 = runBlocking { dataSource.getFood(1.id).first() }
+        assertNotEquals(cachedFood2.identityHashCode(), cachedFood3.identityHashCode())
     }
 
     @Test

@@ -43,11 +43,11 @@ fun <M> getAllRawObjects(db: SqlDatabase, t: Table<*, M>, orderBy: Column<M, *>?
 fun <M> getRawObjectsWithIds(
     db: SqlDatabase,
     t: Table<*, M>,
-    ids: Collection<Long>,
+    ids: Collection<EntityId>,
     preserveIdOrder: Boolean = false,
     // if the number of keys exceeds this number, the query will be iterated
     iterateThreshold: Int? = null,
-): Map<Long, M> {
+): Map<EntityId, M> {
     return getRawObjectsWithKeys(db, t.idColumn, ids, preserveIdOrder, iterateThreshold)
 }
 
@@ -88,7 +88,7 @@ fun <M, N> getRawObjectsForParentFk(
     parentIds: Collection<EntityId>,
     childTable: Table<*, M>,
     fkCol: Column.Fk<M, EntityId, N>
-): Map<Long, M> {
+): Map<EntityId, M> {
     if (parentIds.isEmpty()) {
         return emptyMap()
     }

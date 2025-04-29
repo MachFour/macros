@@ -1,5 +1,7 @@
 package com.machfour.macros.json
 
+import com.machfour.macros.core.MacrosEntity
+
 val apple = JsonFood(
     basicName = "apple",
     brand = null,
@@ -82,7 +84,7 @@ val appleJSON = """
 """.trimIndent()
 
 val carrotCakes = JsonFood(
-    id = -100,
+    id = MacrosEntity.NO_ID,
     created = 0,
     modified = 0,
     basicName = "cakes",
@@ -107,7 +109,7 @@ val carrotCakes = JsonFood(
     ),
     nutrientData = JsonNutrientData(
         perQuantity = JsonQuantity(
-                id = -100,
+                id = MacrosEntity.NO_ID,
                 created = 0,
                 modified = 0,
                 amount = 100.0,

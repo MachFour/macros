@@ -1,5 +1,6 @@
 package com.machfour.macros.queries
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.sql.Column
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
@@ -17,7 +18,7 @@ fun <M> prefixSearch(
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
-): List<Long> {
+): List<EntityId> {
     return stringSearch(db, table, cols, keyword, globBefore = false, globAfter = true, extraOptions = extraOptions)
 }
 
@@ -28,7 +29,7 @@ fun <M> substringSearch(
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
-): List<Long> {
+): List<EntityId> {
     return stringSearch(db, table, cols, keyword, globBefore = true, globAfter = true, extraOptions = extraOptions)
 }
 
@@ -39,7 +40,7 @@ fun <M> exactStringSearch(
     cols: List<Column<M, String>>,
     keyword: String,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
-): List<Long> {
+): List<EntityId> {
     return stringSearch(db, table, cols, keyword, globBefore = false, globAfter = false, extraOptions = extraOptions)
 }
 
@@ -53,7 +54,7 @@ fun <M> stringSearch(
     globBefore: Boolean,
     globAfter: Boolean,
     extraOptions: SelectQuery.Builder<M>.() -> Unit = {},
-): List<Long> {
+): List<EntityId> {
     if (keyword.isEmpty() || cols.isEmpty()) {
         return emptyList()
     }
@@ -114,7 +115,7 @@ fun <M, I: Any> selectNonNullColumn(
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<*, M>, id: Long): Boolean {
+fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<*, M>, id: EntityId): Boolean {
     val idCol = table.idColumn
     val idMatch = selectSingleColumn(db, idCol) {
         where(idCol, id)
@@ -123,7 +124,7 @@ fun <M : MacrosSqlEntity<M>> idExistsInTable(db: SqlDatabase, table: Table<*, M>
 }
 
 @Throws(SqlException::class)
-fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<*, M>, queryIds: Collection<Long>): Map<Long, Boolean> {
+fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<*, M>, queryIds: Collection<EntityId>): Map<EntityId, Boolean> {
     val idCol = table.idColumn
     val existingIds = selectNonNullColumn(db, idCol) {
         where(idCol, queryIds)
@@ -133,7 +134,7 @@ fun <M : MacrosSqlEntity<M>> idsExistInTable(db: SqlDatabase, table: Table<*, M>
 }
 
 @Throws(SqlException::class)
-fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<*, M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, Long> {
+fun <M, J: Any> getIdsFromKeys(ds: SqlDatabase, t: Table<*, M>, keyCol: Column<M, J>, keys: Collection<J>): Map<J, EntityId> {
     return if (keys.isNotEmpty()) {
         // The resulting map is unordered
         selectColumnMap(ds, t, keyCol, t.idColumn, keys).mapValues { it.value!! }

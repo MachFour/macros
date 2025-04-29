@@ -1,5 +1,6 @@
 package com.machfour.macros.nutrients
 
+import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Nutrient
 import com.machfour.macros.names.*
@@ -10,7 +11,7 @@ import com.machfour.macros.units.UnitType
 private fun makeInbuiltNutrient(id: Long, name: String, vararg types: UnitType): Nutrient {
     val typeFlags = UnitType.asFlags(types)
     val data = RowData(NutrientTable).apply {
-        put(NutrientTable.ID, id)
+        put(NutrientTable.ID, EntityId(id))
         put(NutrientTable.NAME, name)
         put(NutrientTable.UNIT_TYPES, typeFlags)
         put(NutrientTable.INBUILT, true)
@@ -88,14 +89,14 @@ private val inbuiltNutrients = listOf(
 )
 
 
-private val idMap = inbuiltNutrients.associateBy { it.id }
+private val idMap: Map<EntityId, Nutrient> = inbuiltNutrients.associateBy { it.id }
 private val nameMap = inbuiltNutrients.associateBy { it.name }
 
 private val nutrientSet = inbuiltNutrients.toSet()
 private val nutrientSetWithoutQuantity = nutrientSet.minusElement(QUANTITY)
 
-fun nutrientWithIdOrNull(id: Long): Nutrient? = idMap[id]
-fun nutrientWithId(id: Long): Nutrient = requireNotNull(nutrientWithIdOrNull(id)) { "No nutrient found with id $id" }
+fun nutrientWithIdOrNull(id: EntityId): Nutrient? = idMap[id]
+fun nutrientWithId(id: EntityId): Nutrient = requireNotNull(nutrientWithIdOrNull(id)) { "No nutrient found with id $id" }
 
 fun nutrientWithNameOrNull(name: String): Nutrient? = nameMap[name]
 fun nutrientWithName(name: String): Nutrient = requireNotNull(nutrientWithNameOrNull(name)) { "No nutrient found with name $name" }

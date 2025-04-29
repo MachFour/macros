@@ -84,9 +84,10 @@ class SqlWhereExpr<M, J: Any> private constructor(
         return whereClause + suffix
     }
 
-    fun getBindObjects(): Collection<J> {
-        return whereValues ?: emptyList<Nothing>()
+    fun getBindObjects(): Collection<*> {
+        return whereValues?.map { bindArgumentType?.toRaw(it) ?: it } ?: emptyList<Nothing>()
     }
+
     val numArgs: Int
         get() = whereValues?.size ?: 0
 

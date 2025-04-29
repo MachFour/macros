@@ -43,7 +43,7 @@ CREATE TABLE Nutrient (
 
 CREATE TABLE Food (
     -- Field meanings
-    -- 'brand' is the manufacturer, if the food has a manufacurer that you know.
+    -- 'brand' is the manufacturer, if the food has a manufacturer that you know.
     -- This just helps to identify the food.
 
     -- 'name' is a generic name for the food.
@@ -105,9 +105,6 @@ CREATE TABLE Food (
     -- could be useful to use it as an offset from a default relevance,
     -- based on the food type
     , search_relevance     INTEGER DEFAULT NULL
-
-    , CONSTRAINT full_name_identifiable
-        UNIQUE (brand, variety, name, extra_desc)
 ) STRICT;
 
 
@@ -256,8 +253,8 @@ CREATE TABLE FoodPortion (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , quantity             REAL NOT NULL
-    -- XXX what happens if the unit changes (i.e. a food once measured by volume
-    -- is now measured as a solid (for nutrition info)?
+    -- XXX what happens if the unit changes, e.g. a food once measured by weight
+    -- is now measured as by volume, but there is no density recorded?
     , quantity_unit        TEXT NOT NULL
     -- food / ingredient ID
     , food_id              INTEGER NOT NULL
@@ -316,8 +313,8 @@ CREATE TABLE Ingredient (
     , create_time          INTEGER NOT NULL DEFAULT 0
     , modify_time          INTEGER NOT NULL DEFAULT 0
     , quantity             REAL NOT NULL
-    -- XXX what happens if the unit changes (i.e. a food once measured by volume
-    -- is now measured as a solid (for nutrition info)?
+    -- XXX what happens if the unit changes, e.g. a food once measured by weight
+    -- is now measured as by volume, but there is no density recorded?
     , quantity_unit        TEXT NOT NULL
     -- food / ingredient ID
     , food_id              INTEGER NOT NULL

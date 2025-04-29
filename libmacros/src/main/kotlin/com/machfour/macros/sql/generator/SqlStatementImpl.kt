@@ -16,8 +16,8 @@ abstract class SqlStatementImpl<M>(
     override val hasBindArguments: Boolean
         get() = whereExpression.hasBindObjects
 
-    override fun getBindArguments(): Collection<*> {
-        return whereExpression.getBindObjects()
+    override fun getBindArguments(): Collection<Any> {
+        return whereExpression.getRawBindObjects()
     }
 
     abstract override fun toSql(): String

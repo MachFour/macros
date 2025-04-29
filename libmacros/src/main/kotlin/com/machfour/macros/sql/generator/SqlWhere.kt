@@ -84,8 +84,13 @@ class SqlWhereExpr<M, J: Any> private constructor(
         return whereClause + suffix
     }
 
-    fun getBindObjects(): Collection<*> {
-        return whereValues?.map { bindArgumentType?.toRaw(it) ?: it } ?: emptyList<Nothing>()
+    fun getRawBindObjects(): List<Any> {
+        return whereValues?.map { bindArgumentType?.toRaw(it) ?: it } ?: emptyList()
+    }
+
+    // For Android
+    fun getRawBindStrings(): List<String> {
+        return whereValues?.map { bindArgumentType?.toSqlString(it) ?: it.toString() } ?: emptyList()
     }
 
     val numArgs: Int

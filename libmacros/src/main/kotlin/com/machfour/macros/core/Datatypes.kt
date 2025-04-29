@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @JvmInline
 @Serializable
-value class EntityId(val value: Long) {
+value class EntityId(val value: Long): java.io.Serializable {
     override fun toString(): String {
         return "EntityId($value)"
     }

@@ -1,6 +1,7 @@
 package com.machfour.macros.insulin
 
 import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.INutrient
 import com.machfour.macros.nutrients.CARBOHYDRATE
 import com.machfour.macros.nutrients.FAT
 import com.machfour.macros.nutrients.FoodNutrientData
@@ -204,7 +205,7 @@ class ComplexBolusCalculatorTest {
 
     @Test
     fun calcLowCarbHighFatMap() {
-        val amounts = mapOf(
+        val amounts: Map<INutrient, Double> = mapOf(
             CARBOHYDRATE to 5.0,
             FAT to 100.0,
             PROTEIN to 20.0,

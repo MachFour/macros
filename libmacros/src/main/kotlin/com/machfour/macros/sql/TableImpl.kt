@@ -42,4 +42,8 @@ abstract class TableImpl<I: MacrosEntity, M: I>(
         }
     }
 
+    override fun toString(): String {
+        return sqlName
+    }
+
 }

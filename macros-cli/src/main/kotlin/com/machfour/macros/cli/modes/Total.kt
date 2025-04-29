@@ -27,16 +27,10 @@ class Total(config: CliConfig) : CommandImpl(config) {
              *     meal name is the first thing that doesn't start with -- or -
              *     day is the second such thing
              */
-            val nonOptionArgs = ArrayList<String>(args.size - 1)
-            for (arg in args) {
-                // add everything after the first arg (which is the mode name) which doesn't start with a -
-                if (!(arg == args[0] || arg.startsWith("-"))) {
-                    nonOptionArgs.add(arg)
-                }
-            }
-            val mealName = if (nonOptionArgs.size >= 1 && !isAllMeals) nonOptionArgs[0] else null
+            val nonOptionArgs = args.filter { it != args.firstOrNull() && !it.startsWith("-") }
+            val mealName = if (nonOptionArgs.isNotEmpty() && !isAllMeals) nonOptionArgs[0] else null
             val dayString = when {
-                nonOptionArgs.size < 1 -> null
+                nonOptionArgs.isEmpty() -> null
                 isAllMeals -> nonOptionArgs[0] // just look for day
                 nonOptionArgs.size >= 2 -> nonOptionArgs[1] // look for meal and day
                 else -> null

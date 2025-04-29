@@ -1,13 +1,16 @@
 package com.machfour.macros.queries
 
 import com.machfour.macros.core.EntityId
-import com.machfour.macros.entities.Unit
+import com.machfour.macros.nutrients.IQuantity
+import com.machfour.macros.nutrients.Quantity
 import com.machfour.macros.schema.FoodPortionTable
 import com.machfour.macros.schema.MealTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
 import com.machfour.macros.sql.generator.ColumnMax.Companion.max
 import com.machfour.macros.sql.generator.OrderByDirection
+import com.machfour.macros.units.GRAMS
+import com.machfour.macros.units.unitWithAbbrOrNull
 
 //fun getServingId(dataSource: MacrosDataSource, fpId: EntityId) : EntityId? {
 //    return CoreQueries.selectSingleColumn(dataSource, FoodPortionTable, FoodPortionTable.SERVING_ID) {
@@ -71,7 +74,8 @@ fun recentMealIds(db: SqlDatabase, howMany: Int, nameFilter: Collection<String>)
     return query.mapNotNull { it.first }
 }
 
-fun getCommonQuantities(db: SqlDatabase, foodId: EntityId, limit: Int = -1): List<Triple<Double, Unit, String?>> {
+// returns pairs of <Quantity, ServingId>
+fun getCommonQuantities(db: SqlDatabase, foodId: EntityId, limit: Int = -1): List<Pair<IQuantity, EntityId?>> {
     val quantity = FoodPortionTable.QUANTITY
     val quantityUnit = FoodPortionTable.QUANTITY_UNIT
     val servingID = FoodPortionTable.SERVING_ID
@@ -89,5 +93,13 @@ fun getCommonQuantities(db: SqlDatabase, foodId: EntityId, limit: Int = -1): Lis
             limit(limit)
         }
     }
-    return query.filterIsInstance<Triple<Double, Unit, String?>>()
+    return query.map { queryToQuantity(it.first, it.second) to it.third }
+}
+
+// XXX mad hack
+private fun queryToQuantity(amount: Double?, abbr: String?): IQuantity {
+    return Quantity(
+        amount = amount ?: 0.0,
+        unit = abbr?.let { unitWithAbbrOrNull(it) } ?: GRAMS
+    )
 }

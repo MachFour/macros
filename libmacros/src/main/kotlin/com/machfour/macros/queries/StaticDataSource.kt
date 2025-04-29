@@ -5,8 +5,11 @@ import com.machfour.macros.core.EntityId
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.core.SearchRelevance
-import com.machfour.macros.entities.*
-import com.machfour.macros.entities.Unit
+import com.machfour.macros.entities.Food
+import com.machfour.macros.entities.FoodCategory
+import com.machfour.macros.entities.FoodNutrientValue
+import com.machfour.macros.entities.Meal
+import com.machfour.macros.nutrients.IQuantity
 import com.machfour.macros.schema.FoodNutrientValueTable
 import com.machfour.macros.sql.SqlDatabase
 import com.machfour.macros.sql.SqlException
@@ -71,7 +74,7 @@ open class StaticDataSource(private val database: SqlDatabase): MacrosDataSource
         return getDaysForMealIds(database, mealIds)
     }
 
-    override fun getCommonQuantities(foodId: EntityId, limit: Int): List<Triple<Double, Unit, String?>> {
+    override fun getCommonQuantities(foodId: EntityId, limit: Int): List<Pair<IQuantity, EntityId?>> {
         return getCommonQuantities(database, foodId, limit)
     }
 

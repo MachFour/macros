@@ -25,28 +25,23 @@ class FlowDataSource(
         meals.clear()
         foodsFlow.value = emptyMap()
         mealsFlow.value = emptyMap()
-        allFoodsNeedsRefresh = true
 
         // TODO should clear refresh queue?
     }
 
 
-    var allFoodsNeedsRefresh: Boolean = true
+    private var haveAllFoods = false
 
-    private val foodRefreshQueue = HashSet<EntityId>()
-    private val mealRefreshQueue = HashSet<EntityId>()
-    private var pauseRefreshes = false
-
-    private val foods: MutableMap<EntityId, Food> = LinkedHashMap(100)
-    private val meals: MutableMap<EntityId, Meal> = LinkedHashMap(100)
-    private val mealIdsForDays: MutableMap<DateStamp, Set<EntityId>> = LinkedHashMap(10)
+    private val foods: MutableMap<EntityId, Food> = LinkedHashMap()
+    private val meals: MutableMap<EntityId, Meal> = LinkedHashMap()
+    private val mealIdsForDays: MutableMap<DateStamp, Set<EntityId>> = LinkedHashMap()
 
     private val foodsFlow: MutableStateFlow<Map<EntityId, Food>> = MutableStateFlow(emptyMap())
     private val mealsFlow: MutableStateFlow<Map<EntityId, Meal>> = MutableStateFlow(emptyMap())
     private val mealIdsForDaysFlow: MutableStateFlow<Map<DateStamp, Set<EntityId>>> = MutableStateFlow(emptyMap())
 
     private fun <T> Map<EntityId, T>.idMissing(id: EntityId): Boolean {
-        return !containsKey(id) && id != MacrosEntity.NO_ID
+        return id != MacrosEntity.NO_ID && (id !in this)
     }
 
     private fun <T> Map<EntityId, T>.missingIdsFrom(ids: Collection<EntityId>): List<EntityId> {
@@ -73,9 +68,10 @@ class FlowDataSource(
 
     @Throws(SqlException::class)
     override fun getAllFoods(): Flow<Map<EntityId, Food>> {
-        if (allFoodsNeedsRefresh) {
+        if (!haveAllFoods) {
             refreshAllFoods()
         }
+
         return foodsFlow
     }
 
@@ -116,33 +112,21 @@ class FlowDataSource(
 
     @Throws(SqlException::class)
     private fun refreshAllFoods() {
-        if (pauseRefreshes) {
-            allFoodsNeedsRefresh = true
-        } else {
-            val newData = getAllFoodsMap(database)
-            foods.clear()
-            foods.putAll(newData)
-            foodsFlow.value = newData
-            allFoodsNeedsRefresh = false
-        }
+        val newData = getAllFoodsMap(database)
+        foods.clear()
+        foods.putAll(newData)
+        foodsFlow.value = newData
+        haveAllFoods = true
     }
 
     // Refreshes the given foods in the cache, as well as meals containing those foods
     @Throws(SqlException::class)
     private fun refreshFoods(ids: Collection<EntityId>) {
-        if (pauseRefreshes) {
-            foodRefreshQueue.addAll(ids)
-        } else {
-            val newData = getFoodsById(database, ids)
-            foods.putAll(newData)
-            for (missingId in newData.missingIdsFrom(ids)) {
-                // if any requested IDs did not return a food, remove them from the cache
-                foods.remove(missingId)
-            }
-            foodsFlow.value = foods.toMap() // copy for distinct
+        val newData = getFoodsById(database, ids)
+        foods.putAll(newData)
+        foodsFlow.value = foods.toMap() // copy for distinct
 
-            refreshMealsContainingFoods(ids)
-        }
+        refreshMealsContainingFoods(ids)
     }
 
     private fun refreshFood(id: EntityId) {
@@ -154,8 +138,8 @@ class FlowDataSource(
     }
 
     @Throws(SqlException::class)
-    private fun refreshMealsContainingFoods(ids: Collection<EntityId>) {
-        val mealIds = getMealIdsForFoodIds(ids)
+    private fun refreshMealsContainingFoods(foodIds: Collection<EntityId>) {
+        val mealIds = getMealIdsForFoodIds(foodIds)
         // only refresh meals that are actually loaded
         val idsToRefresh = mealIds.intersect(meals.keys)
         refreshMeals(idsToRefresh)
@@ -163,18 +147,14 @@ class FlowDataSource(
 
     @Throws(SqlException::class)
     private fun refreshMeals(ids: Collection<EntityId>) {
-        if (pauseRefreshes) {
-            mealRefreshQueue.addAll(ids)
-        } else {
-            val newData = getMealsById(database, ids)
-            meals.putAll(newData)
-            for (missingId in newData.missingIdsFrom(ids)) {
-                // if any requested IDs did not return a meal, remove them from the cache
-                meals.remove(missingId)
-            }
-
-            mealsFlow.value = meals.toMap() // copy for distinct
+        val newData = getMealsById(database, ids)
+        meals.putAll(newData)
+        for (missingId in newData.missingIdsFrom(ids)) {
+            // if any requested IDs did not return a meal, remove them from the cache
+            meals.remove(missingId)
         }
+
+        mealsFlow.value = meals.toMap() // copy for distinct
     }
 
     @Throws(SqlException::class)
@@ -193,15 +173,7 @@ class FlowDataSource(
 
     @Throws(SqlException::class)
     override fun <I: MacrosEntity, M: I> saveObjects(table: Table<I, M>, objects: Collection<I>, source: ObjectSource): Int {
-        val numSaved = saveObjects(database, table, objects, source)
-        // TODO copied from WriteQueries
-        // problem: don't know id after saving here (it was NO_ID)
-        when (source) {
-            ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEach { afterDbInsert(it) } }
-            ObjectSource.DB_EDIT -> { objects.forEach { afterDbEdit(it) } }
-            else -> {}
-        }
-        return numSaved
+        return saveObjectsReturningIds(table, objects, source).size
     }
 
     @Throws(SqlException::class)
@@ -211,11 +183,8 @@ class FlowDataSource(
         source: ObjectSource
     ): List<EntityId> {
         val ids = saveObjectsReturningIds(database, table, objects, source)
-        // TODO copied from WriteQueries
-        // problem: don't know id after saving here (it was NO_ID)
-        // --> but now we do!!
         when (source) {
-            ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEach { afterDbInsert(it) } }
+            ObjectSource.IMPORT, ObjectSource.USER_NEW -> { objects.forEachIndexed { idx, obj -> afterDbInsert(obj, ids[idx]) } }
             ObjectSource.DB_EDIT -> { objects.forEach { afterDbEdit(it) } }
             else -> {}
         }
@@ -227,10 +196,9 @@ class FlowDataSource(
         afterNutrientsSaved(foodId)
     }
 
-    private fun <M : MacrosEntity> afterDbInsert(obj: M) {
-        // problem: don't know id after saving here (it was NO_ID)
+    private fun <M : MacrosEntity> afterDbInsert(obj: M, id: EntityId) {
         when (obj) {
-            is Food ->  { allFoodsNeedsRefresh = true }
+            is Food ->  { refreshFood(id) }
             is Meal ->  { refreshDay(obj.day) }
 
             is FoodNutrientValue -> refreshFood(obj.foodId)

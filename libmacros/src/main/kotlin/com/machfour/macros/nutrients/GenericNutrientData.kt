@@ -13,12 +13,30 @@ private val INutrient.index : Int
     get() = id.value.toInt()
 
 
+private fun <M: NutrientValue<M>> initData(data: Map<INutrient, M>): MutableList<M?> {
+    val list = MutableList<M?>(AllNutrients.size) { null }
+    for ((n, value) in data) {
+        list[n.index] = value
+    }
+    return list
+}
+
+private fun initIncompleteList(incompleteSet: Set<INutrient>): MutableList<Boolean> {
+    val list = MutableList(AllNutrients.size) { false }
+    for (n in incompleteSet) {
+        list[n.index] = true
+    }
+    return list
+}
+
 // Class storing a set of nutrient values for any purpose.
 // It could be for a food or meal, or for a nutrition goal
-abstract class GenericNutrientData<M: NutrientValue<M>>: BasicNutrientData<M> {
-    protected val data: MutableList<M?> = MutableList(NumNutrients) { null }
-    protected val isDataComplete: MutableList<Boolean> = MutableList(NumNutrients) { false }
-    protected val isDataIncomplete: MutableList<Boolean> = MutableList(NumNutrients) { false }
+abstract class GenericNutrientData<M: NutrientValue<M>>(
+    nutrients: Map<INutrient, M> = emptyMap(),
+    incompleteNutrients: Set<INutrient> = emptySet(),
+): BasicNutrientData<M> {
+    protected val data: MutableList<M?> = initData(nutrients)
+    protected val isDataIncomplete = initIncompleteList(incompleteNutrients)
 
     override val perQuantity: IQuantity
         get() = (get(QUANTITY)?.toQuantity() ?: NullQuantity)

@@ -5,6 +5,7 @@ import com.machfour.macros.core.Instant
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.Nutrient
+import com.machfour.macros.entities.Unit
 import com.machfour.macros.units.GRAMS
 
 data class Quantity(
@@ -13,7 +14,7 @@ data class Quantity(
     override val modifyTime: Instant = 0L,
     override val source: ObjectSource = ObjectSource.JSON,
     override val amount: Double,
-    override val unit: com.machfour.macros.entities.Unit
+    override val unit: Unit
 ): INutrientValue, IQuantity {
     companion object {
         fun INutrientValue.toQuantity(): Quantity {
@@ -33,4 +34,15 @@ data class Quantity(
 
     override val nutrient: Nutrient
         get() = QUANTITY
+
+    // Returns a new Quantity instance with the given unit and amount
+    // calculated according to convertAmountTo().
+    // An exception is thrown if the conversion is not possible.
+    fun convertTo(newUnit: Unit, density: Double? = null): Quantity {
+        return Quantity(
+            amount = convertAmountTo(newUnit, density),
+            unit = newUnit,
+            source = ObjectSource.COMPUTED,
+        )
+    }
 }

@@ -1,18 +1,11 @@
-package com.machfour.macros.objects
+package com.machfour.macros.nutrients
 
 import com.machfour.macros.core.MacrosEntity
 import com.machfour.macros.core.ObjectSource
 import com.machfour.macros.entities.FoodNutrientValue
 import com.machfour.macros.entities.FoodPortion
-import com.machfour.macros.nutrients.FAT
-import com.machfour.macros.nutrients.FoodNutrientData
-import com.machfour.macros.nutrients.NutrientData
 import com.machfour.macros.sample.exampleFood2
 import com.machfour.macros.schema.FoodPortionTable
-import com.machfour.macros.schema.FoodPortionTable.FOOD_ID
-import com.machfour.macros.schema.FoodPortionTable.MEAL_ID
-import com.machfour.macros.schema.FoodPortionTable.QUANTITY
-import com.machfour.macros.schema.FoodPortionTable.QUANTITY_UNIT
 import com.machfour.macros.sql.rowdata.RowData
 import com.machfour.macros.units.GRAMS
 import com.machfour.macros.units.MILLIGRAMS
@@ -30,22 +23,18 @@ class NutrientDataTest {
         private val nd3: NutrientData<FoodNutrientValue> // mg
 
         init {
-            val fp1: FoodPortion
-            val fp2: FoodPortion
-            val fp3: FoodPortion
-            val factory = FoodPortion.factory
-            with (RowData(FoodPortionTable)) {
-                put(FOOD_ID, f.id)
-                put(MEAL_ID, MacrosEntity.NO_ID)
-                put(QUANTITY, 100.0)
-                put(QUANTITY_UNIT, GRAMS.abbr)
-                fp1 = factory.construct(this.copy(), ObjectSource.TEST)
-                put(QUANTITY_UNIT, MILLILITRES.abbr)
-                fp2 = factory.construct(this.copy(), ObjectSource.TEST)
-                put(QUANTITY, 100000.0)
-                put(QUANTITY_UNIT, MILLIGRAMS.abbr)
-                fp3 = factory.construct(this.copy(), ObjectSource.TEST)
+            val data = RowData(FoodPortionTable).apply {
+                put(FoodPortionTable.FOOD_ID, f.id)
+                put(FoodPortionTable.MEAL_ID, MacrosEntity.NO_ID)
+                put(FoodPortionTable.QUANTITY, 100.0)
+                put(FoodPortionTable.QUANTITY_UNIT, GRAMS.abbr)
             }
+            val fp1 = FoodPortion.factory.construct(data.copy(), ObjectSource.TEST)
+            data.put(FoodPortionTable.QUANTITY_UNIT, MILLILITRES.abbr)
+            val fp2 = FoodPortion.factory.construct(data.copy(), ObjectSource.TEST)
+            data.put(FoodPortionTable.QUANTITY, 100000.0)
+            data.put(FoodPortionTable.QUANTITY_UNIT, MILLIGRAMS.abbr)
+            val fp3 = FoodPortion.factory.construct(data.copy(), ObjectSource.TEST)
 
             fp1.initFoodAndNd(f)
             fp2.initFoodAndNd(f)
@@ -59,11 +48,10 @@ class NutrientDataTest {
 
     @Test
     fun testScaling() {
-        assertNotNull(f.density)
-        val density = f.density!!
-        val fat = f.nutrientData.amountOf(FAT)!!
-        val fat1 = nd1.amountOf(FAT)!!
-        val fat2 = nd2.amountOf(FAT)!!
+        val density = assertNotNull(f.density)
+        val fat = f.nutrientData.amountOf(FAT, defaultValue = 0.0)
+        val fat1 = nd1.amountOf(FAT, defaultValue = 0.0)
+        val fat2 = nd2.amountOf(FAT, defaultValue = 0.0)
 
         assertEquals(density, 0.92)
         assertEquals(fat, fat2)

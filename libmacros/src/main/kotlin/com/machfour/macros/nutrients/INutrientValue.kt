@@ -23,20 +23,6 @@ interface INutrientValue: MacrosEntity {
     }
 }
 
-fun nutrientValueEquals(nv: INutrientValue, other: Any?): Boolean {
-    if (other !is INutrientValue) {
-        return false
-    }
-    return nv.id == other.id
-            && nv.createTime == other.createTime
-            && nv.modifyTime == other.modifyTime
-            && nv.source == other.source
-            && nv.nutrient == other.nutrient
-            && nv.amount == other.amount
-            && nv.unit == other.unit
-            && nv.constraintSpec == other.constraintSpec
-}
-
 interface IQuantity: INutrientValue {
     override val nutrient: Nutrient
         get() = QUANTITY
@@ -46,7 +32,7 @@ interface IQuantity: INutrientValue {
     override val constraintSpec: Int
         get() = 0
 
-    // Converts this quantity into the given unit, if possible.
+    // Returns an equivalent amount when interpreted as in given unit, if possible.
     // An exception is thrown if the conversion is not possible
     fun convertAmountTo(newUnit: Unit, density: Double? = null): Double {
         return convertQuantity(amount, unit, newUnit, density)

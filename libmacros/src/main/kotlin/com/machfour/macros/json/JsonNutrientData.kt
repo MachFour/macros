@@ -98,14 +98,16 @@ data class JsonNutrientData(
         )
     }
 
-    override fun rescale(amount: Double, unit: Unit): NutrientData<JsonNutrientValue> {
+    override fun scale(ratio: Double): NutrientData<JsonNutrientValue> {
+        TODO("Not yet implemented")
+    }
+
+    override fun withQuantityUnit(unit: Unit): NutrientData<JsonNutrientValue> {
         TODO("Not yet implemented")
     }
 
     override fun withDefaultUnits(
-        defaultUnits: NutrientUnits,
-        includingQuantity: Boolean,
-        density: Double?
+        defaultUnits: NutrientUnits
     ): NutrientData<JsonNutrientValue> {
         TODO("Not yet implemented")
     }

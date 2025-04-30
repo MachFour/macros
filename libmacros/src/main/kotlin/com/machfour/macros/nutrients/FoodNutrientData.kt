@@ -81,7 +81,7 @@ class FoodNutrientData(
     // using null coalescing means that hasData(QUANTITY) will still return false
     private var perQuantityInternal: Quantity
         get() = this[QUANTITY]?.toQuantity() ?: NullQuantity
-        private set(value) {
+        set(value) {
             this[QUANTITY] = makeComputedValue(value.amount, QUANTITY, value.unit)
         }
 
@@ -90,9 +90,6 @@ class FoodNutrientData(
 
     val qtyAmount: Double
         get() = perQuantity.amount
-
-    val qtyUnitAbbr: String
-        get() = perQuantity.unit.abbr
 
     override val foodDensity: Double?
         get() = density
@@ -115,92 +112,45 @@ class FoodNutrientData(
         }
     }
 
-    // calculations
-
-    override fun rescale(amount: Double, unit: Unit): NutrientData<FoodNutrientValue> {
-        return if (unit == qtyUnit) {
-            rescale(amount)
-        } else {
-            withQuantityUnit(unit, foodDensity, allowDefaultDensity = true).rescale(amount)
-        }
-    }
-
-    fun rescale100() : FoodNutrientData = rescale(100.0)
-
-    private fun rescale(newQuantity: Double) : FoodNutrientData {
-        val conversionRatio = if (qtyAmount == 0.0) Double.NaN else newQuantity / qtyAmount
-
+    // Returns a new FoodNutrientData with all nutrient values multiplied
+    // by the given ratio.
+    override fun scale(ratio: Double) : FoodNutrientData {
         return FoodNutrientData(density = density).also { data ->
             // completeData is false by default so we can just skip the iteration for null nutrients
             for (n in AllNutrients) {
-                this[n]?.let {
-                    data[n] = it.scale(conversionRatio)
+                if (this[n] != null) {
+                    data[n] = getValue(n).scale(ratio)
+                }
+                if (hasIncompleteData(n)) {
+                    data.markIncompleteData(n)
                 }
             }
         }
     }
 
-    /* ** OLD comment kept here for historical purposes **
-     *
-     * WONTFIX fundamental problem with unit conversion
-     * In the database, nutrient quantities are always considered by-weight, while quantities
-     * of a food (or serving, FoodPortionTable, etc.) can be either by-weight or by volume.
-     * Converting from a by-weight quantity unit to a by-volume one, or vice-versa, for a
-     * NutrientData object, then, must keep the actual (gram) values of the data the same,
-     * and simply change the corresponding quantity, according to the given density value.
-     *
-     * Converting between different units of the same measurement (either weight or volume), then,
-     * only makes sense if it means changing the actual numerical data in each column, such that,
-     * when interpreted in the new unit, still means the same as the old one, when both are converted to grams.
-     * But this makes no sense for calculations, since the unit has to be the same when adding things together.
-     *
-     * For now, we'll say that as far as data storage and calculations are concerned,
-     * the only unit of mass used is grams, and the only unit of volume used will be ml.
-     * NOTE, however, that this does not mean that the units used for input and output of data
-     * to/from the user needs to be in these units.
-     * Later on, we'll need a separate system to convert units for user display.
-     * So I guess there are two distinct 'unit convert' operations that need to be considered.
-     * 1. Just converting the quantity unit, which means only the value of the quantity column changes.
-     *    All the nutrition data stays the same, in grams. [This is what we'll do now]
-     * 2. Converting the entire row of data for display purposes. [This will come later on]
-     *    (e.g. 30g nutrient X / 120g quantity --> 1 oz nutrient X / 4 oz quantity.)
-     *    This only works for mass units, not when the quantity unit is in ml
-     */
-
-    private fun withQuantityUnit(newUnit: Unit, density: Double? = null, allowDefaultDensity: Boolean = false) : FoodNutrientData {
-        val densityConversionNeeded = qtyUnit.type !== newUnit.type
-        if (!allowDefaultDensity) {
-            assert (!(densityConversionNeeded && density == null)) {
-                "Quantity unit conversion required but no density given."
-            }
+    // keeps all nutrient values the same, just changes the quantity unit and amount accordingly
+    override fun withQuantityUnit(unit: Unit) : FoodNutrientData {
+        if (unit == qtyUnit) {
+            return this
         }
-        val fallbackDensity = (if (allowDefaultDensity) 1.0 else null)
+        val densityConversionNeeded = qtyUnit.type != unit.type
 
         return copy().also {
-            val newAmount = it.perQuantity.convertAmountTo(newUnit, density ?: fallbackDensity)
-            it.perQuantityInternal = Quantity(amount = newAmount, unit = newUnit)
+            it.perQuantityInternal = perQuantity.convertTo(unit, density ?: 1.0)
             it.markIncompleteData(QUANTITY, densityConversionNeeded && density == null)
         }
     }
 
-    override fun withDefaultUnits(
-        defaultUnits: NutrientUnits,
-        includingQuantity: Boolean,
-        density: Double?,
-    ) : FoodNutrientData {
+    override fun withDefaultUnits(defaultUnits: NutrientUnits) : FoodNutrientData {
         // TODO construct all at once
-        val convertedData = if (includingQuantity) {
-            withQuantityUnit(defaultUnits[QUANTITY], density, false)
-        } else {
-            copy()
-        }
+        val withDesiredQtyUnit = copy().withQuantityUnit(defaultUnits[QUANTITY])
         for (nv in valuesExcludingQuantity) {
             val n = nv.nutrient
             val convertedValue = nv.convertValueTo(defaultUnits[n])
-            convertedData[n] = makeComputedValue(convertedValue, n, defaultUnits[n])
-            convertedData.markIncompleteData(n, hasIncompleteData(n))
+            withDesiredQtyUnit[n] = makeComputedValue(convertedValue, n, defaultUnits[n])
+            withDesiredQtyUnit.markIncompleteData(n, hasIncompleteData(n))
         }
-        return convertedData
+        return withDesiredQtyUnit
     }
 
     // Use data from the another NutrientObject object to complete missing values from this one

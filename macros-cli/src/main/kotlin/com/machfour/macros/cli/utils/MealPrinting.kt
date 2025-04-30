@@ -112,7 +112,7 @@ fun printMeal(meal: Meal, verbose: Boolean) {
     val dataRows: MutableList<List<String>> = ArrayList()
     for (fp in meal.foodPortions) {
         val name = fp.food.mediumName
-        val nd = fp.nutrientData.withDefaultUnits()
+        val nd = fp.nutrientData.withDefaultUnits(LegacyNutrientUnits)
         dataRows.add(nutritionDataToRow(name, nd, fp.quantity, fp.qtyUnit, verbose))
     }
     for (row in dataRows) {
@@ -145,7 +145,7 @@ fun printMeals(
             println()
             if (per100) {
                 println("== Nutrient total per 100g ==")
-                printNutrientData(m.nutrientTotal().rescale100(), verbose)
+                printNutrientData(m.nutrientTotal().rescale100g(), verbose)
                 println("=============================")
                 println()
             }

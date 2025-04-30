@@ -34,7 +34,7 @@ abstract class SqlTypeImpl<J: Any> : SqlType<J> {
 
     // Returns a string representation suitable for use in issuing an SQL command to store the given data
     // into an SQL database. In particular, null data is converted into the string "NULL"
-    final override fun toSqlString(data: J?): String {
+    override fun toSqlString(data: J?): String {
         return toString(data, "NULL")
     }
 

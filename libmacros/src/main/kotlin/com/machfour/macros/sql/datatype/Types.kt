@@ -141,6 +141,10 @@ class Types {
             return data?.value?.toString() ?: ""
         }
 
+        override fun toSqlString(data: EntityId?): String {
+            return data?.value?.toString() ?: "NULL"
+        }
+
         override fun kotlinClass(): KClass<EntityId> = EntityId::class
 
         override fun sqliteType(): SqliteType = SqliteType.INTEGER

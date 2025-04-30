@@ -21,7 +21,8 @@ internal open class ColumnImpl<M, J: Any> private constructor(
     override val defaultData: J?
         get() = defaultValue()
 
-    override fun toString(): String {
+    // Don't change this as the sql name is used in queries
+    final override fun toString(): String {
         return sqlName
     }
 
@@ -32,12 +33,8 @@ internal open class ColumnImpl<M, J: Any> private constructor(
         nullable: Boolean,
         unique: Boolean,
         override val parentColumn: Column<N, J>,
-    ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, unique), Column.Fk<M, J, N> {
+    ): ColumnImpl<M, J>(name, type, defaultValue, editable, nullable, unique), Column.Fk<M, J, N>
 
-        override fun toString(): String {
-            return super.toString() + " (-> " + parentColumn.table.sqlName + "." + parentColumn.sqlName + ")"
-        }
-    }
 
     internal class Builder<J: Any>(private val name: String, private val type: SqlType<J>): Column.Builder<J> {
         private var editable: Boolean = true

@@ -68,13 +68,14 @@ fun recentMealIds(db: SqlDatabase, howMany: Int, nameFilter: Collection<String>)
         if (nameFilter.isNotEmpty()) {
             where(MealTable.NAME, nameFilter)
         }
-        orderBy(MealTable.MODIFY_TIME.max(), OrderByDirection.DESCENDING)
+        orderBy(MealTable.MODIFY_TIME, OrderByDirection.DESCENDING)
         limit(howMany)
     }
     return query.mapNotNull { it.first }
 }
 
 // returns pairs of <Quantity, ServingId>
+@Throws(SqlException::class)
 fun getCommonQuantities(db: SqlDatabase, foodId: EntityId, limit: Int = -1): List<Pair<IQuantity, EntityId?>> {
     val quantity = FoodPortionTable.QUANTITY
     val quantityUnit = FoodPortionTable.QUANTITY_UNIT
